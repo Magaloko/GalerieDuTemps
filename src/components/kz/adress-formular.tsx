@@ -58,7 +58,7 @@ export function AdressFormular({ initial, prefix = "", sprache = "ru" }: Props) 
         <Input label={labels.nachname} name={`${prefix}nachname`} defaultValue={initial?.nachname} required />
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="col-span-2">
           <Input label={labels.strasse} name={`${prefix}strasse`} defaultValue={initial?.strasse} required />
         </div>

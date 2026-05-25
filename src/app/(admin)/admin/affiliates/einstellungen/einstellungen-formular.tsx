@@ -29,7 +29,7 @@ export function EinstellungenFormular({ settings }: { settings: AffiliateEinstel
         <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
           Provisionssätze
         </h2>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Input
             label="Ebene 1 (%)"
             name="provision_ebene_1_prozent"
@@ -78,7 +78,7 @@ export function EinstellungenFormular({ settings }: { settings: AffiliateEinstel
         <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
           Tracking & Auszahlung
         </h2>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Input
             label="Cookie-TTL (Tage)"
             name="cookie_ttl_tage"

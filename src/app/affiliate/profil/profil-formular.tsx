@@ -140,7 +140,7 @@ export function ProfilFormular({ affiliate }: { affiliate: Affiliate }) {
               hint={affiliate.hat_iban ? "Уже сохранён. Заполните только для замены." : "Хранится в зашифрованном виде"}
               error={e("iban")}
             />
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Input label="BIC" name="bic" defaultValue={affiliate.bic ?? ""} error={e("bic")} />
               <div className="col-span-2">
                 <Input label="Получатель" name="kontoinhaber" defaultValue={affiliate.kontoinhaber ?? ""} error={e("kontoinhaber")} />

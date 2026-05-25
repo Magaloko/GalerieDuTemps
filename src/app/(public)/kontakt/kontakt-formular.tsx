@@ -45,7 +45,7 @@ export function KontaktFormular({ labels }: { labels: KontaktLabels }) {
       className="bg-vintage-brown border border-vintage-sand/40 p-8 space-y-5"
       style={{ borderRadius: "var(--radius-card)" }}
     >
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Input label={labels.name}  name="name"  required placeholder={labels.name_placeholder} />
         <Input label={labels.email} name="email" type="email" required placeholder={labels.email_placeholder} />
       </div>

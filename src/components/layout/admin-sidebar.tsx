@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -23,6 +24,8 @@ import {
   Filter,
   CheckSquare,
   BookOpen,
+  Menu,
+  X,
 } from "lucide-react";
 
 // ---------------------------------------------------------------------------
@@ -167,6 +170,17 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ userName, userEmail }: AdminSidebarProps) {
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Schließt das Mobile-Menü automatisch beim Navigieren
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
+
+  // Body-Scroll-Lock bei offenem Drawer
+  useEffect(() => {
+    if (mobileOpen) document.body.style.overflow = "hidden";
+    else            document.body.style.overflow = "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
 
   function isActive(href: string, exact: boolean) {
     if (exact) return pathname === href;
@@ -174,15 +188,53 @@ export function AdminSidebar({ userName, userEmail }: AdminSidebarProps) {
   }
 
   return (
-    <aside
-      className="
-        fixed inset-y-0 left-0 z-40
-        w-64 flex flex-col
-        bg-vintage-espresso text-vintage-cream
-        border-r border-vintage-espresso/80
-      "
-      style={{ boxShadow: "var(--shadow-vintage-lg)" }}
-    >
+    <>
+      {/* Mobile Hamburger-Button — fixed oben links */}
+      <button
+        type="button"
+        onClick={() => setMobileOpen(true)}
+        aria-label="Меню открыть"
+        className="
+          md:hidden fixed top-3 left-3 z-30
+          p-2.5 bg-vintage-espresso text-vintage-cream
+          border border-vintage-cream/20
+          hover:bg-vintage-brown transition-colors
+        "
+        style={{ borderRadius: "var(--radius-vintage)", boxShadow: "var(--shadow-vintage-md)" }}
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
+      {/* Backdrop — nur auf Mobile + wenn offen */}
+      {mobileOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-40 bg-vintage-espresso/70 backdrop-blur-sm"
+          onClick={() => setMobileOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        className={`
+          fixed inset-y-0 left-0 z-50
+          w-64 flex flex-col
+          bg-vintage-espresso text-vintage-cream
+          border-r border-vintage-espresso/80
+          transition-transform duration-200
+          ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+        `}
+        style={{ boxShadow: "var(--shadow-vintage-lg)" }}
+      >
+        {/* Close-Button im Drawer-Header — nur Mobile */}
+        <button
+          type="button"
+          onClick={() => setMobileOpen(false)}
+          aria-label="Меню закрыть"
+          className="md:hidden absolute top-3 right-3 p-2 text-vintage-cream/70 hover:text-vintage-cream hover:bg-white/10 transition-colors"
+          style={{ borderRadius: "var(--radius-vintage)" }}
+        >
+          <X className="w-5 h-5" />
+        </button>
       {/* ─── Logo ──────────────────────────────────────────────────────── */}
       <div className="px-6 py-7 border-b border-white/10">
         <Link href="/" className="flex items-center gap-2 group">
@@ -288,5 +340,6 @@ export function AdminSidebar({ userName, userEmail }: AdminSidebarProps) {
         </button>
       </div>
     </aside>
+    </>
   );
 }

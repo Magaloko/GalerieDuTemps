@@ -41,7 +41,7 @@ export function ProfilFormular({ customer }: { customer: Customer }) {
       <section className="bg-vintage-brown border border-vintage-sand/40 p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
         <h2 className="font-serif text-lg text-vintage-cream border-b border-vintage-sand/30 pb-3">Адрес</h2>
         <Input label="Улица, дом" name="strasse" defaultValue={billing.strasse ?? ""} />
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Input label="Индекс" name="plz" defaultValue={billing.plz ?? ""} placeholder="050000" maxLength={6} />
           <div className="col-span-2">
             <Input label="Город" name="ort" defaultValue={billing.ort ?? ""} placeholder="Алматы" />

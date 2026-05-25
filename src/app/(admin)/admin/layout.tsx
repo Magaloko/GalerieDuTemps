@@ -29,11 +29,11 @@ export default async function AdminLayout({
           userEmail={session.user?.email}
         />
 
-        {/* Hauptinhalt – verschoben um Sidebar-Breite */}
-        <div className="ml-64 flex flex-col min-h-screen">
-          {/* Top Bar */}
-          <header className="sticky top-0 z-30 bg-vintage-parchment/95 backdrop-blur border-b border-vintage-sand px-8 py-4">
-            <div className="flex items-center justify-between">
+        {/* Hauptinhalt – Sidebar-Offset nur ab md (auf Mobile ist Sidebar ein Drawer) */}
+        <div className="md:ml-64 flex flex-col min-h-screen">
+          {/* Top Bar — auf Mobile etwas weniger Padding + Hamburger-Spacer links */}
+          <header className="sticky top-0 z-20 bg-vintage-parchment/95 backdrop-blur border-b border-vintage-sand px-4 md:px-8 py-4">
+            <div className="flex items-center justify-between pl-12 md:pl-0">
               <div id="admin-page-title" />
               <div className="text-xs text-vintage-dust font-sans tracking-wider">
                 {new Date().toLocaleDateString("de-DE", {
@@ -46,8 +46,8 @@ export default async function AdminLayout({
             </div>
           </header>
 
-          {/* Seiteninhalt */}
-          <main className="flex-1 px-8 py-8">
+          {/* Seiteninhalt — Mobile weniger horizontal padding */}
+          <main className="flex-1 px-4 md:px-8 py-6 md:py-8">
             {children}
           </main>
         </div>

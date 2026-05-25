@@ -75,7 +75,7 @@ export function LinkGenerator({ referralCode, baseUrl, produkte }: Props) {
         {/* Ziel-Auswahl */}
         <section className="bg-vintage-brown border border-vintage-sand/40 p-5 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
           <h2 className="font-serif text-base text-vintage-cream">1. Wohin soll der Link führen?</h2>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {[
               { value: "home",    label: "Hauptseite", icon: Sparkles },
               { value: "katalog", label: "Katalog",    icon: ImageIcon },

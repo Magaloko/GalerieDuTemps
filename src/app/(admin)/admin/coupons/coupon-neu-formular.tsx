@@ -32,7 +32,7 @@ export function CouponNeuFormular() {
           <Input label="Code" name="code" required placeholder="SOMMER20" />
           <Input label="Beschreibung" name="beschreibung" placeholder="Sommer-Aktion" />
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Select label="Typ" name="typ" required options={[
             { value: "prozent", label: "Prozent (%)" },
             { value: "fest",    label: "Festbetrag (€)" },
@@ -40,7 +40,7 @@ export function CouponNeuFormular() {
           <Input label="Wert" name="wert" type="number" step="0.01" required placeholder="20" />
           <Input label="Min.-Bestellwert (€)" name="min_bestellwert_eur" type="number" step="0.01" defaultValue="0" />
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Input label="Max. Nutzungen gesamt" name="nutzungen_max" type="number" placeholder="100" hint="leer = unbegrenzt" />
           <Input label="Max. pro User" name="nutzungen_pro_user" type="number" defaultValue="1" />
           <Input label="Gültig bis" name="gueltig_bis" type="date" />
