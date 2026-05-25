@@ -59,8 +59,8 @@ export function ChatWidget() {
       <button
         onClick={() => setOffen(v => !v)}
         className={`
-          fixed bottom-6 right-6 z-50
-          w-14 h-14 flex items-center justify-center
+          fixed bottom-4 right-4 md:bottom-6 md:right-6 z-30
+          w-12 h-12 md:w-14 md:h-14 flex items-center justify-center
           bg-vintage-espresso text-vintage-gold
           hover:bg-vintage-brown hover:scale-105
           transition-all duration-300
