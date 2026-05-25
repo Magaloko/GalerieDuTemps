@@ -121,6 +121,11 @@ async function findeUser(email: string, password: string): Promise<AuthUser | nu
 // NextAuth v5 Konfiguration
 // ---------------------------------------------------------------------------
 const authConfig: NextAuthConfig = {
+  // PFLICHT bei Reverse-Proxy-Setup (Coolify/Caddy/Traefik) — sonst:
+  // "UntrustedHost: Host must be trusted" bei /api/auth/session
+  // Alternativ ENV: AUTH_TRUST_HOST=true
+  trustHost: true,
+
   providers: [
     Credentials({
       name: "Anmeldedaten",
