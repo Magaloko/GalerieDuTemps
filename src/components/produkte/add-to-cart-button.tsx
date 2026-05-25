@@ -32,7 +32,7 @@ export function AddToCartButton({
     return (
       <button
         disabled
-        className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-vintage-dust/30 text-vintage-dust font-sans text-xs tracking-widest uppercase cursor-not-allowed"
+        className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-vintage-sand/20 border border-vintage-sand/40 text-vintage-dust font-sans text-xs tracking-[0.25em] uppercase cursor-not-allowed"
         style={{ borderRadius: "var(--radius-button)" }}
       >
         {verkauft ? "Уже продано" : "Нет в наличии"}
@@ -63,10 +63,10 @@ export function AddToCartButton({
       <button
         onClick={handleClick}
         disabled={loading}
-        className={`flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 font-sans text-xs tracking-widest uppercase transition-colors disabled:opacity-50 ${
+        className={`flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 font-sans text-xs tracking-[0.25em] uppercase transition-colors disabled:opacity-50 ${
           hinzugefuegt
-            ? "bg-vintage-sage text-white"
-            : "bg-vintage-espresso text-vintage-cream hover:bg-vintage-brown"
+            ? "bg-vintage-sage text-vintage-ink"
+            : "bg-vintage-gold text-vintage-espresso hover:bg-vintage-amber"
         }`}
         style={{ borderRadius: "var(--radius-button)" }}
       >
@@ -78,7 +78,7 @@ export function AddToCartButton({
       {hinzugefuegt && (
         <button
           onClick={() => router.push("/warenkorb")}
-          className="px-5 py-3 border border-vintage-sand text-vintage-brown font-sans text-xs tracking-widest uppercase hover:bg-vintage-parchment transition-colors"
+          className="px-5 py-3 border border-vintage-gold/40 text-vintage-gold font-sans text-xs tracking-[0.25em] uppercase hover:bg-vintage-gold hover:text-vintage-espresso transition-colors"
           style={{ borderRadius: "var(--radius-button)" }}
         >
           К корзине

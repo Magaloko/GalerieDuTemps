@@ -1,47 +1,59 @@
 @import "tailwindcss";
 
-/* ─── Vintage Design Tokens ──────────────────────────────────────────────────
+/* ─── Galerie du Temps Design Tokens ─────────────────────────────────────────
    Tailwind 4: Tokens via @theme – als CSS-Variablen und Utility-Klassen
    automatisch verfügbar (z.B. bg-vintage-cream, text-vintage-gold).
+
+   DESIGN-PHILOSOPHIE: Dunkler, warmer Hintergrund (wie Galerieabend),
+   gespiegelt von Goldakzenten. Italic-Serif für Eleganz.
    ─────────────────────────────────────────────────────────────────────────── */
 @theme {
-  /* Farben – Vintage Palette */
-  --color-vintage-cream:       #F5F0E8;
-  --color-vintage-parchment:   #E8DFD0;
-  --color-vintage-sand:        #C9B89A;
-  --color-vintage-brown:       #8B6F47;
-  --color-vintage-espresso:    #4A2C1A;
-  --color-vintage-forest:      #3D5A3E;
-  --color-vintage-sage:        #7A9E7E;
-  --color-vintage-burgundy:    #722F37;
-  --color-vintage-gold:        #C9A84C;
-  --color-vintage-copper:      #B87333;
-  --color-vintage-ink:         #1A1A2E;
-  --color-vintage-dust:        #9B9B9B;
-  --color-vintage-white:       #FDFAF5;
+  /* ─ Hauptfarben (Dark-Mode-Default) ─────────────────────────────────────── */
+  /* Hintergründe — von tiefschwarz-warm bis braun */
+  --color-vintage-ink:         #0F0A06;   /* tiefster Hintergrund */
+  --color-vintage-espresso:    #1A120B;   /* primärer Page-Background */
+  --color-vintage-brown:       #2A1F15;   /* Sektion / Card Hintergrund */
+  --color-vintage-sand:        #3A2D20;   /* Border / Subtle */
 
-  /* Typografie */
+  /* Text — warmes Creme auf Dunkel */
+  --color-vintage-white:       #F5EBD9;   /* Headlines */
+  --color-vintage-cream:       #E8DFD0;   /* Body-Text */
+  --color-vintage-parchment:   #C9B89A;   /* Sekundärer Text */
+  --color-vintage-dust:        #7A6A55;   /* Tertiär / Muted */
+
+  /* Akzente — Gold-Spektrum (Hauptakzent) */
+  --color-vintage-gold:        #C9A86A;   /* Primär — CTAs, Logo */
+  --color-vintage-copper:      #B8945A;   /* Hover-State */
+  --color-vintage-amber:       #DAB87D;   /* Highlight */
+
+  /* Status */
+  --color-vintage-forest:      #4A6B4E;   /* Success */
+  --color-vintage-sage:        #6B8B6F;   /* Success-Light */
+  --color-vintage-burgundy:    #8B2F37;   /* Error / Verkauft */
+
+  /* ─ Typografie ─────────────────────────────────────────────────────────── */
   --font-serif:   "Playfair Display", Georgia, "Times New Roman", serif;
   --font-sans:    "Inter", system-ui, -apple-system, sans-serif;
   --font-mono:    "JetBrains Mono", "Fira Code", monospace;
 
-  /* Abstände */
+  /* ─ Abstände ───────────────────────────────────────────────────────────── */
   --spacing-section: 5rem;
   --spacing-card:    1.5rem;
 
-  /* Border Radius */
+  /* ─ Border Radius ───────────────────────────────────────────────────────── */
   --radius-vintage: 2px;
   --radius-card:    4px;
-  --radius-button:  3px;
+  --radius-button:  2px;
 
-  /* Schatten – warm getönt */
-  --shadow-vintage-xs: 0 1px 2px rgba(74, 44, 26, 0.10);
-  --shadow-vintage-sm: 0 1px 4px rgba(74, 44, 26, 0.15);
-  --shadow-vintage-md: 0 4px 12px rgba(74, 44, 26, 0.20);
-  --shadow-vintage-lg: 0 8px 32px rgba(74, 44, 26, 0.25);
-  --shadow-vintage-xl: 0 16px 48px rgba(74, 44, 26, 0.30);
+  /* ─ Schatten — für Dark Mode unauffällig, mehr Glow als Schatten ────────── */
+  --shadow-vintage-xs: 0 1px 2px rgba(0, 0, 0, 0.30);
+  --shadow-vintage-sm: 0 1px 4px rgba(0, 0, 0, 0.40);
+  --shadow-vintage-md: 0 4px 16px rgba(0, 0, 0, 0.50);
+  --shadow-vintage-lg: 0 8px 32px rgba(0, 0, 0, 0.55);
+  --shadow-vintage-xl: 0 16px 48px rgba(0, 0, 0, 0.60);
+  --shadow-gold-glow:  0 0 24px rgba(201, 168, 106, 0.25);
 
-  /* Übergänge */
+  /* ─ Übergänge ──────────────────────────────────────────────────────────── */
   --transition-vintage: 300ms ease-in-out;
 }
 
@@ -56,11 +68,12 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-vintage-espresso);
 }
 
 body {
-  background-color: var(--color-vintage-cream);
-  color:            var(--color-vintage-ink);
+  background-color: var(--color-vintage-espresso);
+  color:            var(--color-vintage-cream);
   font-family:      var(--font-sans);
   line-height:      1.6;
   min-height:       100vh;
@@ -69,7 +82,13 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family:  var(--font-serif);
   line-height:  1.25;
-  color:        var(--color-vintage-espresso);
+  color:        var(--color-vintage-white);
+}
+
+/* Italics in Serif sind Markenzeichen — eleganter Look */
+h1 em, h2 em, h3 em {
+  font-style: italic;
+  color:      var(--color-vintage-gold);
 }
 
 /* ─── Fokus-Stile (Accessibility) ───────────────────────────────────────── */
@@ -79,37 +98,84 @@ h1, h2, h3, h4, h5, h6 {
   border-radius:  var(--radius-vintage);
 }
 
-/* ─── Vintage Texture Utility ────────────────────────────────────────────── */
+/* ─── Texture (subtiles Goldnoise auf Dunkel) ───────────────────────────── */
 .texture-paper {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
 }
 
-/* ─── Utility: Divider mit Ornament ─────────────────────────────────────── */
+/* ─── Hero-Vignette: radialer Gradient für Tiefe ─────────────────────────── */
+.hero-vignette {
+  background:
+    radial-gradient(ellipse at center,
+      var(--color-vintage-brown) 0%,
+      var(--color-vintage-espresso) 50%,
+      var(--color-vintage-ink) 100%);
+}
+
+/* ─── Divider mit Ornament (Diamond ◆) ──────────────────────────────────── */
 .divider-ornament {
   display:     flex;
   align-items: center;
   gap:         1rem;
-  color:       var(--color-vintage-sand);
+  color:       var(--color-vintage-gold);
 }
 .divider-ornament::before,
 .divider-ornament::after {
   content:    '';
   flex:       1;
   height:     1px;
-  background: var(--color-vintage-sand);
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--color-vintage-sand) 50%,
+    transparent
+  );
 }
 
-/* ─── Scrollbar – dezent vintage ────────────────────────────────────────── */
+/* ─── Section-Eyebrow (kleine Überschriften über H2) ─────────────────────── */
+.eyebrow {
+  font-family:    var(--font-sans);
+  font-size:      0.7rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color:          var(--color-vintage-gold);
+  font-weight:    400;
+}
+
+/* ─── Scrollbar – Gold auf Dunkel ───────────────────────────────────────── */
 ::-webkit-scrollbar       { width: 8px; }
-::-webkit-scrollbar-track { background: var(--color-vintage-parchment); }
+::-webkit-scrollbar-track { background: var(--color-vintage-espresso); }
 ::-webkit-scrollbar-thumb {
   background:    var(--color-vintage-sand);
   border-radius: 4px;
 }
-::-webkit-scrollbar-thumb:hover { background: var(--color-vintage-brown); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-vintage-gold); }
 
 /* ─── Selection ──────────────────────────────────────────────────────────── */
 ::selection {
   background: var(--color-vintage-gold);
   color:      var(--color-vintage-espresso);
+}
+
+/* ─── Logo-Stil: GALERIE (gespreizt) + du Temps (italic) ───────────────── */
+.brand-logo {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  line-height:    1;
+}
+.brand-logo .brand-line-1 {
+  font-family:    var(--font-serif);
+  font-size:      1.5rem;
+  letter-spacing: 0.4em;
+  color:          var(--color-vintage-white);
+  padding-left:   0.4em;     /* optisch ausgleichen wegen letter-spacing */
+}
+.brand-logo .brand-line-2 {
+  font-family:    var(--font-serif);
+  font-style:     italic;
+  font-size:      0.75rem;
+  letter-spacing: 0.25em;
+  color:          var(--color-vintage-gold);
+  margin-top:     0.15rem;
 }

@@ -20,14 +20,14 @@ export function ProduktKarte({ produkt, priority = false }: ProduktKarteProps) {
 
   return (
     <article
-      className="group bg-vintage-white border border-vintage-sand hover:border-vintage-brown transition-colors overflow-hidden"
+      className="group bg-vintage-brown border border-vintage-sand/30 hover:border-vintage-gold/60 transition-all overflow-hidden"
       style={{
         borderRadius: "var(--radius-card)",
-        boxShadow:    "var(--shadow-vintage-xs)",
+        boxShadow:    "var(--shadow-vintage-md)",
       }}
     >
       {/* Bild */}
-      <Link href={`/katalog/${produkt.slug}`} className="block relative aspect-square overflow-hidden bg-vintage-parchment">
+      <Link href={`/katalog/${produkt.slug}`} className="block relative aspect-square overflow-hidden bg-vintage-ink">
         {produkt.hauptbild_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -71,8 +71,8 @@ export function ProduktKarte({ produkt, priority = false }: ProduktKarteProps) {
           disabled={isLoading}
           className="
             absolute top-2 right-2
-            p-2 bg-vintage-white/80 backdrop-blur-sm
-            hover:bg-vintage-white transition-colors
+            p-2 bg-vintage-espresso/70 backdrop-blur-sm
+            hover:bg-vintage-espresso transition-colors
             disabled:opacity-50
           "
           style={{ borderRadius: "var(--radius-card)" }}
@@ -89,29 +89,29 @@ export function ProduktKarte({ produkt, priority = false }: ProduktKarteProps) {
       </Link>
 
       {/* Info */}
-      <div className="p-4">
+      <div className="p-5">
         {(produkt.kategorie_name || (produkt as { era?: string | null }).era) && (
-          <p className="text-vintage-dust text-xs font-sans tracking-wide mb-1 truncate">
+          <p className="text-vintage-gold/70 text-[10px] font-sans tracking-[0.2em] uppercase mb-2 truncate">
             {[(produkt as { era?: string | null }).era, produkt.kategorie_name]
               .filter(Boolean)
               .join(" · ")}
           </p>
         )}
         <Link href={`/katalog/${produkt.slug}`}>
-          <h3 className="font-serif text-base text-vintage-espresso group-hover:text-vintage-brown transition-colors line-clamp-2 leading-snug">
+          <h3 className="font-serif italic text-base text-vintage-cream group-hover:text-vintage-gold transition-colors line-clamp-2 leading-snug">
             {produkt.name}
           </h3>
         </Link>
 
-        <div className="flex items-center justify-between mt-3">
+        <div className="flex items-center justify-between mt-4">
           <div>
             {produkt.b2c_mode === "teaser" ? (
-              <Link href="/kunde/registrieren?tab=business" className="font-sans text-xs text-vintage-gold hover:text-vintage-copper transition-colors">
+              <Link href="/kunde/registrieren?tab=business" className="font-sans text-xs text-vintage-gold hover:text-vintage-amber transition-colors">
                 Зарегистрироваться как студия →
               </Link>
             ) : (
               <>
-                <p className="font-serif text-lg text-vintage-espresso">
+                <p className="font-serif text-lg text-vintage-gold">
                   {formatPreis(produkt.preis)}
                 </p>
                 {produkt.originalpreis && (

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { Search, Heart, Menu, X, Store } from "lucide-react";
+import { Search, Heart, Menu, X } from "lucide-react";
 import { useWunschliste } from "@/hooks/use-wunschliste";
 import { CartBadge } from "./cart-badge";
 import { LanguageSwitcher } from "./language-switcher";
@@ -19,20 +19,15 @@ export function Header({ t, locale }: { t: Dictionary; locale: Locale }) {
   const [suchText,   setSuchText]   = useState("");
   const sucheRef = useRef<HTMLInputElement>(null);
 
+  // Im Vorbild: KATALOG · О НАС · КОНТАКТ (kein "Kategorien" als separater Punkt)
   const NAV_LINKS = [
-    { href: "/katalog",    label: t.nav.katalog    },
-    { href: "/kategorien", label: t.nav.kategorien },
-    { href: "/about",      label: t.nav.about      },
-    { href: "/kontakt",    label: t.nav.kontakt    },
+    { href: "/katalog",  label: t.nav.katalog },
+    { href: "/about",    label: t.nav.about   },
+    { href: "/kontakt",  label: t.nav.kontakt },
   ];
 
-  // Suche schließen bei Route-Wechsel
   useEffect(() => { setMenuOffen(false); setSucheOffen(false); }, [pathname]);
-
-  // Fokus auf Suche setzen
-  useEffect(() => {
-    if (sucheOffen) sucheRef.current?.focus();
-  }, [sucheOffen]);
+  useEffect(() => { if (sucheOffen) sucheRef.current?.focus(); }, [sucheOffen]);
 
   const handleSuche = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,62 +43,62 @@ export function Header({ t, locale }: { t: Dictionary; locale: Locale }) {
       <header
         lang={locale}
         className="
-        sticky top-0 z-50
-        bg-vintage-white/95 backdrop-blur-sm
-        border-b border-vintage-sand
-      " style={{ boxShadow: "var(--shadow-vintage-xs)" }}>
+          sticky top-0 z-50
+          bg-vintage-espresso/95 backdrop-blur-sm
+          border-b border-vintage-sand/30
+        "
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="grid grid-cols-3 items-center h-20">
 
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
-              <Store className="w-5 h-5 text-vintage-gold group-hover:scale-110 transition-transform" />
-              <div className="leading-tight">
-                <span className="font-serif text-xl text-vintage-espresso">
-                  Galerie du Temps
+            {/* ─── Links: Logo ──────────────────────────────────────────── */}
+            <div className="flex items-center">
+              <Link href="/" className="brand-logo group">
+                <span className="brand-line-1 group-hover:text-vintage-gold transition-colors">
+                  GALERIE
                 </span>
-              </div>
-            </Link>
+                <span className="brand-line-2">du Temps</span>
+              </Link>
+            </div>
 
-            {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center gap-6">
-              {NAV_LINKS.map(({ href, label }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className={`
-                    text-sm font-sans tracking-wide transition-colors
-                    ${pathname.startsWith(href)
-                      ? "text-vintage-espresso border-b border-vintage-gold pb-0.5"
-                      : "text-vintage-dust hover:text-vintage-espresso"
-                    }
-                  `}
-                >
-                  {label}
-                </Link>
-              ))}
+            {/* ─── Mitte: Nav (Desktop) ──────────────────────────────────── */}
+            <nav className="hidden md:flex items-center justify-center gap-10">
+              {NAV_LINKS.map(({ href, label }) => {
+                const active = pathname.startsWith(href);
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={`
+                      text-xs font-sans tracking-[0.25em] uppercase transition-colors
+                      ${active
+                        ? "text-vintage-gold"
+                        : "text-vintage-cream/70 hover:text-vintage-gold"
+                      }
+                    `}
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
             </nav>
 
-            {/* Aktionen */}
-            <div className="flex items-center gap-1">
-              {/* Suche */}
+            {/* ─── Rechts: Icons ──────────────────────────────────────────── */}
+            <div className="flex items-center justify-end gap-1">
               <button
                 onClick={() => setSucheOffen(v => !v)}
-                className="p-2 text-vintage-dust hover:text-vintage-espresso hover:bg-vintage-parchment transition-colors"
-                style={{ borderRadius: "var(--radius-card)" }}
+                className="p-2 text-vintage-cream/70 hover:text-vintage-gold transition-colors"
                 aria-label={t.nav.suche}
               >
-                {sucheOffen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
+                {sucheOffen ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
               </button>
 
-              {/* Wunschliste */}
               <Link
                 href="/wunschliste"
-                className="relative p-2 text-vintage-dust hover:text-vintage-espresso hover:bg-vintage-parchment transition-colors"
-                style={{ borderRadius: "var(--radius-card)" }}
+                className="relative p-2 text-vintage-cream/70 hover:text-vintage-gold transition-colors"
                 aria-label={`${t.nav.wunschliste} (${ids.length})`}
               >
-                <Heart className="w-5 h-5" />
+                <Heart className="w-4 h-4" />
                 {ids.length > 0 && (
                   <span
                     className="
@@ -120,17 +115,30 @@ export function Header({ t, locale }: { t: Dictionary; locale: Locale }) {
                 )}
               </Link>
 
-              {/* Sprache */}
               <LanguageSwitcher ariaLabel={t.nav.sprache} />
 
-              {/* Warenkorb */}
               <CartBadge />
 
-              {/* Mobile Menü */}
+              {/* Login-Pill (wie im Vorbild) */}
+              <Link
+                href="/kunde/anmelden"
+                className="
+                  hidden sm:inline-flex items-center gap-1.5 ml-2
+                  px-4 py-2
+                  border border-vintage-gold/40
+                  text-vintage-gold text-xs font-sans tracking-widest uppercase
+                  hover:bg-vintage-gold hover:text-vintage-espresso
+                  transition-colors
+                "
+                style={{ borderRadius: "999px" }}
+              >
+                {t.nav.anmelden}
+              </Link>
+
+              {/* Mobile Menü-Button */}
               <button
                 onClick={() => setMenuOffen(v => !v)}
-                className="md:hidden p-2 text-vintage-dust hover:text-vintage-espresso hover:bg-vintage-parchment transition-colors"
-                style={{ borderRadius: "var(--radius-card)" }}
+                className="md:hidden p-2 text-vintage-cream/70 hover:text-vintage-gold transition-colors"
                 aria-label={t.nav.menu}
               >
                 {menuOffen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -138,11 +146,11 @@ export function Header({ t, locale }: { t: Dictionary; locale: Locale }) {
             </div>
           </div>
 
-          {/* Suche-Leiste (ausklappbar) */}
+          {/* ─── Such-Leiste (ausklappbar) ──────────────────────────────── */}
           {sucheOffen && (
             <div className="pb-4">
-              <form onSubmit={handleSuche} className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-vintage-dust pointer-events-none" />
+              <form onSubmit={handleSuche} className="relative max-w-xl mx-auto">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-vintage-gold pointer-events-none" />
                 <input
                   ref={sucheRef}
                   type="search"
@@ -151,9 +159,10 @@ export function Header({ t, locale }: { t: Dictionary; locale: Locale }) {
                   placeholder={t.nav.suche_placeholder}
                   className="
                     w-full pl-11 pr-4 py-3
-                    bg-vintage-cream border border-vintage-sand
-                    text-vintage-ink font-sans text-sm
-                    focus:outline-none focus:border-vintage-brown
+                    bg-vintage-brown border border-vintage-sand
+                    text-vintage-cream font-sans text-sm
+                    placeholder:text-vintage-dust
+                    focus:outline-none focus:border-vintage-gold
                     transition-colors
                   "
                   style={{ borderRadius: "var(--radius-card)" }}
@@ -164,33 +173,40 @@ export function Header({ t, locale }: { t: Dictionary; locale: Locale }) {
         </div>
       </header>
 
-      {/* Mobile Nav Overlay */}
+      {/* ─── Mobile Nav Overlay ────────────────────────────────────────── */}
       {menuOffen && (
         <div className="fixed inset-0 z-40 md:hidden">
           <div
-            className="absolute inset-0 bg-vintage-ink/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-vintage-ink/80 backdrop-blur-sm"
             onClick={() => setMenuOffen(false)}
           />
           <nav
-            className="absolute right-0 top-0 bottom-0 w-72 bg-vintage-white flex flex-col pt-20 px-6 pb-6 shadow-2xl"
+            className="absolute right-0 top-0 bottom-0 w-72 bg-vintage-espresso flex flex-col pt-24 px-6 pb-6 border-l border-vintage-sand/30"
           >
-            <p className="text-vintage-gold text-xs tracking-widest mb-6 uppercase">{t.nav.menu}</p>
+            <p className="eyebrow mb-6">{t.nav.menu}</p>
             {NAV_LINKS.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
                 className={`
-                  py-3 border-b border-vintage-sand/50
+                  py-3 border-b border-vintage-sand/20
                   font-serif text-xl transition-colors
                   ${pathname.startsWith(href)
-                    ? "text-vintage-espresso"
-                    : "text-vintage-brown hover:text-vintage-espresso"
+                    ? "text-vintage-gold"
+                    : "text-vintage-cream hover:text-vintage-gold"
                   }
                 `}
               >
                 {label}
               </Link>
             ))}
+            <Link
+              href="/kunde/anmelden"
+              className="mt-6 px-4 py-3 border border-vintage-gold text-vintage-gold text-xs font-sans tracking-widest uppercase text-center hover:bg-vintage-gold hover:text-vintage-espresso transition-colors"
+              style={{ borderRadius: "999px" }}
+            >
+              {t.nav.anmelden}
+            </Link>
           </nav>
         </div>
       )}

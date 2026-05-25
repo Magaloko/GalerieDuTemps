@@ -48,17 +48,24 @@ export function Footer({
   const hatSozial = Boolean(wa || tg || ig);
 
   return (
-    <footer className="bg-vintage-espresso text-vintage-cream/70 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <footer className="bg-vintage-ink text-vintage-cream/70 mt-auto border-t border-vintage-sand/20">
+      {/* Ornament-Divider oben */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
+        <div className="divider-ornament max-w-xs mx-auto">
+          <span className="text-vintage-gold text-base">◆</span>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
 
           {/* Marke */}
           <div className="md:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
-              <Store className="w-4 h-4 text-vintage-gold" />
-              <span className="font-serif text-lg text-vintage-cream">Galerie du Temps</span>
-            </div>
-            <p className="text-sm leading-relaxed text-vintage-cream/60">
+            <Link href="/" className="brand-logo items-start mb-5">
+              <span className="brand-line-1 text-vintage-gold">GALERIE</span>
+              <span className="brand-line-2">du Temps</span>
+            </Link>
+            <p className="text-sm leading-relaxed text-vintage-cream/50 font-serif italic">
               {t.footer.tagline}
             </p>
           </div>
@@ -76,7 +83,7 @@ export function Footer({
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-sm text-vintage-cream/60 hover:text-vintage-cream transition-colors"
+                    className="text-sm font-serif italic text-vintage-cream/60 hover:text-vintage-gold transition-colors"
                   >
                     {label}
                   </Link>
@@ -98,7 +105,7 @@ export function Footer({
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-sm text-vintage-cream/60 hover:text-vintage-cream transition-colors"
+                    className="text-sm font-serif italic text-vintage-cream/60 hover:text-vintage-gold transition-colors"
                   >
                     {label}
                   </Link>
@@ -180,9 +187,11 @@ export function Footer({
         {/* Bottom Bar */}
         <div className="border-t border-white/10 mt-6 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-vintage-cream/40">
-            © {jahr} Galerie du Temps. {t.footer.alle_rechte}.
+            © {jahr} Galerie du Temps. Казахстан.
           </p>
-          <p className="text-vintage-gold text-sm">✦</p>
+          <p className="text-vintage-gold/60 text-xs font-serif italic tracking-wider">
+            Le temps embellit toute chose
+          </p>
         </div>
       </div>
     </footer>
