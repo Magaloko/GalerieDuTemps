@@ -15,25 +15,25 @@ export async function GET() {
     return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
   }
 
-  // Jede Query einzeln, damit ein Fehler in einer nicht alle abreißt
-  // und wir die genaue Quelle sehen.
-  const results = await Promise.allSettled([
+  // allSettled: ein Query-Fehler reißt nicht alle anderen ab
+  const [u, t, k, z] = await Promise.allSettled([
     uebersichtStats(),
     produktTimeline(30),
     kategorieVerteilung(),
     zustandVerteilung(),
   ]);
 
-  const [uebersichtR, timelineR, kategorienR, zustandR] = results;
+  const errors: Record<string, string> = {};
+  if (u.status === "rejected") errors.uebersicht = String(u.reason?.message ?? u.reason);
+  if (t.status === "rejected") errors.timeline   = String(t.reason?.message ?? t.reason);
+  if (k.status === "rejected") errors.kategorien = String(k.reason?.message ?? k.reason);
+  if (z.status === "rejected") errors.zustand    = String(z.reason?.message ?? z.reason);
 
   return NextResponse.json({
-    uebersicht: uebersichtR.status === "fulfilled" ? uebersichtR.value
-               : { error: String(uebersichtR.reason?.message ?? uebersichtR.reason) },
-    timeline:   timelineR.status === "fulfilled" ? timelineR.value
-               : { error: String(timelineR.reason?.message ?? timelineR.reason) },
-    kategorien: kategorienR.status === "fulfilled" ? kategorienR.value
-               : { error: String(kategorienR.reason?.message ?? kategorienR.reason) },
-    zustand:    zustandR.status === "fulfilled" ? zustandR.value
-               : { error: String(zustandR.reason?.message ?? zustandR.reason) },
+    uebersicht: u.status === "fulfilled" ? u.value : null,
+    timeline:   t.status === "fulfilled" ? t.value : [],
+    kategorien: k.status === "fulfilled" ? k.value : [],
+    zustand:    z.status === "fulfilled" ? z.value : [],
+    ...(Object.keys(errors).length > 0 ? { errors } : {}),
   });
 }

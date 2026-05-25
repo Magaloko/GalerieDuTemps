@@ -114,18 +114,18 @@ export interface TimelineEintrag {
 }
 
 export async function produktTimeline(tage = 30): Promise<TimelineEintrag[]> {
+  // generate_series statt RECURSIVE CTE — vermeidet date+interval-Typmismatch
   const result = await query<TimelineEintrag>(
     `
-    WITH RECURSIVE dates AS (
-      SELECT CURRENT_DATE - $1::int + 1 AS datum
-      UNION ALL
-      SELECT datum + INTERVAL '1 day' FROM dates WHERE datum < CURRENT_DATE
-    )
     SELECT
       to_char(d.datum, 'YYYY-MM-DD') AS datum,
       COUNT(p.id)::int               AS anzahl
-    FROM dates d
-    LEFT JOIN sebo.produkte p ON DATE(p.erstellt_am) = d.datum
+    FROM generate_series(
+           CURRENT_DATE - ($1::int - 1) * INTERVAL '1 day',
+           CURRENT_DATE,
+           INTERVAL '1 day'
+         ) AS d(datum)
+    LEFT JOIN sebo.produkte p ON DATE(p.erstellt_am) = d.datum::date
     GROUP BY d.datum
     ORDER BY d.datum
     `,
