@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { Input }    from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select }   from "@/components/ui/select";
@@ -33,6 +33,7 @@ export function ProduktFormular({
   loeschenAction,
 }: ProduktFormularProps) {
   const [state, formAction, isPending] = useActionState(action, null);
+  const [deletePending, startDelete] = useTransition();
   const successRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -434,21 +435,19 @@ export function ProduktFormular({
         </div>
 
         {produkt && loeschenAction && (
-          <form action={loeschenAction}>
-            <Button
-              type="submit"
-              variant="danger"
-              size="sm"
-              icon={<Trash2 className="w-3 h-3" />}
-              onClick={(e) => {
-                if (!confirm(`Удалить "${produkt.name}"? Это действие необратимо.`)) {
-                  e.preventDefault();
-                }
-              }}
-            >
-              Удалить
-            </Button>
-          </form>
+          <Button
+            type="button"
+            variant="danger"
+            size="sm"
+            loading={deletePending}
+            icon={<Trash2 className="w-3 h-3" />}
+            onClick={() => {
+              if (!confirm(`Удалить "${produkt.name}"? Это действие необратимо.`)) return;
+              startDelete(async () => { await loeschenAction(); });
+            }}
+          >
+            Удалить
+          </Button>
         )}
       </div>
     </form>

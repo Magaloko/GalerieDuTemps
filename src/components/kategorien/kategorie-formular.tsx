@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useTransition } from "react";
 import { Input }    from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select }   from "@/components/ui/select";
@@ -23,6 +23,7 @@ export function KategorieFormular({
   loeschenAction,
 }: Props) {
   const [state, formAction, isPending] = useActionState(action, null);
+  const [deletePending, startDelete] = useTransition();
   const successRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -153,22 +154,22 @@ export function KategorieFormular({
         </Button>
 
         {kategorie && loeschenAction && (
-          <form action={loeschenAction}>
-            <Button
-              type="submit"
-              variant="danger"
-              size="sm"
-              icon={<Trash2 className="w-3 h-3" />}
-              onClick={(ev) => {
-                const msg = (kategorie.anzahl ?? 0) > 0
-                  ? `У категории "${kategorie.name}" есть товары. Будет деактивирована (soft-delete). Продолжить?`
-                  : `Удалить категорию "${kategorie.name}"? Это действие необратимо.`;
-                if (!confirm(msg)) ev.preventDefault();
-              }}
-            >
-              Удалить
-            </Button>
-          </form>
+          <Button
+            type="button"
+            variant="danger"
+            size="sm"
+            loading={deletePending}
+            icon={<Trash2 className="w-3 h-3" />}
+            onClick={() => {
+              const msg = (kategorie.anzahl ?? 0) > 0
+                ? `У категории "${kategorie.name}" есть товары. Будет деактивирована (soft-delete). Продолжить?`
+                : `Удалить категорию "${kategorie.name}"? Это действие необратимо.`;
+              if (!confirm(msg)) return;
+              startDelete(async () => { await loeschenAction(); });
+            }}
+          >
+            Удалить
+          </Button>
         )}
       </div>
     </form>
