@@ -1,17 +1,17 @@
 #!/bin/bash
 # =============================================================================
-# vintage-market · Datenbank-Backup-Script
+# galeriedutemps · Datenbank-Backup-Script
 # -----------------------------------------------------------------------------
 # Erstellt komprimierte pg_dump-Backups + Rotation (Behalte letzte 14 Tage)
 #
 # Verwendung (per Cron, täglich 03:00 Uhr):
-#   0 3 * * * /opt/vintage-market/scripts/backup-db.sh >> /var/log/vm-backup.log 2>&1
+#   0 3 * * * /opt/galeriedutemps/scripts/backup-db.sh >> /var/log/vm-backup.log 2>&1
 # =============================================================================
 
 set -euo pipefail
 
 # ─── Konfiguration ───────────────────────────────────────────────────────────
-BACKUP_DIR="${BACKUP_DIR:-/var/backups/vintage-market}"
+BACKUP_DIR="${BACKUP_DIR:-/var/backups/galeriedutemps}"
 BEHALTE_TAGE="${BEHALTE_TAGE:-14}"
 TIMESTAMP="$(date +%Y-%m-%d_%H%M)"
 DATEINAME="vm_${TIMESTAMP}.sql.gz"

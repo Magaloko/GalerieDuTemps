@@ -1,13 +1,13 @@
 # =============================================================================
-# vintage-market · Caddyfile
+# galeriedutemps · Caddyfile
 # Caddy 2 – automatisches TLS via Let's Encrypt (ACME)
-# Domains: vintage-market.de + n8n.vintage-market.de
+# Domains: galeriedutemps.kz + n8n.galeriedutemps.kz
 # =============================================================================
 
 # ─── Globale Optionen ────────────────────────────────────────────────────────
 {
     # E-Mail für Let's Encrypt Zertifikate
-    email admin@vintage-market.de
+    email bonjour@galeriedutemps.kz
 
     # HTTP/3 aktivieren
     servers {
@@ -25,7 +25,7 @@
 }
 
 # ─── Hauptdomain: Next.js App ────────────────────────────────────────────────
-vintage-market.de, www.vintage-market.de {
+galeriedutemps.kz, www.galeriedutemps.kz {
 
     # TLS: automatisch via Let's Encrypt
     tls {
@@ -34,8 +34,8 @@ vintage-market.de, www.vintage-market.de {
     }
 
     # www → apex redirect
-    @www host www.vintage-market.de
-    redir @www https://vintage-market.de{uri} permanent
+    @www host www.galeriedutemps.kz
+    redir @www https://galeriedutemps.kz{uri} permanent
 
     # ─── Security Headers ─────────────────────────────────────────────────
     header {
@@ -97,7 +97,7 @@ vintage-market.de, www.vintage-market.de {
 }
 
 # ─── N8N Subdomain ────────────────────────────────────────────────────────────
-n8n.vintage-market.de {
+n8n.galeriedutemps.kz {
 
     tls {
         protocols tls1.2 tls1.3

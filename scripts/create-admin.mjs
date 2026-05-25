@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * vintage-market · Admin-User anlegen
+ * galeriedutemps · Admin-User anlegen
  * ─────────────────────────────────────────────────────────────────────────────
  * Verwendung:
  *   node scripts/create-admin.mjs

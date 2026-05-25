@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * vintage-market · Alte Affiliate-Klicks aufräumen
+ * galeriedutemps · Alte Affiliate-Klicks aufräumen
  * ─────────────────────────────────────────────────────────────────────────────
  * Löscht Klicks älter als 90 Tage (Default).
  *
  * Cron (wöchentlich Sonntag 03:00):
- *   0 3 * * 0 /opt/vintage-market/scripts/affiliate-cleanup.mjs
+ *   0 3 * * 0 /opt/galeriedutemps/scripts/affiliate-cleanup.mjs
  * ─────────────────────────────────────────────────────────────────────────────
  */
 

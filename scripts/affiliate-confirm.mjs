@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * vintage-market · Provisionen automatisch bestätigen
+ * galeriedutemps · Provisionen automatisch bestätigen
  * ─────────────────────────────────────────────────────────────────────────────
  * Setzt alle 'offen'-Provisionen auf 'bestaetigt', die älter als die
  * Widerrufsfrist (Default 14 Tage) sind.
  *
  * Cron (täglich 02:00):
- *   0 2 * * * /opt/vintage-market/scripts/affiliate-confirm.mjs
+ *   0 2 * * * /opt/galeriedutemps/scripts/affiliate-confirm.mjs
  * ─────────────────────────────────────────────────────────────────────────────
  */
 

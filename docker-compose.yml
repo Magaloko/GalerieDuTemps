@@ -63,10 +63,10 @@ services:
     container_name: vintage_n8n
     restart: unless-stopped
     environment:
-      N8N_HOST:              ${N8N_HOST:-n8n.vintage-market.de}
+      N8N_HOST:              ${N8N_HOST:-n8n.galeriedutemps.kz}
       N8N_PORT:              5678
       N8N_PROTOCOL:          https
-      WEBHOOK_URL:           https://${N8N_HOST:-n8n.vintage-market.de}
+      WEBHOOK_URL:           https://${N8N_HOST:-n8n.galeriedutemps.kz}
       # N8N nutzt dieselbe PostgreSQL (eigenes Schema "n8n")
       DB_TYPE:               postgresdb
       DB_POSTGRESDB_HOST:    db

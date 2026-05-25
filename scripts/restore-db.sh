@@ -1,9 +1,9 @@
 #!/bin/bash
 # =============================================================================
-# vintage-market · Datenbank-Restore-Script
+# galeriedutemps · Datenbank-Restore-Script
 # -----------------------------------------------------------------------------
 # Verwendung:
-#   ./restore-db.sh /var/backups/vintage-market/vm_2026-01-15_0300.sql.gz
+#   ./restore-db.sh /var/backups/galeriedutemps/vm_2026-01-15_0300.sql.gz
 # =============================================================================
 
 set -euo pipefail

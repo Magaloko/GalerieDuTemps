@@ -1,5 +1,5 @@
 # =============================================================================
-# vintage-market · Multi-Stage Dockerfile
+# galeriedutemps · Multi-Stage Dockerfile
 # Stage 1: deps     – npm ci (cached layer)
 # Stage 2: builder  – next build
 # Stage 3: runner   – minimales Production-Image (node:22-alpine)
@@ -35,7 +35,7 @@ ENV NODE_ENV=production
 # Platzhalter-Variablen für den Build (echte Werte kommen zur Laufzeit)
 # next build benötigt NEXTAUTH_SECRET + DATABASE_URL nicht zwingend beim Build,
 # aber NEXT_PUBLIC_* Variablen werden eingebettet – hier setzen falls nötig
-ENV NEXT_PUBLIC_APP_URL=https://vintage-market.de
+ENV NEXT_PUBLIC_APP_URL=https://galeriedutemps.kz
 
 RUN npm run build
 
