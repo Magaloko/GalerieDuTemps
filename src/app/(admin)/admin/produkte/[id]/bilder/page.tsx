@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
 import { produktById } from "@/lib/db/produkte";
 import { bilderFuerProdukt } from "@/lib/db/bilder";
-import { BildGalerie } from "@/components/produkte/bild-galerie";
-import { BildUploadZone } from "@/components/produkte/bild-upload-zone";
+import { BildManager } from "@/components/produkte/bild-manager";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import type { Metadata } from "next";
@@ -28,7 +27,6 @@ export default async function BilderPage({ params }: Props) {
 
   return (
     <div className="max-w-4xl space-y-6">
-      {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
         <Link href="/admin/produkte" className="hover:text-vintage-brown transition-colors flex items-center gap-1">
           <ChevronLeft className="w-3 h-3" /> Produkte
@@ -50,35 +48,7 @@ export default async function BilderPage({ params }: Props) {
         </p>
       </div>
 
-      {/* Upload-Zone */}
-      <section
-        className="bg-vintage-white border border-vintage-sand p-6 space-y-3"
-        style={{ borderRadius: "var(--radius-card)" }}
-      >
-        <h2 className="font-serif text-base text-vintage-espresso">Bilder hochladen</h2>
-        <BildUploadZone
-          produktId={id}
-          onUpload={() => {
-            // Galerie aktualisiert sich client-seitig via State
-          }}
-        />
-      </section>
-
-      {/* Galerie */}
-      <section
-        className="bg-vintage-white border border-vintage-sand p-6 space-y-4"
-        style={{ borderRadius: "var(--radius-card)" }}
-      >
-        <div className="flex items-center justify-between">
-          <h2 className="font-serif text-base text-vintage-espresso">
-            Galerie
-          </h2>
-          <p className="text-xs text-vintage-dust font-sans">
-            Ziehen zum Sortieren · Stern = Hauptbild
-          </p>
-        </div>
-        <BildGalerie initialBilder={bilder} produktId={id} />
-      </section>
+      <BildManager produktId={id} initialBilder={bilder} />
     </div>
   );
 }
