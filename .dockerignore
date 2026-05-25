@@ -1,29 +1,79 @@
-# Node
-node_modules
-npm-debug.log*
+# =============================================================================
+# galeriedutemps · Docker-Ignore (Coolify-ready)
+# Hält das Build-Context klein → schnellere Builds + kleinere Images
+# =============================================================================
 
-# Next.js build output
-.next
-out
+# Git + CI
+.git
+.gitignore
+.github
 
-# Env-Dateien (niemals ins Image!)
+# Env-Dateien (NIEMALS ins Image!)
 .env
 .env.*
 !.env.example
 
-# Dev-Tools
-.git
-.gitignore
-.github
-.claude
+# Node
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
-# Docs / Test
-*.md
-*.test.*
-*.spec.*
-__tests__
-coverage
+# Next.js Build-Output (wird im Build neu erzeugt)
+.next
+out
+
+# Build-Output anderer Tools (defensiv)
+dist
+build
+.cache
+
+# Python (falls Subsystem)
+__pycache__
+*.pyc
+.venv
+venv
+
+# IDE
+.idea
+.vscode
+.claude
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Logs
+*.log
+
+# Tests
+coverage
+__tests__
+*.test.*
+*.spec.*
+playwright-report
+test-results
+
+# Docs (außer LICENSE)
+README.md
+DEPLOYMENT.md
+KASPI_SETUP.md
+KASACHSTAN.md
+FUNKTIONEN.md
+AGENTS.md
+CLAUDE.md
+*.md
+
+# Lokale Uploads (Dev-Daten)
+uploads
+public/uploads
+
+# Backup-Dateien
+*.bak
+*.swp
+*.tmp
+
+# Vercel/Coolify-Caches (falls vorhanden)
+.vercel
+.turbo

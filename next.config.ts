@@ -9,7 +9,12 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname:  "vintage-market.de",
+        hostname:  "galeriedutemps.kz",
+        pathname:  "/uploads/**",
+      },
+      {
+        protocol: "https",
+        hostname:  "*.apps.dadakaev.tech",
         pathname:  "/uploads/**",
       },
     ],
