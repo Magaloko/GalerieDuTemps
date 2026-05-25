@@ -163,6 +163,37 @@ export async function orderStatusUpdate(
   );
 }
 
+/** Notizen aktualisieren (intern + Kunde) */
+export async function orderNotizenAktualisieren(
+  id: string,
+  interne_notiz: string | null,
+  kunden_notiz:  string | null
+): Promise<void> {
+  await query(
+    `UPDATE sebo.orders
+     SET interne_notiz = $1, kunden_notiz = $2, aktualisiert_am = now()
+     WHERE id = $3`,
+    [interne_notiz, kunden_notiz, id]
+  );
+}
+
+/** Tracking aktualisieren (ohne Status-Wechsel) */
+export async function orderTrackingAktualisieren(
+  id: string,
+  tracking_nummer: string | null,
+  tracking_url:    string | null
+): Promise<void> {
+  await query(
+    `UPDATE sebo.orders
+     SET tracking_nummer = $1,
+         tracking_url    = $2,
+         versendet_am    = COALESCE(versendet_am, CASE WHEN $1 IS NOT NULL THEN now() END),
+         aktualisiert_am = now()
+     WHERE id = $3`,
+    [tracking_nummer, tracking_url, id]
+  );
+}
+
 /** Order canceln + Lager zurückgeben */
 export async function orderCanceln(id: string, grund: string): Promise<void> {
   await withTransaction(async (client) => {

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { orderById } from "@/lib/db/orders";
 import { formatPreis } from "@/lib/utils/preis";
+import { BestellungEditor } from "@/components/bestellungen/bestellung-editor";
 import { ChevronLeft, Package, Mail, MapPin, CreditCard } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -22,7 +23,7 @@ export default async function BestellungDetailPage({
           <ChevronLeft className="w-3 h-3" /> Bestellungen
         </Link>
         <span>/</span>
-        <span className="font-mono text-vintage-gold">GDT-{order.order_number}</span>
+        <span className="font-mono text-vintage-gold">GDT-{String(order.order_number).padStart(4, "0")}</span>
       </nav>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -119,6 +120,15 @@ export default async function BestellungDetailPage({
           </section>
         </div>
       </div>
+
+      {/* ─── Editor-Block ────────────────────────────────────────── */}
+      <BestellungEditor
+        orderId={order.id}
+        initialStatus={order.status}
+        initialTracking={{ nummer: order.tracking_nummer, url: order.tracking_url }}
+        initialNotizen={{ interne: order.interne_notiz, kunden: order.kunden_notiz }}
+        storniert={order.status === "cancelled"}
+      />
     </div>
   );
 }

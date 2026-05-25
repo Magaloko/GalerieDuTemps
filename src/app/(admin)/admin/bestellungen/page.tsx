@@ -1,9 +1,45 @@
 import Link from "next/link";
 import { ordersListe } from "@/lib/db/orders";
+import { query } from "@/lib/db";
 import { formatPreis } from "@/lib/utils/preis";
-import { Package, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { Package, ChevronLeft, ChevronRight, ExternalLink, Clock, CreditCard, Truck } from "lucide-react";
 import type { Metadata } from "next";
 import type { OrderStatus } from "@/types/commerce";
+
+interface StatusCounts {
+  pending:   number;
+  paid:      number;
+  fulfilled: number;
+  completed: number;
+  cancelled: number;
+  refunded:  number;
+  gesamt:    number;
+  heute_verschickt: number;
+}
+
+async function statusCounts(): Promise<StatusCounts> {
+  const res = await query<{ status: OrderStatus; anzahl: number }>(
+    `SELECT status, COUNT(*)::int AS anzahl
+     FROM sebo.orders
+     GROUP BY status`
+  );
+  const heute = await query<{ anzahl: number }>(
+    `SELECT COUNT(*)::int AS anzahl FROM sebo.orders
+     WHERE versendet_am::date = CURRENT_DATE`
+  );
+
+  const counts: StatusCounts = {
+    pending: 0, paid: 0, fulfilled: 0, completed: 0, cancelled: 0, refunded: 0,
+    gesamt: 0, heute_verschickt: heute.rows[0]?.anzahl ?? 0,
+  };
+  for (const r of res.rows) {
+    counts[r.status] = r.anzahl;
+    counts.gesamt   += r.anzahl;
+  }
+  return counts;
+}
+
+const formatBestellnummer = (n: number) => `GDT-${String(n).padStart(4, "0")}`;
 
 export const metadata: Metadata = { title: "Bestellungen" };
 export const dynamic = "force-dynamic";
@@ -34,7 +70,10 @@ export default async function BestellungenAdminPage({
   const seite  = parseInt(sp.seite ?? "1", 10);
   const suche  = sp.suche ?? "";
 
-  const daten = await ordersListe({ status, seite, suche });
+  const [daten, counts] = await Promise.all([
+    ordersListe({ status, seite, suche }),
+    statusCounts(),
+  ]);
 
   return (
     <div className="space-y-6 max-w-6xl">
@@ -42,23 +81,56 @@ export default async function BestellungenAdminPage({
         <p className="text-vintage-gold text-xs tracking-widest">✦</p>
         <h1 className="font-serif text-2xl text-vintage-espresso">Bestellungen</h1>
         <p className="text-vintage-dust text-xs font-sans mt-0.5">
-          {daten.gesamt} {daten.gesamt === 1 ? "Bestellung" : "Bestellungen"}
+          {counts.gesamt} {counts.gesamt === 1 ? "Bestellung" : "Bestellungen"} insgesamt
         </p>
       </div>
 
+      {/* KPI-Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-vintage-white border border-vintage-sand p-4" style={{ borderRadius: "var(--radius-card)" }}>
+          <p className="text-xs uppercase tracking-widest text-vintage-dust flex items-center gap-1.5">
+            <Package className="w-3.5 h-3.5" /> Alle
+          </p>
+          <p className="font-serif text-2xl text-vintage-espresso mt-1">{counts.gesamt}</p>
+        </div>
+        <div className="bg-vintage-gold/10 border border-vintage-gold/30 p-4" style={{ borderRadius: "var(--radius-card)" }}>
+          <p className="text-xs uppercase tracking-widest text-vintage-brown flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5" /> Wartet auf Zahlung
+          </p>
+          <p className="font-serif text-2xl text-vintage-espresso mt-1">{counts.pending}</p>
+        </div>
+        <div className="bg-vintage-sage/10 border border-vintage-sage/30 p-4" style={{ borderRadius: "var(--radius-card)" }}>
+          <p className="text-xs uppercase tracking-widest text-vintage-forest flex items-center gap-1.5">
+            <CreditCard className="w-3.5 h-3.5" /> In Bearbeitung
+          </p>
+          <p className="font-serif text-2xl text-vintage-espresso mt-1">{counts.paid + counts.fulfilled}</p>
+        </div>
+        <div className="bg-vintage-white border border-vintage-sand p-4" style={{ borderRadius: "var(--radius-card)" }}>
+          <p className="text-xs uppercase tracking-widest text-vintage-dust flex items-center gap-1.5">
+            <Truck className="w-3.5 h-3.5" /> Heute verschickt
+          </p>
+          <p className="font-serif text-2xl text-vintage-espresso mt-1">{counts.heute_verschickt}</p>
+        </div>
+      </div>
+
       <div className="flex flex-wrap gap-1.5 border-b border-vintage-sand pb-1">
-        {FILTER.map(f => (
-          <Link
-            key={f.value}
-            href={f.value ? `/admin/bestellungen?status=${f.value}` : "/admin/bestellungen"}
-            className={`px-4 py-2 text-xs font-sans uppercase tracking-widest transition-colors ${
-              status === f.value ? "bg-vintage-espresso text-vintage-cream" : "text-vintage-dust hover:bg-vintage-parchment hover:text-vintage-brown"
-            }`}
-            style={{ borderRadius: "var(--radius-button)" }}
-          >
-            {f.label}
-          </Link>
-        ))}
+        {FILTER.map(f => {
+          const count = f.value === ""
+            ? counts.gesamt
+            : counts[f.value as keyof StatusCounts] as number;
+          return (
+            <Link
+              key={f.value}
+              href={f.value ? `/admin/bestellungen?status=${f.value}` : "/admin/bestellungen"}
+              className={`px-4 py-2 text-xs font-sans uppercase tracking-widest transition-colors ${
+                status === f.value ? "bg-vintage-espresso text-vintage-cream" : "text-vintage-dust hover:bg-vintage-parchment hover:text-vintage-brown"
+              }`}
+              style={{ borderRadius: "var(--radius-button)" }}
+            >
+              {f.label} <span className="opacity-60">{count}</span>
+            </Link>
+          );
+        })}
       </div>
 
       {daten.items.length === 0 ? (
@@ -85,7 +157,7 @@ export default async function BestellungenAdminPage({
                   const s = STATUS_STYLE[o.status];
                   return (
                     <tr key={o.id} className="hover:bg-vintage-parchment/30 transition-colors">
-                      <td className="px-4 py-3 font-mono text-vintage-gold">GDT-{o.order_number}</td>
+                      <td className="px-4 py-3 font-mono text-vintage-gold">{formatBestellnummer(o.order_number)}</td>
                       <td className="px-4 py-3 text-vintage-dust">{new Date(o.erstellt_am).toLocaleDateString("de-DE")}</td>
                       <td className="px-4 py-3 text-vintage-ink">
                         <p className="truncate max-w-48">{o.customer_name ?? "Gast"}</p>

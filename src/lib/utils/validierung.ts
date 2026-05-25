@@ -12,6 +12,8 @@ export const ProduktCreateSchema = z.object({
   kurzbeschreibung: z.string().max(500).optional(),
   preis:           z.coerce.number().positive("Preis muss positiv sein"),
   originalpreis:   z.coerce.number().positive().optional().nullable(),
+  einkaufspreis:   z.coerce.number().nonnegative().optional().nullable(),
+  b2b_preis:       z.coerce.number().positive().optional().nullable(),
   waehrung:        z.string().length(3).default("KZT"),
   kategorie_id:    z.coerce.number().int().positive().optional().nullable(),
   zustand:         z.enum(["sehr_gut", "gut", "akzeptabel", "restauriert"]).default("gut"),
@@ -35,6 +37,25 @@ export const ProduktUpdateSchema = ProduktCreateSchema.partial();
 
 export type ProduktCreateInput = z.infer<typeof ProduktCreateSchema>;
 export type ProduktUpdateInput = z.infer<typeof ProduktUpdateSchema>;
+
+// ---------------------------------------------------------------------------
+// Kategorie Zod-Schema
+// ---------------------------------------------------------------------------
+export const KategorieCreateSchema = z.object({
+  name:         z.string().min(2, "Name muss mindestens 2 Zeichen haben").max(100),
+  slug:         z.string().max(120).optional(),
+  code:         z.string().max(10).optional().nullable(),
+  beschreibung: z.string().optional().nullable(),
+  eltern_id:    z.coerce.number().int().positive().optional().nullable(),
+  bild_url:     z.string().url().optional().nullable(),
+  sortierung:   z.coerce.number().int().nonnegative().default(0),
+  aktiv:        z.coerce.boolean().default(true),
+});
+
+export const KategorieUpdateSchema = KategorieCreateSchema.partial();
+
+export type KategorieCreateInput = z.infer<typeof KategorieCreateSchema>;
+export type KategorieUpdateInput = z.infer<typeof KategorieUpdateSchema>;
 
 // ---------------------------------------------------------------------------
 // Bild-Schema

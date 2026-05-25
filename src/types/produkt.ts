@@ -19,14 +19,16 @@ export interface Produktbild {
 
 export interface Kategorie {
   id:           number;
+  code:         string | null;
   name:         string;
   slug:         string;
   beschreibung: string | null;
   eltern_id:    number | null;
+  eltern_name?: string | null;  // aus JOIN
   bild_url:     string | null;
   sortierung:   number;
   aktiv:        boolean;
-  anzahl?:      number;  // Produktanzahl (aus JOIN)
+  anzahl?:      number;
 }
 
 export interface Produkt {
@@ -38,6 +40,8 @@ export interface Produkt {
   kurzbeschreibung:   string | null;
   preis:              number;
   originalpreis:      number | null;
+  einkaufspreis:      number | null;
+  b2b_preis:          number | null;
   waehrung:           string;
   kategorie_id:       number | null;
   kategorie_name?:    string | null;

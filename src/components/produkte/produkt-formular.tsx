@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { Input }    from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select }   from "@/components/ui/select";
@@ -120,31 +120,6 @@ export function ProduktFormular({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            label="Preis (₸ KZT)"
-            name="preis"
-            type="number"
-            step="0.01"
-            min="0"
-            required
-            defaultValue={produkt?.preis}
-            error={e("preis")}
-            placeholder="0.00"
-          />
-          <Input
-            label="Изначальная цена (необязательно)"
-            name="originalpreis"
-            type="number"
-            step="0.01"
-            min="0"
-            defaultValue={produkt?.originalpreis ?? ""}
-            error={e("originalpreis")}
-            placeholder="0.00"
-            hint="Отображается зачёркнутой"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Select
             label="Категория"
             name="kategorie_id"
@@ -171,6 +146,9 @@ export function ProduktFormular({
           error={e("lagerbestand")}
         />
       </section>
+
+      {/* ─── Preise & Marge ───────────────────────────────────────── */}
+      <PreiseSektion produkt={produkt} e={e} />
 
       {/* ─── Beschreibungen ───────────────────────────────────────── */}
       <section
@@ -389,5 +367,107 @@ export function ProduktFormular({
         )}
       </div>
     </form>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Preise & Marge Sektion (eigene Komponente wegen Live-Marge-Berechnung)
+// ---------------------------------------------------------------------------
+function PreiseSektion({
+  produkt,
+  e,
+}: {
+  produkt?: Produkt;
+  e:        (field: string) => string | undefined;
+}) {
+  const [einkauf, setEinkauf] = useState<number>(Number(produkt?.einkaufspreis ?? 0));
+  const [b2c,     setB2c]     = useState<number>(Number(produkt?.preis ?? 0));
+
+  const marge = b2c > 0 && einkauf > 0
+    ? Math.round(((b2c - einkauf) / b2c) * 100)
+    : null;
+
+  return (
+    <section
+      className="bg-vintage-white border border-vintage-sand p-6 space-y-5"
+      style={{ borderRadius: "var(--radius-card)" }}
+    >
+      <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
+        <h2 className="font-serif text-lg text-vintage-espresso">Цены и маржа</h2>
+        <p className="text-xs font-sans text-vintage-dust">
+          Все цены нетто · НДС добавляется в зависимости от страны
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Input
+          label="Закупочная цена (нетто)"
+          name="einkaufspreis"
+          type="number"
+          step="0.01"
+          min="0"
+          defaultValue={produkt?.einkaufspreis ?? ""}
+          error={e("einkaufspreis")}
+          placeholder="0.00"
+          hint="Внутреннее, для расчёта маржи"
+          onChange={(ev) => setEinkauf(Number((ev.target as HTMLInputElement).value) || 0)}
+        />
+        <Input
+          label="B2C-цена (₸ KZT)"
+          name="preis"
+          type="number"
+          step="0.01"
+          min="0"
+          required
+          defaultValue={produkt?.preis}
+          error={e("preis")}
+          placeholder="0.00"
+          hint="Видна обычным клиентам"
+          onChange={(ev) => setB2c(Number((ev.target as HTMLInputElement).value) || 0)}
+        />
+        <Input
+          label="B2B-цена (опционально)"
+          name="b2b_preis"
+          type="number"
+          step="0.01"
+          min="0"
+          defaultValue={produkt?.b2b_preis ?? ""}
+          error={e("b2b_preis")}
+          placeholder="0.00"
+          hint="Пусто → B2B видят B2C-цену"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Input
+          label="Изначальная цена (зачёркнутая)"
+          name="originalpreis"
+          type="number"
+          step="0.01"
+          min="0"
+          defaultValue={produkt?.originalpreis ?? ""}
+          error={e("originalpreis")}
+          placeholder="0.00"
+          hint="Для отображения скидки"
+        />
+        <div className="flex items-end">
+          <div
+            className="w-full px-4 py-2.5 bg-vintage-parchment border border-vintage-sand text-sm font-sans text-vintage-ink"
+            style={{ borderRadius: "var(--radius-vintage)" }}
+          >
+            <span className="text-xs uppercase tracking-widest text-vintage-dust block mb-1">
+              Маржа
+            </span>
+            {marge !== null ? (
+              <span className={marge >= 50 ? "text-vintage-sage font-serif text-lg" : marge >= 20 ? "text-vintage-gold font-serif text-lg" : "text-vintage-burgundy font-serif text-lg"}>
+                {marge} %
+              </span>
+            ) : (
+              <span className="text-vintage-dust text-sm">—</span>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }

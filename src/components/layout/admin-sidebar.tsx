@@ -42,6 +42,12 @@ const navItems = [
     exact: false,
   },
   {
+    href:  "/admin/kategorien",
+    label: "Kategorien",
+    icon:  Tag,
+    exact: false,
+  },
+  {
     href:  "/admin/bestellungen",
     label: "Bestellungen",
     icon:  ShoppingBag,

@@ -153,11 +153,12 @@ export async function produktErstellen(
 
   const result = await query<{ id: string }>(
     `INSERT INTO sebo.produkte
-       (name, slug, artikel_code, beschreibung, kurzbeschreibung, preis, originalpreis, waehrung,
+       (name, slug, artikel_code, beschreibung, kurzbeschreibung,
+        preis, originalpreis, einkaufspreis, b2b_preis, waehrung,
         kategorie_id, zustand, era, herkunft, material, lagerbestand, featured, verkauft,
         aktiv, b2c_mode, seo_titel, seo_beschreibung, tags, veroeffentlicht_am)
      VALUES
-       ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,
+       ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,
         now())
      RETURNING id`,
     [
@@ -168,6 +169,8 @@ export async function produktErstellen(
       input.kurzbeschreibung   ?? null,
       input.preis,
       input.originalpreis      ?? null,
+      input.einkaufspreis      ?? null,
+      input.b2b_preis          ?? null,
       input.waehrung           ?? "KZT",
       input.kategorie_id       ?? null,
       input.zustand            ?? "gut",
@@ -208,6 +211,8 @@ export async function produktAktualisieren(
     ["kurzbeschreibung", "kurzbeschreibung"],
     ["preis",            "preis"],
     ["originalpreis",    "originalpreis"],
+    ["einkaufspreis",    "einkaufspreis"],
+    ["b2b_preis",        "b2b_preis"],
     ["waehrung",         "waehrung"],
     ["kategorie_id",     "kategorie_id"],
     ["zustand",          "zustand"],
