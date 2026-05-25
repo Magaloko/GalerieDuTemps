@@ -61,8 +61,8 @@ export async function katalogProdukte(params: {
 
   if (params.suche) {
     conds.push(
-      `to_tsvector('german', coalesce(p.name,'') || ' ' || coalesce(p.beschreibung,'') || ' ' || coalesce(p.era,''))
-       @@ plainto_tsquery('german', $${idx++})`
+      `to_tsvector('simple', coalesce(p.name,'') || ' ' || coalesce(p.beschreibung,'') || ' ' || coalesce(p.era,''))
+       @@ plainto_tsquery('simple', $${idx++})`
     );
     vals.push(params.suche);
   }

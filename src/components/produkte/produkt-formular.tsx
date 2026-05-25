@@ -18,10 +18,10 @@ interface ProduktFormularProps {
 }
 
 const ZUSTAND_OPTIONS = [
-  { value: "sehr_gut",    label: "Sehr gut"    },
-  { value: "gut",         label: "Gut"         },
-  { value: "akzeptabel",  label: "Akzeptabel"  },
-  { value: "restauriert", label: "Restauriert" },
+  { value: "sehr_gut",    label: "Отличное"      },
+  { value: "gut",         label: "Хорошее"       },
+  { value: "akzeptabel",  label: "Приемлемое"    },
+  { value: "restauriert", label: "Реставрировано" },
 ];
 
 export function ProduktFormular({
@@ -42,7 +42,7 @@ export function ProduktFormular({
   const e = (field: string) => state?.errors?.[field]?.[0];
 
   const kategorieOptions = [
-    { value: "", label: "Keine Kategorie" },
+    { value: "", label: "Без категории" },
     ...kategorien.map(k => ({ value: String(k.id), label: k.name })),
   ];
 
@@ -69,7 +69,7 @@ export function ProduktFormular({
           <AlertCircle className="w-4 h-4 text-vintage-burgundy flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-sans text-vintage-burgundy font-medium mb-1">
-              Bitte Fehler korrigieren:
+              Пожалуйста, исправьте ошибки:
             </p>
             <ul className="text-xs text-vintage-burgundy space-y-0.5">
               {Object.entries(state.errors).map(([field, msgs]) =>
@@ -88,16 +88,16 @@ export function ProduktFormular({
         style={{ borderRadius: "var(--radius-card)" }}
       >
         <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
-          Basisinformationen
+          Основная информация
         </h2>
 
         <Input
-          label="Name"
+          label="Название"
           name="name"
           required
           defaultValue={produkt?.name}
           error={e("name")}
-          placeholder="z.B. Biedermeier Kommode"
+          placeholder="напр. Комод бидермейер"
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -113,7 +113,7 @@ export function ProduktFormular({
             placeholder="0.00"
           />
           <Input
-            label="Originalpreis (optional)"
+            label="Изначальная цена (необязательно)"
             name="originalpreis"
             type="number"
             step="0.01"
@@ -121,20 +121,20 @@ export function ProduktFormular({
             defaultValue={produkt?.originalpreis ?? ""}
             error={e("originalpreis")}
             placeholder="0.00"
-            hint="Wird durchgestrichen angezeigt"
+            hint="Отображается зачёркнутой"
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Select
-            label="Kategorie"
+            label="Категория"
             name="kategorie_id"
             options={kategorieOptions}
             defaultValue={String(produkt?.kategorie_id ?? "")}
             error={e("kategorie_id")}
           />
           <Select
-            label="Zustand"
+            label="Состояние"
             name="zustand"
             required
             options={ZUSTAND_OPTIONS}
@@ -144,7 +144,7 @@ export function ProduktFormular({
         </div>
 
         <Input
-          label="Lagerbestand"
+          label="Количество на складе"
           name="lagerbestand"
           type="number"
           min="0"
@@ -159,23 +159,23 @@ export function ProduktFormular({
         style={{ borderRadius: "var(--radius-card)" }}
       >
         <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
-          Beschreibungen
+          Описания
         </h2>
         <Textarea
-          label="Kurzbeschreibung"
+          label="Краткое описание"
           name="kurzbeschreibung"
           defaultValue={produkt?.kurzbeschreibung ?? ""}
           error={e("kurzbeschreibung")}
-          placeholder="Kurze Zusammenfassung (max. 500 Zeichen)"
+          placeholder="Краткое резюме (макс. 500 символов)"
           maxLength={500}
           rows={3}
         />
         <Textarea
-          label="Ausführliche Beschreibung"
+          label="Подробное описание"
           name="beschreibung"
           defaultValue={produkt?.beschreibung ?? ""}
           error={e("beschreibung")}
-          placeholder="Detaillierte Produktbeschreibung, Geschichte, Besonderheiten …"
+          placeholder="Подробное описание, история, особенности …"
           rows={8}
         />
       </section>
@@ -186,34 +186,34 @@ export function ProduktFormular({
         style={{ borderRadius: "var(--radius-card)" }}
       >
         <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
-          Details
+          Детали
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Input
-            label="Epoche / Era"
+            label="Эпоха"
             name="era"
             defaultValue={produkt?.era ?? ""}
-            placeholder="z.B. 1920er, Art Déco"
+            placeholder="напр. 1920-е, ар-деко"
           />
           <Input
-            label="Herkunft"
+            label="Происхождение"
             name="herkunft"
             defaultValue={produkt?.herkunft ?? ""}
-            placeholder="z.B. Deutschland, Frankreich"
+            placeholder="напр. Германия, Франция"
           />
           <Input
-            label="Material"
+            label="Материал"
             name="material"
             defaultValue={produkt?.material ?? ""}
-            placeholder="z.B. Eiche, Messing, Porzellan"
+            placeholder="напр. дуб, латунь, фарфор"
           />
         </div>
         <Input
-          label="Tags"
+          label="Теги"
           name="tags"
           defaultValue={produkt?.tags?.join(", ") ?? ""}
-          placeholder="vintage, antik, art deco  (kommagetrennt)"
-          hint="Kommagetrennte Schlagwörter für die Suche"
+          placeholder="винтаж, антиквариат, ар-деко (через запятую)"
+          hint="Ключевые слова через запятую для поиска"
         />
       </section>
 
@@ -223,7 +223,7 @@ export function ProduktFormular({
         style={{ borderRadius: "var(--radius-card)" }}
       >
         <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
-          Sichtbarkeit
+          Видимость
         </h2>
         <div className="flex flex-wrap gap-6">
           <label className="flex items-center gap-3 cursor-pointer">
@@ -237,7 +237,7 @@ export function ProduktFormular({
               className="w-4 h-4 accent-vintage-gold"
             />
             <span className="text-sm font-sans text-vintage-ink">
-              Featured (Startseite)
+              Рекомендуемое (главная страница)
             </span>
           </label>
           <label className="flex items-center gap-3 cursor-pointer">
@@ -250,7 +250,7 @@ export function ProduktFormular({
               className="w-4 h-4 accent-vintage-burgundy"
             />
             <span className="text-sm font-sans text-vintage-ink">
-              Als verkauft markieren
+              Отметить как проданное
             </span>
           </label>
         </div>
@@ -265,18 +265,18 @@ export function ProduktFormular({
           SEO
         </h2>
         <Input
-          label="SEO-Titel"
+          label="SEO-заголовок"
           name="seo_titel"
           defaultValue={produkt?.seo_titel ?? ""}
-          placeholder="max. 70 Zeichen"
+          placeholder="макс. 70 символов"
           maxLength={70}
-          hint="Leer lassen = Produktname wird verwendet"
+          hint="Если пусто — используется название товара"
         />
         <Textarea
-          label="SEO-Beschreibung"
+          label="SEO-описание"
           name="seo_beschreibung"
           defaultValue={produkt?.seo_beschreibung ?? ""}
-          placeholder="max. 160 Zeichen"
+          placeholder="макс. 160 символов"
           maxLength={160}
           rows={3}
         />
@@ -290,7 +290,7 @@ export function ProduktFormular({
             loading={isPending}
             icon={<Save className="w-3.5 h-3.5" />}
           >
-            {produkt ? "Speichern" : "Produkt erstellen"}
+            {produkt ? "Сохранить" : "Создать товар"}
           </Button>
         </div>
 
@@ -302,12 +302,12 @@ export function ProduktFormular({
               size="sm"
               icon={<Trash2 className="w-3 h-3" />}
               onClick={(e) => {
-                if (!confirm(`"${produkt.name}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`)) {
+                if (!confirm(`Удалить "${produkt.name}"? Это действие необратимо.`)) {
                   e.preventDefault();
                 }
               }}
             >
-              Löschen
+              Удалить
             </Button>
           </form>
         )}

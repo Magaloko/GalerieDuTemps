@@ -27,14 +27,14 @@ export async function GET(req: NextRequest) {
           WHERE pb.produkt_id = p.id AND pb.ist_hauptbild = true LIMIT 1)
           AS hauptbild_url,
          ts_rank(
-           to_tsvector('german',
+           to_tsvector('simple',
              coalesce(p.name,'') || ' ' ||
              coalesce(p.beschreibung,'') || ' ' ||
              coalesce(p.era,'') || ' ' ||
              coalesce(p.herkunft,'') || ' ' ||
              coalesce(p.material,'')
            ),
-           plainto_tsquery('german', $1)
+           plainto_tsquery('simple', $1)
          ) AS relevanz
        FROM sebo.produkte p
        LEFT JOIN sebo.kategorien k ON k.id = p.kategorie_id
@@ -42,11 +42,11 @@ export async function GET(req: NextRequest) {
          p.lagerbestand > 0
          AND p.verkauft = false
          AND p.veroeffentlicht_am IS NOT NULL
-         AND to_tsvector('german',
+         AND to_tsvector('simple',
                coalesce(p.name,'') || ' ' || coalesce(p.beschreibung,'') || ' ' ||
                coalesce(p.era,'') || ' ' || coalesce(p.herkunft,'') || ' ' ||
                coalesce(p.material,'')
-             ) @@ plainto_tsquery('german', $1)
+             ) @@ plainto_tsquery('simple', $1)
        ORDER BY relevanz DESC, p.featured DESC
        LIMIT 20`,
       [q]
