@@ -1,0 +1,128 @@
+# =============================================================================
+# vintage-market · Caddyfile
+# Caddy 2 – automatisches TLS via Let's Encrypt (ACME)
+# Domains: vintage-market.de + n8n.vintage-market.de
+# =============================================================================
+
+# ─── Globale Optionen ────────────────────────────────────────────────────────
+{
+    # E-Mail für Let's Encrypt Zertifikate
+    email admin@vintage-market.de
+
+    # HTTP/3 aktivieren
+    servers {
+        protocols h1 h2 h3
+    }
+
+    # Logging
+    log {
+        level  WARN
+        output file /data/logs/caddy.log {
+            roll_size 10mb
+            roll_keep 5
+        }
+    }
+}
+
+# ─── Hauptdomain: Next.js App ────────────────────────────────────────────────
+vintage-market.de, www.vintage-market.de {
+
+    # TLS: automatisch via Let's Encrypt
+    tls {
+        protocols tls1.2 tls1.3
+        ciphers TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+    }
+
+    # www → apex redirect
+    @www host www.vintage-market.de
+    redir @www https://vintage-market.de{uri} permanent
+
+    # ─── Security Headers ─────────────────────────────────────────────────
+    header {
+        Strict-Transport-Security        "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options           "nosniff"
+        X-Frame-Options                  "DENY"
+        Referrer-Policy                  "strict-origin-when-cross-origin"
+        Permissions-Policy               "camera=(), microphone=(), geolocation=()"
+        Content-Security-Policy          "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://api.deepseek.com https://api.brevo.com;"
+        X-XSS-Protection                 "1; mode=block"
+        # Server-Header entfernen
+        -Server
+    }
+
+    # ─── Statische Next.js Assets: langer Cache ───────────────────────────
+    @static_assets {
+        path /_next/static/*
+    }
+    header @static_assets Cache-Control "public, max-age=31536000, immutable"
+
+    # ─── Öffentliche statische Dateien ────────────────────────────────────
+    @static_public {
+        path /favicon.ico /robots.txt /sitemap.xml /manifest.json
+    }
+    header @static_public Cache-Control "public, max-age=86400"
+
+    # ─── Uploads: 7 Tage Cache ────────────────────────────────────────────
+    @uploads {
+        path /uploads/*
+    }
+    header @uploads Cache-Control "public, max-age=604800"
+
+    # ─── Komprimierung ────────────────────────────────────────────────────
+    encode {
+        gzip
+        zstd
+        minimum_length 1024
+    }
+
+    # ─── Reverse Proxy → Next.js ──────────────────────────────────────────
+    reverse_proxy app:3000 {
+        header_up  X-Real-IP        {remote_host}
+        header_up  X-Forwarded-For  {remote_host}
+        header_up  X-Forwarded-Proto {scheme}
+        header_up  Host             {host}
+
+        # Health-Check
+        health_uri      /api/health
+        health_interval 30s
+        health_timeout  5s
+
+        # Timeouts
+        transport http {
+            dial_timeout       5s
+            response_header_timeout 30s
+            read_timeout       60s
+        }
+    }
+}
+
+# ─── N8N Subdomain ────────────────────────────────────────────────────────────
+n8n.vintage-market.de {
+
+    tls {
+        protocols tls1.2 tls1.3
+    }
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options    "nosniff"
+        X-Frame-Options           "SAMEORIGIN"
+        -Server
+    }
+
+    # Optional: IP-Whitelist für N8N (VPN oder feste IP eintragen)
+    # @blocked not remote_ip 1.2.3.4/32 5.6.7.8/32
+    # respond @blocked 403
+
+    encode gzip zstd
+
+    reverse_proxy n8n:5678 {
+        header_up X-Real-IP       {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+
+        # N8N benötigt WebSocket-Support
+        header_up Connection      {http.request.header.Connection}
+        header_up Upgrade         {http.request.header.Upgrade}
+    }
+}

@@ -1,0 +1,44 @@
+{
+  "name": "vintage-market",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "db:admin": "node scripts/create-admin.mjs",
+    "db:generate-secret": "node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\"",
+    "affiliate:confirm": "node scripts/affiliate-confirm.mjs",
+    "affiliate:cleanup": "node scripts/affiliate-cleanup.mjs"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@types/qrcode": "^1.5.6",
+    "bcryptjs": "^3.0.3",
+    "lucide-react": "^1.16.0",
+    "marked": "^18.0.4",
+    "next": "16.2.6",
+    "next-auth": "^5.0.0-beta.31",
+    "openai": "^6.39.0",
+    "pg": "^8.21.0",
+    "qrcode": "^1.5.4",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "recharts": "^3.8.1",
+    "stripe": "^22.1.1",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.13"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20",
+    "@types/pg": "^8.20.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

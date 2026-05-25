@@ -1,0 +1,64 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth/config";
+import {
+  bildLoeschen,
+  bilderSortierungAktualisieren,
+  hauptbildSetzen,
+} from "@/lib/db/bilder";
+import { bildLoeschenVonDisk } from "@/lib/storage/upload";
+
+// ---------------------------------------------------------------------------
+// DELETE /api/bilder/[id]
+// ---------------------------------------------------------------------------
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  if (!session) return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
+
+  const { id } = await params;
+  try {
+    const bild = await bildLoeschen(id);
+    if (!bild) {
+      return NextResponse.json({ error: "Bild nicht gefunden" }, { status: 404 });
+    }
+    // Datei von Disk löschen (Best-Effort)
+    await bildLoeschenVonDisk(bild.url);
+    return new NextResponse(null, { status: 204 });
+  } catch (err) {
+    console.error("[API DELETE /bilder/[id]]", err);
+    return NextResponse.json({ error: "Serverfehler" }, { status: 500 });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// PATCH /api/bilder/[id]  – Sortierung oder Hauptbild ändern
+// ---------------------------------------------------------------------------
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  if (!session) return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
+
+  const { id }  = await params;
+  const body    = await req.json();
+
+  try {
+    // Hauptbild setzen
+    if (body.ist_hauptbild === true && body.produkt_id) {
+      await hauptbildSetzen(id, body.produkt_id);
+    }
+
+    // Sortierung aktualisieren (Array mit {id, sortierung})
+    if (Array.isArray(body.sortierungen)) {
+      await bilderSortierungAktualisieren(body.sortierungen);
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("[API PATCH /bilder/[id]]", err);
+    return NextResponse.json({ error: "Serverfehler" }, { status: 500 });
+  }
+}

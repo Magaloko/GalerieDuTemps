@@ -1,0 +1,345 @@
+import Link from "next/link";
+import { produkteListe } from "@/lib/db/produkte";
+import { alleKategorien } from "@/lib/db/kategorien";
+import { formatPreis } from "@/lib/utils/preis";
+import { ZustandBadge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Plus,
+  Search,
+  Pencil,
+  Image as ImageIcon,
+  Package,
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle2,
+  XCircle,
+  Star,
+} from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Produkte" };
+export const dynamic = "force-dynamic";
+
+interface Props {
+  searchParams: Promise<Record<string, string>>;
+}
+
+export default async function ProduktListePage({ searchParams }: Props) {
+  const sp       = await searchParams;
+  const seite    = parseInt(sp.seite  ?? "1",  10);
+  const suche    = sp.suche  ?? "";
+  const katId    = sp.kategorie ? parseInt(sp.kategorie, 10) : undefined;
+  const zustand  = sp.zustand ?? "";
+
+  const [daten, kategorien] = await Promise.all([
+    produkteListe({ seite, suche, kategorie_id: katId, zustand }),
+    alleKategorien(),
+  ]);
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Header ──────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-vintage-gold text-xs tracking-widest">✦</p>
+          <h1 className="font-serif text-2xl text-vintage-espresso">Produkte</h1>
+          <p className="text-vintage-dust text-xs font-sans mt-0.5">
+            {daten.gesamt} {daten.gesamt === 1 ? "Produkt" : "Produkte"} gesamt
+          </p>
+        </div>
+        <Link href="/admin/produkte/neu">
+          <Button icon={<Plus className="w-3.5 h-3.5" />}>
+            Neues Produkt
+          </Button>
+        </Link>
+      </div>
+
+      {/* ─── Filter-Leiste ───────────────────────────────────────── */}
+      <form method="GET" className="flex flex-wrap gap-3 items-end">
+        {/* Suche */}
+        <div className="flex-1 min-w-48">
+          <label className="text-xs font-sans uppercase tracking-widest text-vintage-brown block mb-1">
+            Suche
+          </label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-vintage-dust pointer-events-none" />
+            <input
+              name="suche"
+              defaultValue={suche}
+              placeholder="Produktname …"
+              className="
+                w-full pl-9 pr-4 py-2.5
+                bg-vintage-cream border border-vintage-sand
+                text-sm font-sans text-vintage-ink
+                focus:outline-none focus:border-vintage-brown
+                transition-colors
+              "
+              style={{ borderRadius: "var(--radius-vintage)" }}
+            />
+          </div>
+        </div>
+
+        {/* Kategorie-Filter */}
+        <div className="min-w-40">
+          <label className="text-xs font-sans uppercase tracking-widest text-vintage-brown block mb-1">
+            Kategorie
+          </label>
+          <select
+            name="kategorie"
+            defaultValue={katId ?? ""}
+            className="
+              w-full px-3 py-2.5
+              bg-vintage-cream border border-vintage-sand
+              text-sm font-sans text-vintage-ink
+              focus:outline-none focus:border-vintage-brown transition-colors
+            "
+            style={{ borderRadius: "var(--radius-vintage)" }}
+          >
+            <option value="">Alle</option>
+            {kategorien.map(k => (
+              <option key={k.id} value={k.id}>{k.name}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Zustand-Filter */}
+        <div className="min-w-36">
+          <label className="text-xs font-sans uppercase tracking-widest text-vintage-brown block mb-1">
+            Zustand
+          </label>
+          <select
+            name="zustand"
+            defaultValue={zustand}
+            className="
+              w-full px-3 py-2.5
+              bg-vintage-cream border border-vintage-sand
+              text-sm font-sans text-vintage-ink
+              focus:outline-none focus:border-vintage-brown transition-colors
+            "
+            style={{ borderRadius: "var(--radius-vintage)" }}
+          >
+            <option value="">Alle</option>
+            <option value="sehr_gut">Sehr gut</option>
+            <option value="gut">Gut</option>
+            <option value="akzeptabel">Akzeptabel</option>
+            <option value="restauriert">Restauriert</option>
+          </select>
+        </div>
+
+        <button
+          type="submit"
+          className="
+            px-5 py-2.5 bg-vintage-espresso text-vintage-cream
+            text-xs font-sans tracking-widest uppercase
+            hover:bg-vintage-brown transition-colors
+          "
+          style={{ borderRadius: "var(--radius-button)" }}
+        >
+          Filtern
+        </button>
+
+        {(suche || katId || zustand) && (
+          <Link
+            href="/admin/produkte"
+            className="
+              px-4 py-2.5 border border-vintage-sand text-vintage-dust
+              text-xs font-sans hover:bg-vintage-parchment transition-colors
+            "
+            style={{ borderRadius: "var(--radius-button)" }}
+          >
+            Zurücksetzen
+          </Link>
+        )}
+      </form>
+
+      {/* ─── Tabelle ─────────────────────────────────────────────── */}
+      <div
+        className="bg-vintage-white border border-vintage-sand overflow-hidden"
+        style={{ borderRadius: "var(--radius-card)" }}
+      >
+        {daten.items.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <Package className="w-12 h-12 text-vintage-sand mb-3" />
+            <p className="font-serif text-vintage-brown text-lg">
+              Keine Produkte gefunden
+            </p>
+            <p className="text-vintage-dust text-sm font-sans mt-1">
+              {suche ? "Suchbegriff anpassen oder" : "Füge dein erstes Produkt hinzu"}
+            </p>
+            <Link href="/admin/produkte/neu">
+              <Button className="mt-4" size="sm" icon={<Plus className="w-3 h-3" />}>
+                Produkt erstellen
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm font-sans">
+              <thead>
+                <tr className="border-b border-vintage-sand bg-vintage-parchment/50">
+                  <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">
+                    Produkt
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal hidden md:table-cell">
+                    Kategorie
+                  </th>
+                  <th className="text-right px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">
+                    Preis
+                  </th>
+                  <th className="text-center px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal hidden lg:table-cell">
+                    Zustand
+                  </th>
+                  <th className="text-center px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal hidden lg:table-cell">
+                    Status
+                  </th>
+                  <th className="px-4 py-3" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-vintage-sand/40">
+                {daten.items.map((p) => (
+                  <tr
+                    key={p.id}
+                    className="hover:bg-vintage-parchment/30 transition-colors"
+                  >
+                    {/* Produkt-Name + Thumbnail */}
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-10 h-10 bg-vintage-parchment border border-vintage-sand flex-shrink-0 overflow-hidden"
+                          style={{ borderRadius: "var(--radius-vintage)" }}
+                        >
+                          {p.hauptbild_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={p.hauptbild_url}
+                              alt={p.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <ImageIcon className="w-4 h-4 text-vintage-sand" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-vintage-ink font-sans text-sm truncate max-w-52">
+                            {p.name}
+                          </p>
+                          {p.featured && (
+                            <p className="flex items-center gap-1 text-vintage-gold text-xs">
+                              <Star className="w-3 h-3 fill-current" /> Featured
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Kategorie */}
+                    <td className="px-4 py-3 text-vintage-dust hidden md:table-cell">
+                      {p.kategorie_name ?? "–"}
+                    </td>
+
+                    {/* Preis */}
+                    <td className="px-4 py-3 text-right">
+                      <p className="font-serif text-vintage-espresso">
+                        {formatPreis(p.preis)}
+                      </p>
+                      {p.originalpreis && (
+                        <p className="text-vintage-dust text-xs line-through">
+                          {formatPreis(p.originalpreis)}
+                        </p>
+                      )}
+                    </td>
+
+                    {/* Zustand */}
+                    <td className="px-4 py-3 text-center hidden lg:table-cell">
+                      <ZustandBadge zustand={p.zustand} />
+                    </td>
+
+                    {/* Status */}
+                    <td className="px-4 py-3 text-center hidden lg:table-cell">
+                      {p.verkauft ? (
+                        <span className="flex items-center justify-center gap-1 text-vintage-dust text-xs">
+                          <XCircle className="w-3.5 h-3.5" /> Verkauft
+                        </span>
+                      ) : p.lagerbestand > 0 ? (
+                        <span className="flex items-center justify-center gap-1 text-vintage-sage text-xs">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Verfügbar
+                        </span>
+                      ) : (
+                        <span className="flex items-center justify-center gap-1 text-vintage-copper text-xs">
+                          <XCircle className="w-3.5 h-3.5" /> Ausverkauft
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Aktionen */}
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1 justify-end">
+                        <Link
+                          href={`/admin/produkte/${p.id}/bilder`}
+                          className="p-2 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-parchment transition-colors"
+                          style={{ borderRadius: "var(--radius-vintage)" }}
+                          title="Bilder verwalten"
+                        >
+                          <ImageIcon className="w-4 h-4" />
+                        </Link>
+                        <Link
+                          href={`/admin/produkte/${p.id}`}
+                          className="p-2 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-parchment transition-colors"
+                          style={{ borderRadius: "var(--radius-vintage)" }}
+                          title="Bearbeiten"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* ─── Paginierung ─────────────────────────────────────────── */}
+      {daten.seiten > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-vintage-dust font-sans">
+            Seite {daten.seite} von {daten.seiten} ·{" "}
+            {daten.gesamt} Produkte
+          </p>
+          <div className="flex gap-2">
+            {daten.seite > 1 && (
+              <Link
+                href={`/admin/produkte?seite=${daten.seite - 1}${suche ? `&suche=${suche}` : ""}`}
+                className="
+                  flex items-center gap-1 px-3 py-2
+                  border border-vintage-sand text-vintage-brown
+                  text-xs font-sans hover:bg-vintage-parchment transition-colors
+                "
+                style={{ borderRadius: "var(--radius-button)" }}
+              >
+                <ChevronLeft className="w-3.5 h-3.5" /> Zurück
+              </Link>
+            )}
+            {daten.seite < daten.seiten && (
+              <Link
+                href={`/admin/produkte?seite=${daten.seite + 1}${suche ? `&suche=${suche}` : ""}`}
+                className="
+                  flex items-center gap-1 px-3 py-2
+                  border border-vintage-sand text-vintage-brown
+                  text-xs font-sans hover:bg-vintage-parchment transition-colors
+                "
+                style={{ borderRadius: "var(--radius-button)" }}
+              >
+                Weiter <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

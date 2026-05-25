@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+/* ─── Vintage Design Tokens ──────────────────────────────────────────────────
+   Tailwind 4: Tokens via @theme – als CSS-Variablen und Utility-Klassen
+   automatisch verfügbar (z.B. bg-vintage-cream, text-vintage-gold).
+   ─────────────────────────────────────────────────────────────────────────── */
+@theme {
+  /* Farben – Vintage Palette */
+  --color-vintage-cream:       #F5F0E8;
+  --color-vintage-parchment:   #E8DFD0;
+  --color-vintage-sand:        #C9B89A;
+  --color-vintage-brown:       #8B6F47;
+  --color-vintage-espresso:    #4A2C1A;
+  --color-vintage-forest:      #3D5A3E;
+  --color-vintage-sage:        #7A9E7E;
+  --color-vintage-burgundy:    #722F37;
+  --color-vintage-gold:        #C9A84C;
+  --color-vintage-copper:      #B87333;
+  --color-vintage-ink:         #1A1A2E;
+  --color-vintage-dust:        #9B9B9B;
+  --color-vintage-white:       #FDFAF5;
+
+  /* Typografie */
+  --font-serif:   "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-sans:    "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono:    "JetBrains Mono", "Fira Code", monospace;
+
+  /* Abstände */
+  --spacing-section: 5rem;
+  --spacing-card:    1.5rem;
+
+  /* Border Radius */
+  --radius-vintage: 2px;
+  --radius-card:    4px;
+  --radius-button:  3px;
+
+  /* Schatten – warm getönt */
+  --shadow-vintage-xs: 0 1px 2px rgba(74, 44, 26, 0.10);
+  --shadow-vintage-sm: 0 1px 4px rgba(74, 44, 26, 0.15);
+  --shadow-vintage-md: 0 4px 12px rgba(74, 44, 26, 0.20);
+  --shadow-vintage-lg: 0 8px 32px rgba(74, 44, 26, 0.25);
+  --shadow-vintage-xl: 0 16px 48px rgba(74, 44, 26, 0.30);
+
+  /* Übergänge */
+  --transition-vintage: 300ms ease-in-out;
+}
+
+/* ─── Basis-Styles ───────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-vintage-cream);
+  color:            var(--color-vintage-ink);
+  font-family:      var(--font-sans);
+  line-height:      1.6;
+  min-height:       100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family:  var(--font-serif);
+  line-height:  1.25;
+  color:        var(--color-vintage-espresso);
+}
+
+/* ─── Fokus-Stile (Accessibility) ───────────────────────────────────────── */
+:focus-visible {
+  outline:        2px solid var(--color-vintage-gold);
+  outline-offset: 3px;
+  border-radius:  var(--radius-vintage);
+}
+
+/* ─── Vintage Texture Utility ────────────────────────────────────────────── */
+.texture-paper {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* ─── Utility: Divider mit Ornament ─────────────────────────────────────── */
+.divider-ornament {
+  display:     flex;
+  align-items: center;
+  gap:         1rem;
+  color:       var(--color-vintage-sand);
+}
+.divider-ornament::before,
+.divider-ornament::after {
+  content:    '';
+  flex:       1;
+  height:     1px;
+  background: var(--color-vintage-sand);
+}
+
+/* ─── Scrollbar – dezent vintage ────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 8px; }
+::-webkit-scrollbar-track { background: var(--color-vintage-parchment); }
+::-webkit-scrollbar-thumb {
+  background:    var(--color-vintage-sand);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-vintage-brown); }
+
+/* ─── Selection ──────────────────────────────────────────────────────────── */
+::selection {
+  background: var(--color-vintage-gold);
+  color:      var(--color-vintage-espresso);
+}

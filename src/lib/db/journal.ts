@@ -1,0 +1,96 @@
+import { query } from "./index";
+import { generateSlug, uniqueSlug } from "@/lib/utils/slug";
+import type { JournalPost } from "@/types/newsletter";
+
+export async function veroeffentlichtePosts(limit = 20): Promise<JournalPost[]> {
+  const r = await query<JournalPost>(
+    `SELECT * FROM sebo.journal_posts
+     WHERE veroeffentlicht = true AND veroeffentlicht_am <= now()
+     ORDER BY veroeffentlicht_am DESC
+     LIMIT $1`,
+    [limit]
+  );
+  return r.rows;
+}
+
+export async function postBySlug(slug: string): Promise<JournalPost | null> {
+  const r = await query<JournalPost>(
+    `SELECT * FROM sebo.journal_posts WHERE slug = $1`,
+    [slug]
+  );
+  return r.rows[0] ?? null;
+}
+
+export async function postAufrufenInkrement(slug: string): Promise<void> {
+  await query(
+    `UPDATE sebo.journal_posts SET aufrufe = aufrufe + 1 WHERE slug = $1`,
+    [slug]
+  );
+}
+
+export async function allePostsAdmin(): Promise<JournalPost[]> {
+  const r = await query<JournalPost>(`SELECT * FROM sebo.journal_posts ORDER BY erstellt_am DESC LIMIT 200`);
+  return r.rows;
+}
+
+export async function postById(id: string): Promise<JournalPost | null> {
+  const r = await query<JournalPost>(`SELECT * FROM sebo.journal_posts WHERE id = $1`, [id]);
+  return r.rows[0] ?? null;
+}
+
+export async function postErstellen(data: {
+  titel:        string;
+  autor_id?:    string;
+  autor_name?:  string;
+}): Promise<JournalPost> {
+  let slug = generateSlug(data.titel);
+  const existing = await query(`SELECT 1 FROM sebo.journal_posts WHERE slug = $1`, [slug]);
+  if ((existing.rowCount ?? 0) > 0) slug = uniqueSlug(data.titel);
+
+  const r = await query<JournalPost>(
+    `INSERT INTO sebo.journal_posts (titel, slug, autor_id, autor_name)
+     VALUES ($1, $2, $3, $4) RETURNING *`,
+    [data.titel, slug, data.autor_id ?? null, data.autor_name ?? null]
+  );
+  return r.rows[0];
+}
+
+export async function postAktualisieren(id: string, data: {
+  titel?:           string;
+  excerpt?:         string;
+  cover_bild_url?:  string;
+  markdown?:        string;
+  tags?:            string[];
+  seo_titel?:       string;
+  seo_beschreibung?: string;
+  veroeffentlicht?: boolean;
+}): Promise<void> {
+  const felder: string[] = [];
+  const werte:  unknown[] = [];
+  let idx = 1;
+
+  for (const [key, value] of Object.entries(data)) {
+    if (value === undefined) continue;
+    if (key === "tags") {
+      felder.push(`tags = $${idx++}::text[]`);
+      werte.push(value);
+    } else if (key === "veroeffentlicht") {
+      felder.push(`veroeffentlicht = $${idx++}`);
+      werte.push(value);
+      if (value === true) {
+        felder.push(`veroeffentlicht_am = COALESCE(veroeffentlicht_am, now())`);
+      }
+    } else {
+      felder.push(`${key} = $${idx++}`);
+      werte.push(value);
+    }
+  }
+  if (felder.length === 0) return;
+
+  werte.push(id);
+  await query(`UPDATE sebo.journal_posts SET ${felder.join(", ")} WHERE id = $${idx}`, werte);
+}
+
+export async function postLoeschen(id: string): Promise<void> {
+  await query(`DELETE FROM sebo.journal_posts WHERE id = $1`, [id]);
+}

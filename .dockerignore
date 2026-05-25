@@ -1,0 +1,29 @@
+# Node
+node_modules
+npm-debug.log*
+
+# Next.js build output
+.next
+out
+
+# Env-Dateien (niemals ins Image!)
+.env
+.env.*
+!.env.example
+
+# Dev-Tools
+.git
+.gitignore
+.github
+.claude
+
+# Docs / Test
+*.md
+*.test.*
+*.spec.*
+__tests__
+coverage
+
+# OS
+.DS_Store
+Thumbs.db
