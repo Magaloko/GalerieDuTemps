@@ -129,7 +129,7 @@ export default async function ProduktDetailPage({ params }: Props) {
               name={produkt.name}
               bildUrl={produkt.bilder?.[0]?.url ?? null}
               preisCents={Math.round(produkt.preis * 100)}
-              taxRate={19}
+              taxRate={12}
               lagerbestand={produkt.lagerbestand}
               verkauft={produkt.verkauft}
             />

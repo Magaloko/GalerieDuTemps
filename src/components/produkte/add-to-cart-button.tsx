@@ -20,7 +20,7 @@ interface Props {
 
 export function AddToCartButton({
   produktId, slug, name, bildUrl, preisCents,
-  taxRate = 19, taxExempt = false, istSeminar = false,
+  taxRate = 12, taxExempt = false, istSeminar = false,
   lagerbestand, verkauft = false,
 }: Props) {
   const hinzufuegen = useCart(s => s.hinzufuegen);

@@ -33,10 +33,10 @@ export function Badge({
 /** Zustand → Badge-Variante Mapping */
 export function ZustandBadge({ zustand }: { zustand: string }) {
   const map: Record<string, { label: string; variant: BadgeVariant }> = {
-    sehr_gut:   { label: "Sehr gut",   variant: "sage"    },
-    gut:        { label: "Gut",        variant: "gold"    },
-    akzeptabel: { label: "Akzeptabel", variant: "copper"  },
-    restauriert:{ label: "Restauriert",variant: "espresso"},
+    sehr_gut:   { label: "Отличное",       variant: "sage"    },
+    gut:        { label: "Хорошее",        variant: "gold"    },
+    akzeptabel: { label: "Приемлемое",     variant: "copper"  },
+    restauriert:{ label: "Реставрировано", variant: "espresso"},
   };
   const config = map[zustand] ?? { label: zustand, variant: "dust" };
   return <Badge variant={config.variant}>{config.label}</Badge>;

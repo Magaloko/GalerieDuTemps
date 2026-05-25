@@ -28,12 +28,12 @@ export function BildUploadZone({ produktId, onUpload }: BildUploadZoneProps) {
         const res = await fetch("/api/bilder", { method: "POST", body: form });
         if (!res.ok) {
           const err = await res.json();
-          throw new Error(err.error ?? "Upload fehlgeschlagen");
+          throw new Error(err.error ?? "Не удалось загрузить");
         }
         const bild = await res.json();
         onUpload(bild);
       } catch (err) {
-        setFehler(err instanceof Error ? err.message : "Upload fehlgeschlagen");
+        setFehler(err instanceof Error ? err.message : "Не удалось загрузить");
       } finally {
         setUploading(prev => prev.filter(id => id !== tmpId));
       }
@@ -97,7 +97,7 @@ export function BildUploadZone({ produktId, onUpload }: BildUploadZoneProps) {
           <div className="flex flex-col items-center gap-2">
             <Loader2 className="w-8 h-8 text-vintage-gold animate-spin" />
             <p className="text-sm font-sans text-vintage-brown">
-              {uploading.length} Bild{uploading.length > 1 ? "er" : ""} wird hochgeladen …
+              Загружается {uploading.length} {uploading.length === 1 ? "изображение" : "изображений"} …
             </p>
           </div>
         ) : (
@@ -113,11 +113,11 @@ export function BildUploadZone({ produktId, onUpload }: BildUploadZoneProps) {
               )}
             </div>
             <p className="text-sm font-sans text-vintage-brown">
-              Bilder hier ablegen oder{" "}
-              <span className="text-vintage-gold underline">auswählen</span>
+              Перетащите изображения сюда или{" "}
+              <span className="text-vintage-gold underline">выберите</span>
             </p>
             <p className="text-xs text-vintage-dust">
-              JPEG, PNG, WebP, AVIF · Max. 10 MB pro Bild · Mehrere möglich
+              JPEG, PNG, WebP, AVIF · Макс. 10 МБ на изображение · Можно несколько
             </p>
           </div>
         )}
