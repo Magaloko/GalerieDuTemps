@@ -15,7 +15,7 @@ export function RegistrierungsFormular({
   return (
     <form
       action={formAction}
-      className="bg-vintage-white border border-vintage-sand p-8 space-y-6"
+      className="bg-vintage-brown border border-vintage-sand/40 p-8 space-y-6"
       style={{ borderRadius: "var(--radius-card)" }}
     >
       {state?.fehler && (
@@ -27,7 +27,7 @@ export function RegistrierungsFormular({
 
       {/* Persönliche Daten */}
       <fieldset className="space-y-4">
-        <legend className="font-serif text-lg text-vintage-espresso pb-2 border-b border-vintage-sand w-full">
+        <legend className="font-serif text-lg text-vintage-cream pb-2 border-b border-vintage-sand/40 w-full">
           Persönliche Daten
         </legend>
         <div className="grid grid-cols-2 gap-4">
@@ -43,7 +43,7 @@ export function RegistrierungsFormular({
 
       {/* Sponsor */}
       <fieldset className="space-y-2">
-        <legend className="font-serif text-lg text-vintage-espresso pb-2 border-b border-vintage-sand w-full">
+        <legend className="font-serif text-lg text-vintage-cream pb-2 border-b border-vintage-sand/40 w-full">
           Wer hat dich geworben? (optional)
         </legend>
         <Input
@@ -58,10 +58,10 @@ export function RegistrierungsFormular({
 
       {/* Steuerstatus */}
       <fieldset className="space-y-3">
-        <legend className="font-serif text-lg text-vintage-espresso pb-2 border-b border-vintage-sand w-full">
+        <legend className="font-serif text-lg text-vintage-cream pb-2 border-b border-vintage-sand/40 w-full">
           Steuer-Status (Pflicht)
         </legend>
-        <div className="flex items-start gap-3 p-4 bg-vintage-gold/5 border border-vintage-gold/30 text-vintage-brown text-xs font-sans" style={{ borderRadius: "var(--radius-vintage)" }}>
+        <div className="flex items-start gap-3 p-4 bg-vintage-gold/5 border border-vintage-gold/30 text-vintage-cream/80 text-xs font-sans" style={{ borderRadius: "var(--radius-vintage)" }}>
           <Info className="w-4 h-4 text-vintage-gold flex-shrink-0 mt-0.5" />
           <p>
             Provisionen sind steuerpflichtige Einnahmen. Du musst entweder ein Gewerbe
@@ -70,13 +70,13 @@ export function RegistrierungsFormular({
         </div>
         <label className="flex items-start gap-3 cursor-pointer">
           <input type="checkbox" name="ist_kleinunternehmer" className="mt-0.5 w-4 h-4 accent-vintage-gold" />
-          <span className="text-sm font-sans text-vintage-ink">
+          <span className="text-sm font-sans text-vintage-cream">
             Ich nutze die <strong>Kleinunternehmer-Regelung</strong> (§19 UStG)
           </span>
         </label>
         <label className="flex items-start gap-3 cursor-pointer">
           <input type="checkbox" name="gewerbe_angemeldet" className="mt-0.5 w-4 h-4 accent-vintage-gold" />
-          <span className="text-sm font-sans text-vintage-ink">
+          <span className="text-sm font-sans text-vintage-cream">
             Ich habe ein <strong>Gewerbe</strong> angemeldet
           </span>
         </label>
@@ -87,21 +87,21 @@ export function RegistrierungsFormular({
 
       {/* Rechtliches */}
       <fieldset className="space-y-3">
-        <legend className="font-serif text-lg text-vintage-espresso pb-2 border-b border-vintage-sand w-full">
+        <legend className="font-serif text-lg text-vintage-cream pb-2 border-b border-vintage-sand/40 w-full">
           Rechtliches
         </legend>
         <label className="flex items-start gap-3 cursor-pointer">
           <input type="checkbox" name="agb_akzeptiert" required className="mt-0.5 w-4 h-4 accent-vintage-gold" />
-          <span className="text-sm font-sans text-vintage-ink">
-            Ich akzeptiere die <a href="/affiliate/agb" target="_blank" className="text-vintage-brown underline">Partner-AGB</a>
+          <span className="text-sm font-sans text-vintage-cream">
+            Ich akzeptiere die <a href="/affiliate/agb" target="_blank" className="text-vintage-cream/80 underline">Partner-AGB</a>
           </span>
         </label>
         {e("agb_akzeptiert") && <p className="text-xs text-vintage-burgundy font-sans">{e("agb_akzeptiert")}</p>}
 
         <label className="flex items-start gap-3 cursor-pointer">
           <input type="checkbox" name="datenschutz_akzeptiert" required className="mt-0.5 w-4 h-4 accent-vintage-gold" />
-          <span className="text-sm font-sans text-vintage-ink">
-            Ich akzeptiere die <a href="/datenschutz" target="_blank" className="text-vintage-brown underline">Datenschutzerklärung</a>
+          <span className="text-sm font-sans text-vintage-cream">
+            Ich akzeptiere die <a href="/datenschutz" target="_blank" className="text-vintage-cream/80 underline">Datenschutzerklärung</a>
           </span>
         </label>
         {e("datenschutz_akzeptiert") && <p className="text-xs text-vintage-burgundy font-sans">{e("datenschutz_akzeptiert")}</p>}

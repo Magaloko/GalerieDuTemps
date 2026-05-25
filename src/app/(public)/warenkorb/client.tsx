@@ -204,7 +204,7 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
           className="sticky top-20 bg-vintage-brown border border-vintage-sand/40 p-6 space-y-4"
           style={{ borderRadius: "var(--radius-card)" }}
         >
-          <h2 className="font-serif text-lg text-vintage-cream border-b border-vintage-sand/40/50 pb-3">
+          <h2 className="font-serif text-lg text-vintage-cream border-b border-vintage-sand/30 pb-3">
             {labels.zusammenfassung}
           </h2>
 
@@ -254,7 +254,7 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
           </div>
 
           {/* Summe */}
-          <div className="space-y-2 text-sm font-sans border-t border-vintage-sand/40/50 pt-4">
+          <div className="space-y-2 text-sm font-sans border-t border-vintage-sand/30 pt-4">
             <div className="flex justify-between text-vintage-dust">
               <span>{labels.zwischensumme}</span>
               <span>{formatPreis(berechnung.subtotal_cents / 100)}</span>

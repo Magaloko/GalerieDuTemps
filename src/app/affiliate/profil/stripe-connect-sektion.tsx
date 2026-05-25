@@ -15,8 +15,8 @@ const STATUS_MELDUNGEN: Record<string, { text: string; klasse: string }> = {
   connected:        { text: "Stripe-Konto erfolgreich verbunden!",     klasse: "bg-vintage-sage/10 text-vintage-forest border-vintage-sage/30" },
   invalid:          { text: "Ungültige OAuth-Antwort",                 klasse: "bg-vintage-burgundy/10 text-vintage-burgundy border-vintage-burgundy/30" },
   error:            { text: "Fehler beim Verbinden",                   klasse: "bg-vintage-burgundy/10 text-vintage-burgundy border-vintage-burgundy/30" },
-  not_configured:   { text: "Stripe ist noch nicht konfiguriert. Bitte Admin kontaktieren.", klasse: "bg-vintage-gold/10 text-vintage-brown border-vintage-gold/30" },
-  stub_not_implemented: { text: "Stripe-SDK noch nicht installiert (Dev-Stub). Siehe Setup-Anleitung.", klasse: "bg-vintage-gold/10 text-vintage-brown border-vintage-gold/30" },
+  not_configured:   { text: "Stripe ist noch nicht konfiguriert. Bitte Admin kontaktieren.", klasse: "bg-vintage-gold/10 text-vintage-cream/80 border-vintage-gold/30" },
+  stub_not_implemented: { text: "Stripe-SDK noch nicht installiert (Dev-Stub). Siehe Setup-Anleitung.", klasse: "bg-vintage-gold/10 text-vintage-cream/80 border-vintage-gold/30" },
 };
 
 export function StripeConnectSektion({ affiliate, stripeReady, stripeMode, urlStatus }: Props) {
@@ -36,10 +36,10 @@ export function StripeConnectSektion({ affiliate, stripeReady, stripeMode, urlSt
   };
 
   return (
-    <section className="bg-vintage-white border border-vintage-sand p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
-      <div className="flex items-center justify-between border-b border-vintage-sand/50 pb-3">
+    <section className="bg-vintage-brown border border-vintage-sand/40 p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
+      <div className="flex items-center justify-between border-b border-vintage-sand/30 pb-3">
         <div>
-          <h2 className="font-serif text-lg text-vintage-espresso">Automatische Auszahlung via Stripe</h2>
+          <h2 className="font-serif text-lg text-vintage-cream">Automatische Auszahlung via Stripe</h2>
           <p className="text-vintage-dust text-xs font-sans mt-0.5">
             Verbinde dein Stripe-Konto für automatische Provisions-Auszahlungen
           </p>

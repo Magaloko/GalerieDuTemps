@@ -26,7 +26,7 @@ export default async function B2bSeitePage() {
     <div className="space-y-6 max-w-3xl">
       <div>
         <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-        <h1 className="font-serif text-3xl text-vintage-espresso flex items-center gap-2">
+        <h1 className="font-serif text-3xl text-vintage-cream flex items-center gap-2">
           <Briefcase className="w-6 h-6 text-vintage-gold" /> B2B-Status
         </h1>
       </div>
@@ -41,7 +41,7 @@ export default async function B2bSeitePage() {
               <p className="text-vintage-forest text-sm font-sans mt-1">
                 Du siehst Großhandelspreise und nutzt automatisch Mengenrabatte.
               </p>
-              <div className="mt-3 text-sm font-sans text-vintage-brown">
+              <div className="mt-3 text-sm font-sans text-vintage-cream/80">
                 <p><strong>Firma:</strong> {customer.company_name}</p>
                 {customer.ust_id && <p><strong>USt-IdNr.:</strong> {customer.ust_id}</p>}
               </div>
@@ -55,11 +55,11 @@ export default async function B2bSeitePage() {
           <div className="flex items-start gap-3">
             <Clock className="w-6 h-6 text-vintage-gold flex-shrink-0" />
             <div>
-              <h2 className="font-serif text-xl text-vintage-espresso">In Prüfung</h2>
-              <p className="text-vintage-brown text-sm font-sans mt-1">
+              <h2 className="font-serif text-xl text-vintage-cream">In Prüfung</h2>
+              <p className="text-vintage-cream/80 text-sm font-sans mt-1">
                 Wir prüfen deinen B2B-Antrag innerhalb von 1-2 Werktagen. Du erhältst eine E-Mail bei Freischaltung.
               </p>
-              <div className="mt-3 text-sm font-sans text-vintage-brown">
+              <div className="mt-3 text-sm font-sans text-vintage-cream/80">
                 <p><strong>Firma:</strong> {customer.company_name}</p>
                 {customer.ust_id && <p><strong>USt-IdNr.:</strong> {customer.ust_id}</p>}
               </div>
@@ -78,7 +78,7 @@ export default async function B2bSeitePage() {
                 Du kannst weiterhin als Privatkund:in bei uns einkaufen. Unten kannst du einen neuen Antrag stellen.
               </p>
               {customer.company_note && (
-                <pre className="text-xs text-vintage-brown font-sans bg-vintage-parchment p-3 mt-3 whitespace-pre-wrap" style={{ borderRadius: "var(--radius-vintage)" }}>
+                <pre className="text-xs text-vintage-cream/80 font-sans bg-vintage-brown/40 p-3 mt-3 whitespace-pre-wrap" style={{ borderRadius: "var(--radius-vintage)" }}>
                   {customer.company_note}
                 </pre>
               )}
@@ -89,13 +89,13 @@ export default async function B2bSeitePage() {
 
       {/* Rabattstaffel-Anzeige */}
       {customer.customer_type === "b2b_verified" && b2bTiers.length > 0 && (
-        <section className="bg-vintage-white border border-vintage-sand p-6" style={{ borderRadius: "var(--radius-card)" }}>
-          <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2 mb-4">
+        <section className="bg-vintage-brown border border-vintage-sand/40 p-6" style={{ borderRadius: "var(--radius-card)" }}>
+          <h2 className="font-serif text-lg text-vintage-cream flex items-center gap-2 mb-4">
             <TrendingUp className="w-4 h-4 text-vintage-gold" /> Deine Mengenrabatte
           </h2>
           <div className="grid sm:grid-cols-3 gap-3">
             {b2bTiers.map(t => (
-              <div key={t.id} className="bg-vintage-parchment border border-vintage-sand p-4 text-center" style={{ borderRadius: "var(--radius-vintage)" }}>
+              <div key={t.id} className="bg-vintage-brown/40 border border-vintage-sand/40 p-4 text-center" style={{ borderRadius: "var(--radius-vintage)" }}>
                 <p className="font-serif text-3xl text-vintage-gold">{t.rabatt_prozent}%</p>
                 <p className="text-xs text-vintage-dust font-sans mt-1">ab {formatPreis(t.min_summe_cent / 100)}</p>
               </div>
@@ -109,11 +109,11 @@ export default async function B2bSeitePage() {
 
       {/* Antrags-Formular (für b2c oder b2b_rejected) */}
       {(customer.customer_type === "b2c" || customer.customer_type === "b2b_rejected") && (
-        <section className="bg-vintage-white border border-vintage-sand p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
-          <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
+        <section className="bg-vintage-brown border border-vintage-sand/40 p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
+          <h2 className="font-serif text-lg text-vintage-cream border-b border-vintage-sand/30 pb-3">
             {customer.customer_type === "b2c" ? "B2B-Antrag stellen" : "Neuen B2B-Antrag stellen"}
           </h2>
-          <p className="text-sm text-vintage-brown font-sans">
+          <p className="text-sm text-vintage-cream/80 font-sans">
             Als Geschäftskund:in bekommst du Großhandelspreise + automatische Mengenrabatte.
             Pflicht: Firmenname und USt-IdNr. (oder Begründung bei Kleinunternehmer-Regelung).
           </p>

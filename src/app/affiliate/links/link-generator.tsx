@@ -73,8 +73,8 @@ export function LinkGenerator({ referralCode, baseUrl, produkte }: Props) {
       {/* Linke Spalte: Konfiguration */}
       <div className="lg:col-span-3 space-y-5">
         {/* Ziel-Auswahl */}
-        <section className="bg-vintage-white border border-vintage-sand p-5 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
-          <h2 className="font-serif text-base text-vintage-espresso">1. Wohin soll der Link führen?</h2>
+        <section className="bg-vintage-brown border border-vintage-sand/40 p-5 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
+          <h2 className="font-serif text-base text-vintage-cream">1. Wohin soll der Link führen?</h2>
           <div className="grid grid-cols-3 gap-2">
             {[
               { value: "home",    label: "Hauptseite", icon: Sparkles },
@@ -87,7 +87,7 @@ export function LinkGenerator({ referralCode, baseUrl, produkte }: Props) {
                 className={`flex flex-col items-center gap-1.5 p-3 border transition-colors ${
                   ziel === value
                     ? "bg-vintage-espresso text-vintage-cream border-vintage-espresso"
-                    : "bg-vintage-cream text-vintage-brown border-vintage-sand hover:border-vintage-brown"
+                    : "bg-vintage-espresso text-vintage-cream/80 border-vintage-sand/40 hover:border-vintage-gold"
                 }`}
                 style={{ borderRadius: "var(--radius-card)" }}
               >
@@ -100,8 +100,8 @@ export function LinkGenerator({ referralCode, baseUrl, produkte }: Props) {
 
         {/* Produkt-Auswahl */}
         {ziel === "produkt" && (
-          <section className="bg-vintage-white border border-vintage-sand p-5 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
-            <h2 className="font-serif text-base text-vintage-espresso">2. Welches Produkt?</h2>
+          <section className="bg-vintage-brown border border-vintage-sand/40 p-5 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
+            <h2 className="font-serif text-base text-vintage-cream">2. Welches Produkt?</h2>
             {produkte.length === 0 ? (
               <p className="text-vintage-dust text-sm font-sans py-4 text-center">Keine Produkte verfügbar</p>
             ) : (
@@ -113,17 +113,17 @@ export function LinkGenerator({ referralCode, baseUrl, produkte }: Props) {
                     className={`p-2 border transition-colors text-left ${
                       slug === p.slug
                         ? "border-vintage-gold ring-1 ring-vintage-gold bg-vintage-gold/5"
-                        : "border-vintage-sand hover:border-vintage-brown bg-vintage-cream"
+                        : "border-vintage-sand/40 hover:border-vintage-gold bg-vintage-espresso"
                     }`}
                     style={{ borderRadius: "var(--radius-card)" }}
                   >
-                    <div className="aspect-square mb-2 bg-vintage-parchment overflow-hidden" style={{ borderRadius: "var(--radius-vintage)" }}>
+                    <div className="aspect-square mb-2 bg-vintage-brown/40 overflow-hidden" style={{ borderRadius: "var(--radius-vintage)" }}>
                       {p.hauptbild_url
                         ? <img src={p.hauptbild_url} alt={p.name} className="w-full h-full object-cover" />
                         : <div className="w-full h-full flex items-center justify-center text-vintage-sand">✦</div>
                       }
                     </div>
-                    <p className="text-xs text-vintage-ink truncate font-sans">{p.name}</p>
+                    <p className="text-xs text-vintage-cream truncate font-sans">{p.name}</p>
                     <p className="text-xs text-vintage-gold font-serif">{formatPreis(p.preis)}</p>
                   </button>
                 ))}
@@ -133,28 +133,28 @@ export function LinkGenerator({ referralCode, baseUrl, produkte }: Props) {
         )}
 
         {/* Link-Typ */}
-        <section className="bg-vintage-white border border-vintage-sand p-5 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
-          <h2 className="font-serif text-base text-vintage-espresso">3. Link-Typ</h2>
+        <section className="bg-vintage-brown border border-vintage-sand/40 p-5 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
+          <h2 className="font-serif text-base text-vintage-cream">3. Link-Typ</h2>
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => setLinkType("short")}
               className={`p-3 border text-left transition-colors ${
-                linkType === "short" ? "border-vintage-gold bg-vintage-gold/5" : "border-vintage-sand bg-vintage-cream hover:border-vintage-brown"
+                linkType === "short" ? "border-vintage-gold bg-vintage-gold/5" : "border-vintage-sand/40 bg-vintage-espresso hover:border-vintage-gold"
               }`}
               style={{ borderRadius: "var(--radius-card)" }}
             >
-              <p className="font-sans text-sm text-vintage-ink">Kurzer Link</p>
+              <p className="font-sans text-sm text-vintage-cream">Kurzer Link</p>
               <p className="text-xs text-vintage-dust font-mono mt-1">/r/{referralCode}</p>
               <p className="text-xs text-vintage-dust font-sans mt-1">Übersichtlich für Social Media</p>
             </button>
             <button
               onClick={() => setLinkType("full")}
               className={`p-3 border text-left transition-colors ${
-                linkType === "full" ? "border-vintage-gold bg-vintage-gold/5" : "border-vintage-sand bg-vintage-cream hover:border-vintage-brown"
+                linkType === "full" ? "border-vintage-gold bg-vintage-gold/5" : "border-vintage-sand/40 bg-vintage-espresso hover:border-vintage-gold"
               }`}
               style={{ borderRadius: "var(--radius-card)" }}
             >
-              <p className="font-sans text-sm text-vintage-ink">Voller Link</p>
+              <p className="font-sans text-sm text-vintage-cream">Voller Link</p>
               <p className="text-xs text-vintage-dust font-mono mt-1">?ref={referralCode}</p>
               <p className="text-xs text-vintage-dust font-sans mt-1">Zeigt direkt das Ziel</p>
             </button>
@@ -177,7 +177,7 @@ export function LinkGenerator({ referralCode, baseUrl, produkte }: Props) {
             className={`w-full flex items-center justify-center gap-2 px-4 py-3 font-sans text-xs tracking-widest uppercase transition-colors ${
               kopiert
                 ? "bg-vintage-sage text-white"
-                : "bg-vintage-gold text-vintage-espresso hover:bg-vintage-copper"
+                : "bg-vintage-gold text-vintage-cream hover:bg-vintage-copper"
             }`}
             style={{ borderRadius: "var(--radius-button)" }}
           >
@@ -190,12 +190,12 @@ export function LinkGenerator({ referralCode, baseUrl, produkte }: Props) {
 
         {/* QR-Code */}
         {qrSvg && (
-          <div className="bg-vintage-white border border-vintage-sand p-5 text-center" style={{ borderRadius: "var(--radius-card)" }}>
+          <div className="bg-vintage-brown border border-vintage-sand/40 p-5 text-center" style={{ borderRadius: "var(--radius-card)" }}>
             <p className="text-vintage-dust text-xs uppercase tracking-widest font-sans mb-3 flex items-center justify-center gap-1">
               <QrCode className="w-3.5 h-3.5" /> QR-Code
             </p>
             <div
-              className="inline-block p-3 bg-vintage-cream"
+              className="inline-block p-3 bg-vintage-espresso"
               style={{ borderRadius: "var(--radius-card)" }}
               dangerouslySetInnerHTML={{ __html: qrSvg }}
             />

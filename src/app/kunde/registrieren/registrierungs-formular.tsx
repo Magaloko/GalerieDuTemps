@@ -14,16 +14,16 @@ export function RegistrierungsFormular({ initialTab }: { initialTab: "privat" | 
   const e = (field: string) => state?.errors?.[field]?.[0];
 
   return (
-    <form action={formAction} className="bg-vintage-white border border-vintage-sand p-8 space-y-6" style={{ borderRadius: "var(--radius-card)" }}>
+    <form action={formAction} className="bg-vintage-brown border border-vintage-sand/40 p-8 space-y-6" style={{ borderRadius: "var(--radius-card)" }}>
       <input type="hidden" name="tab" value={tab} />
 
       {/* Tab-Switcher */}
-      <div className="grid grid-cols-2 gap-2 p-1 bg-vintage-cream border border-vintage-sand" style={{ borderRadius: "var(--radius-vintage)" }}>
+      <div className="grid grid-cols-2 gap-2 p-1 bg-vintage-espresso border border-vintage-sand/40" style={{ borderRadius: "var(--radius-vintage)" }}>
         <button
           type="button"
           onClick={() => setTab("privat")}
           className={`flex items-center justify-center gap-2 py-2.5 text-xs font-sans uppercase tracking-widest transition-colors ${
-            tab === "privat" ? "bg-vintage-espresso text-vintage-cream" : "text-vintage-dust hover:text-vintage-brown"
+            tab === "privat" ? "bg-vintage-espresso text-vintage-cream" : "text-vintage-dust hover:text-vintage-cream/80"
           }`}
           style={{ borderRadius: "var(--radius-vintage)" }}
         >
@@ -33,7 +33,7 @@ export function RegistrierungsFormular({ initialTab }: { initialTab: "privat" | 
           type="button"
           onClick={() => setTab("business")}
           className={`flex items-center justify-center gap-2 py-2.5 text-xs font-sans uppercase tracking-widest transition-colors ${
-            tab === "business" ? "bg-vintage-espresso text-vintage-cream" : "text-vintage-dust hover:text-vintage-brown"
+            tab === "business" ? "bg-vintage-espresso text-vintage-cream" : "text-vintage-dust hover:text-vintage-cream/80"
           }`}
           style={{ borderRadius: "var(--radius-vintage)" }}
         >
@@ -49,7 +49,7 @@ export function RegistrierungsFormular({ initialTab }: { initialTab: "privat" | 
       )}
 
       <fieldset className="space-y-4">
-        <legend className="font-serif text-base text-vintage-espresso pb-2 border-b border-vintage-sand w-full">
+        <legend className="font-serif text-base text-vintage-cream pb-2 border-b border-vintage-sand/40 w-full">
           Личные данные
         </legend>
         <div className="grid grid-cols-2 gap-4">
@@ -65,10 +65,10 @@ export function RegistrierungsFormular({ initialTab }: { initialTab: "privat" | 
 
       {tab === "business" && (
         <fieldset className="space-y-4">
-          <legend className="font-serif text-base text-vintage-espresso pb-2 border-b border-vintage-sand w-full">
+          <legend className="font-serif text-base text-vintage-cream pb-2 border-b border-vintage-sand/40 w-full">
             Данные компании
           </legend>
-          <div className="flex items-start gap-3 p-3 bg-vintage-gold/10 border border-vintage-gold/30 text-vintage-brown text-xs font-sans" style={{ borderRadius: "var(--radius-vintage)" }}>
+          <div className="flex items-start gap-3 p-3 bg-vintage-gold/10 border border-vintage-gold/30 text-vintage-cream/80 text-xs font-sans" style={{ borderRadius: "var(--radius-vintage)" }}>
             <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
             <p>
               Ваша B2B-заявка будет рассмотрена командой Galerie du Temps (1–2 рабочих дня).
@@ -89,9 +89,9 @@ export function RegistrierungsFormular({ initialTab }: { initialTab: "privat" | 
 
       <label className="flex items-start gap-3 cursor-pointer">
         <input type="checkbox" name="agb_akzeptiert" required className="mt-0.5 w-4 h-4 accent-vintage-gold" />
-        <span className="text-sm font-sans text-vintage-ink">
-          Я принимаю <Link href="/agb" target="_blank" className="text-vintage-brown underline">условия</Link>{" "}
-          и <Link href="/datenschutz" target="_blank" className="text-vintage-brown underline">политику конфиденциальности</Link>
+        <span className="text-sm font-sans text-vintage-cream">
+          Я принимаю <Link href="/agb" target="_blank" className="text-vintage-cream/80 underline">условия</Link>{" "}
+          и <Link href="/datenschutz" target="_blank" className="text-vintage-cream/80 underline">политику конфиденциальности</Link>
         </span>
       </label>
       {e("agb_akzeptiert") && <p className="text-xs text-vintage-burgundy font-sans">{e("agb_akzeptiert")}</p>}

@@ -24,14 +24,14 @@ export default async function RegistrierenPage({
         <main className="flex-1 flex items-center justify-center px-4 py-20">
           <div className="max-w-md text-center">
             <Lock className="w-12 h-12 text-vintage-sand mx-auto mb-4" />
-            <h1 className="font-serif text-2xl text-vintage-espresso mb-3">
+            <h1 className="font-serif text-2xl text-vintage-cream mb-3">
               Registrierung geschlossen
             </h1>
             <p className="text-vintage-dust font-sans mb-6">
               Das Partner-Programm nimmt aktuell keine neuen Anmeldungen entgegen.
               Schau bald wieder vorbei.
             </p>
-            <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 border border-vintage-sand text-vintage-brown font-sans text-xs tracking-widest uppercase hover:bg-vintage-parchment transition-colors" style={{ borderRadius: "var(--radius-button)" }}>
+            <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 border border-vintage-sand/40 text-vintage-cream/80 font-sans text-xs tracking-widest uppercase hover:bg-vintage-brown/40 transition-colors" style={{ borderRadius: "var(--radius-button)" }}>
               Zur Startseite <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -48,7 +48,7 @@ export default async function RegistrierenPage({
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <p className="text-vintage-gold text-xs tracking-widest uppercase mb-2">✦ Partner werden</p>
-            <h1 className="font-serif text-3xl text-vintage-espresso">Anmeldung</h1>
+            <h1 className="font-serif text-3xl text-vintage-cream">Anmeldung</h1>
             <p className="text-vintage-dust font-sans mt-2 max-w-md mx-auto">
               Erstelle deinen Partner-Account in 2 Minuten. Nach Prüfung wirst du freigeschaltet.
             </p>
@@ -58,7 +58,7 @@ export default async function RegistrierenPage({
 
           <p className="text-center text-vintage-dust text-xs font-sans mt-6">
             Schon registriert?{" "}
-            <Link href="/affiliate/anmelden" className="text-vintage-brown hover:text-vintage-espresso underline">
+            <Link href="/affiliate/anmelden" className="text-vintage-cream/80 hover:text-vintage-cream underline">
               Hier anmelden
             </Link>
           </p>

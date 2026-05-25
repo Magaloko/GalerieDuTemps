@@ -13,7 +13,7 @@ export default async function NotFound() {
         <div className="max-w-md w-full text-center">
           <p className="text-vintage-gold text-2xl tracking-widest mb-4">✦ ✦ ✦</p>
 
-          <h1 className="font-serif text-7xl md:text-8xl text-vintage-espresso mb-2">
+          <h1 className="font-serif text-7xl md:text-8xl text-vintage-cream mb-2">
             404
           </h1>
 
@@ -23,7 +23,7 @@ export default async function NotFound() {
             </span>
           </div>
 
-          <p className="font-serif text-2xl text-vintage-brown mb-3">
+          <p className="font-serif text-2xl text-vintage-cream/80 mb-3">
             Страница не найдена
           </p>
           <p className="text-vintage-dust text-sm font-sans mb-10 leading-relaxed">
@@ -49,9 +49,9 @@ export default async function NotFound() {
               href="/katalog"
               className="
                 inline-flex items-center justify-center gap-2
-                px-6 py-3 border border-vintage-sand text-vintage-brown
+                px-6 py-3 border border-vintage-sand/40 text-vintage-cream/80
                 font-sans text-xs tracking-widest uppercase
-                hover:bg-vintage-parchment transition-colors
+                hover:bg-vintage-brown/40 transition-colors
               "
               style={{ borderRadius: "var(--radius-button)" }}
             >

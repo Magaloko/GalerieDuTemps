@@ -23,36 +23,36 @@ export default function MarketingPage() {
     <div className="space-y-6 max-w-3xl">
       <div>
         <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-        <h1 className="font-serif text-3xl text-vintage-espresso">Marketing-Material</h1>
+        <h1 className="font-serif text-3xl text-vintage-cream">Marketing-Material</h1>
         <p className="text-vintage-dust text-sm font-sans mt-1">Vorgefertigte Texte und Banner für deine Promo</p>
       </div>
 
       {/* Werbe-Hinweis */}
-      <div className="flex items-start gap-3 p-4 bg-vintage-gold/10 border border-vintage-gold/30 text-vintage-brown text-xs font-sans" style={{ borderRadius: "var(--radius-vintage)" }}>
+      <div className="flex items-start gap-3 p-4 bg-vintage-gold/10 border border-vintage-gold/30 text-vintage-cream/80 text-xs font-sans" style={{ borderRadius: "var(--radius-vintage)" }}>
         <Megaphone className="w-4 h-4 text-vintage-gold flex-shrink-0 mt-0.5" />
         <p>
           <strong>Werbekennzeichnung Pflicht:</strong> Markiere deine Affiliate-Posts immer mit
-          <code className="mx-1 px-1 bg-vintage-parchment">#Werbung</code> oder
-          <code className="mx-1 px-1 bg-vintage-parchment">#Anzeige</code> — das ist
+          <code className="mx-1 px-1 bg-vintage-brown/40">#Werbung</code> oder
+          <code className="mx-1 px-1 bg-vintage-brown/40">#Anzeige</code> — das ist
           in Deutschland gesetzlich vorgeschrieben (UWG).
         </p>
       </div>
 
       {/* Text-Vorlagen */}
       <section className="space-y-3">
-        <h2 className="font-serif text-lg text-vintage-espresso">Text-Vorlagen</h2>
+        <h2 className="font-serif text-lg text-vintage-cream">Text-Vorlagen</h2>
         {TEXTE.map((t, i) => (
-          <div key={i} className="bg-vintage-white border border-vintage-sand p-5" style={{ borderRadius: "var(--radius-card)" }}>
+          <div key={i} className="bg-vintage-brown border border-vintage-sand/40 p-5" style={{ borderRadius: "var(--radius-card)" }}>
             <div className="flex items-center justify-between mb-3">
-              <p className="font-serif text-vintage-espresso">{t.titel}</p>
+              <p className="font-serif text-vintage-cream">{t.titel}</p>
               <button
-                className="flex items-center gap-1 px-3 py-1.5 text-xs font-sans uppercase tracking-widest text-vintage-brown border border-vintage-sand hover:bg-vintage-parchment transition-colors"
+                className="flex items-center gap-1 px-3 py-1.5 text-xs font-sans uppercase tracking-widest text-vintage-cream/80 border border-vintage-sand/40 hover:bg-vintage-brown/40 transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}
               >
                 <Copy className="w-3 h-3" /> Kopieren
               </button>
             </div>
-            <pre className="text-sm font-sans text-vintage-ink whitespace-pre-wrap leading-relaxed bg-vintage-cream p-4 border border-vintage-sand/50" style={{ borderRadius: "var(--radius-vintage)" }}>
+            <pre className="text-sm font-sans text-vintage-cream whitespace-pre-wrap leading-relaxed bg-vintage-espresso p-4 border border-vintage-sand/30" style={{ borderRadius: "var(--radius-vintage)" }}>
               {t.text}
             </pre>
           </div>
@@ -60,8 +60,8 @@ export default function MarketingPage() {
       </section>
 
       {/* Banner-Platzhalter */}
-      <section className="bg-vintage-white border border-vintage-sand p-6 text-center" style={{ borderRadius: "var(--radius-card)" }}>
-        <p className="font-serif text-vintage-brown">Banner und Grafiken</p>
+      <section className="bg-vintage-brown border border-vintage-sand/40 p-6 text-center" style={{ borderRadius: "var(--radius-card)" }}>
+        <p className="font-serif text-vintage-cream/80">Banner und Grafiken</p>
         <p className="text-vintage-dust text-sm font-sans mt-1">Werden in Kürze verfügbar sein</p>
       </section>
     </div>

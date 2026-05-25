@@ -34,14 +34,14 @@ export default async function MeineBestellungenPage() {
     <div className="space-y-6 max-w-4xl">
       <div>
         <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-        <h1 className="font-serif text-3xl text-vintage-espresso">{t.kunde.bestellungen_titel}</h1>
+        <h1 className="font-serif text-3xl text-vintage-cream">{t.kunde.bestellungen_titel}</h1>
         <p className="text-vintage-dust text-sm font-sans mt-1">{orders.length} {t.kunde.bestellungen_count}</p>
       </div>
 
       {orders.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center bg-vintage-white border border-vintage-sand" style={{ borderRadius: "var(--radius-card)" }}>
+        <div className="flex flex-col items-center justify-center py-16 text-center bg-vintage-brown border border-vintage-sand/40" style={{ borderRadius: "var(--radius-card)" }}>
           <ShoppingBag className="w-12 h-12 text-vintage-sand mb-4" />
-          <p className="font-serif text-lg text-vintage-brown">{t.kunde.keine_bestellungen_kurz}</p>
+          <p className="font-serif text-lg text-vintage-cream/80">{t.kunde.keine_bestellungen_kurz}</p>
           <Link href="/katalog" className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-vintage-espresso text-vintage-cream text-xs font-sans uppercase tracking-widest hover:bg-vintage-brown transition-colors" style={{ borderRadius: "var(--radius-button)" }}>
             {t.cart.zum_katalog} <ArrowRight className="w-3.5 h-3.5" />
           </Link>
@@ -52,7 +52,7 @@ export default async function MeineBestellungenPage() {
             const s = STATUS_LABEL[o.status];
             return (
               <Link key={o.id} href={`/kunde/bestellungen/${o.id}`}
-                className="flex items-center justify-between p-5 bg-vintage-white border border-vintage-sand hover:border-vintage-brown transition-colors"
+                className="flex items-center justify-between p-5 bg-vintage-brown border border-vintage-sand/40 hover:border-vintage-gold transition-colors"
                 style={{ borderRadius: "var(--radius-card)" }}>
                 <div>
                   <div className="flex items-center gap-3">
@@ -66,7 +66,7 @@ export default async function MeineBestellungenPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-4">
-                  <p className="font-serif text-vintage-espresso text-lg">{formatPreis(o.total_cents / 100)}</p>
+                  <p className="font-serif text-vintage-cream text-lg">{formatPreis(o.total_cents / 100)}</p>
                   <ExternalLink className="w-4 h-4 text-vintage-dust" />
                 </div>
               </Link>

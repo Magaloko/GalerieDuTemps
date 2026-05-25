@@ -19,9 +19,9 @@ export default async function DatenschutzPage() {
       <SiteHeader />
       <main className="flex-1 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
 
-        <div className="border-b border-vintage-sand pb-6">
+        <div className="border-b border-vintage-sand/40 pb-6">
           <p className="text-vintage-gold text-xs tracking-widest uppercase mb-2">✦</p>
-          <h1 className="font-serif text-3xl text-vintage-espresso">Datenschutzerklärung</h1>
+          <h1 className="font-serif text-3xl text-vintage-cream">Datenschutzerklärung</h1>
           <p className="text-vintage-dust text-xs font-sans mt-2">Stand: {stand}</p>
         </div>
 
@@ -33,11 +33,11 @@ export default async function DatenschutzPage() {
           </p>
         </div>
 
-        <article className="text-vintage-ink font-sans leading-relaxed space-y-6 text-sm">
+        <article className="text-vintage-cream font-sans leading-relaxed space-y-6 text-sm">
 
           <section>
-            <h2 className="font-serif text-xl text-vintage-espresso">1. Verantwortlicher</h2>
-            <div className="ml-4 my-3 p-3 bg-vintage-parchment border border-vintage-sand text-xs" style={{ borderRadius: "var(--radius-vintage)" }}>
+            <h2 className="font-serif text-xl text-vintage-cream">1. Verantwortlicher</h2>
+            <div className="ml-4 my-3 p-3 bg-vintage-brown/40 border border-vintage-sand/40 text-xs" style={{ borderRadius: "var(--radius-vintage)" }}>
               {sys.firma_name}<br/>
               {sys.firma_strasse}<br/>
               {sys.firma_plz} {sys.firma_ort}<br/>
@@ -47,18 +47,18 @@ export default async function DatenschutzPage() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl text-vintage-espresso">2. Erhobene Daten</h2>
-            <h3 className="font-serif text-vintage-brown mt-3">Beim Besuch der Website</h3>
+            <h2 className="font-serif text-xl text-vintage-cream">2. Erhobene Daten</h2>
+            <h3 className="font-serif text-vintage-cream/80 mt-3">Beim Besuch der Website</h3>
             <ul className="list-disc ml-6 space-y-1">
               <li>Server-Logs (IP-Adresse, Zugriffszeitpunkt, abgerufene Seite, User-Agent) — technisch notwendig, Speicherdauer max. 7 Tage</li>
               <li>Cookies — nur mit Einwilligung (siehe Cookie-Banner)</li>
             </ul>
-            <h3 className="font-serif text-vintage-brown mt-3">Beim Kontaktformular</h3>
+            <h3 className="font-serif text-vintage-cream/80 mt-3">Beim Kontaktformular</h3>
             <ul className="list-disc ml-6 space-y-1">
               <li>Name, E-Mail, Nachricht, ggf. Produktreferenz</li>
               <li>Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (vorvertragliche Maßnahmen)</li>
             </ul>
-            <h3 className="font-serif text-vintage-brown mt-3">Beim Partner-Programm</h3>
+            <h3 className="font-serif text-vintage-cream/80 mt-3">Beim Partner-Programm</h3>
             <ul className="list-disc ml-6 space-y-1">
               <li>Stammdaten, Bankverbindung (IBAN verschlüsselt mit pgcrypto), Steuer-ID</li>
               <li>Klick-Logs mit gehashter IP/User-Agent — pseudonymisiert, max. 90 Tage</li>
@@ -67,31 +67,31 @@ export default async function DatenschutzPage() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl text-vintage-espresso">3. Cookies & Tracking</h2>
+            <h2 className="font-serif text-xl text-vintage-cream">3. Cookies & Tracking</h2>
             <p>Wir verwenden folgende Cookie-Kategorien:</p>
             <ul className="list-disc ml-6 space-y-1 mt-2">
               <li><strong>Notwendig:</strong> Session-Token (NextAuth), CSRF-Schutz — keine Einwilligung erforderlich</li>
-              <li><strong>Affiliate-Tracking:</strong> Cookie <code className="bg-vintage-parchment px-1">aff_ref</code> (HttpOnly, 30 Tage) — nur mit Einwilligung. Ordnet Käufe Affiliate-Partnern zu.</li>
+              <li><strong>Affiliate-Tracking:</strong> Cookie <code className="bg-vintage-brown/40 px-1">aff_ref</code> (HttpOnly, 30 Tage) — nur mit Einwilligung. Ordnet Käufe Affiliate-Partnern zu.</li>
               <li><strong>Analytics:</strong> (aktuell deaktiviert) — wird ggf. später ergänzt</li>
             </ul>
             <p className="mt-3">Du kannst deine Cookie-Einstellungen jederzeit über den Footer-Link „Cookie-Einstellungen" ändern.</p>
           </section>
 
           <section>
-            <h2 className="font-serif text-xl text-vintage-espresso">4. Auftragsverarbeiter</h2>
+            <h2 className="font-serif text-xl text-vintage-cream">4. Auftragsverarbeiter</h2>
             <p>Wir setzen folgende Dienstleister mit AV-Vertrag ein:</p>
             <ul className="list-disc ml-6 space-y-1 mt-2">
-              <li><strong>Brevo SAS (Frankreich)</strong> — Transaktionale E-Mails. <a className="text-vintage-brown underline" href="https://www.brevo.com/legal/privacypolicy/" target="_blank" rel="noopener">Datenschutz</a></li>
-              <li><strong>DeepSeek (China)</strong> — KI-Assistent (nur Chat-Inhalte, keine Personendaten). <a className="text-vintage-brown underline" href="https://www.deepseek.com" target="_blank" rel="noopener">Datenschutz</a></li>
+              <li><strong>Brevo SAS (Frankreich)</strong> — Transaktionale E-Mails. <a className="text-vintage-cream/80 underline" href="https://www.brevo.com/legal/privacypolicy/" target="_blank" rel="noopener">Datenschutz</a></li>
+              <li><strong>DeepSeek (China)</strong> — KI-Assistent (nur Chat-Inhalte, keine Personendaten). <a className="text-vintage-cream/80 underline" href="https://www.deepseek.com" target="_blank" rel="noopener">Datenschutz</a></li>
               {sys.stripe_connect_enabled && (
-                <li><strong>Stripe (Irland)</strong> — Zahlungsabwicklung Partner-Auszahlungen. <a className="text-vintage-brown underline" href="https://stripe.com/de/privacy" target="_blank" rel="noopener">Datenschutz</a></li>
+                <li><strong>Stripe (Irland)</strong> — Zahlungsabwicklung Partner-Auszahlungen. <a className="text-vintage-cream/80 underline" href="https://stripe.com/de/privacy" target="_blank" rel="noopener">Datenschutz</a></li>
               )}
               <li><strong>Hostinger (EU)</strong> — Hosting</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="font-serif text-xl text-vintage-espresso">5. Deine Rechte</h2>
+            <h2 className="font-serif text-xl text-vintage-cream">5. Deine Rechte</h2>
             <p>Gemäß DSGVO hast du folgende Rechte uns gegenüber:</p>
             <ul className="list-disc ml-6 space-y-1 mt-2">
               <li>Auskunft (Art. 15)</li>
@@ -106,12 +106,12 @@ export default async function DatenschutzPage() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl text-vintage-espresso">6. Beschwerderecht</h2>
+            <h2 className="font-serif text-xl text-vintage-cream">6. Beschwerderecht</h2>
             <p>Du hast das Recht, dich bei der zuständigen Aufsichtsbehörde zu beschweren
             (z.B. Landesbeauftragter für Datenschutz).</p>
           </section>
 
-          <p className="text-vintage-dust text-xs italic pt-6 border-t border-vintage-sand">
+          <p className="text-vintage-dust text-xs italic pt-6 border-t border-vintage-sand/40">
             Stand: {stand}
           </p>
         </article>

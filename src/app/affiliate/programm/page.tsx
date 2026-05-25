@@ -41,7 +41,7 @@ export default async function PartnerProgrammPage() {
               </p>
               <div className="flex flex-wrap gap-4">
                 {offen ? (
-                  <Link href="/affiliate/registrieren" className="inline-flex items-center gap-2 px-8 py-4 bg-vintage-gold text-vintage-espresso font-sans text-sm tracking-widest uppercase hover:bg-vintage-copper transition-colors" style={{ borderRadius: "var(--radius-button)" }}>
+                  <Link href="/affiliate/registrieren" className="inline-flex items-center gap-2 px-8 py-4 bg-vintage-gold text-vintage-cream font-sans text-sm tracking-widest uppercase hover:bg-vintage-copper transition-colors" style={{ borderRadius: "var(--radius-button)" }}>
                     Partner werden <ArrowRight className="w-4 h-4" />
                   </Link>
                 ) : (
@@ -49,7 +49,7 @@ export default async function PartnerProgrammPage() {
                     Registrierung vorübergehend geschlossen
                   </span>
                 )}
-                <Link href="/affiliate/anmelden" className="inline-flex items-center gap-2 px-8 py-4 border border-vintage-cream/30 text-vintage-cream font-sans text-sm tracking-widest uppercase hover:bg-vintage-cream/10 transition-colors" style={{ borderRadius: "var(--radius-button)" }}>
+                <Link href="/affiliate/anmelden" className="inline-flex items-center gap-2 px-8 py-4 border border-vintage-cream/30 text-vintage-cream font-sans text-sm tracking-widest uppercase hover:bg-vintage-espresso/10 transition-colors" style={{ borderRadius: "var(--radius-button)" }}>
                   Anmelden
                 </Link>
               </div>
@@ -61,7 +61,7 @@ export default async function PartnerProgrammPage() {
         <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center mb-12">
             <p className="text-vintage-gold text-xs tracking-widest uppercase mb-2">✦ Provisionsmodell</p>
-            <h2 className="font-serif text-3xl text-vintage-espresso">So verdienst du</h2>
+            <h2 className="font-serif text-3xl text-vintage-cream">So verdienst du</h2>
             <p className="text-vintage-dust font-sans mt-2 max-w-xl mx-auto">
               Mehrstufiges System — du profitierst direkt von deinen Verkäufen und indirekt
               von denen, die du als Partner geworben hast.
@@ -95,18 +95,18 @@ export default async function PartnerProgrammPage() {
             )}
           </div>
 
-          <div className="mt-8 p-5 bg-vintage-parchment border border-vintage-sand text-sm font-sans text-vintage-brown" style={{ borderRadius: "var(--radius-card)" }}>
+          <div className="mt-8 p-5 bg-vintage-brown/40 border border-vintage-sand/40 text-sm font-sans text-vintage-cream/80" style={{ borderRadius: "var(--radius-card)" }}>
             <strong>Rechnungsbeispiel:</strong> Verkauf 500 €, dein Link → <strong>{(500 * e1 / 100).toFixed(2)} €</strong> Direkt-Provision.
             {e2 > 0 && <> Wenn ein von dir geworbener Partner denselben Verkauf vermittelt, bekommst du <strong>{(500 * e2 / 100).toFixed(2)} €</strong> Sponsor-Provision.</>}
           </div>
         </section>
 
         {/* So funktioniert's */}
-        <section className="bg-vintage-parchment py-20">
+        <section className="bg-vintage-brown/40 py-20">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <p className="text-vintage-gold text-xs tracking-widest uppercase mb-2">✦ In 4 Schritten</p>
-              <h2 className="font-serif text-3xl text-vintage-espresso">So funktioniert es</h2>
+              <h2 className="font-serif text-3xl text-vintage-cream">So funktioniert es</h2>
             </div>
             <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-5">
               {[
@@ -115,9 +115,9 @@ export default async function PartnerProgrammPage() {
                 { nr: "03", titel: "Vermitteln",   text: "Interessenten klicken, kontaktieren — wir wickeln den Verkauf ab." },
                 { nr: "04", titel: "Verdienen",    text: "Nach erfolgreichem Verkauf wird deine Provision automatisch gutgeschrieben." },
               ].map((s) => (
-                <div key={s.nr} className="bg-vintage-white border border-vintage-sand p-5" style={{ borderRadius: "var(--radius-card)" }}>
+                <div key={s.nr} className="bg-vintage-brown border border-vintage-sand/40 p-5" style={{ borderRadius: "var(--radius-card)" }}>
                   <p className="font-serif text-3xl text-vintage-gold mb-2">{s.nr}</p>
-                  <p className="font-serif text-lg text-vintage-espresso mb-1">{s.titel}</p>
+                  <p className="font-serif text-lg text-vintage-cream mb-1">{s.titel}</p>
                   <p className="text-vintage-dust text-sm font-sans leading-relaxed">{s.text}</p>
                 </div>
               ))}
@@ -133,9 +133,9 @@ export default async function PartnerProgrammPage() {
               { icon: ShieldCheck, titel: "Faire Bedingungen",     text: "Transparente Konditionen, 14 Tage Widerruf, keine versteckten Kosten." },
               { icon: Coins,       titel: "Lebenslang verdienen",  text: "Cookie hält 30 Tage — du profitierst auch von verzögerten Käufen." },
             ].map(({ icon: Icon, titel, text }) => (
-              <div key={titel} className="p-6 bg-vintage-white border border-vintage-sand" style={{ borderRadius: "var(--radius-card)" }}>
+              <div key={titel} className="p-6 bg-vintage-brown border border-vintage-sand/40" style={{ borderRadius: "var(--radius-card)" }}>
                 <Icon className="w-6 h-6 text-vintage-gold mb-3" />
-                <p className="font-serif text-lg text-vintage-espresso mb-2">{titel}</p>
+                <p className="font-serif text-lg text-vintage-cream mb-2">{titel}</p>
                 <p className="text-vintage-dust text-sm font-sans leading-relaxed">{text}</p>
               </div>
             ))}
@@ -143,11 +143,11 @@ export default async function PartnerProgrammPage() {
         </section>
 
         {/* FAQ */}
-        <section className="bg-vintage-parchment py-20">
+        <section className="bg-vintage-brown/40 py-20">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10">
               <p className="text-vintage-gold text-xs tracking-widest uppercase mb-2">✦ FAQ</p>
-              <h2 className="font-serif text-3xl text-vintage-espresso">Häufige Fragen</h2>
+              <h2 className="font-serif text-3xl text-vintage-cream">Häufige Fragen</h2>
             </div>
             <div className="space-y-3">
               {[
@@ -172,8 +172,8 @@ export default async function PartnerProgrammPage() {
                   antwort: "Nein. Self-Purchase wird automatisch erkannt und blockiert (gleiche E-Mail-Adresse). Das wäre nicht im Sinne des Programms.",
                 },
               ].map((q) => (
-                <details key={q.frage} className="bg-vintage-white border border-vintage-sand p-5 group" style={{ borderRadius: "var(--radius-card)" }}>
-                  <summary className="font-serif text-vintage-espresso cursor-pointer list-none flex items-center justify-between">
+                <details key={q.frage} className="bg-vintage-brown border border-vintage-sand/40 p-5 group" style={{ borderRadius: "var(--radius-card)" }}>
+                  <summary className="font-serif text-vintage-cream cursor-pointer list-none flex items-center justify-between">
                     {q.frage}
                     <span className="text-vintage-gold group-open:rotate-45 transition-transform">+</span>
                   </summary>
@@ -187,8 +187,8 @@ export default async function PartnerProgrammPage() {
         {/* CTA */}
         <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
           <p className="text-vintage-gold text-xs tracking-widest uppercase mb-3">✦</p>
-          <h2 className="font-serif text-3xl text-vintage-espresso mb-4">Bereit anzufangen?</h2>
-          <p className="text-vintage-brown font-sans mb-8 max-w-md mx-auto">
+          <h2 className="font-serif text-3xl text-vintage-cream mb-4">Bereit anzufangen?</h2>
+          <p className="text-vintage-cream/80 font-sans mb-8 max-w-md mx-auto">
             Die Registrierung dauert 2 Minuten. Nach Freischaltung kannst du sofort
             deine ersten Empfehlungs-Links erstellen.
           </p>
@@ -216,7 +216,7 @@ function ProvisionsKarte({
         relative p-6 border
         ${hervorgehoben
           ? "bg-vintage-gold/10 border-vintage-gold"
-          : "bg-vintage-white border-vintage-sand"
+          : "bg-vintage-brown border-vintage-sand/40"
         }
       `}
       style={{ borderRadius: "var(--radius-card)" }}
@@ -224,8 +224,8 @@ function ProvisionsKarte({
       <p className="text-vintage-dust text-xs font-sans uppercase tracking-widest">Ebene {ebene}</p>
       <p className="font-serif text-5xl text-vintage-gold mt-1">{prozent}%</p>
       <div className="flex items-center gap-2 mt-3 mb-2">
-        <Icon className="w-4 h-4 text-vintage-brown" />
-        <p className="font-serif text-lg text-vintage-espresso">{titel}</p>
+        <Icon className="w-4 h-4 text-vintage-cream/80" />
+        <p className="font-serif text-lg text-vintage-cream">{titel}</p>
       </div>
       <p className="text-vintage-dust text-sm font-sans leading-relaxed">{beschreibung}</p>
     </div>

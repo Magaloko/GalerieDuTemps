@@ -31,7 +31,7 @@ export default async function AffiliateDashboard() {
       {/* Header */}
       <div>
         <p className="text-vintage-gold text-sm tracking-widest">✦</p>
-        <h1 className="font-serif text-3xl text-vintage-espresso mt-1">
+        <h1 className="font-serif text-3xl text-vintage-cream mt-1">
           Hallo {affiliate.vorname}!
         </h1>
         <p className="text-vintage-dust text-sm font-sans mt-1">
@@ -89,17 +89,17 @@ export default async function AffiliateDashboard() {
           <p className="text-vintage-cream/60 text-xs mt-1 font-sans">Klicks → Verkäufe (30 Tage)</p>
         </div>
         <div className="flex items-end">
-          <Link href="/affiliate/links" className="inline-flex items-center gap-2 px-5 py-3 bg-vintage-gold text-vintage-espresso font-sans text-xs tracking-widest uppercase hover:bg-vintage-copper transition-colors" style={{ borderRadius: "var(--radius-button)" }}>
+          <Link href="/affiliate/links" className="inline-flex items-center gap-2 px-5 py-3 bg-vintage-gold text-vintage-cream font-sans text-xs tracking-widest uppercase hover:bg-vintage-copper transition-colors" style={{ borderRadius: "var(--radius-button)" }}>
             <Link2 className="w-3.5 h-3.5" /> Neuen Link erstellen
           </Link>
         </div>
       </div>
 
       {/* Klicks Timeline */}
-      <section className="bg-vintage-white border border-vintage-sand p-6" style={{ borderRadius: "var(--radius-card)" }}>
+      <section className="bg-vintage-brown border border-vintage-sand/40 p-6" style={{ borderRadius: "var(--radius-card)" }}>
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="font-serif text-lg text-vintage-espresso">Klicks – letzte 30 Tage</h2>
+            <h2 className="font-serif text-lg text-vintage-cream">Klicks – letzte 30 Tage</h2>
             <p className="text-vintage-dust text-xs font-sans">Tägliche Klicks auf deine Empfehlungs-Links</p>
           </div>
         </div>
@@ -110,8 +110,8 @@ export default async function AffiliateDashboard() {
       </section>
 
       {/* Schnellzugriff */}
-      <div className="bg-vintage-white border border-vintage-sand p-6" style={{ borderRadius: "var(--radius-card)" }}>
-        <h2 className="font-serif text-lg text-vintage-espresso mb-5">Schnellzugriff</h2>
+      <div className="bg-vintage-brown border border-vintage-sand/40 p-6" style={{ borderRadius: "var(--radius-card)" }}>
+        <h2 className="font-serif text-lg text-vintage-cream mb-5">Schnellzugriff</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
           {[
             { href: "/affiliate/links",        label: "Link erstellen",  icon: Link2 },
@@ -120,7 +120,7 @@ export default async function AffiliateDashboard() {
             { href: "/affiliate/marketing",    label: "Marketing-Material", icon: ArrowRight },
           ].map(({ href, label, icon: Icon }) => (
             <Link key={href} href={href}
-              className="flex items-center gap-3 px-4 py-3 text-sm font-sans text-vintage-brown border border-vintage-sand/60 hover:bg-vintage-parchment hover:border-vintage-sand transition-colors"
+              className="flex items-center gap-3 px-4 py-3 text-sm font-sans text-vintage-cream/80 border border-vintage-sand/30 hover:bg-vintage-brown/40 hover:border-vintage-sand/40 transition-colors"
               style={{ borderRadius: "var(--radius-vintage)" }}>
               <Icon className="w-4 h-4 text-vintage-gold" /> {label}
             </Link>
@@ -142,11 +142,11 @@ function StatKarte({ label, wert, unter, icon: Icon, color, href }: {
     copper:   "text-vintage-copper   bg-vintage-copper/10   border-vintage-copper/20",
   };
   const card = (
-    <div className="bg-vintage-white border border-vintage-sand p-6" style={{ borderRadius: "var(--radius-card)" }}>
+    <div className="bg-vintage-brown border border-vintage-sand/40 p-6" style={{ borderRadius: "var(--radius-card)" }}>
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs font-sans uppercase tracking-widest text-vintage-dust mb-1">{label}</p>
-          <p className="font-serif text-2xl text-vintage-espresso">{wert}</p>
+          <p className="font-serif text-2xl text-vintage-cream">{wert}</p>
           {unter && <p className="text-xs text-vintage-dust mt-1 font-sans">{unter}</p>}
         </div>
         <div className={`p-3 border ${colorMap[color]}`} style={{ borderRadius: "var(--radius-card)" }}>

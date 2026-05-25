@@ -12,13 +12,13 @@ export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(loginAction, null);
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-vintage-cream texture-paper px-4">
+    <main className="min-h-screen flex items-center justify-center bg-vintage-espresso texture-paper px-4">
       <div className="w-full max-w-sm">
 
         {/* Header */}
         <div className="text-center mb-8">
           <p className="text-vintage-gold text-xl tracking-widest mb-2">✦</p>
-          <h1 className="font-serif text-4xl text-vintage-espresso">
+          <h1 className="font-serif text-4xl text-vintage-cream">
             Galerie du Temps
           </h1>
           <p className="text-vintage-dust text-sm tracking-wider mt-1 uppercase">
@@ -28,13 +28,13 @@ export default function LoginPage() {
 
         {/* Card */}
         <div
-          className="bg-vintage-white border border-vintage-sand p-8"
+          className="bg-vintage-brown border border-vintage-sand/40 p-8"
           style={{
             borderRadius:            "var(--radius-card)",
             boxShadow:               "var(--shadow-vintage-md)",
           }}
         >
-          <h2 className="font-serif text-xl text-vintage-espresso mb-6 text-center">
+          <h2 className="font-serif text-xl text-vintage-cream mb-6 text-center">
             Anmelden
           </h2>
 
@@ -44,7 +44,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-xs font-sans uppercase tracking-widest text-vintage-brown mb-1.5"
+                className="block text-xs font-sans uppercase tracking-widest text-vintage-cream/80 mb-1.5"
               >
                 E-Mail
               </label>
@@ -57,8 +57,8 @@ export default function LoginPage() {
                 disabled={isPending}
                 className="
                   w-full px-4 py-2.5
-                  bg-vintage-cream border border-vintage-sand
-                  text-vintage-ink text-sm font-sans
+                  bg-vintage-espresso border border-vintage-sand/40
+                  text-vintage-cream text-sm font-sans
                   placeholder:text-vintage-dust
                   focus:outline-none focus:border-vintage-brown focus:ring-1 focus:ring-vintage-brown
                   disabled:opacity-50
@@ -73,7 +73,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-xs font-sans uppercase tracking-widest text-vintage-brown mb-1.5"
+                className="block text-xs font-sans uppercase tracking-widest text-vintage-cream/80 mb-1.5"
               >
                 Passwort
               </label>
@@ -86,8 +86,8 @@ export default function LoginPage() {
                 disabled={isPending}
                 className="
                   w-full px-4 py-2.5
-                  bg-vintage-cream border border-vintage-sand
-                  text-vintage-ink text-sm font-sans
+                  bg-vintage-espresso border border-vintage-sand/40
+                  text-vintage-cream text-sm font-sans
                   placeholder:text-vintage-dust
                   focus:outline-none focus:border-vintage-brown focus:ring-1 focus:ring-vintage-brown
                   disabled:opacity-50

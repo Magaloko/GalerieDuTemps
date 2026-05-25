@@ -24,9 +24,9 @@ export default async function AgbPage() {
       <SiteHeader />
       <main className="flex-1 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
 
-        <div className="border-b border-vintage-sand pb-6">
+        <div className="border-b border-vintage-sand/40 pb-6">
           <p className="text-vintage-gold text-xs tracking-widest uppercase mb-2">✦</p>
-          <h1 className="font-serif text-3xl text-vintage-espresso">Partner-AGB</h1>
+          <h1 className="font-serif text-3xl text-vintage-cream">Partner-AGB</h1>
           <p className="text-vintage-dust text-xs font-sans mt-2">
             Version <strong>{aff.agb_aktuelle_version}</strong> · Stand {stand}
           </p>
@@ -46,13 +46,13 @@ export default async function AgbPage() {
           </div>
         </div>
 
-        <article className="prose max-w-none text-vintage-ink font-sans leading-relaxed space-y-6 text-sm">
+        <article className="prose max-w-none text-vintage-cream font-sans leading-relaxed space-y-6 text-sm">
 
           {/* §1 */}
           <section>
-            <h2 className="font-serif text-xl text-vintage-espresso">§ 1 Vertragspartner & Geltungsbereich</h2>
+            <h2 className="font-serif text-xl text-vintage-cream">§ 1 Vertragspartner & Geltungsbereich</h2>
             <p>(1) Diese Allgemeinen Geschäftsbedingungen gelten für die Teilnahme am Partner-Programm von:</p>
-            <p className="ml-4 my-3 p-3 bg-vintage-parchment border border-vintage-sand text-xs" style={{ borderRadius: "var(--radius-vintage)" }}>
+            <p className="ml-4 my-3 p-3 bg-vintage-brown/40 border border-vintage-sand/40 text-xs" style={{ borderRadius: "var(--radius-vintage)" }}>
               {sys.firma_name || "[Firmenname]"}<br/>
               {sys.firma_strasse || "[Straße]"}<br/>
               {sys.firma_plz} {sys.firma_ort || "[PLZ Ort]"}<br/>
@@ -67,7 +67,7 @@ export default async function AgbPage() {
 
           {/* §2 */}
           <section>
-            <h2 className="font-serif text-xl text-vintage-espresso">§ 2 Leistung des Partners</h2>
+            <h2 className="font-serif text-xl text-vintage-cream">§ 2 Leistung des Partners</h2>
             <p>(1) Der Partner bewirbt die Produkte des Vertragspartners auf eigenen Werbeflächen
             (Website, Blog, Social Media, E-Mail an eigene Kontakte) und vermittelt potenzielle Käufer.</p>
             <p>(2) Die Vermittlung erfolgt über personalisierte Empfehlungs-Links mit einem
@@ -79,7 +79,7 @@ export default async function AgbPage() {
 
           {/* §3 */}
           <section>
-            <h2 className="font-serif text-xl text-vintage-espresso">§ 3 Provision</h2>
+            <h2 className="font-serif text-xl text-vintage-cream">§ 3 Provision</h2>
             <p>(1) Für jeden erfolgreich vermittelten Verkauf erhält der Partner eine Provision in
             Höhe von <strong>{aff.provision_ebene_1_prozent}%</strong> des Netto-Verkaufspreises (Ebene 1).</p>
             <p>(2) Hat der Partner einen weiteren Partner geworben (Sponsor-Provision), erhält er für
@@ -96,7 +96,7 @@ export default async function AgbPage() {
 
           {/* §4 */}
           <section>
-            <h2 className="font-serif text-xl text-vintage-espresso">§ 4 Auszahlung</h2>
+            <h2 className="font-serif text-xl text-vintage-cream">§ 4 Auszahlung</h2>
             <p>(1) Die Auszahlung erfolgt monatlich, sofern der angesammelte Betrag den Mindestbetrag
             von <strong>{(aff.mindestauszahlung_cent / 100).toFixed(2).replace(".", ",")} €</strong> erreicht.</p>
             <p>(2) Auszahlungsmethoden: SEPA-Überweisung oder PayPal — wählbar im Partner-Profil.</p>
@@ -108,7 +108,7 @@ export default async function AgbPage() {
 
           {/* §5 */}
           <section>
-            <h2 className="font-serif text-xl text-vintage-espresso">§ 5 Pflichten des Partners</h2>
+            <h2 className="font-serif text-xl text-vintage-cream">§ 5 Pflichten des Partners</h2>
             <p>(1) Der Partner garantiert, dass seine Werbung den geltenden Gesetzen entspricht
             (UWG, Markenrecht, Urheberrecht, DSGVO).</p>
             <p>(2) Verboten sind insbesondere:</p>
@@ -124,7 +124,7 @@ export default async function AgbPage() {
 
           {/* §6 */}
           <section>
-            <h2 className="font-serif text-xl text-vintage-espresso">§ 6 Vertragslaufzeit / Kündigung</h2>
+            <h2 className="font-serif text-xl text-vintage-cream">§ 6 Vertragslaufzeit / Kündigung</h2>
             <p>(1) Das Vertragsverhältnis beginnt mit Freischaltung des Partner-Accounts durch den
             Vertragspartner und läuft auf unbestimmte Zeit.</p>
             <p>(2) Beide Parteien können jederzeit ohne Angabe von Gründen kündigen.</p>
@@ -133,15 +133,15 @@ export default async function AgbPage() {
 
           {/* §7 */}
           <section>
-            <h2 className="font-serif text-xl text-vintage-espresso">§ 7 Datenschutz</h2>
+            <h2 className="font-serif text-xl text-vintage-cream">§ 7 Datenschutz</h2>
             <p>Die Verarbeitung personenbezogener Daten erfolgt gemäß DSGVO und unserer
-            <a href="/datenschutz" className="text-vintage-brown underline ml-1">Datenschutzerklärung</a>.
+            <a href="/datenschutz" className="text-vintage-cream/80 underline ml-1">Datenschutzerklärung</a>.
             Tracking-Cookies werden nur mit ausdrücklicher Einwilligung des Besuchers gesetzt.</p>
           </section>
 
           {/* §8 */}
           <section>
-            <h2 className="font-serif text-xl text-vintage-espresso">§ 8 Schlussbestimmungen</h2>
+            <h2 className="font-serif text-xl text-vintage-cream">§ 8 Schlussbestimmungen</h2>
             <p>(1) Es gilt deutsches Recht. Erfüllungsort und Gerichtsstand ist
             {sys.firma_ort ? ` ${sys.firma_ort}` : " der Sitz des Vertragspartners"}, soweit gesetzlich zulässig.</p>
             <p>(2) Sollten einzelne Bestimmungen unwirksam sein, bleibt die Wirksamkeit der übrigen unberührt
@@ -150,7 +150,7 @@ export default async function AgbPage() {
             Widerspricht der Partner nicht innerhalb dieser Frist, gelten die neuen AGB als akzeptiert.</p>
           </section>
 
-          <p className="text-vintage-dust text-xs italic pt-6 border-t border-vintage-sand">
+          <p className="text-vintage-dust text-xs italic pt-6 border-t border-vintage-sand/40">
             Stand: {stand} · AGB-Version {aff.agb_aktuelle_version}
           </p>
         </article>

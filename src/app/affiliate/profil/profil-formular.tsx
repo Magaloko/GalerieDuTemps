@@ -31,8 +31,8 @@ export function ProfilFormular({ affiliate }: { affiliate: Affiliate }) {
       )}
 
       {/* Stammdaten */}
-      <section className="bg-vintage-white border border-vintage-sand p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
-        <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">Личные данные</h2>
+      <section className="bg-vintage-brown border border-vintage-sand/40 p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
+        <h2 className="font-serif text-lg text-vintage-cream border-b border-vintage-sand/30 pb-3">Личные данные</h2>
         <div className="grid grid-cols-2 gap-4">
           <Input label="Имя"     name="vorname"  defaultValue={affiliate.vorname}  required error={e("vorname")} />
           <Input label="Фамилия" name="nachname" defaultValue={affiliate.nachname} required error={e("nachname")} />
@@ -45,8 +45,8 @@ export function ProfilFormular({ affiliate }: { affiliate: Affiliate }) {
       </section>
 
       {/* Auszahlung */}
-      <section className="bg-vintage-white border border-vintage-sand p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
-        <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">Выплата вознаграждения</h2>
+      <section className="bg-vintage-brown border border-vintage-sand/40 p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
+        <h2 className="font-serif text-lg text-vintage-cream border-b border-vintage-sand/30 pb-3">Выплата вознаграждения</h2>
 
         <Select
           label="Способ выплаты"
@@ -64,7 +64,7 @@ export function ProfilFormular({ affiliate }: { affiliate: Affiliate }) {
 
         {methode === "kaspi" && (
           <div className="space-y-3">
-            <div className="flex items-start gap-2 p-3 bg-[#F14635]/5 border border-[#F14635]/30 text-vintage-brown text-xs font-sans" style={{ borderRadius: "var(--radius-vintage)" }}>
+            <div className="flex items-start gap-2 p-3 bg-[#F14635]/5 border border-[#F14635]/30 text-vintage-cream/80 text-xs font-sans" style={{ borderRadius: "var(--radius-vintage)" }}>
               <Info className="w-3.5 h-3.5 text-[#F14635] flex-shrink-0 mt-0.5" />
               <p>Выплата через Kaspi Gold — самый быстрый и привычный способ в Казахстане.</p>
             </div>
@@ -129,7 +129,7 @@ export function ProfilFormular({ affiliate }: { affiliate: Affiliate }) {
 
         {methode === "sepa" && (
           <div className="space-y-4">
-            <div className="flex items-start gap-2 p-3 bg-vintage-gold/10 border border-vintage-gold/30 text-vintage-brown text-xs font-sans" style={{ borderRadius: "var(--radius-vintage)" }}>
+            <div className="flex items-start gap-2 p-3 bg-vintage-gold/10 border border-vintage-gold/30 text-vintage-cream/80 text-xs font-sans" style={{ borderRadius: "var(--radius-vintage)" }}>
               <Info className="w-3.5 h-3.5 text-vintage-gold flex-shrink-0 mt-0.5" />
               <p>SEPA подходит только для счетов в банках ЕС. Для Казахстана используйте ИИК или Kaspi.</p>
             </div>
@@ -151,9 +151,9 @@ export function ProfilFormular({ affiliate }: { affiliate: Affiliate }) {
       </section>
 
       {/* Steuer / ИИН·БИН */}
-      <section className="bg-vintage-white border border-vintage-sand p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
-        <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">Налоговые данные</h2>
-        <div className="flex items-start gap-3 p-4 bg-vintage-gold/5 border border-vintage-gold/30 text-vintage-brown text-xs font-sans" style={{ borderRadius: "var(--radius-vintage)" }}>
+      <section className="bg-vintage-brown border border-vintage-sand/40 p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
+        <h2 className="font-serif text-lg text-vintage-cream border-b border-vintage-sand/30 pb-3">Налоговые данные</h2>
+        <div className="flex items-start gap-3 p-4 bg-vintage-gold/5 border border-vintage-gold/30 text-vintage-cream/80 text-xs font-sans" style={{ borderRadius: "var(--radius-vintage)" }}>
           <Info className="w-4 h-4 text-vintage-gold flex-shrink-0 mt-0.5" />
           <p>
             Эти данные нужны для документа выплаты. Заполните <strong>ИИН</strong>, если вы физическое лицо или ИП,
@@ -190,13 +190,13 @@ export function ProfilFormular({ affiliate }: { affiliate: Affiliate }) {
         <div className="space-y-2">
           <label className="flex items-start gap-3 cursor-pointer">
             <input type="checkbox" name="gewerbe_angemeldet" defaultChecked={affiliate.gewerbe_angemeldet} className="mt-0.5 w-4 h-4 accent-vintage-gold" />
-            <span className="text-sm font-sans text-vintage-ink">
+            <span className="text-sm font-sans text-vintage-cream">
               ИП / ТОО зарегистрировано (обязательно для коммерческой деятельности в РК)
             </span>
           </label>
           <label className="flex items-start gap-3 cursor-pointer">
             <input type="checkbox" name="ist_kleinunternehmer" defaultChecked={affiliate.ist_kleinunternehmer} className="mt-0.5 w-4 h-4 accent-vintage-gold" />
-            <span className="text-sm font-sans text-vintage-ink">
+            <span className="text-sm font-sans text-vintage-cream">
               Специальный налоговый режим / §19 UStG (EU) — без НДС
             </span>
           </label>

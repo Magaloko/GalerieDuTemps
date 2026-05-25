@@ -47,14 +47,14 @@ export default async function ProvisionenPage({
     <div className="space-y-6 max-w-5xl">
       <div>
         <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-        <h1 className="font-serif text-3xl text-vintage-espresso">Provisionen</h1>
+        <h1 className="font-serif text-3xl text-vintage-cream">Provisionen</h1>
         <p className="text-vintage-dust text-sm font-sans mt-1">
           {daten.gesamt} {daten.gesamt === 1 ? "Provision" : "Provisionen"} insgesamt
         </p>
       </div>
 
       {/* Filter */}
-      <div className="flex flex-wrap gap-1.5 border-b border-vintage-sand pb-1">
+      <div className="flex flex-wrap gap-1.5 border-b border-vintage-sand/40 pb-1">
         {FILTER.map(f => (
           <Link
             key={f.value}
@@ -62,7 +62,7 @@ export default async function ProvisionenPage({
             className={`px-4 py-2 text-xs font-sans uppercase tracking-widest transition-colors ${
               status === f.value
                 ? "bg-vintage-espresso text-vintage-cream"
-                : "text-vintage-dust hover:bg-vintage-parchment hover:text-vintage-brown"
+                : "text-vintage-dust hover:bg-vintage-brown/40 hover:text-vintage-cream/80"
             }`}
             style={{ borderRadius: "var(--radius-button)" }}
           >
@@ -73,18 +73,18 @@ export default async function ProvisionenPage({
 
       {/* Tabelle */}
       {daten.items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center bg-vintage-white border border-vintage-sand" style={{ borderRadius: "var(--radius-card)" }}>
+        <div className="flex flex-col items-center justify-center py-16 text-center bg-vintage-brown border border-vintage-sand/40" style={{ borderRadius: "var(--radius-card)" }}>
           <Coins className="w-10 h-10 text-vintage-sand mb-3" />
-          <p className="font-serif text-lg text-vintage-brown">Noch keine Provisionen</p>
+          <p className="font-serif text-lg text-vintage-cream/80">Noch keine Provisionen</p>
           <p className="text-vintage-dust text-sm font-sans mt-1">
             Sobald ein Verkauf über deinen Link zustande kommt, erscheint er hier.
           </p>
         </div>
       ) : (
-        <div className="bg-vintage-white border border-vintage-sand overflow-hidden" style={{ borderRadius: "var(--radius-card)" }}>
+        <div className="bg-vintage-brown border border-vintage-sand/40 overflow-hidden" style={{ borderRadius: "var(--radius-card)" }}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm font-sans">
-              <thead className="bg-vintage-parchment/50 border-b border-vintage-sand">
+              <thead className="bg-vintage-brown/40/50 border-b border-vintage-sand/40">
                 <tr>
                   <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Datum</th>
                   <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Produkt</th>
@@ -98,11 +98,11 @@ export default async function ProvisionenPage({
                 {daten.items.map(p => {
                   const status = STATUS_LABELS[p.status];
                   return (
-                    <tr key={p.id} className="hover:bg-vintage-parchment/30 transition-colors">
+                    <tr key={p.id} className="hover:bg-vintage-brown/40/30 transition-colors">
                       <td className="px-4 py-3 text-vintage-dust">
                         {new Date(p.erstellt_am).toLocaleDateString("ru-RU")}
                       </td>
-                      <td className="px-4 py-3 text-vintage-ink">{p.produkt_name ?? "–"}</td>
+                      <td className="px-4 py-3 text-vintage-cream">{p.produkt_name ?? "–"}</td>
                       <td className="px-4 py-3 text-center">
                         <span className="font-serif text-vintage-gold">L{p.ebene}</span>
                         <span className="text-xs text-vintage-dust ml-1">({p.satz_prozent}%)</span>
@@ -110,7 +110,7 @@ export default async function ProvisionenPage({
                       <td className="px-4 py-3 text-right text-vintage-dust">
                         {formatPreis(p.verkaufspreis_cent / 100)}
                       </td>
-                      <td className="px-4 py-3 text-right font-serif text-vintage-espresso">
+                      <td className="px-4 py-3 text-right font-serif text-vintage-cream">
                         {formatPreis(p.betrag_cent / 100)}
                       </td>
                       <td className="px-4 py-3 text-center">

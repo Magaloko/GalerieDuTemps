@@ -30,14 +30,14 @@ export default async function AffiliateLayout({ children }: { children: React.Re
 
   return (
     <AuthSessionProvider session={session}>
-      <div className="min-h-screen bg-vintage-parchment">
+      <div className="min-h-screen bg-vintage-brown/40">
         <AffiliateSidebar
           userName={`${affiliate?.vorname ?? ""} ${affiliate?.nachname ?? ""}`.trim() || session.user.name}
           userEmail={session.user.email}
           referralCode={affiliate?.referral_code}
         />
         <div className="ml-64 flex flex-col min-h-screen">
-          <header className="sticky top-0 z-30 bg-vintage-parchment/95 backdrop-blur border-b border-vintage-sand px-8 py-4">
+          <header className="sticky top-0 z-30 bg-vintage-brown/40/95 backdrop-blur border-b border-vintage-sand/40 px-8 py-4">
             <div className="flex items-center justify-between">
               <div />
               <div className="text-xs text-vintage-dust font-sans tracking-wider">

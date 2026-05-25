@@ -32,22 +32,22 @@ export function NewsletterAnmeldenForm() {
     <div className="max-w-md w-full">
       <div className="text-center mb-8">
         <Sparkles className="w-6 h-6 text-vintage-gold mx-auto mb-2" />
-        <h1 className="font-serif text-3xl text-vintage-espresso">Vintage Newsletter</h1>
+        <h1 className="font-serif text-3xl text-vintage-cream">Vintage Newsletter</h1>
         <p className="text-vintage-dust font-sans text-sm mt-2">
           Новые поступления, эксклюзивные купоны, истории винтажа.
         </p>
       </div>
 
       {status === "ok" ? (
-        <div className="bg-vintage-white border border-vintage-sand p-8 text-center" style={{ borderRadius: "var(--radius-card)" }}>
+        <div className="bg-vintage-brown border border-vintage-sand/40 p-8 text-center" style={{ borderRadius: "var(--radius-card)" }}>
           <CheckCircle2 className="w-12 h-12 text-vintage-sage mx-auto mb-3" />
-          <p className="font-serif text-xl text-vintage-espresso mb-2">Почти готово!</p>
+          <p className="font-serif text-xl text-vintage-cream mb-2">Почти готово!</p>
           <p className="text-vintage-dust text-sm font-sans flex items-center justify-center gap-2">
             <Mail className="w-4 h-4" /> Подтвердите ваш e-mail в почте.
           </p>
         </div>
       ) : (
-        <form onSubmit={handle} className="bg-vintage-white border border-vintage-sand p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
+        <form onSubmit={handle} className="bg-vintage-brown border border-vintage-sand/40 p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
           <Input label="Имя (необязательно)" value={vorname} onChange={(e) => setVorname(e.target.value)} placeholder="Анна" />
           <Input label="E-mail" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="anna@example.kz" />
 

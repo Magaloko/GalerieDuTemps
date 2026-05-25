@@ -16,7 +16,7 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-vintage-cream texture-paper px-4 py-20">
+    <div className="min-h-screen flex items-center justify-center bg-vintage-espresso texture-paper px-4 py-20">
       <div className="max-w-md w-full text-center">
         <div className="inline-flex p-4 bg-vintage-burgundy/10 border border-vintage-burgundy/30 mb-6"
              style={{ borderRadius: "50%" }}>
@@ -24,7 +24,7 @@ export default function Error({
         </div>
 
         <p className="text-vintage-gold text-sm tracking-widest mb-2">✦</p>
-        <h1 className="font-serif text-3xl text-vintage-espresso mb-3">
+        <h1 className="font-serif text-3xl text-vintage-cream mb-3">
           Что-то пошло не так
         </h1>
         <p className="text-vintage-dust text-sm font-sans mb-8 leading-relaxed">
@@ -56,9 +56,9 @@ export default function Error({
             href="/"
             className="
               inline-flex items-center justify-center gap-2
-              px-6 py-3 border border-vintage-sand text-vintage-brown
+              px-6 py-3 border border-vintage-sand/40 text-vintage-cream/80
               font-sans text-xs tracking-widest uppercase
-              hover:bg-vintage-parchment transition-colors
+              hover:bg-vintage-brown/40 transition-colors
             "
             style={{ borderRadius: "var(--radius-button)" }}
           >

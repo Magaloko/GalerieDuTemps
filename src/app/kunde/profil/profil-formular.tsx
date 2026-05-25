@@ -25,8 +25,8 @@ export function ProfilFormular({ customer }: { customer: Customer }) {
         </div>
       )}
 
-      <section className="bg-vintage-white border border-vintage-sand p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
-        <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">Личные данные</h2>
+      <section className="bg-vintage-brown border border-vintage-sand/40 p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
+        <h2 className="font-serif text-lg text-vintage-cream border-b border-vintage-sand/30 pb-3">Личные данные</h2>
         <div className="grid grid-cols-2 gap-4">
           <Input label="Имя"     name="vorname"  defaultValue={customer.vorname ?? ""}  required error={e("vorname")} />
           <Input label="Фамилия" name="nachname" defaultValue={customer.nachname ?? ""} required error={e("nachname")} />
@@ -38,8 +38,8 @@ export function ProfilFormular({ customer }: { customer: Customer }) {
         </div>
       </section>
 
-      <section className="bg-vintage-white border border-vintage-sand p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
-        <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">Адрес</h2>
+      <section className="bg-vintage-brown border border-vintage-sand/40 p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
+        <h2 className="font-serif text-lg text-vintage-cream border-b border-vintage-sand/30 pb-3">Адрес</h2>
         <Input label="Улица, дом" name="strasse" defaultValue={billing.strasse ?? ""} />
         <div className="grid grid-cols-3 gap-4">
           <Input label="Индекс" name="plz" defaultValue={billing.plz ?? ""} placeholder="050000" maxLength={6} />
@@ -50,12 +50,12 @@ export function ProfilFormular({ customer }: { customer: Customer }) {
         <Input label="Страна (ISO)" name="land" defaultValue={billing.land ?? "KZ"} placeholder="KZ" />
       </section>
 
-      <section className="bg-vintage-white border border-vintage-sand p-6 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
-        <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">Рассылка</h2>
+      <section className="bg-vintage-brown border border-vintage-sand/40 p-6 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
+        <h2 className="font-serif text-lg text-vintage-cream border-b border-vintage-sand/30 pb-3">Рассылка</h2>
         <label className="flex items-start gap-3 cursor-pointer">
           <input type="checkbox" name="newsletter" defaultChecked={customer.newsletter_aktiv} className="mt-0.5 w-4 h-4 accent-vintage-gold" />
           <div>
-            <span className="text-sm font-sans text-vintage-ink">Подписаться на рассылку</span>
+            <span className="text-sm font-sans text-vintage-cream">Подписаться на рассылку</span>
             <p className="text-xs text-vintage-dust font-sans mt-0.5">Новинки + эксклюзивные промокоды</p>
           </div>
         </label>

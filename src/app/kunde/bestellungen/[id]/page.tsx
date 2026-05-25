@@ -23,7 +23,7 @@ export default async function BestelldetailPage({
   return (
     <div className="space-y-6 max-w-4xl">
       <nav className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
-        <Link href="/kunde/bestellungen" className="hover:text-vintage-brown flex items-center gap-1 transition-colors">
+        <Link href="/kunde/bestellungen" className="hover:text-vintage-cream/80 flex items-center gap-1 transition-colors">
           <ChevronLeft className="w-3 h-3" /> Мои заказы
         </Link>
         <span>/</span>
@@ -32,14 +32,14 @@ export default async function BestelldetailPage({
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Items */}
-        <section className="lg:col-span-2 bg-vintage-white border border-vintage-sand p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
-          <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2">
+        <section className="lg:col-span-2 bg-vintage-brown border border-vintage-sand/40 p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
+          <h2 className="font-serif text-lg text-vintage-cream flex items-center gap-2">
             <Package className="w-4 h-4 text-vintage-gold" /> Товары
           </h2>
           <div className="divide-y divide-vintage-sand/50">
             {(order.items ?? []).map(item => (
               <div key={item.id} className="flex items-center gap-3 py-3">
-                <div className="w-14 h-14 bg-vintage-parchment overflow-hidden flex-shrink-0" style={{ borderRadius: "var(--radius-vintage)" }}>
+                <div className="w-14 h-14 bg-vintage-brown/40 overflow-hidden flex-shrink-0" style={{ borderRadius: "var(--radius-vintage)" }}>
                   {item.produkt_bild_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={item.produkt_bild_url} alt={item.produkt_name} className="w-full h-full object-cover" />
@@ -49,45 +49,45 @@ export default async function BestelldetailPage({
                 </div>
                 <div className="flex-1 min-w-0">
                   {item.produkt_slug ? (
-                    <Link href={`/katalog/${item.produkt_slug}`} className="font-serif text-vintage-espresso hover:text-vintage-brown transition-colors truncate">
+                    <Link href={`/katalog/${item.produkt_slug}`} className="font-serif text-vintage-cream hover:text-vintage-cream/80 transition-colors truncate">
                       {item.produkt_name}
                     </Link>
                   ) : (
-                    <p className="font-serif text-vintage-espresso truncate">{item.produkt_name}</p>
+                    <p className="font-serif text-vintage-cream truncate">{item.produkt_name}</p>
                   )}
                   <p className="text-xs text-vintage-dust font-sans">
                     {item.menge}× {formatPreis(item.einzelpreis_cents / 100)}
                   </p>
                 </div>
-                <p className="font-serif text-vintage-espresso">{formatPreis(item.zeile_total_cents / 100)}</p>
+                <p className="font-serif text-vintage-cream">{formatPreis(item.zeile_total_cents / 100)}</p>
               </div>
             ))}
           </div>
 
-          <div className="space-y-1 text-sm font-sans border-t border-vintage-sand pt-4">
+          <div className="space-y-1 text-sm font-sans border-t border-vintage-sand/40 pt-4">
             <div className="flex justify-between text-vintage-dust"><span>Промежуточная сумма</span><span>{formatPreis(order.subtotal_cents / 100)}</span></div>
             {order.rabatt_cents > 0 && <div className="flex justify-between text-vintage-sage"><span>Скидка</span><span>− {formatPreis(order.rabatt_cents / 100)}</span></div>}
             <div className="flex justify-between text-vintage-dust text-xs"><span>включая НДС</span><span>{formatPreis(order.tax_total_cents / 100)}</span></div>
-            <div className="flex justify-between font-serif text-vintage-espresso text-lg pt-2 border-t border-vintage-sand"><span>Итого</span><span>{formatPreis(order.total_cents / 100)}</span></div>
+            <div className="flex justify-between font-serif text-vintage-cream text-lg pt-2 border-t border-vintage-sand/40"><span>Итого</span><span>{formatPreis(order.total_cents / 100)}</span></div>
           </div>
         </section>
 
         {/* Meta */}
         <div className="space-y-4">
-          <section className="bg-vintage-white border border-vintage-sand p-5 space-y-2" style={{ borderRadius: "var(--radius-card)" }}>
-            <h3 className="font-serif text-vintage-espresso">Статус</h3>
+          <section className="bg-vintage-brown border border-vintage-sand/40 p-5 space-y-2" style={{ borderRadius: "var(--radius-card)" }}>
+            <h3 className="font-serif text-vintage-cream">Статус</h3>
             <p className="font-serif text-lg text-vintage-gold uppercase">{order.status}</p>
             {order.bezahlt_am && <p className="text-xs text-vintage-dust">Оплачено {new Date(order.bezahlt_am).toLocaleDateString("ru-RU")}</p>}
           </section>
 
           {order.tracking_nummer && (
-            <section className="bg-vintage-white border border-vintage-sand p-5 space-y-2" style={{ borderRadius: "var(--radius-card)" }}>
-              <h3 className="font-serif text-vintage-espresso flex items-center gap-2">
+            <section className="bg-vintage-brown border border-vintage-sand/40 p-5 space-y-2" style={{ borderRadius: "var(--radius-card)" }}>
+              <h3 className="font-serif text-vintage-cream flex items-center gap-2">
                 <Truck className="w-3.5 h-3.5 text-vintage-gold" /> Доставка
               </h3>
-              <p className="text-sm font-mono text-vintage-brown">{order.tracking_nummer}</p>
+              <p className="text-sm font-mono text-vintage-cream/80">{order.tracking_nummer}</p>
               {order.tracking_url && (
-                <a href={order.tracking_url} target="_blank" className="text-xs text-vintage-brown underline">
+                <a href={order.tracking_url} target="_blank" className="text-xs text-vintage-cream/80 underline">
                   Отследить
                 </a>
               )}
@@ -97,7 +97,7 @@ export default async function BestelldetailPage({
           <a
             href={`/api/orders/${order.id}/rechnung`}
             target="_blank"
-            className="flex items-center gap-2 px-4 py-3 border border-vintage-sand text-vintage-brown text-xs font-sans uppercase tracking-widest hover:bg-vintage-parchment transition-colors"
+            className="flex items-center gap-2 px-4 py-3 border border-vintage-sand/40 text-vintage-cream/80 text-xs font-sans uppercase tracking-widest hover:bg-vintage-brown/40 transition-colors"
             style={{ borderRadius: "var(--radius-button)" }}
           >
             <FileText className="w-3.5 h-3.5" /> Счёт-фактура (PDF)
