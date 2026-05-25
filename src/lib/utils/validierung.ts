@@ -11,7 +11,7 @@ export const ProduktCreateSchema = z.object({
   kurzbeschreibung: z.string().max(500).optional(),
   preis:           z.coerce.number().positive("Preis muss positiv sein"),
   originalpreis:   z.coerce.number().positive().optional().nullable(),
-  waehrung:        z.string().length(3).default("EUR"),
+  waehrung:        z.string().length(3).default("KZT"),
   kategorie_id:    z.coerce.number().int().positive().optional().nullable(),
   zustand:         z.enum(["sehr_gut", "gut", "akzeptabel", "restauriert"]).default("gut"),
   era:             z.string().max(50).optional(),

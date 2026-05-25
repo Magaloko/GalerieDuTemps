@@ -102,7 +102,7 @@ export function ProduktFormular({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
-            label="Preis (EUR)"
+            label="Preis (₸ KZT)"
             name="preis"
             type="number"
             step="0.01"
