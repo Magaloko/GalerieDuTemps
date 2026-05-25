@@ -153,16 +153,17 @@ export async function produktErstellen(
 
   const result = await query<{ id: string }>(
     `INSERT INTO sebo.produkte
-       (name, slug, beschreibung, kurzbeschreibung, preis, originalpreis, waehrung,
+       (name, slug, artikel_code, beschreibung, kurzbeschreibung, preis, originalpreis, waehrung,
         kategorie_id, zustand, era, herkunft, material, lagerbestand, featured, verkauft,
-        seo_titel, seo_beschreibung, tags, veroeffentlicht_am)
+        aktiv, b2c_mode, seo_titel, seo_beschreibung, tags, veroeffentlicht_am)
      VALUES
-       ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,
+       ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,
         now())
      RETURNING id`,
     [
       input.name,
       slug,
+      input.artikel_code       ?? null,
       input.beschreibung       ?? null,
       input.kurzbeschreibung   ?? null,
       input.preis,
@@ -176,6 +177,8 @@ export async function produktErstellen(
       input.lagerbestand       ?? 1,
       input.featured           ?? false,
       input.verkauft           ?? false,
+      input.aktiv              ?? true,
+      input.b2c_mode           ?? "visible",
       input.seo_titel          ?? null,
       input.seo_beschreibung   ?? null,
       `{${tags.map(t => `"${t.replace(/"/g, '\\"')}"`).join(",")}}`,
@@ -200,6 +203,7 @@ export async function produktAktualisieren(
   const mappings: Array<[keyof ProduktUpdateInput, string]> = [
     ["name",             "name"],
     ["slug",             "slug"],
+    ["artikel_code",     "artikel_code"],
     ["beschreibung",     "beschreibung"],
     ["kurzbeschreibung", "kurzbeschreibung"],
     ["preis",            "preis"],
@@ -213,6 +217,8 @@ export async function produktAktualisieren(
     ["lagerbestand",     "lagerbestand"],
     ["featured",         "featured"],
     ["verkauft",         "verkauft"],
+    ["aktiv",            "aktiv"],
+    ["b2c_mode",         "b2c_mode"],
     ["seo_titel",        "seo_titel"],
     ["seo_beschreibung", "seo_beschreibung"],
   ];

@@ -33,13 +33,14 @@ export interface Produkt {
   id:                 string;
   name:               string;
   slug:               string;
+  artikel_code:       string | null;
   beschreibung:       string | null;
   kurzbeschreibung:   string | null;
   preis:              number;
   originalpreis:      number | null;
   waehrung:           string;
   kategorie_id:       number | null;
-  kategorie_name?:    string | null;  // aus JOIN
+  kategorie_name?:    string | null;
   zustand:            Zustand;
   era:                string | null;
   herkunft:           string | null;
@@ -48,6 +49,8 @@ export interface Produkt {
   lagerbestand:       number;
   verkauft:           boolean;
   featured:           boolean;
+  aktiv:              boolean;
+  b2c_mode:           "visible" | "teaser" | "hidden";
   seo_titel:          string | null;
   seo_beschreibung:   string | null;
   tags:               string[];

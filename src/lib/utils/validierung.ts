@@ -6,7 +6,8 @@ import { z } from "zod";
 
 export const ProduktCreateSchema = z.object({
   name:            z.string().min(2, "Name muss mindestens 2 Zeichen haben").max(300),
-  slug:            z.string().optional(),
+  slug:            z.string().max(350).optional(),
+  artikel_code:    z.string().max(20).optional().nullable(),
   beschreibung:    z.string().optional(),
   kurzbeschreibung: z.string().max(500).optional(),
   preis:           z.coerce.number().positive("Preis muss positiv sein"),
@@ -20,6 +21,8 @@ export const ProduktCreateSchema = z.object({
   lagerbestand:    z.coerce.number().int().min(0).default(1),
   featured:        z.coerce.boolean().default(false),
   verkauft:        z.coerce.boolean().default(false),
+  aktiv:           z.coerce.boolean().default(true),
+  b2c_mode:        z.enum(["visible", "teaser", "hidden"]).default("visible"),
   seo_titel:       z.string().max(70).optional(),
   seo_beschreibung: z.string().max(160).optional(),
   tags:            z.union([

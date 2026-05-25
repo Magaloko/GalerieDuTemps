@@ -22,6 +22,8 @@ export async function produktErstellenAction(
 
   const raw = {
     name:             formData.get("name"),
+    slug:             formData.get("slug")          || undefined,
+    artikel_code:     formData.get("artikel_code")  || undefined,
     beschreibung:     formData.get("beschreibung"),
     kurzbeschreibung: formData.get("kurzbeschreibung"),
     preis:            formData.get("preis"),
@@ -34,6 +36,8 @@ export async function produktErstellenAction(
     lagerbestand:     formData.get("lagerbestand"),
     featured:         formData.get("featured") === "true",
     verkauft:         formData.get("verkauft")  === "true",
+    aktiv:            formData.get("aktiv")     !== "false",
+    b2c_mode:         (formData.get("b2c_mode") as string) || "visible",
     seo_titel:        formData.get("seo_titel")      || undefined,
     seo_beschreibung: formData.get("seo_beschreibung") || undefined,
     tags:             formData.get("tags")           || undefined,

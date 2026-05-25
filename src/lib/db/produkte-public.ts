@@ -11,7 +11,8 @@ import type { Produkt, ProduktListItem, PaginierteProdukte } from "@/types/produ
  * - b2c_mode ≠ 'hidden' (visible + teaser sind sichtbar; teaser ohne Preis im UI)
  */
 const BASE_FILTER = `
-  p.lagerbestand > 0
+  p.aktiv = true
+  AND p.lagerbestand > 0
   AND p.verkauft   = false
   AND p.veroeffentlicht_am IS NOT NULL
   AND p.b2c_mode != 'hidden'

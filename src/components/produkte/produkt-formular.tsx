@@ -102,6 +102,25 @@ export function ProduktFormular({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
+            label="Slug (URL)"
+            name="slug"
+            defaultValue={produkt?.slug ?? ""}
+            error={e("slug")}
+            placeholder="komod-bidermeier"
+            hint="Автоматически из названия, можно изменить"
+          />
+          <Input
+            label="Артикул-код"
+            name="artikel_code"
+            defaultValue={produkt?.artikel_code ?? ""}
+            error={e("artikel_code")}
+            placeholder="напр. V-001"
+            hint="Опционально. Должен быть уникальным."
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Input
             label="Preis (₸ KZT)"
             name="preis"
             type="number"
@@ -225,10 +244,67 @@ export function ProduktFormular({
         <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
           Видимость
         </h2>
-        <div className="flex flex-wrap gap-6">
+
+        {/* Master-Aktiv-Switch */}
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input type="hidden" name="aktiv" value="false" />
+          <input
+            type="checkbox"
+            name="aktiv"
+            value="true"
+            defaultChecked={produkt?.aktiv ?? true}
+            className="w-4 h-4 mt-0.5 accent-vintage-sage"
+          />
+          <span className="text-sm font-sans text-vintage-ink">
+            <strong>Активен</strong> — виден и доступен в магазине.
+            <span className="block text-xs text-vintage-dust">
+              Если выключено, товар нигде не отображается (мастер-выключатель).
+            </span>
+          </span>
+        </label>
+
+        {/* B2C-Sichtbarkeits-Tri-State */}
+        <fieldset className="space-y-2 pt-2 border-t border-vintage-sand/40">
+          <legend className="text-xs font-sans uppercase tracking-widest text-vintage-brown mb-2">
+            B2C-видимость
+          </legend>
+          {[
+            {
+              value: "visible",
+              title: "Виден",
+              desc:  "Клиенты видят товар с ценой и могут купить. (По умолчанию)",
+            },
+            {
+              value: "teaser",
+              title: "Витрина",
+              desc:  "Клиенты видят товар (фото, описание), но без цены. Для регистрации как «студия».",
+            },
+            {
+              value: "hidden",
+              title: "Скрыт",
+              desc:  "Товар не отображается в публичном каталоге. Только админ-доступ.",
+            },
+          ].map(opt => (
+            <label key={opt.value} className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="radio"
+                name="b2c_mode"
+                value={opt.value}
+                defaultChecked={(produkt?.b2c_mode ?? "visible") === opt.value}
+                className="w-4 h-4 mt-0.5 accent-vintage-gold"
+              />
+              <span className="text-sm font-sans text-vintage-ink">
+                <strong>{opt.title}</strong>
+                <span className="block text-xs text-vintage-dust">{opt.desc}</span>
+              </span>
+            </label>
+          ))}
+        </fieldset>
+
+        {/* Featured + Verkauft */}
+        <div className="flex flex-wrap gap-6 pt-2 border-t border-vintage-sand/40">
           <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="hidden"  name="featured" value="false" />
+            <input type="hidden" name="featured" value="false" />
             <input
               type="checkbox"
               name="featured"
