@@ -1,0 +1,37 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Build (Next.js)
+        # Build erfordert keine echte DB — Sitemap-Fehler werden geschluckt
+        run: npm run build
+        env:
+          NEXTAUTH_SECRET: ci-build-placeholder-secret-min-32-chars
+          NEXTAUTH_URL: http://localhost:3000
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          IBAN_ENCRYPTION_KEY: ci-build-placeholder-key-min-32-chars
+          REFERRAL_CODE_SALT: ci-build-salt

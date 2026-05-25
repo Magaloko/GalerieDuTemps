@@ -1,11 +1,13 @@
 {
-  "name": "vintage-market",
+  "name": "galeriedutemps",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "db:migrate": "node scripts/db-migrate.mjs",
+    "db:migrate:dry": "node scripts/db-migrate.mjs --dry-run",
     "db:admin": "node scripts/create-admin.mjs",
     "db:generate-secret": "node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\"",
     "affiliate:confirm": "node scripts/affiliate-confirm.mjs",

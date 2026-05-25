@@ -114,27 +114,31 @@ function bestellungBestaetigungMail(order: Awaited<ReturnType<typeof orderById>>
     </tr>
   `).join("");
 
+  const anrede = order.customer_name
+    ? `Здравствуйте, ${order.customer_name}!`
+    : "Здравствуйте!";
+
   return `
-    <!DOCTYPE html><html lang="de"><body style="font-family: Georgia, serif; background: #F5F0E8; margin: 0; padding: 40px 20px;">
+    <!DOCTYPE html><html lang="ru"><body style="font-family: Georgia, serif; background: #F5F0E8; margin: 0; padding: 40px 20px;">
       <div style="max-width: 560px; margin: 0 auto; background: #FDFAF5; border: 1px solid #C9B89A; padding: 48px;">
         <p style="color: #C9A84C; font-size: 20px; text-align: center; margin: 0 0 8px;">✦</p>
         <h1 style="color: #4A2C1A; font-size: 28px; text-align: center; margin: 0 0 16px; font-weight: normal;">
-          Bestellung bestätigt
+          Заказ подтверждён
         </h1>
         <p style="color: #4A2C1A; line-height: 1.7;">
-          Hallo${order.customer_name ? " " + order.customer_name : ""},<br><br>
-          vielen Dank für deine Bestellung bei Galerie du Temps!
+          ${anrede}<br><br>
+          Спасибо за заказ в Galerie du Temps!
         </p>
 
         <div style="background: #E8DFD0; padding: 16px; margin: 24px 0;">
-          <p style="margin: 0; color: #8B6F47; font-size: 12px; text-transform: uppercase; letter-spacing: 2px;">Bestellnummer</p>
+          <p style="margin: 0; color: #8B6F47; font-size: 12px; text-transform: uppercase; letter-spacing: 2px;">Номер заказа</p>
           <p style="margin: 4px 0 0; color: #4A2C1A; font-size: 20px; font-family: monospace;">GDT-${order.order_number}</p>
         </div>
 
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
           ${items}
           <tr style="border-top: 2px solid #C9B89A;">
-            <td style="padding: 12px 0; color: #4A2C1A; font-weight: bold;">Gesamtsumme</td>
+            <td style="padding: 12px 0; color: #4A2C1A; font-weight: bold;">Итого к оплате</td>
             <td style="padding: 12px 0; text-align: right; color: #4A2C1A; font-size: 18px;">
               ${formatPreis(order.total_cents / 100)}
             </td>
@@ -142,13 +146,13 @@ function bestellungBestaetigungMail(order: Awaited<ReturnType<typeof orderById>>
         </table>
 
         <p style="color: #8B6F47; line-height: 1.7;">
-          Wir bereiten deine Bestellung vor und benachrichtigen dich, sobald sie versandt wurde.
+          Мы готовим ваш заказ и сообщим, как только он будет отправлен.
         </p>
 
         <p style="text-align: center; margin: 32px 0;">
           <a href="${process.env.NEXTAUTH_URL}/kunde/bestellungen/${order.id}"
              style="display: inline-block; padding: 14px 32px; background: #4A2C1A; color: #F5F0E8; text-decoration: none; font-size: 12px; text-transform: uppercase; letter-spacing: 3px;">
-            Bestellung ansehen
+            Открыть заказ
           </a>
         </p>
       </div>
