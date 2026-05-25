@@ -29,7 +29,7 @@ export async function produkteListe(params: {
 
   if (params.suche) {
     conditions.push(
-      `(p.name ILIKE $${idx} OR p.slug ILIKE $${idx})`
+      `(p.name ILIKE $${idx} OR p.slug ILIKE $${idx} OR p.artikel_code ILIKE $${idx})`
     );
     queryParams.push(`%${params.suche}%`);
     idx++;
@@ -63,16 +63,17 @@ export async function produkteListe(params: {
   const gesamt = countResult.rows[0]?.gesamt ?? 0;
 
   // Daten
-  const dataResult = await query<ProduktListItem & { hauptbild_url: string | null }>(
+  const dataResult = await query<ProduktListItem>(
     `SELECT
-       p.id, p.name, p.slug, p.preis, p.originalpreis,
+       p.id, p.name, p.slug, p.artikel_code, p.preis, p.originalpreis,
        k.name AS kategorie_name,
-       p.zustand, p.lagerbestand, p.verkauft, p.featured,
+       p.zustand, p.lagerbestand, p.verkauft, p.featured, p.aktiv, p.b2c_mode,
        p.erstellt_am,
-       (
-         SELECT pb.url FROM sebo.produktbilder pb
-         WHERE pb.produkt_id = p.id AND pb.ist_hauptbild = true
-         LIMIT 1
+       COALESCE(
+         p.hauptbild_url,
+         (SELECT pb.url FROM sebo.produktbilder pb
+          WHERE pb.produkt_id = p.id AND pb.ist_hauptbild = true
+          LIMIT 1)
        ) AS hauptbild_url
      FROM sebo.produkte p
      LEFT JOIN sebo.kategorien k ON k.id = p.kategorie_id
@@ -164,10 +165,10 @@ export async function produktErstellen(
         preis, originalpreis, einkaufspreis, b2b_preis, waehrung,
         kategorie_id, zustand, era, herkunft, material, lagerbestand, featured, verkauft,
         aktiv, b2c_mode, seo_titel, seo_beschreibung, tags,
-        hauptbild_url, rueckbild_url, video_url, veroeffentlicht_am)
+        hauptbild_url, rueckbild_url, video_url, abmessungen, veroeffentlicht_am)
      VALUES
        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,
-        $24,$25,$26,now())
+        $24,$25,$26,$27::jsonb,now())
      RETURNING id`,
     [
       input.name,
@@ -196,6 +197,7 @@ export async function produktErstellen(
       input.hauptbild_url      ?? null,
       input.rueckbild_url      ?? null,
       input.video_url          ?? null,
+      input.abmessungen ? JSON.stringify(input.abmessungen) : null,
     ]
   );
 
@@ -247,6 +249,11 @@ export async function produktAktualisieren(
       felder.push(`${col} = $${idx++}`);
       werte.push(input[key] ?? null);
     }
+  }
+
+  if (input.abmessungen !== undefined) {
+    felder.push(`abmessungen = $${idx++}::jsonb`);
+    werte.push(input.abmessungen ? JSON.stringify(input.abmessungen) : null);
   }
 
   if (input.tags !== undefined) {

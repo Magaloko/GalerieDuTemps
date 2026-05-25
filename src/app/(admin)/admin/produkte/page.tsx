@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { produkteListe } from "@/lib/db/produkte";
 import { alleKategorien } from "@/lib/db/kategorien";
+import { uebersichtStats } from "@/lib/db/statistiken";
 import { formatPreis } from "@/lib/utils/preis";
 import { ZustandBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,9 @@ import {
   CheckCircle2,
   XCircle,
   Star,
+  ExternalLink,
+  AlertTriangle,
+  EyeOff,
 } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -32,9 +36,10 @@ export default async function ProduktListePage({ searchParams }: Props) {
   const katId    = sp.kategorie ? parseInt(sp.kategorie, 10) : undefined;
   const zustand  = sp.zustand ?? "";
 
-  const [daten, kategorien] = await Promise.all([
+  const [daten, kategorien, stats] = await Promise.all([
     produkteListe({ seite, suche, kategorie_id: katId, zustand }),
     alleKategorien(),
+    uebersichtStats().catch(() => null),
   ]);
 
   return (
@@ -45,7 +50,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
           <p className="text-vintage-gold text-xs tracking-widest">✦</p>
           <h1 className="font-serif text-2xl text-vintage-espresso">Produkte</h1>
           <p className="text-vintage-dust text-xs font-sans mt-0.5">
-            {daten.gesamt} {daten.gesamt === 1 ? "Produkt" : "Produkte"} gesamt
+            Управление ценами, складом и видимостью
           </p>
         </div>
         <Link href="/admin/produkte/neu">
@@ -53,6 +58,38 @@ export default async function ProduktListePage({ searchParams }: Props) {
             Neues Produkt
           </Button>
         </Link>
+      </div>
+
+      {/* ─── KPI-Cards ───────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-vintage-white border border-vintage-sand p-4" style={{ borderRadius: "var(--radius-card)" }}>
+          <p className="text-xs uppercase tracking-widest text-vintage-dust flex items-center gap-1.5">
+            <Package className="w-3.5 h-3.5" /> Всего товаров
+          </p>
+          <p className="font-serif text-2xl text-vintage-espresso mt-1">{stats?.produkte_gesamt ?? "—"}</p>
+        </div>
+        <div className="bg-vintage-sage/10 border border-vintage-sage/30 p-4" style={{ borderRadius: "var(--radius-card)" }}>
+          <p className="text-xs uppercase tracking-widest text-vintage-forest flex items-center gap-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5" /> Активны
+          </p>
+          <p className="font-serif text-2xl text-vintage-espresso mt-1">{stats?.produkte_verfuegbar ?? "—"}</p>
+        </div>
+        <div
+          className={`p-4 border ${(stats?.produkte_niedrig ?? 0) > 0 ? "bg-vintage-burgundy/10 border-vintage-burgundy/30" : "bg-vintage-white border-vintage-sand"}`}
+          style={{ borderRadius: "var(--radius-card)" }}
+        >
+          <p className="text-xs uppercase tracking-widest text-vintage-dust flex items-center gap-1.5">
+            <AlertTriangle className="w-3.5 h-3.5" /> Низкий остаток
+          </p>
+          <p className="font-serif text-2xl text-vintage-espresso mt-1">{stats?.produkte_niedrig ?? "—"}</p>
+          <p className="text-xs text-vintage-dust mt-1">1–5 на складе</p>
+        </div>
+        <div className="bg-vintage-gold/10 border border-vintage-gold/30 p-4" style={{ borderRadius: "var(--radius-card)" }}>
+          <p className="text-xs uppercase tracking-widest text-vintage-brown flex items-center gap-1.5">
+            <Star className="w-3.5 h-3.5" /> Featured
+          </p>
+          <p className="font-serif text-2xl text-vintage-espresso mt-1">{stats?.produkte_featured ?? "—"}</p>
+        </div>
       </div>
 
       {/* ─── Filter-Leiste ───────────────────────────────────────── */}
@@ -67,7 +104,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
             <input
               name="suche"
               defaultValue={suche}
-              placeholder="Produktname …"
+              placeholder="Produktname, Slug oder Artikel-Code …"
               className="
                 w-full pl-9 pr-4 py-2.5
                 bg-vintage-cream border border-vintage-sand
@@ -178,6 +215,9 @@ export default async function ProduktListePage({ searchParams }: Props) {
             <table className="w-full text-sm font-sans">
               <thead>
                 <tr className="border-b border-vintage-sand bg-vintage-parchment/50">
+                  <th className="text-left px-3 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal w-20">
+                    Art.-Code
+                  </th>
                   <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">
                     Produkt
                   </th>
@@ -202,6 +242,11 @@ export default async function ProduktListePage({ searchParams }: Props) {
                     key={p.id}
                     className="hover:bg-vintage-parchment/30 transition-colors"
                   >
+                    {/* Artikel-Code */}
+                    <td className="px-3 py-3 font-mono text-xs text-vintage-dust">
+                      {p.artikel_code ?? "—"}
+                    </td>
+
                     {/* Produkt-Name + Thumbnail */}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
@@ -259,7 +304,11 @@ export default async function ProduktListePage({ searchParams }: Props) {
 
                     {/* Status */}
                     <td className="px-4 py-3 text-center hidden lg:table-cell">
-                      {p.verkauft ? (
+                      {!p.aktiv ? (
+                        <span className="flex items-center justify-center gap-1 text-vintage-dust text-xs">
+                          <EyeOff className="w-3.5 h-3.5" /> Inaktiv
+                        </span>
+                      ) : p.verkauft ? (
                         <span className="flex items-center justify-center gap-1 text-vintage-dust text-xs">
                           <XCircle className="w-3.5 h-3.5" /> Verkauft
                         </span>
@@ -277,6 +326,16 @@ export default async function ProduktListePage({ searchParams }: Props) {
                     {/* Aktionen */}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1 justify-end">
+                        <a
+                          href={`/katalog/${p.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-parchment transition-colors"
+                          style={{ borderRadius: "var(--radius-vintage)" }}
+                          title="Im Shop ansehen"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
                         <Link
                           href={`/admin/produkte/${p.id}/bilder`}
                           className="p-2 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-parchment transition-colors"

@@ -313,6 +313,47 @@ export function ProduktFormular({
         </div>
       </section>
 
+      {/* ─── Abmessungen & Versand ──────────────────────────────── */}
+      <section
+        className="bg-vintage-white border border-vintage-sand p-6 space-y-5"
+        style={{ borderRadius: "var(--radius-card)" }}
+      >
+        <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
+          <h2 className="font-serif text-lg text-vintage-espresso">Размеры и доставка</h2>
+          <p className="text-xs font-sans text-vintage-dust">Опционально · для расчёта доставки</p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Input
+            label="Ширина (см)"
+            name="abmessungen_breite"
+            type="number" step="0.1" min="0"
+            defaultValue={produkt?.abmessungen?.breite ?? ""}
+            placeholder="0"
+          />
+          <Input
+            label="Высота (см)"
+            name="abmessungen_hoehe"
+            type="number" step="0.1" min="0"
+            defaultValue={produkt?.abmessungen?.hoehe ?? ""}
+            placeholder="0"
+          />
+          <Input
+            label="Глубина (см)"
+            name="abmessungen_tiefe"
+            type="number" step="0.1" min="0"
+            defaultValue={produkt?.abmessungen?.tiefe ?? ""}
+            placeholder="0"
+          />
+          <Input
+            label="Вес (кг)"
+            name="abmessungen_gewicht"
+            type="number" step="0.01" min="0"
+            defaultValue={produkt?.abmessungen?.gewicht ?? ""}
+            placeholder="0.00"
+          />
+        </div>
+      </section>
+
       {/* ─── Bilder & Medien ─────────────────────────────────────── */}
       <section
         className="bg-vintage-white border border-vintage-sand p-6 space-y-5"

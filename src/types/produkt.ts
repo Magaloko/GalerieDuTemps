@@ -103,10 +103,12 @@ export interface ProduktListItem {
   id:              string;
   name:            string;
   slug:            string;
+  artikel_code:    string | null;
   preis:           number;
   originalpreis:   number | null;
   kategorie_name:  string | null;
   zustand:         Zustand;
+  aktiv:           boolean;
   b2c_mode?:       "visible" | "teaser" | "hidden";
   lagerbestand:    number;
   verkauft:        boolean;

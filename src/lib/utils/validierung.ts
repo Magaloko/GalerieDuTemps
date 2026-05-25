@@ -17,6 +17,12 @@ export const ProduktCreateSchema = z.object({
   hauptbild_url:   z.string().max(500).optional().nullable(),
   rueckbild_url:   z.string().max(500).optional().nullable(),
   video_url:       z.string().max(500).optional().nullable(),
+  abmessungen:     z.object({
+    breite:  z.coerce.number().nonnegative().optional(),
+    hoehe:   z.coerce.number().nonnegative().optional(),
+    tiefe:   z.coerce.number().nonnegative().optional(),
+    gewicht: z.coerce.number().nonnegative().optional(),
+  }).optional().nullable(),
   waehrung:        z.string().length(3).default("KZT"),
   kategorie_id:    z.coerce.number().int().positive().optional().nullable(),
   zustand:         z.enum(["sehr_gut", "gut", "akzeptabel", "restauriert"]).default("gut"),

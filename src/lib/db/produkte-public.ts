@@ -117,9 +117,11 @@ export async function katalogProdukte(params: {
          k.name AS kategorie_name,
          p.zustand, p.lagerbestand, p.verkauft, p.featured, p.era, p.b2c_mode,
          p.erstellt_am,
-         (SELECT pb.url FROM sebo.produktbilder pb
-          WHERE pb.produkt_id = p.id AND pb.ist_hauptbild = true LIMIT 1)
-          AS hauptbild_url
+         COALESCE(
+           p.hauptbild_url,
+           (SELECT pb.url FROM sebo.produktbilder pb
+            WHERE pb.produkt_id = p.id AND pb.ist_hauptbild = true LIMIT 1)
+         ) AS hauptbild_url
        FROM sebo.produkte p
        LEFT JOIN sebo.kategorien k ON k.id = p.kategorie_id
        ${where}
