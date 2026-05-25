@@ -16,7 +16,3 @@ CREATE INDEX idx_produkte_fts ON sebo.produkte
         coalesce(material, '') || ' ' ||
         coalesce(herkunft, '')
     ));
-
-INSERT INTO sebo.schema_migrations (version, name)
-VALUES ('011', 'fts_multilingual')
-ON CONFLICT (version) DO NOTHING;
