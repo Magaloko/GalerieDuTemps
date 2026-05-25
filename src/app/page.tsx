@@ -27,7 +27,7 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col min-h-screen bg-vintage-espresso">
       <SiteHeader />
-      <main className="flex-1">
+      <main className="flex-1 pb-20 md:pb-0">
 
         {/* ─── Hero (Persönlichkeitstest-Stil) ────────────────────────── */}
         <section className="relative hero-vignette texture-paper overflow-hidden">
