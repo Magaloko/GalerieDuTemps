@@ -4,7 +4,7 @@ import { RegistrierungsFormular } from "./registrierungs-formular";
 import Link from "next/link";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Konto erstellen" };
+export const metadata: Metadata = { title: "Создать аккаунт" };
 
 export default async function RegistrierenPage({
   searchParams,
@@ -19,18 +19,18 @@ export default async function RegistrierenPage({
         <div className="max-w-xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <p className="text-vintage-gold text-xs tracking-widest uppercase mb-2">✦</p>
-            <h1 className="font-serif text-3xl text-vintage-espresso">Konto erstellen</h1>
+            <h1 className="font-serif text-3xl text-vintage-espresso">Создать аккаунт</h1>
             <p className="text-vintage-dust font-sans text-sm mt-2">
-              Erstelle ein Konto, um Bestellungen zu verfolgen und schneller einzukaufen.
+              Создайте аккаунт, чтобы отслеживать заказы и оформлять покупки быстрее.
             </p>
           </div>
 
           <RegistrierungsFormular initialTab={tab as "privat" | "business"} />
 
           <p className="text-center text-vintage-dust text-xs font-sans mt-6">
-            Schon ein Konto?{" "}
+            Уже есть аккаунт?{" "}
             <Link href="/kunde/anmelden" className="text-vintage-brown hover:text-vintage-espresso underline">
-              Hier anmelden
+              Войти
             </Link>
           </p>
         </div>

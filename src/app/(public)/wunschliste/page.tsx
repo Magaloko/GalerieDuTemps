@@ -3,7 +3,6 @@
 import { useWunschliste } from "@/hooks/use-wunschliste";
 import Link from "next/link";
 import { Heart, ArrowRight } from "lucide-react";
-import { formatPreis } from "@/lib/utils/preis";
 
 export default function WunschlistePage() {
   const { ids, toggle } = useWunschliste();
@@ -13,10 +12,10 @@ export default function WunschlistePage() {
       <div className="mb-10">
         <p className="text-vintage-gold text-xs tracking-widest uppercase mb-1">✦</p>
         <h1 className="font-serif text-3xl text-vintage-espresso">
-          Meine Wunschliste
+          Моё избранное
         </h1>
         <p className="text-vintage-dust text-sm font-sans mt-1">
-          {ids.length} {ids.length === 1 ? "Stück" : "Stücke"} gemerkt
+          В избранном: {ids.length}
         </p>
       </div>
 
@@ -24,10 +23,10 @@ export default function WunschlistePage() {
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <Heart className="w-14 h-14 text-vintage-sand mb-4" />
           <p className="font-serif text-xl text-vintage-brown mb-2">
-            Noch nichts gemerkt
+            Здесь пока пусто
           </p>
           <p className="text-vintage-dust text-sm font-sans mb-6">
-            Klicke auf das Herz bei einem Produkt, um es hier zu speichern.
+            Нажмите на сердечко рядом с товаром, чтобы добавить его сюда.
           </p>
           <Link
             href="/katalog"
@@ -39,13 +38,13 @@ export default function WunschlistePage() {
             "
             style={{ borderRadius: "var(--radius-button)" }}
           >
-            Katalog entdecken <ArrowRight className="w-4 h-4" />
+            Открыть каталог <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       ) : (
         <div>
           <p className="text-xs text-vintage-dust font-sans mb-6">
-            Deine Wunschliste wird in diesem Browser gespeichert.
+            Ваше избранное сохраняется в этом браузере.
           </p>
           <div className="space-y-3">
             {ids.map(id => (
@@ -57,7 +56,7 @@ export default function WunschlistePage() {
               href="/katalog"
               className="text-sm font-sans text-vintage-brown hover:text-vintage-espresso transition-colors flex items-center gap-1"
             >
-              Weiter stöbern <ArrowRight className="w-4 h-4" />
+              Продолжить покупки <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href="/kontakt"
@@ -68,7 +67,7 @@ export default function WunschlistePage() {
               "
               style={{ borderRadius: "var(--radius-button)" }}
             >
-              Anfrage zu allen Stücken
+              Запрос по всем вещам
             </Link>
           </div>
         </div>
@@ -77,7 +76,6 @@ export default function WunschlistePage() {
   );
 }
 
-/** Einzelner Wunschlisten-Eintrag – lädt Produkt-Daten client-seitig */
 function WunschlistenItem({
   produktId,
   onEntfernen,
@@ -85,8 +83,6 @@ function WunschlistenItem({
   produktId:   string;
   onEntfernen: () => void;
 }) {
-  // Vereinfacht: Placeholder-Darstellung
-  // In Phase 5/6 kann dies über die API aufgelöst werden
   return (
     <div
       className="flex items-center gap-4 p-4 bg-vintage-white border border-vintage-sand hover:border-vintage-brown transition-colors"
@@ -96,14 +92,14 @@ function WunschlistenItem({
         <Heart className="w-5 h-5 text-vintage-sand" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-vintage-ink text-sm font-sans truncate">Produkt #{produktId.slice(0, 8)}</p>
-        <p className="text-vintage-dust text-xs font-sans">Gespeichert</p>
+        <p className="text-vintage-ink text-sm font-sans truncate">Товар #{produktId.slice(0, 8)}</p>
+        <p className="text-vintage-dust text-xs font-sans">Сохранено</p>
       </div>
       <button
         onClick={onEntfernen}
         className="p-2 text-vintage-dust hover:text-vintage-burgundy transition-colors"
         style={{ borderRadius: "var(--radius-vintage)" }}
-        aria-label="Entfernen"
+        aria-label="Удалить"
       >
         <Heart className="w-4 h-4 fill-vintage-burgundy text-vintage-burgundy" />
       </button>

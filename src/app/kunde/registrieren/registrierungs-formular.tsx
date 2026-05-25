@@ -27,7 +27,7 @@ export function RegistrierungsFormular({ initialTab }: { initialTab: "privat" | 
           }`}
           style={{ borderRadius: "var(--radius-vintage)" }}
         >
-          <User className="w-3.5 h-3.5" /> Privatkund:in
+          <User className="w-3.5 h-3.5" /> Частное лицо
         </button>
         <button
           type="button"
@@ -37,7 +37,7 @@ export function RegistrierungsFormular({ initialTab }: { initialTab: "privat" | 
           }`}
           style={{ borderRadius: "var(--radius-vintage)" }}
         >
-          <Briefcase className="w-3.5 h-3.5" /> Geschäftskund:in
+          <Briefcase className="w-3.5 h-3.5" /> Компания
         </button>
       </div>
 
@@ -48,59 +48,56 @@ export function RegistrierungsFormular({ initialTab }: { initialTab: "privat" | 
         </div>
       )}
 
-      {/* Persönliche Daten */}
       <fieldset className="space-y-4">
         <legend className="font-serif text-base text-vintage-espresso pb-2 border-b border-vintage-sand w-full">
-          Persönliche Daten
+          Личные данные
         </legend>
         <div className="grid grid-cols-2 gap-4">
-          <Input label="Vorname"  name="vorname"  required error={e("vorname")} />
-          <Input label="Nachname" name="nachname" required error={e("nachname")} />
+          <Input label="Имя"     name="vorname"  required error={e("vorname")} />
+          <Input label="Фамилия" name="nachname" required error={e("nachname")} />
         </div>
-        <Input label="E-Mail" name="email" type="email" required error={e("email")} />
+        <Input label="E-mail" name="email" type="email" required error={e("email")} />
         <div className="grid grid-cols-2 gap-4">
-          <Input label="Passwort" name="passwort" type="password" required error={e("passwort")} hint="Min. 8 Zeichen" />
-          <Input label="Wiederholen" name="passwort_wdh" type="password" required error={e("passwort_wdh")} />
+          <Input label="Пароль"      name="passwort"     type="password" required error={e("passwort")} hint="Минимум 8 символов" />
+          <Input label="Повторите"   name="passwort_wdh" type="password" required error={e("passwort_wdh")} />
         </div>
       </fieldset>
 
-      {/* B2B-Felder (nur sichtbar wenn Tab=business) */}
       {tab === "business" && (
         <fieldset className="space-y-4">
           <legend className="font-serif text-base text-vintage-espresso pb-2 border-b border-vintage-sand w-full">
-            Firmendaten
+            Данные компании
           </legend>
           <div className="flex items-start gap-3 p-3 bg-vintage-gold/10 border border-vintage-gold/30 text-vintage-brown text-xs font-sans" style={{ borderRadius: "var(--radius-vintage)" }}>
             <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
             <p>
-              Dein B2B-Antrag wird vom Galerie du Temps Team geprüft (1-2 Werktage). Nach
-              Freischaltung siehst du Großhandelspreise und Rabattstaffeln.
+              Ваша B2B-заявка будет рассмотрена командой Galerie du Temps (1–2 рабочих дня).
+              После одобрения вам будут доступны оптовые цены и скидки за объём.
             </p>
           </div>
-          <Input label="Firmenname" name="company_name" required error={e("company_name")} />
-          <Input label="USt-IdNr." name="ust_id" placeholder="DE123456789" error={e("ust_id")} hint="Wenn keine UID: Begründung unten" />
+          <Input label="Название компании" name="company_name" required error={e("company_name")} />
+          <Input label="БИН / ИИН" name="ust_id" placeholder="123456789012" error={e("ust_id")} hint="Если нет БИН — укажите комментарий ниже" />
           <Textarea
-            label="Begründung (wenn keine USt-IdNr.)"
+            label="Комментарий (если нет БИН)"
             name="company_note"
             rows={3}
-            placeholder="z.B. Kleinunternehmerin, Gewerbeschein-Nr., ..."
+            placeholder="например: ИП, спецналоговый режим, № свидетельства ..."
             error={e("company_note")}
           />
         </fieldset>
       )}
 
-      {/* Rechtliches */}
       <label className="flex items-start gap-3 cursor-pointer">
         <input type="checkbox" name="agb_akzeptiert" required className="mt-0.5 w-4 h-4 accent-vintage-gold" />
         <span className="text-sm font-sans text-vintage-ink">
-          Ich akzeptiere die <Link href="/agb" target="_blank" className="text-vintage-brown underline">AGB</Link>{" "}
-          und die <Link href="/datenschutz" target="_blank" className="text-vintage-brown underline">Datenschutzerklärung</Link>
+          Я принимаю <Link href="/agb" target="_blank" className="text-vintage-brown underline">условия</Link>{" "}
+          и <Link href="/datenschutz" target="_blank" className="text-vintage-brown underline">политику конфиденциальности</Link>
         </span>
       </label>
       {e("agb_akzeptiert") && <p className="text-xs text-vintage-burgundy font-sans">{e("agb_akzeptiert")}</p>}
 
       <Button type="submit" loading={isPending} className="w-full justify-center" size="lg">
-        {tab === "business" ? "B2B-Antrag stellen" : "Konto erstellen"}
+        {tab === "business" ? "Подать B2B-заявку" : "Создать аккаунт"}
       </Button>
     </form>
   );

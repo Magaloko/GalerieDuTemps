@@ -6,7 +6,7 @@ import { formatPreis } from "@/lib/utils/preis";
 import { ChevronLeft, Package, FileText, Truck } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Bestelldetail" };
+export const metadata: Metadata = { title: "Детали заказа" };
 export const dynamic = "force-dynamic";
 
 export default async function BestelldetailPage({
@@ -24,7 +24,7 @@ export default async function BestelldetailPage({
     <div className="space-y-6 max-w-4xl">
       <nav className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
         <Link href="/kunde/bestellungen" className="hover:text-vintage-brown flex items-center gap-1 transition-colors">
-          <ChevronLeft className="w-3 h-3" /> Meine Bestellungen
+          <ChevronLeft className="w-3 h-3" /> Мои заказы
         </Link>
         <span>/</span>
         <span className="font-mono text-vintage-gold">GDT-{order.order_number}</span>
@@ -34,7 +34,7 @@ export default async function BestelldetailPage({
         {/* Items */}
         <section className="lg:col-span-2 bg-vintage-white border border-vintage-sand p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
           <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2">
-            <Package className="w-4 h-4 text-vintage-gold" /> Artikel
+            <Package className="w-4 h-4 text-vintage-gold" /> Товары
           </h2>
           <div className="divide-y divide-vintage-sand/50">
             {(order.items ?? []).map(item => (
@@ -65,30 +65,30 @@ export default async function BestelldetailPage({
           </div>
 
           <div className="space-y-1 text-sm font-sans border-t border-vintage-sand pt-4">
-            <div className="flex justify-between text-vintage-dust"><span>Zwischensumme</span><span>{formatPreis(order.subtotal_cents / 100)}</span></div>
-            {order.rabatt_cents > 0 && <div className="flex justify-between text-vintage-sage"><span>Rabatt</span><span>− {formatPreis(order.rabatt_cents / 100)}</span></div>}
-            <div className="flex justify-between text-vintage-dust text-xs"><span>inkl. USt.</span><span>{formatPreis(order.tax_total_cents / 100)}</span></div>
-            <div className="flex justify-between font-serif text-vintage-espresso text-lg pt-2 border-t border-vintage-sand"><span>Summe</span><span>{formatPreis(order.total_cents / 100)}</span></div>
+            <div className="flex justify-between text-vintage-dust"><span>Промежуточная сумма</span><span>{formatPreis(order.subtotal_cents / 100)}</span></div>
+            {order.rabatt_cents > 0 && <div className="flex justify-between text-vintage-sage"><span>Скидка</span><span>− {formatPreis(order.rabatt_cents / 100)}</span></div>}
+            <div className="flex justify-between text-vintage-dust text-xs"><span>включая НДС</span><span>{formatPreis(order.tax_total_cents / 100)}</span></div>
+            <div className="flex justify-between font-serif text-vintage-espresso text-lg pt-2 border-t border-vintage-sand"><span>Итого</span><span>{formatPreis(order.total_cents / 100)}</span></div>
           </div>
         </section>
 
         {/* Meta */}
         <div className="space-y-4">
           <section className="bg-vintage-white border border-vintage-sand p-5 space-y-2" style={{ borderRadius: "var(--radius-card)" }}>
-            <h3 className="font-serif text-vintage-espresso">Status</h3>
+            <h3 className="font-serif text-vintage-espresso">Статус</h3>
             <p className="font-serif text-lg text-vintage-gold uppercase">{order.status}</p>
-            {order.bezahlt_am && <p className="text-xs text-vintage-dust">Bezahlt am {new Date(order.bezahlt_am).toLocaleDateString("de-DE")}</p>}
+            {order.bezahlt_am && <p className="text-xs text-vintage-dust">Оплачено {new Date(order.bezahlt_am).toLocaleDateString("ru-RU")}</p>}
           </section>
 
           {order.tracking_nummer && (
             <section className="bg-vintage-white border border-vintage-sand p-5 space-y-2" style={{ borderRadius: "var(--radius-card)" }}>
               <h3 className="font-serif text-vintage-espresso flex items-center gap-2">
-                <Truck className="w-3.5 h-3.5 text-vintage-gold" /> Versand
+                <Truck className="w-3.5 h-3.5 text-vintage-gold" /> Доставка
               </h3>
               <p className="text-sm font-mono text-vintage-brown">{order.tracking_nummer}</p>
               {order.tracking_url && (
                 <a href={order.tracking_url} target="_blank" className="text-xs text-vintage-brown underline">
-                  Sendung verfolgen
+                  Отследить
                 </a>
               )}
             </section>
@@ -100,7 +100,7 @@ export default async function BestelldetailPage({
             className="flex items-center gap-2 px-4 py-3 border border-vintage-sand text-vintage-brown text-xs font-sans uppercase tracking-widest hover:bg-vintage-parchment transition-colors"
             style={{ borderRadius: "var(--radius-button)" }}
           >
-            <FileText className="w-3.5 h-3.5" /> Rechnung als PDF
+            <FileText className="w-3.5 h-3.5" /> Счёт-фактура (PDF)
           </a>
         </div>
       </div>

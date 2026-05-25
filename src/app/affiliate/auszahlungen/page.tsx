@@ -60,8 +60,8 @@ export default async function AuszahlungenPage() {
                   <p className="font-serif text-vintage-espresso">{formatPreis(a.betrag_cent / 100)}</p>
                   <p className="text-xs text-vintage-dust font-sans flex items-center gap-1">
                     {a.status === "bezahlt"
-                      ? <><CheckCircle2 className="w-3 h-3 text-vintage-sage" /> Bezahlt am {a.bezahlt_am ? new Date(a.bezahlt_am).toLocaleDateString("de-DE") : ""}</>
-                      : <><Clock className="w-3 h-3 text-vintage-gold" /> Erstellt am {new Date(a.erstellt_am).toLocaleDateString("de-DE")}</>
+                      ? <><CheckCircle2 className="w-3 h-3 text-vintage-sage" /> Bezahlt am {a.bezahlt_am ? new Date(a.bezahlt_am).toLocaleDateString("ru-RU") : ""}</>
+                      : <><Clock className="w-3 h-3 text-vintage-gold" /> Erstellt am {new Date(a.erstellt_am).toLocaleDateString("ru-RU")}</>
                     }
                   </p>
                 </div>

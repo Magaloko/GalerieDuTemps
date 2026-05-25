@@ -5,7 +5,7 @@ import { AuthSessionProvider } from "@/components/layout/session-provider";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: { default: "Partner-Bereich", template: "%s | Partner – Galerie du Temps" },
+  title: { default: "Партнёрский кабинет", template: "%s | Партнёр — Galerie du Temps" },
 };
 
 /**
@@ -41,7 +41,7 @@ export default async function AffiliateLayout({ children }: { children: React.Re
             <div className="flex items-center justify-between">
               <div />
               <div className="text-xs text-vintage-dust font-sans tracking-wider">
-                {new Date().toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                {new Date().toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
               </div>
             </div>
           </header>

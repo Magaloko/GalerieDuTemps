@@ -13,8 +13,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const alle = await alleKategorien();
   const kat = alle.find(k => k.slug === kategorie);
   return kat
-    ? { title: `${kat.name} – Galerie du Temps`, description: kat.beschreibung ?? undefined }
-    : { title: "Kategorie nicht gefunden" };
+    ? { title: `${kat.name} — Galerie du Temps`, description: kat.beschreibung ?? undefined }
+    : { title: "Категория не найдена" };
 }
 
 export default async function KategoriePage({ params }: Props) {
@@ -29,7 +29,7 @@ export default async function KategoriePage({ params }: Props) {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
       <nav className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
         <Link href="/katalog" className="hover:text-vintage-brown flex items-center gap-1 transition-colors">
-          <ChevronLeft className="w-3 h-3" /> Katalog
+          <ChevronLeft className="w-3 h-3" /> Каталог
         </Link>
         <span>/</span>
         <span className="text-vintage-ink">{kat.name}</span>
@@ -42,7 +42,7 @@ export default async function KategoriePage({ params }: Props) {
           <p className="text-vintage-dust font-sans mt-2 max-w-xl">{kat.beschreibung}</p>
         )}
         <p className="text-vintage-dust text-xs font-sans mt-1">
-          {daten.gesamt} {daten.gesamt === 1 ? "Stück" : "Stücke"}
+          Всего: {daten.gesamt}
         </p>
       </div>
 
@@ -62,8 +62,8 @@ export default async function KategoriePage({ params }: Props) {
 
       <ProduktGrid
         produkte={daten.items}
-        leerText={`Keine Produkte in ${kat.name}`}
-        leerUntertext="Schau in anderen Kategorien vorbei"
+        leerText={`Нет товаров в категории «${kat.name}»`}
+        leerUntertext="Загляните в другие категории"
       />
     </div>
   );

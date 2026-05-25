@@ -16,13 +16,13 @@ import {
 } from "lucide-react";
 
 const NAV = [
-  { href: "/affiliate",              label: "Übersicht",     icon: LayoutDashboard, exact: true  },
-  { href: "/affiliate/links",        label: "Meine Links",   icon: Link2,           exact: false },
-  { href: "/affiliate/provisionen",  label: "Provisionen",   icon: Coins,           exact: false },
-  { href: "/affiliate/downline",     label: "Meine Partner", icon: Users,           exact: false },
-  { href: "/affiliate/auszahlungen", label: "Auszahlungen",  icon: Wallet,          exact: false },
-  { href: "/affiliate/marketing",    label: "Marketing",     icon: Megaphone,       exact: false },
-  { href: "/affiliate/profil",       label: "Profil",        icon: UserCircle,     exact: false },
+  { href: "/affiliate",              label: "Обзор",          icon: LayoutDashboard, exact: true  },
+  { href: "/affiliate/links",        label: "Мои ссылки",     icon: Link2,           exact: false },
+  { href: "/affiliate/provisionen",  label: "Комиссии",       icon: Coins,           exact: false },
+  { href: "/affiliate/downline",     label: "Мои партнёры",   icon: Users,           exact: false },
+  { href: "/affiliate/auszahlungen", label: "Выплаты",        icon: Wallet,          exact: false },
+  { href: "/affiliate/marketing",    label: "Маркетинг",      icon: Megaphone,       exact: false },
+  { href: "/affiliate/profil",       label: "Профиль",        icon: UserCircle,     exact: false },
 ];
 
 interface Props {
@@ -47,7 +47,7 @@ export function AffiliateSidebar({ userName, userEmail, referralCode }: Props) {
           <Sparkles className="w-5 h-5 text-vintage-gold group-hover:scale-110 transition-transform" />
           <div>
             <p className="font-serif text-lg text-vintage-cream leading-tight">Galerie du Temps</p>
-            <p className="text-vintage-dust text-xs tracking-wider uppercase">Partner-Bereich</p>
+            <p className="text-vintage-dust text-xs tracking-wider uppercase">Партнёрский кабинет</p>
           </div>
         </Link>
       </div>
@@ -55,7 +55,7 @@ export function AffiliateSidebar({ userName, userEmail, referralCode }: Props) {
       {/* Referral Code */}
       {referralCode && (
         <div className="px-4 py-3 border-b border-white/10 bg-vintage-gold/10">
-          <p className="text-vintage-cream/60 text-[10px] font-sans uppercase tracking-widest">Dein Code</p>
+          <p className="text-vintage-cream/60 text-[10px] font-sans uppercase tracking-widest">Ваш код</p>
           <p className="font-mono text-vintage-gold text-base mt-0.5 tracking-widest">{referralCode}</p>
         </div>
       )}
@@ -88,7 +88,7 @@ export function AffiliateSidebar({ userName, userEmail, referralCode }: Props) {
         <Link href="/" target="_blank"
           className="flex items-center gap-3 px-3 py-2.5 text-xs font-sans tracking-widest uppercase text-vintage-cream/40 hover:text-vintage-cream/70 transition-colors"
           style={{ borderRadius: "var(--radius-card)" }}>
-          <Sparkles className="w-3.5 h-3.5" /> Zur Hauptseite
+          <Sparkles className="w-3.5 h-3.5" /> На главную
         </Link>
       </div>
 

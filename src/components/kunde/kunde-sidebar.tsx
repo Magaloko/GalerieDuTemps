@@ -20,14 +20,14 @@ export function KundeSidebar({ vorname, email, customer_type }: Props) {
   const istB2B = customer_type.startsWith("b2b");
 
   const navItems = [
-    { href: "/kunde",              label: "Übersicht",     icon: LayoutDashboard, exact: true },
-    { href: "/kunde/bestellungen", label: "Bestellungen",  icon: ShoppingBag,     exact: false },
-    { href: "/wunschliste",        label: "Wunschliste",   icon: Heart,           exact: false },
+    { href: "/kunde",              label: "Обзор",         icon: LayoutDashboard, exact: true },
+    { href: "/kunde/bestellungen", label: "Заказы",        icon: ShoppingBag,     exact: false },
+    { href: "/wunschliste",        label: "Избранное",     icon: Heart,           exact: false },
     ...(istB2B || customer_type === "b2c"
-      ? [{ href: "/kunde/b2b", label: "B2B-Status", icon: Briefcase, exact: false }]
+      ? [{ href: "/kunde/b2b", label: "B2B-статус", icon: Briefcase, exact: false }]
       : []),
-    { href: "/kunde/profil",       label: "Profil",        icon: UserCircle,     exact: false },
-    { href: "/kunde/passwort",     label: "Passwort",      icon: Lock,           exact: false },
+    { href: "/kunde/profil",       label: "Профиль",       icon: UserCircle,     exact: false },
+    { href: "/kunde/passwort",     label: "Пароль",        icon: Lock,           exact: false },
   ];
 
   return (
@@ -40,19 +40,19 @@ export function KundeSidebar({ vorname, email, customer_type }: Props) {
           <Sparkles className="w-5 h-5 text-vintage-gold group-hover:scale-110 transition-transform" />
           <div>
             <p className="font-serif text-lg text-vintage-cream leading-tight">Galerie du Temps</p>
-            <p className="text-vintage-dust text-xs tracking-wider uppercase">Mein Konto</p>
+            <p className="text-vintage-dust text-xs tracking-wider uppercase">Мой кабинет</p>
           </div>
         </Link>
       </div>
 
       {/* Customer-Type Badge */}
       <div className="px-4 py-3 border-b border-white/10">
-        <p className="text-vintage-cream/60 text-[10px] font-sans uppercase tracking-widest">Status</p>
+        <p className="text-vintage-cream/60 text-[10px] font-sans uppercase tracking-widest">Статус</p>
         <p className="font-serif text-vintage-gold text-sm mt-0.5">
-          {customer_type === "b2c"            && "Privatkund:in"}
-          {customer_type === "b2b_pending"    && "B2B – wartet"}
-          {customer_type === "b2b_verified"   && "B2B – verifiziert"}
-          {customer_type === "b2b_rejected"   && "B2B – abgelehnt"}
+          {customer_type === "b2c"            && "Частный клиент"}
+          {customer_type === "b2b_pending"    && "B2B — на рассмотрении"}
+          {customer_type === "b2b_verified"   && "B2B — подтверждён"}
+          {customer_type === "b2b_rejected"   && "B2B — отклонён"}
         </p>
       </div>
 
@@ -77,7 +77,7 @@ export function KundeSidebar({ vorname, email, customer_type }: Props) {
         <Link href="/katalog" target="_blank"
           className="flex items-center gap-3 px-3 py-2.5 text-xs font-sans tracking-widest uppercase text-vintage-cream/40 hover:text-vintage-cream/70 transition-colors"
           style={{ borderRadius: "var(--radius-card)" }}>
-          <Sparkles className="w-3.5 h-3.5" /> Zum Katalog
+          <Sparkles className="w-3.5 h-3.5" /> К каталогу
         </Link>
       </div>
 
@@ -89,7 +89,7 @@ export function KundeSidebar({ vorname, email, customer_type }: Props) {
             </span>
           </div>
           <div className="min-w-0">
-            <p className="text-vintage-cream text-sm font-sans truncate">{vorname ?? "Kund:in"}</p>
+            <p className="text-vintage-cream text-sm font-sans truncate">{vorname ?? "Клиент"}</p>
             <p className="text-vintage-dust text-xs truncate">{email ?? ""}</p>
           </div>
         </div>
@@ -98,7 +98,7 @@ export function KundeSidebar({ vorname, email, customer_type }: Props) {
           className="w-full flex items-center gap-2 px-3 py-2 text-vintage-cream/60 hover:text-vintage-burgundy hover:bg-vintage-burgundy/10 text-xs font-sans tracking-wider uppercase transition-colors"
           style={{ borderRadius: "var(--radius-vintage)" }}
         >
-          <LogOut className="w-3.5 h-3.5" /> Abmelden
+          <LogOut className="w-3.5 h-3.5" /> Выйти
         </button>
       </div>
     </aside>

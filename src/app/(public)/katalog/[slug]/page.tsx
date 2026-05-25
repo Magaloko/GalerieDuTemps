@@ -15,7 +15,7 @@ interface Props { params: Promise<{ slug: string }> }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const p = await oeffentlichesProduktBySlug(slug);
-  if (!p) return { title: "Produkt nicht gefunden" };
+  if (!p) return { title: "Товар не найден" };
   return {
     title:       p.seo_titel        ?? `${p.name} – Galerie du Temps`,
     description: p.seo_beschreibung ?? p.kurzbeschreibung ?? undefined,

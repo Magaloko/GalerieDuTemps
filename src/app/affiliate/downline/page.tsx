@@ -80,7 +80,7 @@ function DownlineListe({ items }: { items: Awaited<ReturnType<typeof downlineLad
             <div className="min-w-0 flex-1">
               <p className="font-serif text-vintage-espresso truncate">{p.vorname} {p.nachname}</p>
               <p className="text-xs text-vintage-dust font-sans">
-                Seit {new Date(p.erstellt_am).toLocaleDateString("de-DE")}
+                Seit {new Date(p.erstellt_am).toLocaleDateString("ru-RU")}
               </p>
             </div>
             <span className={`inline-block px-2 py-0.5 text-xs font-sans ${status.klasse}`}

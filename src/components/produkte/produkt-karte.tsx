@@ -60,7 +60,7 @@ export function ProduktKarte({ produkt, priority = false }: ProduktKarteProps) {
               className="px-2 py-0.5 bg-vintage-gold text-vintage-espresso text-xs font-sans"
               style={{ borderRadius: "var(--radius-vintage)" }}
             >
-              Highlight
+              Топ
             </span>
           )}
         </div>
@@ -76,7 +76,7 @@ export function ProduktKarte({ produkt, priority = false }: ProduktKarteProps) {
             disabled:opacity-50
           "
           style={{ borderRadius: "var(--radius-card)" }}
-          aria-label={gemerkt ? "Von Wunschliste entfernen" : "Zur Wunschliste hinzufügen"}
+          aria-label={gemerkt ? "Убрать из избранного" : "Добавить в избранное"}
         >
           <Heart
             className={`w-4 h-4 transition-colors ${
@@ -107,7 +107,7 @@ export function ProduktKarte({ produkt, priority = false }: ProduktKarteProps) {
           <div>
             {produkt.b2c_mode === "teaser" ? (
               <Link href="/kunde/registrieren?tab=business" className="font-sans text-xs text-vintage-gold hover:text-vintage-copper transition-colors">
-                Als Studio registrieren →
+                Зарегистрироваться как студия →
               </Link>
             ) : (
               <>
@@ -123,11 +123,11 @@ export function ProduktKarte({ produkt, priority = false }: ProduktKarteProps) {
             )}
           </div>
           {produkt.verkauft ? (
-            <span className="text-xs text-vintage-dust font-sans">Verkauft</span>
+            <span className="text-xs text-vintage-dust font-sans">Продано</span>
           ) : produkt.lagerbestand === 0 ? (
-            <span className="text-xs text-vintage-copper font-sans">Ausverkauft</span>
+            <span className="text-xs text-vintage-copper font-sans">Нет в наличии</span>
           ) : produkt.b2c_mode === "teaser" ? (
-            <span className="text-xs text-vintage-gold font-sans">Profi-Linie</span>
+            <span className="text-xs text-vintage-gold font-sans">Pro-линейка</span>
           ) : null}
         </div>
       </div>

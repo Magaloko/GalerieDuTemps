@@ -35,7 +35,7 @@ export function AddToCartButton({
         className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-vintage-dust/30 text-vintage-dust font-sans text-xs tracking-widest uppercase cursor-not-allowed"
         style={{ borderRadius: "var(--radius-button)" }}
       >
-        {verkauft ? "Bereits verkauft" : "Ausverkauft"}
+        {verkauft ? "Уже продано" : "Нет в наличии"}
       </button>
     );
   }
@@ -71,8 +71,8 @@ export function AddToCartButton({
         style={{ borderRadius: "var(--radius-button)" }}
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" />
-          : hinzugefuegt ? <><Check className="w-4 h-4" /> Hinzugefügt!</>
-          : <><ShoppingBag className="w-4 h-4" /> In den Warenkorb</>
+          : hinzugefuegt ? <><Check className="w-4 h-4" /> Добавлено!</>
+          : <><ShoppingBag className="w-4 h-4" /> В корзину</>
         }
       </button>
       {hinzugefuegt && (
@@ -81,7 +81,7 @@ export function AddToCartButton({
           className="px-5 py-3 border border-vintage-sand text-vintage-brown font-sans text-xs tracking-widest uppercase hover:bg-vintage-parchment transition-colors"
           style={{ borderRadius: "var(--radius-button)" }}
         >
-          Zum Warenkorb
+          К корзине
         </button>
       )}
     </div>

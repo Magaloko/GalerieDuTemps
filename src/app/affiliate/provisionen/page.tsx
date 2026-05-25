@@ -100,7 +100,7 @@ export default async function ProvisionenPage({
                   return (
                     <tr key={p.id} className="hover:bg-vintage-parchment/30 transition-colors">
                       <td className="px-4 py-3 text-vintage-dust">
-                        {new Date(p.erstellt_am).toLocaleDateString("de-DE")}
+                        {new Date(p.erstellt_am).toLocaleDateString("ru-RU")}
                       </td>
                       <td className="px-4 py-3 text-vintage-ink">{p.produkt_name ?? "–"}</td>
                       <td className="px-4 py-3 text-center">

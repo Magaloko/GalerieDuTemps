@@ -8,7 +8,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   return (
-    <html lang="de">
+    <html lang="ru">
       <body style={{
         fontFamily: "Georgia, serif",
         background: "#F5F0E8",
@@ -23,10 +23,10 @@ export default function GlobalError({
         <div style={{ maxWidth: "400px", textAlign: "center" }}>
           <p style={{ color: "#C9A84C", letterSpacing: "0.3em", fontSize: "18px", margin: "0 0 16px" }}>✦</p>
           <h1 style={{ fontSize: "28px", margin: "0 0 16px", fontWeight: "normal" }}>
-            Schwerwiegender Fehler
+            Серьёзная ошибка
           </h1>
           <p style={{ color: "#8B6F47", fontSize: "14px", marginBottom: "32px", lineHeight: 1.6 }}>
-            Die Anwendung konnte nicht geladen werden. Bitte aktualisiere die Seite.
+            Приложение не удалось загрузить. Пожалуйста, обновите страницу.
           </p>
           {error.digest && (
             <p style={{ fontSize: "11px", color: "#9B9B9B", fontFamily: "monospace", marginBottom: "24px" }}>
@@ -47,7 +47,7 @@ export default function GlobalError({
               borderRadius: "3px",
             }}
           >
-            Neu laden
+            Перезагрузить
           </button>
         </div>
       </body>

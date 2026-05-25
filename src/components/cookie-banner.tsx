@@ -21,7 +21,6 @@ export function CookieBanner() {
   const [affiliateAn,   setAffiliateAn]   = useState(false);
   const [analyticsAn,   setAnalyticsAn]   = useState(false);
 
-  // State syncen wenn Settings öffnen
   useEffect(() => {
     if (settingsOffen) {
       setAffiliateAn(affiliateErlaubt);
@@ -29,7 +28,6 @@ export function CookieBanner() {
     }
   }, [settingsOffen, affiliateErlaubt, analyticsErlaubt]);
 
-  // Footer-Trigger: öffne Settings-Modal wenn user auf "Cookie-Einstellungen" klickt
   useEffect(() => {
     const handler = (e: Event) => {
       const target = e.target as HTMLElement;
@@ -42,10 +40,8 @@ export function CookieBanner() {
     return () => document.removeEventListener("click", handler);
   }, []);
 
-  // SSR-Safe: nichts rendern bis hydriert
   if (!hydrated) return null;
 
-  // Banner anzeigen wenn keine Entscheidung getroffen
   const zeigeBanner = !hatEntschieden && !settingsOffen;
 
   return (
@@ -57,17 +53,17 @@ export function CookieBanner() {
             className="max-w-4xl mx-auto bg-vintage-espresso text-vintage-cream p-5 sm:p-6 grid md:grid-cols-[1fr,auto] gap-4 items-center"
             style={{ borderRadius: "var(--radius-card)", boxShadow: "var(--shadow-vintage-xl)" }}
             role="dialog"
-            aria-label="Cookie-Einwilligung"
+            aria-label="Согласие на использование cookie"
           >
             <div className="flex items-start gap-3">
               <Cookie className="w-5 h-5 text-vintage-gold flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-serif text-base mb-1">Cookies & Tracking</p>
+                <p className="font-serif text-base mb-1">Cookies и трекинг</p>
                 <p className="text-vintage-cream/70 text-xs font-sans leading-relaxed">
-                  Wir nutzen technisch notwendige Cookies (immer aktiv) sowie optionale
-                  Affiliate-Tracking-Cookies. Letztere ordnen Käufe Partnern zu, die uns
-                  vermitteln. Mit deiner Zustimmung hilfst du unserem Partner-Programm.
-                  Mehr Infos in der <Link href="/datenschutz" className="text-vintage-gold underline">Datenschutzerklärung</Link>.
+                  Мы используем технически необходимые cookies (всегда активны), а также
+                  опциональные cookies партнёрской программы. Последние помогают засчитывать
+                  покупки партнёрам, которые нас рекомендовали. Подробности — в{" "}
+                  <Link href="/datenschutz" className="text-vintage-gold underline">политике конфиденциальности</Link>.
                 </p>
               </div>
             </div>
@@ -77,21 +73,21 @@ export function CookieBanner() {
                 className="flex items-center justify-center gap-1.5 px-4 py-2.5 border border-vintage-cream/30 text-vintage-cream text-xs font-sans tracking-widest uppercase hover:bg-vintage-cream/10 transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}
               >
-                <Settings className="w-3 h-3" /> Einstellen
+                <Settings className="w-3 h-3" /> Настроить
               </button>
               <button
                 onClick={akzeptiereNurNotwendig}
                 className="px-4 py-2.5 border border-vintage-cream/30 text-vintage-cream text-xs font-sans tracking-widest uppercase hover:bg-vintage-cream/10 transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}
               >
-                Nur Notwendige
+                Только необходимые
               </button>
               <button
                 onClick={akzeptiereAlle}
                 className="px-5 py-2.5 bg-vintage-gold text-vintage-espresso text-xs font-sans tracking-widest uppercase hover:bg-vintage-copper transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}
               >
-                Alle akzeptieren
+                Принять все
               </button>
             </div>
           </div>
@@ -110,60 +106,56 @@ export function CookieBanner() {
               onClick={() => setSettingsOffen(false)}
               className="absolute top-3 right-3 p-1.5 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-parchment transition-colors"
               style={{ borderRadius: "var(--radius-vintage)" }}
-              aria-label="Schließen"
+              aria-label="Закрыть"
             >
               <X className="w-4 h-4" />
             </button>
 
             <div className="mb-5">
               <Cookie className="w-6 h-6 text-vintage-gold mb-2" />
-              <h2 className="font-serif text-xl text-vintage-espresso">Cookie-Einstellungen</h2>
+              <h2 className="font-serif text-xl text-vintage-espresso">Настройки cookies</h2>
               <p className="text-vintage-dust text-xs font-sans mt-1">
-                Bestimme selbst, welche Cookies wir setzen dürfen.
+                Выберите, какие cookies мы можем устанавливать.
               </p>
             </div>
 
-            {/* Notwendig (locked) */}
             <Kategorie
-              titel="Technisch Notwendig"
-              beschreibung="Session-Token (Login), CSRF-Schutz, Sprach-Einstellung. Ohne diese funktioniert die Website nicht."
+              titel="Технически необходимые"
+              beschreibung="Токен сессии (вход), защита CSRF, выбор языка. Без этих cookies сайт не работает."
               aktiv={true}
               disabled
               onChange={() => {}}
+              immerAktivLabel="Всегда активно"
             />
 
-            {/* Affiliate */}
             <Kategorie
-              titel="Affiliate-Tracking"
-              beschreibung="Cookie 'aff_ref' (HttpOnly, 30 Tage). Ordnet Käufe Partnern zu, die uns vermitteln. Unterstützt unser Partner-Programm."
+              titel="Партнёрский трекинг"
+              beschreibung="Cookie 'aff_ref' (HttpOnly, 30 дней). Позволяет начислять комиссию партнёрам, которые вас привели. Поддерживает нашу партнёрскую программу."
               aktiv={affiliateAn}
               onChange={setAffiliateAn}
             />
 
-            {/* Analytics (optional, default off) */}
             <Kategorie
-              titel="Analytics (geplant)"
-              beschreibung="Anonyme Nutzungsstatistiken zur Verbesserung der Website. Aktuell nicht aktiv."
+              titel="Аналитика (запланировано)"
+              beschreibung="Анонимная статистика использования для улучшения сайта. В данный момент не используется."
               aktiv={analyticsAn}
               onChange={setAnalyticsAn}
-              hinweis="Aktuell keine Analytics-Cookies im Einsatz."
+              hinweis="Сейчас аналитические cookies не используются."
             />
 
-            {/* Aktuelle Entscheidung */}
             {consent?.entschieden_am && (
               <p className="text-xs text-vintage-dust font-sans mt-4 italic">
-                Letzte Entscheidung: {new Date(consent.entschieden_am).toLocaleString("de-DE")}
+                Последний выбор: {new Date(consent.entschieden_am).toLocaleString("ru-RU")}
               </p>
             )}
 
-            {/* Actions */}
             <div className="flex flex-col sm:flex-row gap-2 mt-6">
               <button
                 onClick={() => { akzeptiereNurNotwendig(); setSettingsOffen(false); }}
                 className="px-4 py-2.5 border border-vintage-sand text-vintage-brown text-xs font-sans tracking-widest uppercase hover:bg-vintage-parchment transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}
               >
-                Alle ablehnen
+                Отклонить все
               </button>
               <button
                 onClick={() => {
@@ -173,13 +165,13 @@ export function CookieBanner() {
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-vintage-espresso text-vintage-cream text-xs font-sans tracking-widest uppercase hover:bg-vintage-brown transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}
               >
-                <Check className="w-3.5 h-3.5" /> Auswahl speichern
+                <Check className="w-3.5 h-3.5" /> Сохранить выбор
               </button>
             </div>
 
             <p className="text-center text-vintage-dust text-xs font-sans mt-4">
               <Link href="/datenschutz" className="text-vintage-brown hover:text-vintage-espresso underline">
-                Datenschutzerklärung
+                Политика конфиденциальности
               </Link>
             </p>
           </div>
@@ -190,7 +182,7 @@ export function CookieBanner() {
 }
 
 function Kategorie({
-  titel, beschreibung, aktiv, disabled = false, onChange, hinweis,
+  titel, beschreibung, aktiv, disabled = false, onChange, hinweis, immerAktivLabel,
 }: {
   titel: string;
   beschreibung: string;
@@ -198,6 +190,7 @@ function Kategorie({
   disabled?: boolean;
   onChange: (v: boolean) => void;
   hinweis?: string;
+  immerAktivLabel?: string;
 }) {
   return (
     <div className="border-t border-vintage-sand py-4 first-of-type:border-t-0 first-of-type:pt-2">
@@ -212,9 +205,9 @@ function Kategorie({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <p className="font-serif text-vintage-espresso">{titel}</p>
-            {disabled && (
+            {disabled && immerAktivLabel && (
               <span className="text-[10px] font-sans uppercase tracking-widest px-2 py-0.5 bg-vintage-dust/20 text-vintage-dust" style={{ borderRadius: "var(--radius-vintage)" }}>
-                Immer aktiv
+                {immerAktivLabel}
               </span>
             )}
           </div>

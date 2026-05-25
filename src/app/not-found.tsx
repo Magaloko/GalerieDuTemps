@@ -2,8 +2,10 @@ import Link from "next/link";
 import { ArrowLeft, Search } from "lucide-react";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { getDictionary } from "@/i18n";
 
-export default function NotFound() {
+export default async function NotFound() {
+  const { t } = await getDictionary();
   return (
     <div className="flex flex-col min-h-screen">
       <SiteHeader />
@@ -17,16 +19,16 @@ export default function NotFound() {
 
           <div className="divider-ornament my-6 max-w-xs mx-auto">
             <span className="text-vintage-sand text-xs tracking-widest uppercase">
-              Verloren in der Zeit
+              Заблудились во времени
             </span>
           </div>
 
           <p className="font-serif text-2xl text-vintage-brown mb-3">
-            Diese Seite existiert nicht
+            Страница не найдена
           </p>
           <p className="text-vintage-dust text-sm font-sans mb-10 leading-relaxed">
-            Vielleicht wurde sie verkauft, verlegt — oder hat sich einfach in den
-            Tiefen der Vergangenheit verloren.
+            Возможно, эта вещь была продана, перемещена — или просто
+            потерялась в глубинах прошлого.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -41,7 +43,7 @@ export default function NotFound() {
               style={{ borderRadius: "var(--radius-button)" }}
             >
               <ArrowLeft className="w-4 h-4" />
-              Zur Startseite
+              {t.kunde.zur_hauptseite}
             </Link>
             <Link
               href="/katalog"
@@ -54,7 +56,7 @@ export default function NotFound() {
               style={{ borderRadius: "var(--radius-button)" }}
             >
               <Search className="w-4 h-4" />
-              Katalog durchsuchen
+              {t.katalog.titel}
             </Link>
           </div>
         </div>

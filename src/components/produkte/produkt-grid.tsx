@@ -11,8 +11,8 @@ interface ProduktGridProps {
 
 export function ProduktGrid({
   produkte,
-  leerText      = "Keine Produkte gefunden",
-  leerUntertext = "Schau später wieder vorbei.",
+  leerText      = "Ничего не найдено",
+  leerUntertext = "Загляните позже.",
   prioCount     = 4,
 }: ProduktGridProps) {
   if (produkte.length === 0) {

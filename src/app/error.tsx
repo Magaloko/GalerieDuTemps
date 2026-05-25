@@ -25,16 +25,16 @@ export default function Error({
 
         <p className="text-vintage-gold text-sm tracking-widest mb-2">✦</p>
         <h1 className="font-serif text-3xl text-vintage-espresso mb-3">
-          Etwas ist schiefgegangen
+          Что-то пошло не так
         </h1>
         <p className="text-vintage-dust text-sm font-sans mb-8 leading-relaxed">
-          Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut
-          oder kehre zur Startseite zurück.
+          Произошла непредвиденная ошибка. Попробуйте ещё раз
+          или вернитесь на главную.
         </p>
 
         {error.digest && (
           <p className="text-xs text-vintage-dust font-mono mb-6">
-            Fehler-ID: {error.digest}
+            ID ошибки: {error.digest}
           </p>
         )}
 
@@ -50,7 +50,7 @@ export default function Error({
             style={{ borderRadius: "var(--radius-button)" }}
           >
             <RotateCcw className="w-4 h-4" />
-            Erneut versuchen
+            Повторить
           </button>
           <Link
             href="/"
@@ -63,7 +63,7 @@ export default function Error({
             style={{ borderRadius: "var(--radius-button)" }}
           >
             <Home className="w-4 h-4" />
-            Zur Startseite
+            На главную
           </Link>
         </div>
       </div>

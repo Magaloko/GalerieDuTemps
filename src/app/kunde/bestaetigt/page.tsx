@@ -5,7 +5,7 @@ import { emailConfirmationEinloesen } from "@/lib/db/customer-auth";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "E-Mail bestätigt" };
+export const metadata: Metadata = { title: "E-mail подтверждён" };
 export const dynamic = "force-dynamic";
 
 export default async function BestaetigtPage({
@@ -29,12 +29,12 @@ export default async function BestaetigtPage({
           </div>
           <p className="text-vintage-gold text-xs tracking-widest uppercase mb-2">✦</p>
           <h1 className="font-serif text-3xl text-vintage-espresso mb-4">
-            {ok ? "E-Mail bestätigt!" : "Link ungültig"}
+            {ok ? "E-mail подтверждён!" : "Ссылка недействительна"}
           </h1>
           <p className="text-vintage-dust font-sans text-sm leading-relaxed mb-8">
             {ok
-              ? "Dein Konto ist jetzt aktiv. Du kannst dich anmelden."
-              : "Der Bestätigungs-Link ist ungültig oder abgelaufen. Bitte registriere dich erneut."
+              ? "Ваш аккаунт активирован. Теперь вы можете войти."
+              : "Ссылка подтверждения недействительна или истекла. Пожалуйста, зарегистрируйтесь снова."
             }
           </p>
           <Link
@@ -42,7 +42,7 @@ export default async function BestaetigtPage({
             className="inline-flex items-center gap-2 px-6 py-3 bg-vintage-espresso text-vintage-cream font-sans text-xs tracking-widest uppercase hover:bg-vintage-brown transition-colors"
             style={{ borderRadius: "var(--radius-button)" }}
           >
-            {ok ? "Jetzt anmelden" : "Erneut registrieren"}
+            {ok ? "Войти" : "Зарегистрироваться снова"}
           </Link>
         </div>
       </main>

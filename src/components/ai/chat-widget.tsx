@@ -13,10 +13,10 @@ import { useChat } from "@/hooks/use-chat";
 import { ProduktMini } from "./produkt-mini";
 
 const SCHNELL_FRAGEN = [
-  "Was sind eure Highlights?",
-  "Zeig mir Möbel aus den 60ern",
-  "Was habt ihr unter 200€?",
-  "Welche Kategorien gibt es?",
+  "Что у вас в избранном?",
+  "Покажи мебель 60-х годов",
+  "Что есть до 100 000 ₸?",
+  "Какие у вас категории?",
 ];
 
 export function ChatWidget() {
@@ -70,7 +70,7 @@ export function ChatWidget() {
           borderRadius: "50%",
           boxShadow:    "var(--shadow-vintage-lg)",
         }}
-        aria-label={offen ? "Chat schließen" : "Chat öffnen"}
+        aria-label={offen ? "Закрыть чат" : "Открыть чат"}
       >
         {offen ? (
           <X className="w-5 h-5" />
@@ -103,9 +103,9 @@ export function ChatWidget() {
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-vintage-gold" />
               <div className="leading-tight">
-                <p className="font-serif text-base">Vintage-Assistent</p>
+                <p className="font-serif text-base">Винтаж-ассистент</p>
                 <p className="text-vintage-cream/50 text-[10px] font-sans uppercase tracking-widest">
-                  KI-gestützt · DeepSeek
+                  ИИ · DeepSeek
                 </p>
               </div>
             </div>
@@ -113,8 +113,8 @@ export function ChatWidget() {
               <button
                 onClick={zuruecksetzen}
                 className="p-1.5 text-vintage-cream/50 hover:text-vintage-cream transition-colors"
-                aria-label="Verlauf zurücksetzen"
-                title="Neuer Chat"
+                aria-label="Очистить историю"
+                title="Новый чат"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
               </button>
@@ -132,16 +132,16 @@ export function ChatWidget() {
                   <Sparkles className="w-6 h-6 text-vintage-gold" />
                 </div>
                 <p className="font-serif text-vintage-espresso text-lg mb-1">
-                  Hallo! 👋
+                  Здравствуйте! 👋
                 </p>
                 <p className="text-vintage-dust text-xs font-sans mb-6 max-w-xs">
-                  Ich helfe dir das perfekte Vintage-Stück zu finden.
-                  Frag mich nach Kategorien, Epochen oder Preisen.
+                  Я помогу вам найти идеальную винтажную вещь.
+                  Спросите меня о категориях, эпохах или ценах.
                 </p>
 
                 <div className="w-full space-y-2">
                   <p className="text-vintage-dust text-[10px] font-sans uppercase tracking-widest mb-1">
-                    Schnellfragen
+                    Популярные вопросы
                   </p>
                   {SCHNELL_FRAGEN.map(frage => (
                     <button
@@ -204,7 +204,7 @@ export function ChatWidget() {
             {isLoading && (
               <div className="flex items-center gap-2 text-vintage-dust text-xs font-sans px-2">
                 <Loader2 className="w-3 h-3 animate-spin" />
-                Denkt nach …
+                Думаю …
               </div>
             )}
 
@@ -228,7 +228,7 @@ export function ChatWidget() {
               type="text"
               value={text}
               onChange={e => setText(e.target.value)}
-              placeholder="Nachricht schreiben …"
+              placeholder="Напишите сообщение …"
               disabled={isLoading}
               className="
                 flex-1 px-3 py-2
@@ -250,7 +250,7 @@ export function ChatWidget() {
                 transition-colors
               "
               style={{ borderRadius: "var(--radius-vintage)" }}
-              aria-label="Senden"
+              aria-label="Отправить"
             >
               <Send className="w-4 h-4" />
             </button>
