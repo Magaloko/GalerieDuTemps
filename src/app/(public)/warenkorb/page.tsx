@@ -13,7 +13,7 @@ export default async function WarenkorbPage() {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="mb-8">
         <p className="text-vintage-gold text-xs tracking-widest uppercase mb-1">✦</p>
-        <h1 className="font-serif text-3xl text-vintage-espresso">{t.cart.titel}</h1>
+        <h1 className="font-serif text-3xl text-vintage-cream">{t.cart.titel}</h1>
       </div>
       <WarenkorbClient
         labels={{

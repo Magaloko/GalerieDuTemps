@@ -20,7 +20,7 @@ export function SortSelect({
         const qs = new URLSearchParams({ ...baseQuery, sortierung: e.target.value, seite: "1" });
         router.push(`/katalog?${qs}`);
       }}
-      className="px-3 py-2 bg-vintage-cream border border-vintage-sand text-sm font-sans text-vintage-ink focus:outline-none cursor-pointer"
+      className="px-3 py-2 bg-vintage-espresso border border-vintage-sand/40 text-sm font-sans text-vintage-cream focus:outline-none cursor-pointer"
       style={{ borderRadius: "var(--radius-vintage)" }}
     >
       <option value="neu">{labels.neu}</option>

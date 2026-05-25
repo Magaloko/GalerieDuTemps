@@ -13,11 +13,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<Variant, string> = {
   primary:
-    "bg-vintage-espresso text-vintage-cream hover:bg-vintage-brown disabled:opacity-50",
+    "bg-vintage-gold text-vintage-espresso hover:bg-vintage-amber disabled:opacity-50",
   secondary:
-    "border border-vintage-sand text-vintage-espresso hover:bg-vintage-parchment disabled:opacity-50",
+    "border border-vintage-gold/40 text-vintage-gold hover:bg-vintage-gold hover:text-vintage-espresso disabled:opacity-50",
   ghost:
-    "text-vintage-brown hover:bg-vintage-parchment disabled:opacity-50",
+    "text-vintage-cream/80 hover:bg-vintage-brown hover:text-vintage-gold disabled:opacity-50",
   danger:
     "bg-vintage-burgundy text-white hover:bg-vintage-burgundy/80 disabled:opacity-50",
 };
@@ -48,7 +48,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled || loading}
         className={`
           inline-flex items-center justify-center gap-2
-          font-sans tracking-widest uppercase
+          font-sans tracking-[0.2em] uppercase
           transition-colors cursor-pointer
           disabled:cursor-not-allowed
           ${variantClasses[variant]}

@@ -112,7 +112,7 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <ShoppingBag className="w-14 h-14 text-vintage-sand mb-4" />
-        <p className="font-serif text-xl text-vintage-brown mb-2">{labels.leer}</p>
+        <p className="font-serif text-xl text-vintage-cream/80 mb-2">{labels.leer}</p>
         <p className="text-vintage-dust text-sm font-sans mb-6">{labels.leer_text}</p>
         <Link
           href="/katalog"
@@ -133,13 +133,13 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
         {items.map(item => (
           <div
             key={item.produkt_id}
-            className="flex gap-4 p-4 bg-vintage-white border border-vintage-sand"
+            className="flex gap-4 p-4 bg-vintage-brown border border-vintage-sand/40"
             style={{ borderRadius: "var(--radius-card)" }}
           >
             {/* Bild */}
             <Link
               href={`/katalog/${item.slug}`}
-              className="w-20 h-20 flex-shrink-0 bg-vintage-parchment overflow-hidden"
+              className="w-20 h-20 flex-shrink-0 bg-vintage-brown/40 overflow-hidden"
               style={{ borderRadius: "var(--radius-vintage)" }}
             >
               {item.bild_url ? (
@@ -152,26 +152,26 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <Link href={`/katalog/${item.slug}`} className="font-serif text-vintage-espresso hover:text-vintage-brown transition-colors line-clamp-2">
+              <Link href={`/katalog/${item.slug}`} className="font-serif text-vintage-cream hover:text-vintage-cream/80 transition-colors line-clamp-2">
                 {item.name}
               </Link>
               <p className="font-serif text-vintage-gold mt-1">{formatPreis(item.einzelpreis_cents / 100)}</p>
 
               {/* Mengen-Stepper */}
               <div className="flex items-center justify-between mt-3">
-                <div className="flex items-center gap-2 border border-vintage-sand bg-vintage-cream" style={{ borderRadius: "var(--radius-vintage)" }}>
+                <div className="flex items-center gap-2 border border-vintage-sand/40 bg-vintage-espresso" style={{ borderRadius: "var(--radius-vintage)" }}>
                   <button
                     onClick={() => mengeAendern(item.produkt_id, item.menge - 1)}
-                    className="p-2 text-vintage-brown hover:bg-vintage-parchment transition-colors disabled:opacity-30"
+                    className="p-2 text-vintage-cream/80 hover:bg-vintage-brown/40 transition-colors disabled:opacity-30"
                     disabled={item.menge <= 1}
                   >
                     <Minus className="w-3 h-3" />
                   </button>
-                  <span className="px-3 text-sm font-sans text-vintage-ink min-w-8 text-center">{item.menge}</span>
+                  <span className="px-3 text-sm font-sans text-vintage-cream min-w-8 text-center">{item.menge}</span>
                   <button
                     onClick={() => mengeAendern(item.produkt_id, item.menge + 1)}
                     disabled={!!item.max_menge && item.menge >= item.max_menge}
-                    className="p-2 text-vintage-brown hover:bg-vintage-parchment transition-colors disabled:opacity-30"
+                    className="p-2 text-vintage-cream/80 hover:bg-vintage-brown/40 transition-colors disabled:opacity-30"
                   >
                     <Plus className="w-3 h-3" />
                   </button>
@@ -190,7 +190,7 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
 
             {/* Zeilen-Total */}
             <div className="text-right">
-              <p className="font-serif text-vintage-espresso">
+              <p className="font-serif text-vintage-cream">
                 {formatPreis(item.einzelpreis_cents * item.menge / 100)}
               </p>
             </div>
@@ -201,10 +201,10 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
       {/* Zusammenfassung */}
       <div className="lg:col-span-1">
         <div
-          className="sticky top-20 bg-vintage-white border border-vintage-sand p-6 space-y-4"
+          className="sticky top-20 bg-vintage-brown border border-vintage-sand/40 p-6 space-y-4"
           style={{ borderRadius: "var(--radius-card)" }}
         >
-          <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
+          <h2 className="font-serif text-lg text-vintage-cream border-b border-vintage-sand/40/50 pb-3">
             {labels.zusammenfassung}
           </h2>
 
@@ -222,7 +222,7 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
               </div>
             ) : (
               <>
-                <label className="text-xs font-sans uppercase tracking-widest text-vintage-brown mb-1.5 block">
+                <label className="text-xs font-sans uppercase tracking-widest text-vintage-cream/80 mb-1.5 block">
                   {labels.coupon}
                 </label>
                 <div className="flex gap-2">
@@ -233,7 +233,7 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
                       value={couponInput}
                       onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
                       placeholder={labels.code_eingeben}
-                      className="w-full pl-9 pr-3 py-2 bg-vintage-cream border border-vintage-sand text-sm font-mono text-vintage-ink focus:outline-none focus:border-vintage-brown transition-colors"
+                      className="w-full pl-9 pr-3 py-2 bg-vintage-espresso border border-vintage-sand/40 text-sm font-mono text-vintage-cream focus:outline-none focus:border-vintage-brown transition-colors"
                       style={{ borderRadius: "var(--radius-vintage)" }}
                     />
                   </div>
@@ -254,13 +254,13 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
           </div>
 
           {/* Summe */}
-          <div className="space-y-2 text-sm font-sans border-t border-vintage-sand/50 pt-4">
+          <div className="space-y-2 text-sm font-sans border-t border-vintage-sand/40/50 pt-4">
             <div className="flex justify-between text-vintage-dust">
               <span>{labels.zwischensumme}</span>
               <span>{formatPreis(berechnung.subtotal_cents / 100)}</span>
             </div>
             {berechnung.rabatt_cents > 0 && (
-              <div className="flex justify-between text-vintage-sage">
+              <div className="flex justify-between text-vintage-gold">
                 <span>{labels.rabatt}</span>
                 <span>− {formatPreis(berechnung.rabatt_cents / 100)}</span>
               </div>
@@ -273,7 +273,7 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
               <span>{labels.inkl_ust}</span>
               <span>{formatPreis(berechnung.tax_total_cents / 100)}</span>
             </div>
-            <div className="flex justify-between text-vintage-espresso font-serif text-xl pt-3 border-t border-vintage-sand">
+            <div className="flex justify-between text-vintage-cream font-serif text-xl pt-3 border-t border-vintage-sand/40">
               <span>{labels.summe}</span>
               <span>{formatPreis(berechnung.total_cents / 100)}</span>
             </div>
@@ -283,7 +283,7 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
           <button
             onClick={handleCheckout}
             disabled={checkoutLoading}
-            className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-vintage-gold text-vintage-espresso font-sans text-xs tracking-widest uppercase hover:bg-vintage-copper transition-colors disabled:opacity-60"
+            className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-vintage-gold text-vintage-cream font-sans text-xs tracking-widest uppercase hover:bg-vintage-copper transition-colors disabled:opacity-60"
             style={{ borderRadius: "var(--radius-button)" }}
           >
             {checkoutLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> {labels.laedt}</>

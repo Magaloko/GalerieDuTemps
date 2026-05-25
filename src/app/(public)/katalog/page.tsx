@@ -65,7 +65,7 @@ export default async function KatalogPage({ searchParams }: Props) {
       {/* Header */}
       <div className="mb-8">
         <p className="text-vintage-gold text-xs tracking-widest uppercase mb-1">✦</p>
-        <h1 className="font-serif text-3xl text-vintage-espresso">{t.katalog.titel}</h1>
+        <h1 className="font-serif text-3xl text-vintage-cream">{t.katalog.titel}</h1>
         <p className="text-vintage-dust text-sm font-sans mt-1">
           {daten.gesamt} {daten.gesamt === 1 ? t.katalog.treffer_singular : t.katalog.treffer}
         </p>
@@ -84,11 +84,11 @@ export default async function KatalogPage({ searchParams }: Props) {
 
             {/* Kategorien */}
             <div>
-              <p className="text-xs font-sans uppercase tracking-widest text-vintage-brown mb-3">{t.nav.kategorien}</p>
+              <p className="text-xs font-sans uppercase tracking-widest text-vintage-cream/80 mb-3">{t.nav.kategorien}</p>
               <div className="space-y-1">
                 <Link
                   href={buildUrl({ kategorie: undefined, seite: "1" })}
-                  className={`block text-sm font-sans py-1 px-2 transition-colors ${!params.kategorie ? "text-vintage-espresso font-medium" : "text-vintage-dust hover:text-vintage-espresso"}`}
+                  className={`block text-sm font-sans py-1 px-2 transition-colors ${!params.kategorie ? "text-vintage-cream font-medium" : "text-vintage-dust hover:text-vintage-cream"}`}
                   style={{ borderRadius: "var(--radius-vintage)" }}
                 >
                   {t.katalog.kategorie_alle}
@@ -97,7 +97,7 @@ export default async function KatalogPage({ searchParams }: Props) {
                   <Link
                     key={k.id}
                     href={buildUrl({ kategorie: k.slug, seite: "1" })}
-                    className={`flex items-center justify-between text-sm font-sans py-1 px-2 transition-colors ${params.kategorie === k.slug ? "text-vintage-espresso font-medium bg-vintage-parchment" : "text-vintage-dust hover:text-vintage-espresso"}`}
+                    className={`flex items-center justify-between text-sm font-sans py-1 px-2 transition-colors ${params.kategorie === k.slug ? "text-vintage-cream font-medium bg-vintage-brown/40" : "text-vintage-dust hover:text-vintage-cream"}`}
                     style={{ borderRadius: "var(--radius-vintage)" }}
                   >
                     <span>{k.name}</span>
@@ -109,7 +109,7 @@ export default async function KatalogPage({ searchParams }: Props) {
 
             {/* Zustand */}
             <div>
-              <p className="text-xs font-sans uppercase tracking-widest text-vintage-brown mb-3">{t.produkt.zustand}</p>
+              <p className="text-xs font-sans uppercase tracking-widest text-vintage-cream/80 mb-3">{t.produkt.zustand}</p>
               <div className="space-y-1">
                 {[
                   { value: "",          label: t.katalog.kategorie_alle },
@@ -121,7 +121,7 @@ export default async function KatalogPage({ searchParams }: Props) {
                   <Link
                     key={z.value}
                     href={buildUrl({ zustand: z.value || undefined, seite: "1" })}
-                    className={`block text-sm font-sans py-1 px-2 transition-colors ${(params.zustand ?? "") === z.value ? "text-vintage-espresso font-medium bg-vintage-parchment" : "text-vintage-dust hover:text-vintage-espresso"}`}
+                    className={`block text-sm font-sans py-1 px-2 transition-colors ${(params.zustand ?? "") === z.value ? "text-vintage-cream font-medium bg-vintage-brown/40" : "text-vintage-dust hover:text-vintage-cream"}`}
                     style={{ borderRadius: "var(--radius-vintage)" }}
                   >
                     {z.label}
@@ -152,7 +152,7 @@ export default async function KatalogPage({ searchParams }: Props) {
                 name="suche"
                 defaultValue={params.suche}
                 placeholder={`${t.nav.suche} …`}
-                className="px-4 py-2 bg-vintage-cream border border-vintage-sand text-sm font-sans text-vintage-ink focus:outline-none focus:border-vintage-brown transition-colors"
+                className="px-4 py-2 bg-vintage-espresso border border-vintage-sand/40 text-sm font-sans text-vintage-cream focus:outline-none focus:border-vintage-brown transition-colors"
                 style={{ borderRadius: "var(--radius-vintage)", width: "220px" }}
               />
               <button
@@ -180,19 +180,19 @@ export default async function KatalogPage({ searchParams }: Props) {
           {hatFilter && (
             <div className="flex flex-wrap gap-2">
               {params.suche && (
-                <span className="flex items-center gap-1 px-3 py-1 bg-vintage-parchment border border-vintage-sand text-xs font-sans text-vintage-brown" style={{ borderRadius: "var(--radius-vintage)" }}>
+                <span className="flex items-center gap-1 px-3 py-1 bg-vintage-brown/40 border border-vintage-sand/40 text-xs font-sans text-vintage-cream/80" style={{ borderRadius: "var(--radius-vintage)" }}>
                   {t.nav.suche}: &ldquo;{params.suche}&rdquo;
                   <Link href={buildUrl({ suche: undefined, seite: "1" })} className="ml-1 text-vintage-dust hover:text-vintage-burgundy">×</Link>
                 </span>
               )}
               {params.kategorie && (
-                <span className="flex items-center gap-1 px-3 py-1 bg-vintage-parchment border border-vintage-sand text-xs font-sans text-vintage-brown" style={{ borderRadius: "var(--radius-vintage)" }}>
+                <span className="flex items-center gap-1 px-3 py-1 bg-vintage-brown/40 border border-vintage-sand/40 text-xs font-sans text-vintage-cream/80" style={{ borderRadius: "var(--radius-vintage)" }}>
                   {kategorien.find(k => k.slug === params.kategorie)?.name ?? params.kategorie}
                   <Link href={buildUrl({ kategorie: undefined, seite: "1" })} className="ml-1 text-vintage-dust hover:text-vintage-burgundy">×</Link>
                 </span>
               )}
               {params.zustand && (
-                <span className="flex items-center gap-1 px-3 py-1 bg-vintage-parchment border border-vintage-sand text-xs font-sans text-vintage-brown" style={{ borderRadius: "var(--radius-vintage)" }}>
+                <span className="flex items-center gap-1 px-3 py-1 bg-vintage-brown/40 border border-vintage-sand/40 text-xs font-sans text-vintage-cream/80" style={{ borderRadius: "var(--radius-vintage)" }}>
                   {params.zustand}
                   <Link href={buildUrl({ zustand: undefined, seite: "1" })} className="ml-1 text-vintage-dust hover:text-vintage-burgundy">×</Link>
                 </span>
@@ -213,7 +213,7 @@ export default async function KatalogPage({ searchParams }: Props) {
               {daten.seite > 1 && (
                 <Link
                   href={buildUrl({ seite: String(daten.seite - 1) })}
-                  className="flex items-center gap-1 px-4 py-2 border border-vintage-sand text-vintage-brown text-sm font-sans hover:bg-vintage-parchment transition-colors"
+                  className="flex items-center gap-1 px-4 py-2 border border-vintage-sand/40 text-vintage-cream/80 text-sm font-sans hover:bg-vintage-brown/40 transition-colors"
                   style={{ borderRadius: "var(--radius-button)" }}
                 >
                   <ChevronLeft className="w-4 h-4" /> {t.aktion.zurueck}
@@ -225,7 +225,7 @@ export default async function KatalogPage({ searchParams }: Props) {
               {daten.seite < daten.seiten && (
                 <Link
                   href={buildUrl({ seite: String(daten.seite + 1) })}
-                  className="flex items-center gap-1 px-4 py-2 border border-vintage-sand text-vintage-brown text-sm font-sans hover:bg-vintage-parchment transition-colors"
+                  className="flex items-center gap-1 px-4 py-2 border border-vintage-sand/40 text-vintage-cream/80 text-sm font-sans hover:bg-vintage-brown/40 transition-colors"
                   style={{ borderRadius: "var(--radius-button)" }}
                 >
                   {t.aktion.weiter} <ChevronRight className="w-4 h-4" />

@@ -43,7 +43,7 @@ export default async function ProduktDetailPage({ params }: Props) {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs font-sans text-vintage-dust mb-8">
-        <Link href="/katalog" className="hover:text-vintage-brown transition-colors flex items-center gap-1">
+        <Link href="/katalog" className="hover:text-vintage-cream/80 transition-colors flex items-center gap-1">
           <ChevronLeft className="w-3 h-3" /> {t.nav.katalog}
         </Link>
         {produkt.kategorie_name && (
@@ -53,7 +53,7 @@ export default async function ProduktDetailPage({ params }: Props) {
           </>
         )}
         <span>/</span>
-        <span className="text-vintage-ink truncate max-w-48">{produkt.name}</span>
+        <span className="text-vintage-cream truncate max-w-48">{produkt.name}</span>
       </nav>
 
       <div className="grid lg:grid-cols-2 gap-12 xl:gap-16">
@@ -69,7 +69,7 @@ export default async function ProduktDetailPage({ params }: Props) {
           )}
 
           <div>
-            <h1 className="font-serif text-3xl md:text-4xl text-vintage-espresso leading-tight">
+            <h1 className="font-serif text-3xl md:text-4xl text-vintage-cream leading-tight">
               {produkt.name}
             </h1>
             {produkt.era && (
@@ -79,7 +79,7 @@ export default async function ProduktDetailPage({ params }: Props) {
 
           {/* Preis */}
           <div className="flex items-end gap-3">
-            <p className="font-serif text-3xl text-vintage-espresso">
+            <p className="font-serif text-3xl text-vintage-cream">
               {formatPreis(produkt.preis)}
             </p>
             {produkt.originalpreis && (
@@ -93,12 +93,12 @@ export default async function ProduktDetailPage({ params }: Props) {
           <div className="flex flex-wrap gap-3">
             <ZustandBadge zustand={produkt.zustand} />
             {produkt.herkunft && (
-              <span className="text-xs font-sans text-vintage-dust border border-vintage-sand px-2 py-0.5" style={{ borderRadius: "var(--radius-vintage)" }}>
+              <span className="text-xs font-sans text-vintage-dust border border-vintage-sand/40 px-2 py-0.5" style={{ borderRadius: "var(--radius-vintage)" }}>
                 {produkt.herkunft}
               </span>
             )}
             {produkt.material && (
-              <span className="text-xs font-sans text-vintage-dust border border-vintage-sand px-2 py-0.5" style={{ borderRadius: "var(--radius-vintage)" }}>
+              <span className="text-xs font-sans text-vintage-dust border border-vintage-sand/40 px-2 py-0.5" style={{ borderRadius: "var(--radius-vintage)" }}>
                 {produkt.material}
               </span>
             )}
@@ -106,16 +106,16 @@ export default async function ProduktDetailPage({ params }: Props) {
 
           {/* Kurzbeschreibung */}
           {produkt.kurzbeschreibung && (
-            <p className="text-vintage-brown leading-relaxed font-sans">
+            <p className="text-vintage-cream/80 leading-relaxed font-sans">
               {produkt.kurzbeschreibung}
             </p>
           )}
 
           {/* Beschreibung */}
           {produkt.beschreibung && (
-            <div className="border-t border-vintage-sand pt-5">
+            <div className="border-t border-vintage-sand/40 pt-5">
               <p className="text-xs font-sans uppercase tracking-widest text-vintage-dust mb-3">{t.produkt.beschreibung}</p>
-              <div className="text-vintage-ink font-sans leading-relaxed whitespace-pre-line text-sm">
+              <div className="text-vintage-cream font-sans leading-relaxed whitespace-pre-line text-sm">
                 {produkt.beschreibung}
               </div>
             </div>
@@ -137,9 +137,9 @@ export default async function ProduktDetailPage({ params }: Props) {
               href={`/kontakt?produkt=${produkt.id}`}
               className="
                 inline-flex items-center gap-2 w-full justify-center
-                px-6 py-2.5 border border-vintage-sand text-vintage-brown
+                px-6 py-2.5 border border-vintage-sand/40 text-vintage-cream/80
                 font-sans text-xs tracking-widest uppercase
-                hover:bg-vintage-parchment transition-colors
+                hover:bg-vintage-brown/40 transition-colors
               "
               style={{ borderRadius: "var(--radius-button)" }}
             >
@@ -154,7 +154,7 @@ export default async function ProduktDetailPage({ params }: Props) {
                 <Link
                   key={tag}
                   href={`/katalog?suche=${encodeURIComponent(tag)}`}
-                  className="text-xs font-sans text-vintage-dust hover:text-vintage-brown transition-colors"
+                  className="text-xs font-sans text-vintage-dust hover:text-vintage-cream/80 transition-colors"
                 >
                   #{tag}
                 </Link>
@@ -166,10 +166,10 @@ export default async function ProduktDetailPage({ params }: Props) {
 
       {/* ─── Ähnliche Produkte ──────────────────────────────────────── */}
       {aehnliche.length > 0 && (
-        <div className="mt-20 pt-12 border-t border-vintage-sand">
+        <div className="mt-20 pt-12 border-t border-vintage-sand/40">
           <div className="mb-8">
             <p className="text-vintage-gold text-xs tracking-widest uppercase mb-1">✦</p>
-            <h2 className="font-serif text-2xl text-vintage-espresso">{t.produkt.aehnlich}</h2>
+            <h2 className="font-serif text-2xl text-vintage-cream">{t.produkt.aehnlich}</h2>
           </div>
           <ProduktGrid produkte={aehnliche} prioCount={0} />
         </div>

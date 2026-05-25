@@ -27,11 +27,11 @@ export function KontaktFormular({ labels }: { labels: KontaktLabels }) {
   if (state?.ok) {
     return (
       <div
-        className="flex flex-col items-center justify-center py-16 text-center bg-vintage-parchment border border-vintage-sand"
+        className="flex flex-col items-center justify-center py-16 text-center bg-vintage-brown/40 border border-vintage-sand/40"
         style={{ borderRadius: "var(--radius-card)" }}
       >
-        <CheckCircle2 className="w-12 h-12 text-vintage-sage mb-4" />
-        <p className="font-serif text-2xl text-vintage-espresso mb-2">{labels.gesendet}</p>
+        <CheckCircle2 className="w-12 h-12 text-vintage-gold mb-4" />
+        <p className="font-serif text-2xl text-vintage-cream mb-2">{labels.gesendet}</p>
         <p className="text-vintage-dust font-sans text-sm max-w-xs">
           {labels.danke}
         </p>
@@ -42,7 +42,7 @@ export function KontaktFormular({ labels }: { labels: KontaktLabels }) {
   return (
     <form
       action={formAction}
-      className="bg-vintage-white border border-vintage-sand p-8 space-y-5"
+      className="bg-vintage-brown border border-vintage-sand/40 p-8 space-y-5"
       style={{ borderRadius: "var(--radius-card)" }}
     >
       <div className="grid grid-cols-2 gap-4">

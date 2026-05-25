@@ -61,7 +61,7 @@ export default async function HomePage() {
 
             <div className="flex flex-wrap justify-center items-center gap-4">
               <Link
-                href="/katalog"
+                href="/quiz"
                 className="
                   inline-flex items-center gap-2
                   px-8 py-3.5

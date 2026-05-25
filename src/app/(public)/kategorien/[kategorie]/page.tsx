@@ -28,16 +28,16 @@ export default async function KategoriePage({ params }: Props) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
       <nav className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
-        <Link href="/katalog" className="hover:text-vintage-brown flex items-center gap-1 transition-colors">
+        <Link href="/katalog" className="hover:text-vintage-cream/80 flex items-center gap-1 transition-colors">
           <ChevronLeft className="w-3 h-3" /> Каталог
         </Link>
         <span>/</span>
-        <span className="text-vintage-ink">{kat.name}</span>
+        <span className="text-vintage-cream">{kat.name}</span>
       </nav>
 
       <div>
         <p className="text-vintage-gold text-xs tracking-widest mb-1">✦</p>
-        <h1 className="font-serif text-3xl text-vintage-espresso">{kat.name}</h1>
+        <h1 className="font-serif text-3xl text-vintage-cream">{kat.name}</h1>
         {kat.beschreibung && (
           <p className="text-vintage-dust font-sans mt-2 max-w-xl">{kat.beschreibung}</p>
         )}
@@ -52,7 +52,7 @@ export default async function KategoriePage({ params }: Props) {
           <Link
             key={k.id}
             href={`/kategorien/${k.slug}`}
-            className="px-4 py-2 border border-vintage-sand text-vintage-dust text-xs font-sans hover:bg-vintage-parchment hover:text-vintage-brown transition-colors"
+            className="px-4 py-2 border border-vintage-sand/40 text-vintage-dust text-xs font-sans hover:bg-vintage-brown/40 hover:text-vintage-cream/80 transition-colors"
             style={{ borderRadius: "var(--radius-button)" }}
           >
             {k.name}

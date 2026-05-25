@@ -15,7 +15,7 @@ export function ProduktDetailClient({ bilder, produktName }: ProduktDetailClient
   if (bilder.length === 0) {
     return (
       <div
-        className="aspect-square bg-vintage-parchment border border-vintage-sand flex items-center justify-center"
+        className="aspect-square bg-vintage-brown/40 border border-vintage-sand/40 flex items-center justify-center"
         style={{ borderRadius: "var(--radius-card)" }}
       >
         <div className="text-center text-vintage-dust">
@@ -35,7 +35,7 @@ export function ProduktDetailClient({ bilder, produktName }: ProduktDetailClient
     <div className="space-y-3">
       {/* Hauptbild */}
       <div
-        className="aspect-square overflow-hidden bg-vintage-parchment border border-vintage-sand"
+        className="aspect-square overflow-hidden bg-vintage-brown/40 border border-vintage-sand/40"
         style={{ borderRadius: "var(--radius-card)" }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -57,7 +57,7 @@ export function ProduktDetailClient({ bilder, produktName }: ProduktDetailClient
                 flex-shrink-0 w-16 h-16 overflow-hidden border-2 transition-colors
                 ${angezeigt.id === b.id
                   ? "border-vintage-gold"
-                  : "border-vintage-sand hover:border-vintage-brown"
+                  : "border-vintage-sand/40 hover:border-vintage-gold"
                 }
               `}
               style={{ borderRadius: "var(--radius-vintage)" }}

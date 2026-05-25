@@ -31,7 +31,7 @@ export default async function KontaktPage() {
 
       <div className="text-center mb-12">
         <p className="text-vintage-gold text-xs tracking-widest uppercase mb-2">✦</p>
-        <h1 className="font-serif text-4xl text-vintage-espresso">{t.kontakt_seite.titel}</h1>
+        <h1 className="font-serif text-4xl text-vintage-cream">{t.kontakt_seite.titel}</h1>
         <p className="text-vintage-dust font-sans mt-3 max-w-md mx-auto">
           {t.kontakt_seite.untertitel}
         </p>
@@ -42,14 +42,14 @@ export default async function KontaktPage() {
         {/* Kontaktinfos */}
         <div className="md:col-span-2 space-y-6">
           <div
-            className="bg-vintage-parchment border border-vintage-sand p-6 space-y-4"
+            className="bg-vintage-brown/40 border border-vintage-sand/40 p-6 space-y-4"
             style={{ borderRadius: "var(--radius-card)" }}
           >
-            <p className="font-serif text-lg text-vintage-espresso">Galerie du Temps</p>
+            <p className="font-serif text-lg text-vintage-cream">Galerie du Temps</p>
 
             <a href="mailto:bonjour@galeriedutemps.kz" className="flex items-start gap-3 group">
               <Mail className="w-4 h-4 text-vintage-gold flex-shrink-0 mt-0.5" />
-              <span className="text-sm font-sans text-vintage-brown group-hover:text-vintage-espresso transition-colors">
+              <span className="text-sm font-sans text-vintage-cream/80 group-hover:text-vintage-cream transition-colors">
                 bonjour@galeriedutemps.kz
               </span>
             </a>
@@ -57,7 +57,7 @@ export default async function KontaktPage() {
             {phoneText && (
               <a href={`tel:+${kontakt.whatsapp_nummer.replace(/\D/g, "")}`} className="flex items-start gap-3 group">
                 <Phone className="w-4 h-4 text-vintage-gold flex-shrink-0 mt-0.5" />
-                <span className="text-sm font-sans text-vintage-brown group-hover:text-vintage-espresso transition-colors">
+                <span className="text-sm font-sans text-vintage-cream/80 group-hover:text-vintage-cream transition-colors">
                   {phoneText}
                 </span>
               </a>
@@ -65,14 +65,14 @@ export default async function KontaktPage() {
 
             <div className="flex items-start gap-3">
               <MapPin className="w-4 h-4 text-vintage-gold flex-shrink-0 mt-0.5" />
-              <span className="text-sm font-sans text-vintage-brown">
+              <span className="text-sm font-sans text-vintage-cream/80">
                 Алматы, Казахстан
               </span>
             </div>
 
             {/* WhatsApp + Telegram als CTA */}
             {(wa || tg) && (
-              <div className="pt-4 border-t border-vintage-sand space-y-2">
+              <div className="pt-4 border-t border-vintage-sand/40 space-y-2">
                 {wa && (
                   <a
                     href={wa}
@@ -100,7 +100,7 @@ export default async function KontaktPage() {
               </div>
             )}
 
-            <div className="pt-3 border-t border-vintage-sand">
+            <div className="pt-3 border-t border-vintage-sand/40">
               <p className="text-xs font-sans text-vintage-dust">
                 {t.kontakt_seite.oeffnungszeiten}
               </p>

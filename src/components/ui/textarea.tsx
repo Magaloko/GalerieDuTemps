@@ -14,7 +14,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="text-xs font-sans uppercase tracking-widest text-vintage-brown"
+            className="text-xs font-sans uppercase tracking-widest text-vintage-gold/80"
           >
             {label}
             {rest.required && <span className="text-vintage-burgundy ml-0.5">*</span>}
@@ -25,11 +25,11 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           id={inputId}
           className={`
             w-full px-4 py-2.5
-            bg-vintage-cream border
-            ${error ? "border-vintage-burgundy" : "border-vintage-sand"}
-            text-vintage-ink text-sm font-sans leading-relaxed
+            bg-vintage-brown border
+            ${error ? "border-vintage-burgundy" : "border-vintage-sand/40"}
+            text-vintage-cream text-sm font-sans leading-relaxed
             placeholder:text-vintage-dust
-            focus:outline-none focus:border-vintage-brown focus:ring-1 focus:ring-vintage-brown
+            focus:outline-none focus:border-vintage-gold focus:ring-1 focus:ring-vintage-gold/30
             disabled:opacity-50 resize-y min-h-[100px]
             transition-colors
             ${className}
