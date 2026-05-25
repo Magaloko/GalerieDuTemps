@@ -51,16 +51,15 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Rewrites: /uploads/* → lokales Verzeichnis (Dev-Modus)
+  // Rewrites: /uploads/* → Route-Handler, der aus UPLOAD_DIR streamt
+  // (Dev und Prod gleich — keine Reverse-Proxy-Konfig nötig)
   async rewrites() {
-    return process.env.NODE_ENV === "development"
-      ? [
-          {
-            source:      "/uploads/:path*",
-            destination: "/api/uploads/:path*",
-          },
-        ]
-      : [];
+    return [
+      {
+        source:      "/uploads/:path*",
+        destination: "/api/uploads/:path*",
+      },
+    ];
   },
 };
 

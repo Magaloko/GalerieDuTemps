@@ -35,7 +35,7 @@ ENV NODE_ENV=production
 # In Coolify: als "Build Variable" / "Is Build Time?" markieren.
 # Wenn nicht via Coolify gesetzt, nutzt der Build die Defaults aus ARG.
 ARG NEXT_PUBLIC_APP_URL=https://galeriedutemps.kz
-ARG NEXT_PUBLIC_UPLOAD_URL=https://galeriedutemps.kz/uploads
+ARG NEXT_PUBLIC_UPLOAD_URL=/uploads
 ARG NEXT_PUBLIC_DEFAULT_COUNTRY=KZ
 ARG NEXT_PUBLIC_DEFAULT_LANGUAGE=ru
 ARG NEXT_PUBLIC_DEFAULT_CURRENCY=KZT

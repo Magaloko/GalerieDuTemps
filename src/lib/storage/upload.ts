@@ -45,9 +45,10 @@ export async function bildSpeichern(file: File): Promise<UploadResult> {
   const buffer = Buffer.from(await file.arrayBuffer());
   await writeFile(pfad, buffer);
 
-  // URL berechnen
-  const baseUrl = process.env.NEXT_PUBLIC_UPLOAD_URL ?? "/uploads";
-  const url     = `${baseUrl.replace(/\/$/, "")}/${dateiname}`;
+  // URL berechnen — relative URL ist domain-agnostisch und wird vom
+  // /api/uploads-Route-Handler (via next.config rewrite) aus UPLOAD_DIR serviert.
+  const baseUrl = (process.env.NEXT_PUBLIC_UPLOAD_URL || "/uploads").replace(/\/$/, "");
+  const url     = `${baseUrl}/${dateiname}`;
 
   return {
     url,

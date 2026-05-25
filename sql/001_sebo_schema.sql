@@ -217,11 +217,11 @@ CREATE TRIGGER trg_preishistorie
 -- Seed: Standard-Kategorien
 -- ---------------------------------------------------------------------------
 INSERT INTO sebo.kategorien (name, slug, beschreibung, sortierung) VALUES
-    ('Möbel',        'moebel',       'Vintage-Möbel aller Epochen',          1),
-    ('Deko',         'deko',         'Dekorationsobjekte und Zierrat',        2),
-    ('Porzellan',    'porzellan',    'Geschirr, Figuren und Vasen',           3),
-    ('Beleuchtung',  'beleuchtung',  'Lampen, Leuchten und Kronleuchter',     4),
-    ('Textilien',    'textilien',    'Stoffe, Teppiche und Stickereien',      5),
-    ('Schmuck',      'schmuck',      'Vintage-Schmuck und Accessoires',       6),
-    ('Kunst',        'kunst',        'Gemälde, Grafiken und Skulpturen',      7),
-    ('Küche',        'kueche',       'Vintage-Küchenutensilien und -geräte',  8);
+    ('Мебель',       'moebel',       'Винтажная мебель всех эпох',           1),
+    ('Декор',        'deko',         'Декоративные предметы и украшения',    2),
+    ('Фарфор',       'porzellan',    'Посуда, фигурки и вазы',               3),
+    ('Освещение',    'beleuchtung',  'Лампы, светильники и люстры',          4),
+    ('Текстиль',     'textilien',    'Ткани, ковры и вышивка',               5),
+    ('Украшения',    'schmuck',      'Винтажные украшения и аксессуары',     6),
+    ('Искусство',    'kunst',        'Картины, графика и скульптуры',        7),
+    ('Кухня',        'kueche',       'Винтажная кухонная утварь',            8);
