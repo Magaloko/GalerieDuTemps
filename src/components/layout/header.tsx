@@ -49,10 +49,10 @@ export function Header({ t, locale }: { t: Dictionary; locale: Locale }) {
         "
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-3 items-center h-20">
+          <div className="flex md:grid md:grid-cols-3 items-center justify-between gap-2 h-16 md:h-20">
 
             {/* ─── Links: Logo ──────────────────────────────────────────── */}
-            <div className="flex items-center">
+            <div className="flex items-center min-w-0 flex-shrink">
               <Link href="/" className="brand-logo group">
                 <span className="brand-line-1 group-hover:text-vintage-gold transition-colors">
                   GALERIE
@@ -84,7 +84,7 @@ export function Header({ t, locale }: { t: Dictionary; locale: Locale }) {
             </nav>
 
             {/* ─── Rechts: Icons ──────────────────────────────────────────── */}
-            <div className="flex items-center justify-end gap-1">
+            <div className="flex items-center justify-end gap-0.5 md:gap-1 flex-shrink-0">
               <button
                 onClick={() => setSucheOffen(v => !v)}
                 className="p-2 text-vintage-cream/70 hover:text-vintage-gold transition-colors"

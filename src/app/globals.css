@@ -166,18 +166,24 @@ h1 em, h2 em, h3 em {
 }
 .brand-logo .brand-line-1 {
   font-family:    var(--font-serif);
-  font-size:      1.5rem;
-  letter-spacing: 0.4em;
+  font-size:      1.125rem;    /* Mobile: 18px */
+  letter-spacing: 0.3em;
   color:          var(--color-vintage-white);
-  padding-left:   0.4em;     /* optisch ausgleichen wegen letter-spacing */
+  padding-left:   0.3em;
+  white-space:    nowrap;
 }
 .brand-logo .brand-line-2 {
   font-family:    var(--font-serif);
   font-style:     italic;
-  font-size:      0.75rem;
-  letter-spacing: 0.25em;
+  font-size:      0.65rem;
+  letter-spacing: 0.2em;
   color:          var(--color-vintage-gold);
-  margin-top:     0.15rem;
+  margin-top:     0.1rem;
+  white-space:    nowrap;
+}
+@media (min-width: 640px) {
+  .brand-logo .brand-line-1 { font-size: 1.5rem; letter-spacing: 0.4em; padding-left: 0.4em; }
+  .brand-logo .brand-line-2 { font-size: 0.75rem; letter-spacing: 0.25em; margin-top: 0.15rem; }
 }
 
 /* ─── Prose-Vintage: Markdown-Render-Styles ────────────────────────────── */
