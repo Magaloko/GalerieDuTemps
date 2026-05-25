@@ -58,37 +58,42 @@
 }
 
 /* ─── Basis-Styles ───────────────────────────────────────────────────────── */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+/* WICHTIG: in @layer base, damit Tailwind-Utility-Klassen (z.B. text-vintage-espresso)
+   die hier gesetzten Defaults überschreiben können. Außerhalb von @layer hätten
+   diese Element-Selektoren höhere Cascade-Priorität als utility classes. */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-html {
-  scroll-behavior: smooth;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: var(--color-vintage-espresso);
-}
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--color-vintage-espresso);
+  }
 
-body {
-  background-color: var(--color-vintage-espresso);
-  color:            var(--color-vintage-cream);
-  font-family:      var(--font-sans);
-  line-height:      1.6;
-  min-height:       100vh;
-}
+  body {
+    background-color: var(--color-vintage-espresso);
+    color:            var(--color-vintage-cream);
+    font-family:      var(--font-sans);
+    line-height:      1.6;
+    min-height:       100vh;
+  }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family:  var(--font-serif);
-  line-height:  1.25;
-  color:        var(--color-vintage-white);
-}
+  h1, h2, h3, h4, h5, h6 {
+    font-family:  var(--font-serif);
+    line-height:  1.25;
+    color:        var(--color-vintage-white);
+  }
 
-/* Italics in Serif sind Markenzeichen — eleganter Look */
-h1 em, h2 em, h3 em {
-  font-style: italic;
-  color:      var(--color-vintage-gold);
+  /* Italics in Serif sind Markenzeichen — eleganter Look */
+  h1 em, h2 em, h3 em {
+    font-style: italic;
+    color:      var(--color-vintage-gold);
+  }
 }
 
 /* ─── Fokus-Stile (Accessibility) ───────────────────────────────────────── */
