@@ -2,8 +2,24 @@ import { writeFile, mkdir } from "fs/promises";
 import { join, extname } from "path";
 import { randomUUID } from "crypto";
 
-const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/avif"];
-const MAX_SIZE_MB   = 10;
+const ALLOWED_IMAGE = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/avif"];
+const ALLOWED_VIDEO = ["video/mp4", "video/webm", "video/quicktime"];
+const ALLOWED_DOC   = ["application/pdf"];
+const ALLOWED_TYPES = [...ALLOWED_IMAGE, ...ALLOWED_VIDEO, ...ALLOWED_DOC];
+
+// Pro Typ unterschiedliche Größen-Limits
+const SIZE_LIMITS_MB: Record<string, number> = {
+  image: 10,
+  video: 100,
+  doc:   25,
+};
+
+function limitForType(mime: string): number {
+  if (ALLOWED_IMAGE.includes(mime)) return SIZE_LIMITS_MB.image;
+  if (ALLOWED_VIDEO.includes(mime)) return SIZE_LIMITS_MB.video;
+  if (ALLOWED_DOC.includes(mime))   return SIZE_LIMITS_MB.doc;
+  return SIZE_LIMITS_MB.image;
+}
 
 export interface UploadResult {
   url:          string;
@@ -20,13 +36,14 @@ export async function bildSpeichern(file: File): Promise<UploadResult> {
   // Validierung
   if (!ALLOWED_TYPES.includes(file.type)) {
     throw new Error(
-      `Ungültiger Dateityp: ${file.type}. Erlaubt: JPEG, PNG, WebP, AVIF`
+      `Ungültiger Dateityp: ${file.type}. Erlaubt: JPEG/PNG/WebP/AVIF · MP4/WebM/MOV · PDF`
     );
   }
 
-  const maxBytes = MAX_SIZE_MB * 1024 * 1024;
+  const maxMb    = limitForType(file.type);
+  const maxBytes = maxMb * 1024 * 1024;
   if (file.size > maxBytes) {
-    throw new Error(`Datei zu groß: max. ${MAX_SIZE_MB} MB erlaubt`);
+    throw new Error(`Datei zu groß: max. ${maxMb} MB erlaubt`);
   }
 
   // Verzeichnis bestimmen

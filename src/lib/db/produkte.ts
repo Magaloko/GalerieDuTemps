@@ -1,5 +1,6 @@
 import { query } from "./index";
 import { generateSlug, uniqueSlug } from "@/lib/utils/slug";
+import { dateienFuerProdukt, zertifikateFuerProdukt } from "./produkt-medien";
 import type {
   Produkt,
   ProduktListItem,
@@ -118,7 +119,13 @@ export async function produktById(id: string): Promise<Produkt | null> {
      GROUP BY p.id, k.name`,
     [id]
   );
-  return result.rows[0] ?? null;
+  const produkt = result.rows[0];
+  if (!produkt) return null;
+  const [dateien, zertifikate] = await Promise.all([
+    dateienFuerProdukt(id).catch(() => []),
+    zertifikateFuerProdukt(id).catch(() => []),
+  ]);
+  return { ...produkt, dateien, zertifikate };
 }
 
 /** Produkt per Slug laden */
@@ -156,10 +163,11 @@ export async function produktErstellen(
        (name, slug, artikel_code, beschreibung, kurzbeschreibung,
         preis, originalpreis, einkaufspreis, b2b_preis, waehrung,
         kategorie_id, zustand, era, herkunft, material, lagerbestand, featured, verkauft,
-        aktiv, b2c_mode, seo_titel, seo_beschreibung, tags, veroeffentlicht_am)
+        aktiv, b2c_mode, seo_titel, seo_beschreibung, tags,
+        hauptbild_url, rueckbild_url, video_url, veroeffentlicht_am)
      VALUES
        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,
-        now())
+        $24,$25,$26,now())
      RETURNING id`,
     [
       input.name,
@@ -185,6 +193,9 @@ export async function produktErstellen(
       input.seo_titel          ?? null,
       input.seo_beschreibung   ?? null,
       `{${tags.map(t => `"${t.replace(/"/g, '\\"')}"`).join(",")}}`,
+      input.hauptbild_url      ?? null,
+      input.rueckbild_url      ?? null,
+      input.video_url          ?? null,
     ]
   );
 
@@ -226,6 +237,9 @@ export async function produktAktualisieren(
     ["b2c_mode",         "b2c_mode"],
     ["seo_titel",        "seo_titel"],
     ["seo_beschreibung", "seo_beschreibung"],
+    ["hauptbild_url",    "hauptbild_url"],
+    ["rueckbild_url",    "rueckbild_url"],
+    ["video_url",        "video_url"],
   ];
 
   for (const [key, col] of mappings) {

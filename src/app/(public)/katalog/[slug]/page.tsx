@@ -13,6 +13,18 @@ import { getDictionary } from "@/i18n";
 
 interface Props { params: Promise<{ slug: string }> }
 
+function videoEmbedSrc(url: string): { type: "iframe" | "video"; src: string } | null {
+  // YouTube
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
+  if (yt) return { type: "iframe", src: `https://www.youtube.com/embed/${yt[1]}` };
+  // Vimeo
+  const vm = url.match(/vimeo\.com\/(\d+)/);
+  if (vm) return { type: "iframe", src: `https://player.vimeo.com/video/${vm[1]}` };
+  // direkt MP4/WebM
+  if (/\.(mp4|webm|mov)(?:\?.*)?$/i.test(url)) return { type: "video", src: url };
+  return null;
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const p = await oeffentlichesProduktBySlug(slug);
@@ -38,7 +50,27 @@ export default async function ProduktDetailPage({ params }: Props) {
     4
   ).catch(() => []);
 
-  const bilder = produkt.bilder ?? [];
+  // Haupt-/Rückbild aus Produkt-Spalten als virtuelle Galerie-Einträge voranstellen
+  const galerie = produkt.bilder ?? [];
+  const extraBilder: typeof galerie = [];
+  if (produkt.hauptbild_url) {
+    extraBilder.push({
+      id: "haupt", produkt_id: produkt.id, url: produkt.hauptbild_url,
+      alt_text: produkt.name, sortierung: -2, ist_hauptbild: true,
+      breite: null, hoehe: null, dateigroesse: null, erstellt_am: produkt.erstellt_am,
+    });
+  }
+  if (produkt.rueckbild_url) {
+    extraBilder.push({
+      id: "rueck", produkt_id: produkt.id, url: produkt.rueckbild_url,
+      alt_text: `${produkt.name} — обратная сторона`, sortierung: -1, ist_hauptbild: false,
+      breite: null, hoehe: null, dateigroesse: null, erstellt_am: produkt.erstellt_am,
+    });
+  }
+  const bilder = [
+    ...extraBilder,
+    ...galerie.filter(b => b.url !== produkt.hauptbild_url && b.url !== produkt.rueckbild_url),
+  ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -165,6 +197,87 @@ export default async function ProduktDetailPage({ params }: Props) {
           )}
         </div>
       </div>
+
+      {/* ─── Video ──────────────────────────────────────────────── */}
+      {produkt.video_url && (() => {
+        const embed = videoEmbedSrc(produkt.video_url);
+        if (!embed) return null;
+        return (
+          <div className="mt-12 pt-8 border-t border-vintage-sand/40">
+            <p className="text-vintage-gold text-xs tracking-widest uppercase mb-3">✦ Видео</p>
+            <div
+              className="relative w-full overflow-hidden bg-vintage-ink border border-vintage-sand/40"
+              style={{ borderRadius: "var(--radius-card)", aspectRatio: "16 / 9" }}
+            >
+              {embed.type === "iframe" ? (
+                <iframe
+                  src={embed.src}
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerated-2d-canvas; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
+                <video src={embed.src} controls className="absolute inset-0 w-full h-full" />
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ─── Dateien & Zertifikate ──────────────────────────────── */}
+      {((produkt.dateien?.length ?? 0) > 0 || (produkt.zertifikate?.length ?? 0) > 0) && (
+        <div className="mt-12 pt-8 border-t border-vintage-sand/40 grid md:grid-cols-2 gap-8">
+          {(produkt.dateien?.length ?? 0) > 0 && (
+            <div>
+              <p className="text-vintage-gold text-xs tracking-widest uppercase mb-3">✦ Документы</p>
+              <div className="space-y-2">
+                {produkt.dateien!.map(d => (
+                  <a
+                    key={d.id}
+                    href={d.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between gap-2 px-4 py-3 bg-vintage-brown/30 border border-vintage-sand/30 hover:border-vintage-gold/50 hover:bg-vintage-brown/50 transition-colors"
+                    style={{ borderRadius: "var(--radius-vintage)" }}
+                  >
+                    <span className="text-sm font-sans text-vintage-cream truncate">📄 {d.name}</span>
+                    {d.dateigroesse && (
+                      <span className="text-xs text-vintage-dust flex-shrink-0">
+                        {Math.round(d.dateigroesse / 1024)} КБ
+                      </span>
+                    )}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(produkt.zertifikate?.length ?? 0) > 0 && (
+            <div>
+              <p className="text-vintage-gold text-xs tracking-widest uppercase mb-3">✦ Сертификаты</p>
+              <div className="space-y-2">
+                {produkt.zertifikate!.map(z => (
+                  <a
+                    key={z.id}
+                    href={z.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block px-4 py-3 bg-vintage-gold/5 border border-vintage-gold/30 hover:bg-vintage-gold/10 transition-colors"
+                    style={{ borderRadius: "var(--radius-vintage)" }}
+                  >
+                    <p className="text-sm font-serif text-vintage-cream">{z.name}</p>
+                    {(z.aussteller || z.datum) && (
+                      <p className="text-xs text-vintage-dust font-sans mt-0.5">
+                        {[z.aussteller, z.datum].filter(Boolean).join(" · ")}
+                      </p>
+                    )}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ─── Ähnliche Produkte ──────────────────────────────────────── */}
       {aehnliche.length > 0 && (

@@ -62,9 +62,34 @@ export interface Produkt {
   erstellt_am:        string;
   aktualisiert_am:    string;
   veroeffentlicht_am: string | null;
+  hauptbild_url:      string | null;
+  rueckbild_url:      string | null;
+  video_url:          string | null;
   // Relations
   bilder?:            Produktbild[];
-  hauptbild_url?:     string | null;
+  dateien?:           Produktdatei[];
+  zertifikate?:       Produktzertifikat[];
+}
+
+export interface Produktdatei {
+  id:           string;
+  produkt_id:   string;
+  url:          string;
+  name:         string;
+  dateigroesse: number | null;
+  sortierung:   number;
+  erstellt_am:  string;
+}
+
+export interface Produktzertifikat {
+  id:           string;
+  produkt_id:   string;
+  url:          string;
+  name:         string;
+  aussteller:   string | null;
+  datum:        string | null;
+  sortierung:   number;
+  erstellt_am:  string;
 }
 
 export interface Abmessungen {

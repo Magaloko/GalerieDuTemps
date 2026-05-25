@@ -1,9 +1,12 @@
 import { notFound } from "next/navigation";
 import { produktById } from "@/lib/db/produkte";
 import { bilderFuerProdukt } from "@/lib/db/bilder";
+import { dateienFuerProdukt, zertifikateFuerProdukt } from "@/lib/db/produkt-medien";
 import { BildManager } from "@/components/produkte/bild-manager";
+import { DateienManager } from "@/components/produkte/dateien-manager";
+import { ZertifikateManager } from "@/components/produkte/zertifikate-manager";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, FileText, Award } from "lucide-react";
 import type { Metadata } from "next";
 
 interface Props {
@@ -18,9 +21,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BilderPage({ params }: Props) {
   const { id } = await params;
-  const [produkt, bilder] = await Promise.all([
+  const [produkt, bilder, dateien, zertifikate] = await Promise.all([
     produktById(id),
     bilderFuerProdukt(id),
+    dateienFuerProdukt(id),
+    zertifikateFuerProdukt(id),
   ]);
 
   if (!produkt) notFound();
@@ -49,6 +54,32 @@ export default async function BilderPage({ params }: Props) {
       </div>
 
       <BildManager produktId={id} initialBilder={bilder} />
+
+      <section
+        className="bg-vintage-white border border-vintage-sand p-6 space-y-4"
+        style={{ borderRadius: "var(--radius-card)" }}
+      >
+        <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
+          <h2 className="font-serif text-base text-vintage-espresso flex items-center gap-2">
+            <FileText className="w-4 h-4 text-vintage-brown" /> Документы / Загрузки
+          </h2>
+          <p className="text-xs font-sans text-vintage-dust">PDF · максимум 25 МБ</p>
+        </div>
+        <DateienManager produktId={id} initialItems={dateien} />
+      </section>
+
+      <section
+        className="bg-vintage-white border border-vintage-sand p-6 space-y-4"
+        style={{ borderRadius: "var(--radius-card)" }}
+      >
+        <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
+          <h2 className="font-serif text-base text-vintage-espresso flex items-center gap-2">
+            <Award className="w-4 h-4 text-vintage-gold" /> Сертификаты
+          </h2>
+          <p className="text-xs font-sans text-vintage-dust">Trust-сигналы на странице товара</p>
+        </div>
+        <ZertifikateManager produktId={id} initialItems={zertifikate} />
+      </section>
     </div>
   );
 }

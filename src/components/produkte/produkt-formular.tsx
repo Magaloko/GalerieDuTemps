@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select }   from "@/components/ui/select";
 import { Button }   from "@/components/ui/button";
 import { MarkdownEditor } from "@/components/ui/markdown-editor";
+import { SingleMediaUpload } from "@/components/ui/single-media-upload";
 import { Save, Trash2, AlertCircle, CheckCircle2 } from "lucide-react";
 import type { Produkt } from "@/types/produkt";
 import type { Kategorie } from "@/types/produkt";
@@ -310,6 +311,47 @@ export function ProduktFormular({
             </span>
           </label>
         </div>
+      </section>
+
+      {/* ─── Bilder & Medien ─────────────────────────────────────── */}
+      <section
+        className="bg-vintage-white border border-vintage-sand p-6 space-y-5"
+        style={{ borderRadius: "var(--radius-card)" }}
+      >
+        <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
+          <h2 className="font-serif text-lg text-vintage-espresso">Изображения и медиа</h2>
+          <p className="text-xs font-sans text-vintage-dust">
+            Дополнительная галерея — после сохранения
+          </p>
+        </div>
+
+        <SingleMediaUpload
+          label="Главное изображение"
+          name="hauptbild_url"
+          accept="image/*"
+          variant="image"
+          defaultValue={produkt?.hauptbild_url ?? ""}
+          hint="JPEG, PNG, WebP, AVIF · макс. 10 МБ"
+        />
+
+        <SingleMediaUpload
+          label="Обратная сторона / деталь (опционально)"
+          name="rueckbild_url"
+          accept="image/*"
+          variant="image"
+          defaultValue={produkt?.rueckbild_url ?? ""}
+          hint="Второе изображение для детальной страницы"
+        />
+
+        <SingleMediaUpload
+          label="Видео (опционально)"
+          name="video_url"
+          accept="video/mp4,video/webm,video/quicktime"
+          variant="video"
+          defaultValue={produkt?.video_url ?? ""}
+          placeholder="https://… .mp4  или  https://youtu.be/…"
+          hint="MP4 (макс. 100 МБ) или вставьте URL YouTube/Vimeo"
+        />
       </section>
 
       {/* ─── SEO ──────────────────────────────────────────────────── */}

@@ -1,4 +1,5 @@
 import { query } from "./index";
+import { dateienFuerProdukt, zertifikateFuerProdukt } from "./produkt-medien";
 import type { Produkt, ProduktListItem, PaginierteProdukte } from "@/types/produkt";
 
 // ---------------------------------------------------------------------------
@@ -153,7 +154,13 @@ export async function oeffentlichesProduktBySlug(slug: string): Promise<Produkt 
      GROUP BY p.id, k.name`,
     [slug]
   );
-  return result.rows[0] ?? null;
+  const produkt = result.rows[0];
+  if (!produkt) return null;
+  const [dateien, zertifikate] = await Promise.all([
+    dateienFuerProdukt(produkt.id).catch(() => []),
+    zertifikateFuerProdukt(produkt.id).catch(() => []),
+  ]);
+  return { ...produkt, dateien, zertifikate };
 }
 
 /** Ähnliche Produkte (gleiche Kategorie, ähnlicher Preis) */

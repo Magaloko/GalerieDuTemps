@@ -43,6 +43,9 @@ export async function produktErstellenAction(
     seo_titel:        formData.get("seo_titel")      || undefined,
     seo_beschreibung: formData.get("seo_beschreibung") || undefined,
     tags:             formData.get("tags")           || undefined,
+    hauptbild_url:    formData.get("hauptbild_url") || undefined,
+    rueckbild_url:    formData.get("rueckbild_url") || undefined,
+    video_url:        formData.get("video_url")     || undefined,
   };
 
   const parsed = ProduktCreateSchema.safeParse(raw);
