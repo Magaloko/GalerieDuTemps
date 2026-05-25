@@ -13,7 +13,9 @@ export interface KategorieInput {
   aktiv?:       boolean;
 }
 
-/** Alle aktiven Kategorien (mit Produktanzahl) — für Public-Seiten + Filter */
+/** Alle aktiven Kategorien (mit Produktanzahl) — für Public-Seiten + Filter
+ *  Counts spiegeln die exakten Filter aus produkte-public BASE_FILTER wieder.
+ */
 export async function alleKategorien(): Promise<Kategorie[]> {
   const result = await query<Kategorie>(`
     SELECT
@@ -22,8 +24,12 @@ export async function alleKategorien(): Promise<Kategorie[]> {
       COUNT(p.id)::int AS anzahl
     FROM sebo.kategorien k
     LEFT JOIN sebo.produkte p
-      ON p.kategorie_id = k.id AND p.aktiv = true
-     AND p.lagerbestand > 0 AND p.verkauft = false
+      ON p.kategorie_id = k.id
+     AND p.aktiv = true
+     AND p.lagerbestand > 0
+     AND p.verkauft = false
+     AND p.veroeffentlicht_am IS NOT NULL
+     AND p.b2c_mode != 'hidden'
     WHERE k.aktiv = true
     GROUP BY k.id
     ORDER BY k.sortierung, k.name
