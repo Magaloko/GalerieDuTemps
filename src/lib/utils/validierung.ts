@@ -84,6 +84,7 @@ export const PaginierungSchema = z.object({
   seite:  z.coerce.number().int().min(1).default(1),
   limit:  z.coerce.number().int().min(1).max(100).default(20),
   suche:  z.string().optional(),
+  kategorie:    z.string().optional(),           // slug-based filter
   kategorie_id: z.coerce.number().int().optional(),
   zustand: z.string().optional(),
   sortierung: z.enum(["erstellt_am", "preis_asc", "preis_desc", "name"]).default("erstellt_am"),

@@ -15,6 +15,7 @@ export async function produkteListe(params: {
   seite?:       number;
   limit?:       number;
   suche?:       string;
+  kategorie?:   string;     // slug-based
   kategorie_id?: number;
   zustand?:     string;
   sortierung?:  string;
@@ -38,6 +39,11 @@ export async function produkteListe(params: {
   if (params.kategorie_id) {
     conditions.push(`p.kategorie_id = $${idx++}`);
     queryParams.push(params.kategorie_id);
+  }
+
+  if (params.kategorie) {
+    conditions.push(`p.kategorie_id = (SELECT id FROM sebo.kategorien WHERE slug = $${idx++})`);
+    queryParams.push(params.kategorie);
   }
 
   if (params.zustand) {

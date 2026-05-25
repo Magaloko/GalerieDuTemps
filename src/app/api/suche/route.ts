@@ -29,23 +29,29 @@ export async function GET(req: NextRequest) {
          ts_rank(
            to_tsvector('simple',
              coalesce(p.name,'') || ' ' ||
+             coalesce(p.kurzbeschreibung,'') || ' ' ||
              coalesce(p.beschreibung,'') || ' ' ||
              coalesce(p.era,'') || ' ' ||
              coalesce(p.herkunft,'') || ' ' ||
-             coalesce(p.material,'')
+             coalesce(p.material,'') || ' ' ||
+             coalesce(p.artikel_code,'') || ' ' ||
+             coalesce(array_to_string(p.tags,' '),'')
            ),
            plainto_tsquery('simple', $1)
          ) AS relevanz
        FROM sebo.produkte p
        LEFT JOIN sebo.kategorien k ON k.id = p.kategorie_id
        WHERE
-         p.lagerbestand > 0
+         p.aktiv = true
+         AND p.lagerbestand > 0
          AND p.verkauft = false
          AND p.veroeffentlicht_am IS NOT NULL
+         AND p.b2c_mode != 'hidden'
          AND to_tsvector('simple',
-               coalesce(p.name,'') || ' ' || coalesce(p.beschreibung,'') || ' ' ||
-               coalesce(p.era,'') || ' ' || coalesce(p.herkunft,'') || ' ' ||
-               coalesce(p.material,'')
+               coalesce(p.name,'') || ' ' || coalesce(p.kurzbeschreibung,'') || ' ' ||
+               coalesce(p.beschreibung,'') || ' ' || coalesce(p.era,'') || ' ' ||
+               coalesce(p.herkunft,'') || ' ' || coalesce(p.material,'') || ' ' ||
+               coalesce(p.artikel_code,'') || ' ' || coalesce(array_to_string(p.tags,' '),'')
              ) @@ plainto_tsquery('simple', $1)
        ORDER BY relevanz DESC, p.featured DESC
        LIMIT 20`,

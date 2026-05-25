@@ -63,8 +63,16 @@ export async function katalogProdukte(params: {
 
   if (params.suche) {
     conds.push(
-      `to_tsvector('simple', coalesce(p.name,'') || ' ' || coalesce(p.beschreibung,'') || ' ' || coalesce(p.era,''))
-       @@ plainto_tsquery('simple', $${idx++})`
+      `to_tsvector('simple',
+         coalesce(p.name,'') || ' ' ||
+         coalesce(p.kurzbeschreibung,'') || ' ' ||
+         coalesce(p.beschreibung,'') || ' ' ||
+         coalesce(p.era,'') || ' ' ||
+         coalesce(p.material,'') || ' ' ||
+         coalesce(p.herkunft,'') || ' ' ||
+         coalesce(p.artikel_code,'') || ' ' ||
+         coalesce(array_to_string(p.tags, ' '), '')
+       ) @@ plainto_tsquery('simple', $${idx++})`
     );
     vals.push(params.suche);
   }
