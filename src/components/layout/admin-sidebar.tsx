@@ -265,14 +265,14 @@ export function AdminSidebar({ userName, userEmail }: AdminSidebarProps) {
                 ${
                   active
                     ? "bg-white/15 text-vintage-cream"
-                    : "text-vintage-cream/60 hover:bg-white/8 hover:text-vintage-cream"
+                    : "text-vintage-cream/85 hover:bg-white/8 hover:text-vintage-cream"
                 }
               `}
               style={{ borderRadius: "var(--radius-card)" }}
             >
               <Icon
                 className={`w-4 h-4 flex-shrink-0 ${
-                  active ? "text-vintage-gold" : "text-vintage-cream/50"
+                  active ? "text-vintage-gold" : "text-vintage-cream/70"
                 }`}
               />
               <span>{label}</span>
@@ -292,7 +292,7 @@ export function AdminSidebar({ userName, userEmail }: AdminSidebarProps) {
           className="
             flex items-center gap-3 px-3 py-2.5
             text-xs font-sans tracking-widest uppercase
-            text-vintage-cream/40 hover:text-vintage-cream/70
+            text-vintage-cream/70 hover:text-vintage-cream
             transition-colors
           "
           style={{ borderRadius: "var(--radius-card)" }}
@@ -328,7 +328,7 @@ export function AdminSidebar({ userName, userEmail }: AdminSidebarProps) {
           onClick={() => signOut({ callbackUrl: "/login" })}
           className="
             w-full flex items-center gap-2 px-3 py-2
-            text-vintage-cream/60 hover:text-vintage-burgundy
+            text-vintage-cream/85 hover:text-vintage-burgundy
             hover:bg-vintage-burgundy/10
             text-xs font-sans tracking-wider uppercase
             transition-colors

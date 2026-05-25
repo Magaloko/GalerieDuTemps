@@ -19,7 +19,7 @@
   --color-vintage-white:       #F5EBD9;   /* Headlines */
   --color-vintage-cream:       #E8DFD0;   /* Body-Text */
   --color-vintage-parchment:   #C9B89A;   /* Sekundärer Text */
-  --color-vintage-dust:        #7A6A55;   /* Tertiär / Muted */
+  --color-vintage-dust:        #998973;   /* Tertiär / Muted — heller für besseren Kontrast auf Espresso (war #7A6A55, Ratio 3.6 → jetzt 5.2) */
 
   /* Akzente — Gold-Spektrum (Hauptakzent) */
   --color-vintage-gold:        #C9A86A;   /* Primär — CTAs, Logo */
