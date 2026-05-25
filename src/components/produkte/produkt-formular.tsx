@@ -5,6 +5,7 @@ import { Input }    from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select }   from "@/components/ui/select";
 import { Button }   from "@/components/ui/button";
+import { MarkdownEditor } from "@/components/ui/markdown-editor";
 import { Save, Trash2, AlertCircle, CheckCircle2 } from "lucide-react";
 import type { Produkt } from "@/types/produkt";
 import type { Kategorie } from "@/types/produkt";
@@ -167,13 +168,14 @@ export function ProduktFormular({
           maxLength={500}
           rows={3}
         />
-        <Textarea
+        <MarkdownEditor
           label="Подробное описание"
           name="beschreibung"
           defaultValue={produkt?.beschreibung ?? ""}
           error={e("beschreibung")}
-          placeholder="Подробное описание, история, особенности …"
-          rows={8}
+          placeholder="Подробное описание, история, особенности …  Можно использовать **жирный**, *курсив*, ## заголовки, списки."
+          rows={10}
+          hint="Markdown поддерживается — переключитесь на «Превью» для проверки"
         />
       </section>
 

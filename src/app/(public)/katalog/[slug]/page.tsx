@@ -6,6 +6,7 @@ import { AddToCartButton } from "@/components/produkte/add-to-cart-button";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { formatPreis } from "@/lib/utils/preis";
+import { markdownToHtml } from "@/lib/utils/markdown";
 import { ZustandBadge } from "@/components/ui/badge";
 import type { Metadata } from "next";
 import { getDictionary } from "@/i18n";
@@ -115,9 +116,10 @@ export default async function ProduktDetailPage({ params }: Props) {
           {produkt.beschreibung && (
             <div className="border-t border-vintage-sand/40 pt-5">
               <p className="text-xs font-sans uppercase tracking-widest text-vintage-dust mb-3">{t.produkt.beschreibung}</p>
-              <div className="text-vintage-cream font-sans leading-relaxed whitespace-pre-line text-sm">
-                {produkt.beschreibung}
-              </div>
+              <div
+                className="prose-vintage text-sm"
+                dangerouslySetInnerHTML={{ __html: markdownToHtml(produkt.beschreibung) }}
+              />
             </div>
           )}
 

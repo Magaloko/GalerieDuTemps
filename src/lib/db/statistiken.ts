@@ -8,6 +8,7 @@ export interface UebersichtStats {
   produkte_verfuegbar:    number;
   produkte_verkauft:      number;
   produkte_featured:      number;
+  produkte_niedrig:       number;
   kategorien:             number;
   kontakt_neu:            number;
   kontakt_gesamt:         number;
@@ -15,6 +16,13 @@ export interface UebersichtStats {
   wunschliste_user:       number;
   durchschnittspreis:     number;
   gesamtwert:             number;
+  bestellungen_pending:   number;
+  bestellungen_paid:      number;
+  bestellungen_fulfilled: number;
+  bestellungen_heute_versandt: number;
+  umsatz_gesamt_cents:    number;
+  umsatz_heute_cents:     number;
+  umsatz_30tage_cents:    number;
 }
 
 export async function uebersichtStats(): Promise<UebersichtStats> {
@@ -24,15 +32,77 @@ export async function uebersichtStats(): Promise<UebersichtStats> {
       (SELECT COUNT(*)::int FROM sebo.produkte WHERE lagerbestand > 0 AND verkauft = false) AS produkte_verfuegbar,
       (SELECT COUNT(*)::int FROM sebo.produkte WHERE verkauft = true)                    AS produkte_verkauft,
       (SELECT COUNT(*)::int FROM sebo.produkte WHERE featured = true)                    AS produkte_featured,
+      (SELECT COUNT(*)::int FROM sebo.produkte
+         WHERE lagerbestand BETWEEN 1 AND 5 AND verkauft = false)                        AS produkte_niedrig,
       (SELECT COUNT(*)::int FROM sebo.kategorien WHERE aktiv = true)                     AS kategorien,
       (SELECT COUNT(*)::int FROM sebo.kontaktanfragen WHERE status = 'neu')              AS kontakt_neu,
       (SELECT COUNT(*)::int FROM sebo.kontaktanfragen)                                   AS kontakt_gesamt,
       (SELECT COUNT(*)::int FROM sebo.wunschliste)                                       AS wunschliste_eintraege,
       (SELECT COUNT(DISTINCT session_token)::int FROM sebo.wunschliste)                  AS wunschliste_user,
       (SELECT COALESCE(AVG(preis), 0)::float FROM sebo.produkte WHERE verkauft = false)  AS durchschnittspreis,
-      (SELECT COALESCE(SUM(preis), 0)::float FROM sebo.produkte WHERE verkauft = false)  AS gesamtwert
+      (SELECT COALESCE(SUM(preis), 0)::float FROM sebo.produkte WHERE verkauft = false)  AS gesamtwert,
+      (SELECT COUNT(*)::int FROM sebo.orders WHERE status = 'pending')                   AS bestellungen_pending,
+      (SELECT COUNT(*)::int FROM sebo.orders WHERE status = 'paid')                      AS bestellungen_paid,
+      (SELECT COUNT(*)::int FROM sebo.orders WHERE status = 'fulfilled')                 AS bestellungen_fulfilled,
+      (SELECT COUNT(*)::int FROM sebo.orders WHERE versendet_am::date = CURRENT_DATE)    AS bestellungen_heute_versandt,
+      (SELECT COALESCE(SUM(total_cents), 0)::bigint FROM sebo.orders
+         WHERE status IN ('paid','fulfilled','completed'))                               AS umsatz_gesamt_cents,
+      (SELECT COALESCE(SUM(total_cents), 0)::bigint FROM sebo.orders
+         WHERE status IN ('paid','fulfilled','completed')
+           AND bezahlt_am::date = CURRENT_DATE)                                          AS umsatz_heute_cents,
+      (SELECT COALESCE(SUM(total_cents), 0)::bigint FROM sebo.orders
+         WHERE status IN ('paid','fulfilled','completed')
+           AND bezahlt_am >= now() - interval '30 days')                                 AS umsatz_30tage_cents
   `);
   return result.rows[0];
+}
+
+// ---------------------------------------------------------------------------
+// Letzte Bestellungen für Dashboard-Widget
+// ---------------------------------------------------------------------------
+export interface DashboardOrder {
+  id:             string;
+  order_number:   number;
+  customer_name:  string | null;
+  customer_email: string;
+  total_cents:    number;
+  status:         string;
+  erstellt_am:    string;
+}
+
+export async function letzteOrders(limit = 5): Promise<DashboardOrder[]> {
+  const result = await query<DashboardOrder>(
+    `SELECT id, order_number, customer_name, customer_email,
+            total_cents, status, erstellt_am
+     FROM sebo.orders
+     ORDER BY erstellt_am DESC
+     LIMIT $1`,
+    [limit]
+  );
+  return result.rows;
+}
+
+// ---------------------------------------------------------------------------
+// Produkte mit niedrigem Bestand (1-5) für Dashboard-Widget
+// ---------------------------------------------------------------------------
+export interface NiedrigBestandProdukt {
+  id:           string;
+  name:         string;
+  slug:         string;
+  lagerbestand: number;
+  preis:        number;
+}
+
+export async function niedrigBestand(limit = 5): Promise<NiedrigBestandProdukt[]> {
+  const result = await query<NiedrigBestandProdukt>(
+    `SELECT id, name, slug, lagerbestand, preis
+     FROM sebo.produkte
+     WHERE lagerbestand BETWEEN 1 AND 5 AND verkauft = false AND aktiv = true
+     ORDER BY lagerbestand ASC, name ASC
+     LIMIT $1`,
+    [limit]
+  );
+  return result.rows;
 }
 
 // ---------------------------------------------------------------------------

@@ -22,7 +22,7 @@ export function JournalEditor({ post }: { post: JournalPost }) {
   const [meldung,  setMeldung]  = useState("");
   const [pending, startTransition] = useTransition();
 
-  const html = marked.parse(markdown ?? "", { gfm: true });
+  const html = marked.parse(markdown ?? "", { gfm: true, async: false }) as string;
 
   const handleSpeichern = () => {
     setMeldung("Speichere…");
