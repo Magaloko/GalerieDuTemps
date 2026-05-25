@@ -15,22 +15,25 @@ export async function GET() {
     return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
   }
 
-  try {
-    const [uebersicht, timeline, kategorien, zustand] = await Promise.all([
-      uebersichtStats(),
-      produktTimeline(30),
-      kategorieVerteilung(),
-      zustandVerteilung(),
-    ]);
+  // Jede Query einzeln, damit ein Fehler in einer nicht alle abreißt
+  // und wir die genaue Quelle sehen.
+  const results = await Promise.allSettled([
+    uebersichtStats(),
+    produktTimeline(30),
+    kategorieVerteilung(),
+    zustandVerteilung(),
+  ]);
 
-    return NextResponse.json({
-      uebersicht,
-      timeline,
-      kategorien,
-      zustand,
-    });
-  } catch (err) {
-    console.error("[API /statistiken]", err);
-    return NextResponse.json({ error: "Serverfehler" }, { status: 500 });
-  }
+  const [uebersichtR, timelineR, kategorienR, zustandR] = results;
+
+  return NextResponse.json({
+    uebersicht: uebersichtR.status === "fulfilled" ? uebersichtR.value
+               : { error: String(uebersichtR.reason?.message ?? uebersichtR.reason) },
+    timeline:   timelineR.status === "fulfilled" ? timelineR.value
+               : { error: String(timelineR.reason?.message ?? timelineR.reason) },
+    kategorien: kategorienR.status === "fulfilled" ? kategorienR.value
+               : { error: String(kategorienR.reason?.message ?? kategorienR.reason) },
+    zustand:    zustandR.status === "fulfilled" ? zustandR.value
+               : { error: String(zustandR.reason?.message ?? zustandR.reason) },
+  });
 }
