@@ -63,7 +63,8 @@ export function SingleMediaUpload({
 
       <div className="flex gap-2">
         <input
-          type="url"
+          type="text"
+          inputMode="url"
           name={name}
           value={url}
           onChange={(e) => setUrl(e.target.value)}

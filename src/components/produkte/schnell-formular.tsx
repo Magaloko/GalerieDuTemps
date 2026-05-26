@@ -9,6 +9,7 @@ import { Input }    from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select }   from "@/components/ui/select";
 import { Button }   from "@/components/ui/button";
+import { PreisMultiCurrency } from "./preis-multi-currency";
 import type { Kategorie } from "@/types/produkt";
 
 interface Props { kategorien: Kategorie[] }
@@ -37,6 +38,7 @@ export function SchnellFormular({ kategorien }: Props) {
   const [fotos,     setFotos]      = useState<File[]>([]);
   const [notizen,   setNotizen]    = useState("");
   const [preis,     setPreis]      = useState("");
+  const [waehrung,  setWaehrung]   = useState<string>("KZT");
   const [kategorie, setKategorie]  = useState<string>(kategorien[0]?.id ? String(kategorien[0].id) : "");
   const [ai,        setAi]         = useState<AiResult | null>(null);
   const [aiPending, startAi]       = useTransition();
@@ -110,6 +112,7 @@ export function SchnellFormular({ kategorien }: Props) {
             kurzbeschreibung: ai.kurzbeschreibung,
             beschreibung:     ai.beschreibung,
             preis:            Number(preis),
+            waehrung:         waehrung,
             kategorie_id:     kategorie ? Number(kategorie) : undefined,
             zustand:          ai.zustand,
             era:              ai.era      ?? undefined,
@@ -219,12 +222,14 @@ export function SchnellFormular({ kategorien }: Props) {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            label="Цена (₸ KZT) *"
-            type="number" step="0.01" min="0" required
-            value={preis} onChange={(e) => setPreis(e.target.value)}
-            placeholder="0.00"
+          <PreisMultiCurrency
+            label="Цена *"
+            name="preis_visual"
+            defaultPreis={preis}
+            defaultWaehrung={waehrung}
+            required
             hint="KI не угадывает цену — введите сами"
+            onChange={(p, w) => { setPreis(String(p)); setWaehrung(w); }}
           />
           <Select
             label="Категория"
