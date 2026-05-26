@@ -13,6 +13,7 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import { getDictionary } from "@/i18n";
 import { formatPreis } from "@/lib/utils/preis";
+import { getMarketingStrings } from "@/lib/db/marketing-strings";
 
 export const metadata: Metadata = {
   title:       "Galerie du Temps — Винтажные сокровища с историей",
@@ -32,11 +33,27 @@ export const revalidate = 3600;
  *  4. Story-Teaser (cobalt): tagline + CTA.
  * ────────────────────────────────────────────────────────────────────────── */
 export default async function HomePage() {
-  const [produkte, kategorien, { t }] = await Promise.all([
+  const [produkte, kategorien, dict] = await Promise.all([
     featuredProdukte(8).catch(() => []),
     alleKategorien().catch(() => []),
     getDictionary(),
   ]);
+  const { t, locale } = dict;
+
+  // Editierbare Marketing-Strings (siehe Admin → Einstellungen → Marketing-Texte).
+  // Bei DB-Ausfall greifen leere Strings → die `||`-Fallbacks unten bringen
+  // die Original-Hardcoded-Werte zurück, damit die Page nie kaputt aussieht.
+  const ms = await getMarketingStrings([
+    "home.hero.eyebrow",
+    "home.hero.h1_oben",
+    "home.hero.h1_unten",
+    "home.hero.subhead",
+    "home.hero.cta_primary",
+    "home.hero.cta_secondary",
+    "home.ticker.links",
+    "home.ticker.mitte",
+    "home.ticker.rechts",
+  ], locale).catch(() => ({} as Record<string, string>));
 
   const heroLot = produkte[0];
   const heroLotName = heroLot?.name;
@@ -63,8 +80,7 @@ export default async function HomePage() {
                 className="text-[11px] uppercase font-medium mb-8 md:mb-10"
                 style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}
               >
-                Rare pieces with history,<br className="hidden sm:inline" />
-                {" "}elegance, and timeless charm.
+                {ms["home.hero.eyebrow"] || "Rare pieces with history, elegance, and timeless charm."}
               </p>
 
               {/* H1 — Display-XL, italic+coral last word */}
@@ -77,12 +93,12 @@ export default async function HomePage() {
                   color: "var(--color-vintage-white)",
                 }}
               >
-                Редкие вещи<br />
+                {ms["home.hero.h1_oben"] || "Редкие вещи"}<br />
                 <em
                   className="font-italic"
                   style={{ color: "var(--color-coral)", fontStyle: "italic" }}
                 >
-                  с историей.
+                  {ms["home.hero.h1_unten"] || "с историей."}
                 </em>
               </h1>
 
@@ -97,17 +113,16 @@ export default async function HomePage() {
                   color:      "rgba(255,255,255,0.78)",
                 }}
               >
-                Кураторская подборка винтажа из Алматы — мебель, керамика, графика,
-                текстиль. Каждый предмет проходит атрибуцию и реставрацию.
+                {ms["home.hero.subhead"] || "Кураторская подборка винтажа из Алматы — мебель, керамика, графика, текстиль. Каждый предмет проходит атрибуцию и реставрацию."}
               </p>
 
               {/* CTAs */}
               <div className="mt-10 md:mt-12 flex flex-wrap items-center gap-4">
                 <Link href="/katalog" className="btn-coral btn-coral-lg">
-                  Открыть каталог <ArrowRight className="w-4 h-4" />
+                  {ms["home.hero.cta_primary"] || "Открыть каталог"} <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link href="/quiz" className="btn-coral btn-coral-ghost-light btn-coral-lg">
-                  <Sparkles className="w-4 h-4" /> Пройти квиз
+                  <Sparkles className="w-4 h-4" /> {ms["home.hero.cta_secondary"] || "Пройти квиз"}
                 </Link>
               </div>
             </div>
@@ -188,14 +203,14 @@ export default async function HomePage() {
           >
             <div className="max-w-[1440px] mx-auto px-6 md:px-14 py-5 grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 text-center md:text-left">
               <p className="text-[11px] uppercase font-medium" style={{ letterSpacing: "0.22em", color: "rgba(255,255,255,0.75)" }}>
-                <span style={{ color: "var(--color-coral)" }}>◆</span> На складе ·{" "}
-                <span style={{ fontFamily: "var(--font-mono)" }}>{produkte.length > 0 ? produkte.length * 40 : 342}</span> предметов
+                {/* {n}-Platzhalter → tatsächliche Produktanzahl */}
+                {(ms["home.ticker.links"] || "◆ На складе · {n} предметов").replace("{n}", String(produkte.length > 0 ? produkte.length * 40 : 342))}
               </p>
               <p className="text-[11px] uppercase font-medium md:text-center" style={{ letterSpacing: "0.22em", color: "var(--color-coral)" }}>
-                Новые поступления каждую среду
+                {ms["home.ticker.mitte"] || "Новые поступления каждую среду"}
               </p>
               <p className="text-[11px] uppercase font-medium md:text-right" style={{ letterSpacing: "0.22em", color: "rgba(255,255,255,0.75)" }}>
-                Доставка по СНГ ↗
+                {ms["home.ticker.rechts"] || "Доставка по СНГ ↗"}
               </p>
             </div>
           </div>

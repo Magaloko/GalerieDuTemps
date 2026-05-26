@@ -17,6 +17,7 @@ type HeaderProps = {
   t:           Dictionary;
   locale:      Locale;
   kategorien?: Kategorie[];
+  promo?:      { links: string; rechts: string };
 };
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -31,7 +32,7 @@ type HeaderProps = {
  * Mobile: Single 56px Bar (cobalt) — Hamburger links, Wordmark Mitte, Such-
  *     Icon rechts. Bottom-Tab-Bar separat (siehe mobile-tab-bar.tsx).
  * ────────────────────────────────────────────────────────────────────────── */
-export function Header({ t, locale, kategorien = [] }: HeaderProps) {
+export function Header({ t, locale, kategorien = [], promo }: HeaderProps) {
   const pathname = usePathname();
   const router   = useRouter();
   const { ids }  = useWunschliste();
@@ -242,10 +243,9 @@ export function Header({ t, locale, kategorien = [] }: HeaderProps) {
         >
           <div className="max-w-[1440px] mx-auto px-14 py-2 flex items-center justify-between text-[10px] uppercase font-medium"
                style={{ letterSpacing: "0.22em", color: "rgba(255,255,255,0.7)" }}>
-            {/* TODO i18n: promo.versand */}
-            <span>◆ Бесплатная доставка по Казахстану от ₸ 50 000</span>
+            <span>{promo?.links || "◆ Бесплатная доставка по Казахстану от ₸ 50 000"}</span>
             <span style={{ color: "var(--color-coral)" }}>
-              Новые поступления каждую среду
+              {promo?.rechts || "Новые поступления каждую среду"}
             </span>
             <LanguageSwitcher ariaLabel={t.nav.sprache} />
           </div>
