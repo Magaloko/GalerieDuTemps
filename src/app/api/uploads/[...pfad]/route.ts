@@ -52,7 +52,20 @@ export async function GET(
         "Cache-Control":  "public, max-age=31536000, immutable",
       },
     });
-  } catch {
-    return new NextResponse("Not found", { status: 404 });
+  } catch (err) {
+    // Detaillierte 404-Antwort hilft bei Volume-Mount-Debugging in Coolify-Logs.
+    // Code (z.B. ENOENT vs EACCES) zeigt ob Datei fehlt oder Berechtigung.
+    const code = err && typeof err === "object" && "code" in err ? String((err as { code: unknown }).code) : "unknown";
+    console.warn("[/api/uploads]", relPath, "→", code, "(uploadDir:", uploadDir, ")");
+    return NextResponse.json(
+      {
+        error:     "Datei nicht gefunden",
+        path:      relPath,
+        uploadDir,
+        code,
+        hint:      "Health-Check: /api/uploads/_health",
+      },
+      { status: 404 },
+    );
   }
 }
