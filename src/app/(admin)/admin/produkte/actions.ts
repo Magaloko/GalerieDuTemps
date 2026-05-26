@@ -36,11 +36,18 @@ function parseProduktFormData(formData: FormData) {
   const kurzI18n   = parseJsonField(formData.get("kurzbeschreibung_i18n"));
   const beschrI18n = parseJsonField(formData.get("beschreibung_i18n"));
 
-  // Default-Werte für name/kurz/beschr aus ru-Locale wenn möglich,
-  // sonst aus formData (für Backwards-Compat / Schnell-Form ohne Tabs)
-  const nameDefault   = (formData.get("name")             ?? nameI18n?.ru   ?? "") as string;
-  const kurzDefault   = (formData.get("kurzbeschreibung") ?? kurzI18n?.ru   ?? "") as string;
-  const beschrDefault = (formData.get("beschreibung")     ?? beschrI18n?.ru ?? "") as string;
+  // Default-Werte für name/kurz/beschr.
+  // Reihenfolge: i18n.ru → i18n.en/de (erster gesetzter) → plain formData.
+  // Wichtig: formData.get() liefert leeren String wenn das Feld da aber leer ist —
+  // daher explizit auf .trim().length prüfen statt ?? (greift nur bei null).
+  const pickI18n = (m?: Record<string,string>) =>
+    m ? (m.ru?.trim() || m.en?.trim() || m.de?.trim() || "") : "";
+  const pickPlain = (v: FormDataEntryValue | null) =>
+    (typeof v === "string" ? v.trim() : "");
+
+  const nameDefault   = pickI18n(nameI18n)   || pickPlain(formData.get("name"));
+  const kurzDefault   = pickI18n(kurzI18n)   || pickPlain(formData.get("kurzbeschreibung"));
+  const beschrDefault = pickI18n(beschrI18n) || pickPlain(formData.get("beschreibung"));
 
   const abmessungen = (() => {
     const breite  = formData.get("abmessungen_breite");
@@ -57,11 +64,11 @@ function parseProduktFormData(formData: FormData) {
   })();
 
   return {
-    name:             nameDefault || formData.get("name"),
+    name:             nameDefault,
     slug:             formData.get("slug")           || undefined,
     artikel_code:     formData.get("artikel_code")   || undefined,
-    beschreibung:     beschrDefault || formData.get("beschreibung"),
-    kurzbeschreibung: kurzDefault   || formData.get("kurzbeschreibung"),
+    beschreibung:     beschrDefault,
+    kurzbeschreibung: kurzDefault,
     name_i18n:             nameI18n,
     kurzbeschreibung_i18n: kurzI18n,
     beschreibung_i18n:     beschrI18n,
