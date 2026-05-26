@@ -63,7 +63,7 @@ export async function GET(
         path:      relPath,
         uploadDir,
         code,
-        hint:      "Health-Check: /api/uploads/_health",
+        hint:      "Health-Check: /api/health/uploads",
       },
       { status: 404 },
     );

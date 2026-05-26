@@ -5,7 +5,10 @@ import { join } from "path";
 export const dynamic = "force-dynamic";
 
 /* ──────────────────────────────────────────────────────────────────────────
- * /api/uploads/_health
+ * /api/health/uploads
+ *
+ * (NICHT unter /api/uploads/ — sonst greift der [...pfad]-Catch-all-Handler.
+ *  Folder mit _-Prefix werden in Next.js zudem als private behandelt.)
  *
  * Diagnose-Endpoint für Bild-Serving. Zeigt:
  *  - welcher Pfad als UPLOAD_DIR aufgelöst wird (env vs default),
