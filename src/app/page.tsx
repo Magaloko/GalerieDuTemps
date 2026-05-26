@@ -29,64 +29,66 @@ export default async function HomePage() {
       <SiteHeader />
       <main className="flex-1 pb-20 md:pb-0">
 
-        {/* ─── Hero (Persönlichkeitstest-Stil) ────────────────────────── */}
-        <section className="relative hero-vignette texture-paper overflow-hidden">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-28 md:py-40 text-center">
+        {/* ─── Hero — Cobalt-Bühne mit Coral-Brand-Treatment ────────────── */}
+        <section className="relative overflow-hidden bg-vintage-espresso">
+          {/* Subtile radial highlight für Tiefe */}
+          <div
+            aria-hidden
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: "radial-gradient(ellipse at 50% 30%, rgba(232,112,58,0.08) 0%, transparent 60%)",
+            }}
+          />
 
-            {/* Sparkle-Icon im Kreis */}
-            <div
-              className="inline-flex items-center justify-center w-16 h-16 mb-8 border border-vintage-gold/40"
-              style={{ borderRadius: "50%", boxShadow: "var(--shadow-gold-glow)" }}
-            >
-              <Sparkles className="w-6 h-6 text-vintage-gold" />
-            </div>
+          <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-36 text-center">
 
-            {/* Eyebrow */}
-            <p className="eyebrow mb-6">{t.home.hero_eyebrow}</p>
-
-            {/* Headline — gemischt regulär + italic gold */}
-            <h1 className="font-serif text-5xl md:text-6xl leading-[1.15] text-vintage-white mb-2">
-              {t.home.hero_titel_1}
-            </h1>
-            <p className="font-serif text-5xl md:text-6xl leading-[1.15] italic text-vintage-gold mb-2">
-              {t.home.hero_titel_em}
-            </p>
-            <h1 className="font-serif text-5xl md:text-6xl leading-[1.15] text-vintage-white mb-10">
-              {t.home.hero_titel_2}
-            </h1>
-
-            <p className="text-vintage-cream/70 text-base font-sans max-w-md mx-auto mb-10 leading-relaxed">
-              {t.home.hero_text}
+            {/* Eyebrow — wie auf der Tote-Bag */}
+            <p className="text-vintage-gold text-[10px] sm:text-xs font-sans tracking-[0.4em] uppercase mb-12 md:mb-20">
+              Rare pieces with history, elegance,<br className="hidden sm:block" />
+              {" "}and timeless charm.
             </p>
 
-            <div className="flex flex-wrap justify-center items-center gap-4">
+            {/* Hauptbrand — gespreizt, dünn, Coral */}
+            <h1 className="font-serif font-extralight text-vintage-gold leading-none mb-6
+                           text-[3.5rem] sm:text-[5.5rem] md:text-[7rem] lg:text-[8.5rem]
+                           tracking-[0.18em] sm:tracking-[0.22em] pl-[0.18em] sm:pl-[0.22em]">
+              GALERIE
+            </h1>
+
+            {/* du Temps Subline */}
+            <p className="font-serif italic text-vintage-gold
+                          text-xl sm:text-2xl md:text-3xl
+                          tracking-[0.2em] mb-16 md:mb-20">
+              du Temps
+            </p>
+
+            {/* CTAs */}
+            <div className="flex flex-wrap justify-center items-center gap-3">
               <Link
-                href="/quiz"
-                className="
-                  inline-flex items-center gap-2
-                  px-8 py-3.5
-                  bg-vintage-gold text-vintage-espresso
-                  font-sans text-xs tracking-[0.25em] uppercase
-                  hover:bg-vintage-amber transition-colors
-                "
+                href="/katalog"
+                className="inline-flex items-center gap-2 px-8 py-3.5
+                           bg-vintage-gold text-vintage-espresso
+                           font-sans text-xs tracking-[0.25em] uppercase font-medium
+                           hover:bg-vintage-amber transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}
               >
                 {t.home.cta_kollektion} <ArrowRight className="w-3.5 h-3.5" />
               </Link>
               <Link
-                href="/katalog"
-                className="
-                  inline-flex items-center
-                  px-6 py-3.5
-                  text-vintage-cream/50 hover:text-vintage-gold
-                  font-sans text-xs tracking-[0.25em] uppercase
-                  transition-colors
-                "
+                href="/quiz"
+                className="inline-flex items-center gap-2 px-6 py-3.5
+                           border border-vintage-gold/40 text-vintage-gold
+                           font-sans text-xs tracking-[0.25em] uppercase
+                           hover:bg-vintage-gold/10 transition-colors"
+                style={{ borderRadius: "var(--radius-button)" }}
               >
-                {t.home.cta_anfrage}
+                <Sparkles className="w-3.5 h-3.5" /> {t.home.hero_eyebrow}
               </Link>
             </div>
           </div>
+
+          {/* Dezente Trennlinie unten */}
+          <div className="h-px bg-gradient-to-r from-transparent via-vintage-gold/30 to-transparent" />
         </section>
 
         {/* ─── Highlights ─────────────────────────────────────────────── */}
