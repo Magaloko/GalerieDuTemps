@@ -71,8 +71,8 @@ export function BenutzerVerwaltungClient({ users, currentUserId }: Props) {
         {showForm && (
           <form action={action} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Name" name="name" required placeholder="Stephan Mustermann" />
-              <Input label="E-Mail" name="email" type="email" required placeholder="stephan@galeriedutemps.kz" />
+              <Input label="Name" name="name" required placeholder="Max Mustermann" />
+              <Input label="E-Mail" name="email" type="email" required placeholder="admin@galeriedutemps.kz" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-[1fr_140px_120px] gap-4">
               <Input label="Temporäres Passwort" name="passwort" required
