@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select }   from "@/components/ui/select";
 import { Button }   from "@/components/ui/button";
 import { MarkdownEditor } from "@/components/ui/markdown-editor";
+import { PreisMultiCurrency } from "./preis-multi-currency";
 import { MultilingualInput } from "@/components/ui/multilingual-input";
 import { SingleMediaUpload } from "@/components/ui/single-media-upload";
 import { Save, Trash2, AlertCircle, CheckCircle2 } from "lucide-react";
@@ -504,19 +505,19 @@ function PreiseSektion({
           hint="Внутреннее, для расчёта маржи"
           onChange={(ev) => setEinkauf(Number((ev.target as HTMLInputElement).value) || 0)}
         />
-        <Input
-          label="B2C-цена (₸ KZT)"
-          name="preis"
-          type="number"
-          step="0.01"
-          min="0"
-          required
-          defaultValue={produkt?.preis}
-          error={e("preis")}
-          placeholder="0.00"
-          hint="Видна обычным клиентам"
-          onChange={(ev) => setB2c(Number((ev.target as HTMLInputElement).value) || 0)}
-        />
+        <div className="md:col-span-1">
+          <PreisMultiCurrency
+            label="B2C-цена"
+            name="preis"
+            waehrungName="waehrung"
+            defaultPreis={produkt?.preis}
+            defaultWaehrung={produkt?.waehrung ?? "KZT"}
+            required
+            error={e("preis")}
+            hint="Видна клиентам · автоконвертация в другие валюты"
+            onChange={(p) => setB2c(p)}
+          />
+        </div>
         <Input
           label="B2B-цена (опционально)"
           name="b2b_preis"

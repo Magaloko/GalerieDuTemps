@@ -125,11 +125,11 @@ export default async function ProduktDetailPage({ params }: Props) {
           {/* Preis */}
           <div className="flex items-end gap-3">
             <p className="font-serif text-3xl text-vintage-cream">
-              {formatPreis(produkt.preis)}
+              {formatPreis(produkt.preis, (produkt.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT")}
             </p>
             {produkt.originalpreis && (
               <p className="text-vintage-dust text-lg line-through mb-0.5">
-                {formatPreis(produkt.originalpreis)}
+                {formatPreis(produkt.originalpreis, (produkt.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT")}
               </p>
             )}
           </div>

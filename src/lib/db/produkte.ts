@@ -71,7 +71,7 @@ export async function produkteListe(params: {
   // Daten
   const dataResult = await query<ProduktListItem>(
     `SELECT
-       p.id, p.name, p.slug, p.artikel_code, p.preis, p.originalpreis,
+       p.id, p.name, p.slug, p.artikel_code, p.preis, p.originalpreis, p.waehrung,
        k.name AS kategorie_name,
        p.zustand, p.lagerbestand, p.verkauft, p.featured, p.aktiv, p.b2c_mode,
        p.erstellt_am,

@@ -112,11 +112,11 @@ export function ProduktKarte({ produkt, priority = false }: ProduktKarteProps) {
             ) : (
               <>
                 <p className="font-serif text-lg text-vintage-gold">
-                  {formatPreis(produkt.preis)}
+                  {formatPreis(produkt.preis, (produkt.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT")}
                 </p>
                 {produkt.originalpreis && (
                   <p className="text-vintage-dust text-xs line-through">
-                    {formatPreis(produkt.originalpreis)}
+                    {formatPreis(produkt.originalpreis, (produkt.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT")}
                   </p>
                 )}
               </>

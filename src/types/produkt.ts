@@ -109,6 +109,7 @@ export interface ProduktListItem {
   artikel_code:    string | null;
   preis:           number;
   originalpreis:   number | null;
+  waehrung?:       string;
   kategorie_name:  string | null;
   zustand:         Zustand;
   aktiv:           boolean;

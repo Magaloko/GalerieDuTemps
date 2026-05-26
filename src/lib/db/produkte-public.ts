@@ -23,7 +23,7 @@ const BASE_FILTER = `
 export async function featuredProdukte(limit = 8): Promise<ProduktListItem[]> {
   const result = await query<ProduktListItem>(
     `SELECT
-       p.id, p.name, p.slug, p.preis, p.originalpreis,
+       p.id, p.name, p.slug, p.preis, p.originalpreis, p.waehrung,
        k.name AS kategorie_name,
        p.zustand, p.lagerbestand, p.verkauft, p.featured, p.b2c_mode,
        p.erstellt_am,
@@ -121,7 +121,7 @@ export async function katalogProdukte(params: {
     ),
     query<ProduktListItem>(
       `SELECT
-         p.id, p.name, p.slug, p.preis, p.originalpreis,
+         p.id, p.name, p.slug, p.preis, p.originalpreis, p.waehrung,
          k.name AS kategorie_name,
          p.zustand, p.lagerbestand, p.verkauft, p.featured, p.era, p.b2c_mode,
          p.erstellt_am,
@@ -182,7 +182,7 @@ export async function aehnlicheProdukte(
 ): Promise<ProduktListItem[]> {
   const result = await query<ProduktListItem>(
     `SELECT
-       p.id, p.name, p.slug, p.preis, p.originalpreis,
+       p.id, p.name, p.slug, p.preis, p.originalpreis, p.waehrung,
        k.name AS kategorie_name, p.zustand, p.lagerbestand,
        p.verkauft, p.featured, p.erstellt_am,
        (SELECT pb.url FROM sebo.produktbilder pb
