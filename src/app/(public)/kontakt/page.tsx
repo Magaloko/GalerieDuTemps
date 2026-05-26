@@ -4,8 +4,9 @@ import { getDictionary } from "@/i18n";
 import { kontaktKanaeleLaden, whatsappUrl, telegramUrl } from "@/lib/db/kontakt-kanaele";
 
 export const metadata: Metadata = {
-  title:       "Контакты — Galerie du Temps",
-  description: "Вопросы или запросы? Мы рады услышать вас.",
+  title:       "Контакты",
+  description: "Вопросы или запросы? Мы рады услышать вас. Алматы, Казахстан.",
+  alternates:  { canonical: "/kontakt" },
 };
 
 function formatPhoneDisplay(digits: string): string {

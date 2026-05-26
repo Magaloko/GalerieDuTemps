@@ -4,6 +4,8 @@ import { ProduktGrid } from "@/components/produkte/produkt-grid";
 import { ProduktDetailClient } from "./client";
 import { AddToCartButton } from "@/components/produkte/add-to-cart-button";
 import { SpecTable } from "@/components/product/spec-table";
+import { JsonLd } from "@/components/seo/json-ld";
+import { productSchema, breadcrumbSchema, getSiteUrl } from "@/lib/seo/schemas";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { formatPreis } from "@/lib/utils/preis";
@@ -33,8 +35,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lokalName = i18nOr(p.name_i18n, locale, p.name);
   const lokalKurz = i18nOr(p.kurzbeschreibung_i18n, locale, p.kurzbeschreibung);
   return {
-    title:       p.seo_titel        ?? `${lokalName} – Galerie du Temps`,
+    title:       p.seo_titel        ?? lokalName,
     description: p.seo_beschreibung ?? lokalKurz ?? undefined,
+    alternates:  { canonical: `/katalog/${slug}` },
   };
 }
 
@@ -92,6 +95,38 @@ export default async function ProduktDetailPage({ params }: Props) {
 
   const waehrung = (produkt.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT";
 
+  // ── JSON-LD ───────────────────────────────────────────────────────────
+  const siteUrl   = getSiteUrl();
+  const allImages = [
+    produkt.hauptbild_url,
+    produkt.rueckbild_url,
+    ...(produkt.bilder ?? []).map(b => b.url),
+  ].filter((u): u is string => Boolean(u));
+
+  const productJsonLd = productSchema({
+    id:          produkt.id,
+    slug:        produkt.slug,
+    name:        name,
+    description: kurz ?? undefined,
+    images:      allImages,
+    price:       produkt.preis,
+    currency:    waehrung,
+    inStock:     produkt.lagerbestand > 0 && !produkt.verkauft,
+    condition:   "used",
+    sku:         String(produkt.id),
+    category:    produkt.kategorie_name ?? undefined,
+  });
+  const breadcrumbJsonLd = breadcrumbSchema([
+    { name: "Главная", url: "/" },
+    { name: t.nav.katalog, url: "/katalog" },
+    ...(produkt.kategorie_name && produkt.kategorie_slug
+      ? [{ name: produkt.kategorie_name, url: `/kategorien/${produkt.kategorie_slug}` }]
+      : []),
+    { name, url: `/katalog/${produkt.slug}` },
+  ]);
+  // siteUrl reserved für künftige Erweiterungen (z.B. Author/Person)
+  void siteUrl;
+
   // Headline: split name into two lines if possible (last word → italic+coral)
   const nameParts = name.trim().split(/\s+/);
   const lastWord  = nameParts.length > 1 ? nameParts.pop()! : null;
@@ -99,6 +134,7 @@ export default async function ProduktDetailPage({ params }: Props) {
 
   return (
     <div style={{ background: "var(--color-paper)", color: "var(--color-ink)" }}>
+      <JsonLd id="product" data={[productJsonLd, breadcrumbJsonLd]} />
 
       {/* ── Breadcrumb-Bar ───────────────────────────────────────────── */}
       <div

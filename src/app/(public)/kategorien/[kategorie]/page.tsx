@@ -13,8 +13,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const alle = await alleKategorien();
   const kat = alle.find(k => k.slug === kategorie);
   return kat
-    ? { title: `${kat.name} — Galerie du Temps`, description: kat.beschreibung ?? undefined }
-    : { title: "Категория не найдена" };
+    ? {
+        title:       kat.name,
+        description: kat.beschreibung ?? undefined,
+        alternates:  { canonical: `/kategorien/${kat.slug}` },
+      }
+    : { title: "Категория не найдена", robots: { index: false, follow: true } };
 }
 
 export default async function KategoriePage({ params }: Props) {

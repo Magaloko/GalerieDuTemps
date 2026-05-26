@@ -15,8 +15,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const p = await postBySlug(slug).catch(() => null);
   if (!p) return { title: "Запись не найдена" };
   return {
-    title:       p.seo_titel ?? `${p.titel} — Galerie du Temps`,
+    title:       p.seo_titel ?? p.titel,
     description: p.seo_beschreibung ?? p.excerpt ?? undefined,
+    alternates:  { canonical: `/journal/${p.slug}` },
   };
 }
 

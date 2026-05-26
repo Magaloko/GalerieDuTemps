@@ -9,8 +9,9 @@ import { getDictionary } from "@/i18n";
 import { SortSelect } from "./sort-select";
 
 export const metadata: Metadata = {
-  title:       "Каталог — Galerie du Temps",
+  title:       "Каталог",
   description: "Все доступные винтажные вещи. Фильтр по категории, цене и состоянию.",
+  alternates:  { canonical: "/katalog" },
 };
 
 export const dynamic = "force-dynamic";

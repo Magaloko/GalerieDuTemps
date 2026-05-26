@@ -3,8 +3,10 @@ import type { Metadata } from "next";
 import { getDictionary } from "@/i18n";
 
 export const metadata: Metadata = {
-  title:       "Корзина — Galerie du Temps",
+  title:       "Корзина",
   description: "Ваш выбор в Galerie du Temps",
+  alternates:  { canonical: "/warenkorb" },
+  robots:      { index: false, follow: true },
 };
 
 export default async function WarenkorbPage() {
