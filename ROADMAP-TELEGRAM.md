@@ -1,15 +1,44 @@
 # Roadmap · Telegram-Integration
 
-Status: **geplant** — noch nicht implementiert, erfordert mehrere Iterationen.
+Status: **alle Kern-Phasen implementiert** — Setup-Aktionen für Produktion am Ende.
 
-Drei separate Ziele die unterschiedlich groß sind:
+| # | Ziel | Status |
+|---|------|--------|
+| 0 | Brand-Bot empfängt Nachrichten als Leads | ✅ live (existierend) |
+| 1 | **Customer-Telegram-Notifications** (Verknüpfung + Order-Pushes) | ✅ implementiert |
+| 2 | **Telegram Mini App als Shop** (Katalog + Cart + Checkout) | ✅ implementiert |
+| 3 | Bot-Commands `/orders` `/status` `/wishlist` `/help` | ✅ implementiert |
 
-| # | Ziel | Aufwand | Status |
-|---|------|---------|--------|
-| 0 | Brand-Bot empfängt Nachrichten als Leads (existierend) | — | ✅ live in `/admin/einstellungen/telegram` |
-| 1 | **Customer-Telegram-Notifications** — jeder Kunde verknüpft sein Telegram + bekommt Bestell-Updates | ~3–5 Tage | 📋 geplant |
-| 2 | **Telegram Mini App als Shop** — Browser-App in Telegram für Katalog/Wishlist/Checkout | ~2–3 Wochen | 📋 geplant |
-| 3 | Bot-Commands für Kunden (interaktiv: `/wishlist`, `/orders`) | ~1 Woche | 🤔 optional Phase 3 |
+## Produktiv-Schritte (nicht-Code)
+
+Damit das alles in Produktion funktioniert:
+
+1. **Migrations ausführen** in Coolify-Terminal:
+   ```bash
+   npm run db:migrate
+   ```
+   Wendet `sql/023_marketing_strings.sql` + `sql/024_customer_telegram.sql` an.
+
+2. **Bot bei BotFather einrichten** (falls noch nicht passiert):
+   - Telegram → @BotFather → /newbot → Token bekommen
+   - In `/admin/einstellungen/telegram` Token einfügen → verifiziert + setzt Webhook
+
+3. **Mini-App-Menübutton** beim BotFather:
+   - `/mybots` → Bot wählen → Bot Settings → Menu Button
+   - URL: `https://galerie.apps.dadakaev.tech/tg` (oder eigene Domain)
+
+4. **Telegram-Payments aktivieren** (für Checkout aus Mini-App):
+   - `/mybots` → Bot → Payments → Provider wählen
+     - **Stripe**: global, akzeptiert Visa/MC/Apple-Pay/Google-Pay
+     - **CloudPayments**: für KZ-/RU-Markt empfohlen
+     - **KASPI**: prüfen ob direkte Telegram-Integration verfügbar
+   - Provider gibt einen Token (Format: `123456:LIVE:...` oder `123456:TEST:...`)
+   - In Coolify als ENV-Variable setzen:
+     ```
+     TELEGRAM_PAYMENTS_PROVIDER_TOKEN=<token>
+     ```
+
+5. **App-Restart** im Coolify damit die neue ENV greift.
 
 ---
 
