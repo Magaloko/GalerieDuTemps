@@ -67,6 +67,19 @@ export type KategorieCreateInput = z.infer<typeof KategorieCreateSchema>;
 export type KategorieUpdateInput = z.infer<typeof KategorieUpdateSchema>;
 
 // ---------------------------------------------------------------------------
+// Lead-Schemas (Unified-Inbox)
+// ---------------------------------------------------------------------------
+export const LeadStatusSchema = z.enum([
+  "neu","gelesen","in_arbeit","beantwortet","qualifiziert","verloren","archiviert"
+]);
+export const LeadPrioritaetSchema = z.enum(["niedrig","normal","hoch","dringend"]);
+export const LeadQuelleSchema = z.enum([
+  "kontaktanfrage",
+  "instagram_dm","instagram_comment","instagram_mention",
+  "telegram","whatsapp","mail","manuell"
+]);
+
+// ---------------------------------------------------------------------------
 // Bild-Schema
 // ---------------------------------------------------------------------------
 export const BildUpdateSchema = z.object({

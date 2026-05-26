@@ -26,6 +26,7 @@ import {
   BookOpen,
   Menu,
   X,
+  Inbox,
 } from "lucide-react";
 
 // ---------------------------------------------------------------------------
@@ -60,6 +61,12 @@ const navItems = [
     href:  "/admin/coupons",
     label: "Gutscheine",
     icon:  Tag,
+    exact: false,
+  },
+  {
+    href:  "/admin/leads",
+    label: "Inbox",
+    icon:  Inbox,
     exact: false,
   },
   {
