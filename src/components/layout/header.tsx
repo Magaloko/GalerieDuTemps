@@ -112,9 +112,40 @@ export function Header({ t, locale, kategorien = [] }: HeaderProps) {
           }}
         >
           <div className="max-w-[1440px] mx-auto px-5 md:px-14">
-            <div className="h-14 flex items-center justify-between gap-6">
-              {/* Nav links */}
-              <nav className="hidden md:flex items-center gap-9">
+
+            {/* Mobile-Layout: hamburger | wordmark | search.
+                Heart/Cart/Account leben in der Bottom-Tab-Bar — nicht hier doppeln. */}
+            <div className="flex md:hidden items-center justify-between h-14">
+              <button
+                onClick={() => setMenuOffen(true)}
+                className="p-2 -ml-2 transition-colors hover:text-coral"
+                style={{ color: "var(--color-ink)" }}
+                aria-label={t.nav.menu}
+                aria-expanded={menuOffen}
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              <Link href="/" className="flex items-baseline gap-2 min-w-0">
+                <span className="wordmark" style={{ fontSize: 16, color: "var(--color-ink)" }}>
+                  GALERIE
+                </span>
+                <span className="wordmark-italic" style={{ fontSize: 11, color: "var(--color-ink-soft)" }}>
+                  du Temps
+                </span>
+              </Link>
+              <button
+                onClick={() => setSucheOffen(v => !v)}
+                className="p-2 -mr-2 transition-colors hover:text-coral"
+                style={{ color: "var(--color-ink)" }}
+                aria-label={t.nav.suche}
+              >
+                {sucheOffen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
+              </button>
+            </div>
+
+            {/* Desktop-Layout: nav | wordmark (absolute center) | actions */}
+            <div className="hidden md:flex relative items-center justify-between gap-6 h-14">
+              <nav className="flex items-center gap-9">
                 {navLinks.map(({ href, label }) => {
                   const active = pathname.startsWith(href);
                   return (
@@ -135,8 +166,7 @@ export function Header({ t, locale, kategorien = [] }: HeaderProps) {
                 })}
               </nav>
 
-              {/* Center wordmark (klein) */}
-              <Link href="/" className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
+              <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex items-baseline gap-2">
                 <span className="wordmark" style={{ fontSize: 18, color: "var(--color-ink)" }}>
                   GALERIE
                 </span>
@@ -145,11 +175,10 @@ export function Header({ t, locale, kategorien = [] }: HeaderProps) {
                 </span>
               </Link>
 
-              {/* Right icons + login pill */}
-              <div className="flex items-center gap-1 ml-auto">
+              <div className="flex items-center gap-1">
                 <button
                   onClick={() => setSucheOffen(v => !v)}
-                  className="p-2 hover:text-coral transition-colors"
+                  className="p-2 transition-colors hover:text-coral"
                   style={{ color: "var(--color-ink)" }}
                   aria-label={t.nav.suche}
                 >
@@ -157,7 +186,7 @@ export function Header({ t, locale, kategorien = [] }: HeaderProps) {
                 </button>
                 <Link
                   href="/wunschliste"
-                  className="relative p-2 hover:text-coral transition-colors"
+                  className="relative p-2 transition-colors hover:text-coral"
                   style={{ color: "var(--color-ink)" }}
                   aria-label={`${t.nav.wunschliste} (${ids.length})`}
                 >
@@ -179,7 +208,7 @@ export function Header({ t, locale, kategorien = [] }: HeaderProps) {
                 <LanguageSwitcher ariaLabel={t.nav.sprache} />
                 <Link
                   href="/kunde/anmelden"
-                  className="hidden sm:inline-flex items-center gap-1.5 ml-2 btn-coral btn-coral-sm"
+                  className="ml-2 btn-coral btn-coral-sm"
                 >
                   {t.nav.anmelden}
                 </Link>
