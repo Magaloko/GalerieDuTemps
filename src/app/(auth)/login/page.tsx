@@ -3,80 +3,74 @@
 import { useActionState } from "react";
 import { loginAction } from "./actions";
 import { Loader2 } from "lucide-react";
+import { Hourglass } from "@/components/brand/hourglass";
 
-// ---------------------------------------------------------------------------
-// Metadata wird in layout.tsx des (auth) Route Groups gesetzt
-// ---------------------------------------------------------------------------
-
+/* ──────────────────────────────────────────────────────────────────────────
+ * Admin-Login — Paper-BG mit Coral-CTA.
+ *
+ * Touch-Targets explizit ≥ 48px (iOS-Empfehlung 44px+, mit Buffer):
+ * - Submit-Button min-h-12 (48px)
+ * - Inputs min-h-12 (48px)
+ * - touch-action: manipulation verhindert Double-Tap-Zoom-Delay (300ms)
+ *   der manche „Button reagiert nicht"-Symptome verursacht
+ * ────────────────────────────────────────────────────────────────────────── */
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(loginAction, null);
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-vintage-espresso texture-paper px-4">
+    <main
+      className="min-h-[100dvh] flex items-center justify-center px-4 py-12"
+      style={{ background: "var(--color-paper)", color: "var(--color-ink)" }}
+    >
       <div className="w-full max-w-sm">
 
         {/* Header */}
-        <div className="text-center mb-8">
-          <p className="text-vintage-gold text-xl tracking-widest mb-2">✦</p>
-          <h1 className="font-serif text-4xl text-vintage-cream">
-            Galerie du Temps
-          </h1>
-          <p className="text-vintage-dust text-sm tracking-wider mt-1 uppercase">
-            Admin-Bereich
+        <div className="text-center mb-10">
+          <Hourglass size={48} className="text-coral mx-auto mb-4" />
+          <div className="wordmark mb-1" style={{ fontSize: 28, color: "var(--color-ink)" }}>
+            GALERIE
+          </div>
+          <div className="wordmark-italic" style={{ fontSize: 14, color: "var(--color-ink-soft)" }}>
+            du Temps
+          </div>
+          <p
+            className="mt-4 text-[11px] uppercase font-medium"
+            style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}
+          >
+            Admin
           </p>
         </div>
 
         {/* Card */}
-        <div
-          className="bg-vintage-brown border border-vintage-sand/40 p-8"
-          style={{
-            borderRadius:            "var(--radius-card)",
-            boxShadow:               "var(--shadow-vintage-md)",
-          }}
-        >
-          <h2 className="font-serif text-xl text-vintage-cream mb-6 text-center">
-            Anmelden
-          </h2>
+        <div style={{ background: "#fff", border: "1px solid var(--color-line)", padding: "32px 28px" }}>
+          <h1
+            className="text-center mb-7"
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize:   28,
+              color:      "var(--color-ink)",
+            }}
+          >
+            Вход
+          </h1>
 
-          <form action={formAction} className="space-y-5">
+          <form action={formAction} className="space-y-4" style={{ touchAction: "manipulation" }}>
 
-            {/* E-Mail */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-xs font-sans uppercase tracking-widest text-vintage-cream/80 mb-1.5"
-              >
-                E-Mail
-              </label>
+            <FormField label="E-Mail">
               <input
                 id="email"
                 name="email"
                 type="email"
                 required
                 autoComplete="email"
+                inputMode="email"
                 disabled={isPending}
-                className="
-                  w-full px-4 py-2.5
-                  bg-vintage-espresso border border-vintage-sand/40
-                  text-vintage-cream text-sm font-sans
-                  placeholder:text-vintage-dust
-                  focus:outline-none focus:border-vintage-brown focus:ring-1 focus:ring-vintage-brown
-                  disabled:opacity-50
-                  transition-colors
-                "
-                style={{ borderRadius: "var(--radius-vintage)" }}
                 placeholder="admin@galeriedutemps.kz"
+                className="login-input"
               />
-            </div>
+            </FormField>
 
-            {/* Passwort */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-xs font-sans uppercase tracking-widest text-vintage-cream/80 mb-1.5"
-              >
-                Passwort
-              </label>
+            <FormField label="Passwort">
               <input
                 id="password"
                 name="password"
@@ -84,50 +78,39 @@ export default function LoginPage() {
                 required
                 autoComplete="current-password"
                 disabled={isPending}
-                className="
-                  w-full px-4 py-2.5
-                  bg-vintage-espresso border border-vintage-sand/40
-                  text-vintage-cream text-sm font-sans
-                  placeholder:text-vintage-dust
-                  focus:outline-none focus:border-vintage-brown focus:ring-1 focus:ring-vintage-brown
-                  disabled:opacity-50
-                  transition-colors
-                "
-                style={{ borderRadius: "var(--radius-vintage)" }}
                 placeholder="••••••••"
+                className="login-input"
               />
-            </div>
+            </FormField>
 
-            {/* Fehlermeldung */}
             {state?.error && (
               <div
-                className="px-4 py-3 bg-vintage-burgundy/10 border border-vintage-burgundy/30 text-vintage-burgundy text-sm font-sans"
-                style={{ borderRadius: "var(--radius-vintage)" }}
                 role="alert"
+                className="px-4 py-3 text-sm"
+                style={{
+                  background: "rgba(232,112,58,0.08)",
+                  border:     "1px solid rgba(232,112,58,0.35)",
+                  color:      "var(--color-coral-deep)",
+                }}
               >
                 {state.error}
               </div>
             )}
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={isPending}
-              className="
-                w-full py-3 mt-2
-                bg-vintage-espresso text-vintage-cream
-                font-sans text-xs tracking-widest uppercase
-                hover:bg-vintage-brown
-                disabled:opacity-60 disabled:cursor-not-allowed
-                flex items-center justify-center gap-2
-                transition-colors
-              "
-              style={{ borderRadius: "var(--radius-button)" }}
+              className="btn-coral btn-coral-lg w-full"
+              style={{
+                minHeight:           48,
+                touchAction:         "manipulation",
+                WebkitTapHighlightColor: "transparent",
+              }}
             >
               {isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Anmelden …</span>
+                  Anmelden …
                 </>
               ) : (
                 "Anmelden"
@@ -136,11 +119,52 @@ export default function LoginPage() {
           </form>
         </div>
 
-        {/* Footer */}
-        <p className="text-center text-vintage-dust text-xs mt-6">
+        <p
+          className="text-center mt-6 text-[10px] uppercase font-medium"
+          style={{ letterSpacing: "0.22em", color: "var(--color-ink-mute)" }}
+        >
           © {new Date().getFullYear()} Galerie du Temps
         </p>
       </div>
+
+      {/* Lokale Input-Styles — sicherer als utility-classes weil sie direkt
+          mit dem Brand-Token-System statt mit Cascade-Reihenfolgen arbeiten. */}
+      <style>{`
+        .login-input {
+          width: 100%;
+          min-height: 48px;
+          padding: 12px 14px;
+          background: var(--color-bone);
+          border: 1px solid var(--color-line);
+          color: var(--color-ink);
+          font-family: var(--font-sans);
+          font-size: 15px;
+          line-height: 1.4;
+          border-radius: 0;
+          transition: border-color 150ms ease;
+          touch-action: manipulation;
+        }
+        .login-input::placeholder { color: var(--color-ink-mute); font-style: italic; }
+        .login-input:focus {
+          outline: none;
+          border-color: var(--color-coral);
+        }
+        .login-input:disabled { opacity: 0.5; }
+      `}</style>
     </main>
+  );
+}
+
+function FormField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span
+        className="block mb-1.5 text-[10px] uppercase font-medium"
+        style={{ letterSpacing: "0.22em", color: "var(--color-ink-soft)" }}
+      >
+        {label}
+      </span>
+      {children}
+    </label>
   );
 }
