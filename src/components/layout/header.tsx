@@ -3,28 +3,52 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { Search, Heart, Menu, X } from "lucide-react";
+import { Search, Heart, Menu, X, User } from "lucide-react";
 import { useWunschliste } from "@/hooks/use-wunschliste";
 import { CartBadge } from "./cart-badge";
 import { LanguageSwitcher } from "./language-switcher";
+import { MobileDrawer } from "./mobile-drawer";
+import { Hourglass } from "@/components/brand/hourglass";
 import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/types";
+import type { Kategorie } from "@/types/produkt";
 
-export function Header({ t, locale }: { t: Dictionary; locale: Locale }) {
-  const pathname         = usePathname();
-  const router           = useRouter();
-  const { ids }          = useWunschliste();
+type HeaderProps = {
+  t:           Dictionary;
+  locale:      Locale;
+  kategorien?: Kategorie[];
+};
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Header — Handoff D1 (Cobalt, 3 Bars) + D2 (Paper, sticky) Scroll-Morph.
+ *
+ * D1: Promo-Bar (cobalt-dark) → Main-Bar (cobalt, stacked Hourglass+Wordmark
+ *     Lockup zentriert) → Sub-Bar (cobalt-deep) mit Category-Chips.
+ *
+ * D2: Beim Scrollen unter ~640px (Hero-Höhe) morph zu kompaktem Paper-Header,
+ *     einer Bar, ink-Text, kleineres Wordmark, Coral-CTA.
+ *
+ * Mobile: Single 56px Bar (cobalt) — Hamburger links, Wordmark Mitte, Such-
+ *     Icon rechts. Bottom-Tab-Bar separat (siehe mobile-tab-bar.tsx).
+ * ────────────────────────────────────────────────────────────────────────── */
+export function Header({ t, locale, kategorien = [] }: HeaderProps) {
+  const pathname = usePathname();
+  const router   = useRouter();
+  const { ids }  = useWunschliste();
+
+  const [scrolled,   setScrolled]   = useState(false);
   const [menuOffen,  setMenuOffen]  = useState(false);
   const [sucheOffen, setSucheOffen] = useState(false);
   const [suchText,   setSuchText]   = useState("");
   const sucheRef = useRef<HTMLInputElement>(null);
 
-  // Im Vorbild: KATALOG · О НАС · КОНТАКТ (kein "Kategorien" als separater Punkt)
-  const NAV_LINKS = [
-    { href: "/katalog",  label: t.nav.katalog },
-    { href: "/about",    label: t.nav.about   },
-    { href: "/kontakt",  label: t.nav.kontakt },
-  ];
+  // Scroll-Morph: D1 → D2 nach ~480px (Hero-Höhe).
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 480);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => { setMenuOffen(false); setSucheOffen(false); }, [pathname]);
   useEffect(() => { if (sucheOffen) sucheRef.current?.focus(); }, [sucheOffen]);
@@ -38,178 +62,349 @@ export function Header({ t, locale }: { t: Dictionary; locale: Locale }) {
     }
   };
 
-  return (
-    <>
-      <header
-        lang={locale}
-        className="
-          sticky top-0 z-50
-          bg-vintage-espresso/95 backdrop-blur-sm
-          border-b border-vintage-sand/30
-        "
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex md:grid md:grid-cols-3 items-center justify-between gap-2 h-16 md:h-20">
+  const navLinks = [
+    { href: "/katalog", label: t.nav.katalog },
+    { href: "/journal", label: t.nav.journal },
+    { href: "/about",   label: t.nav.about   },
+    { href: "/kontakt", label: t.nav.kontakt },
+  ];
 
-            {/* ─── Links: Logo ──────────────────────────────────────────── */}
-            <div className="flex items-center min-w-0 flex-shrink">
-              <Link href="/" className="brand-logo group">
-                <span className="brand-line-1 group-hover:text-vintage-gold transition-colors">
+  // ── D2 (gescrollt, Paper-Bar) ───────────────────────────────────────────
+  if (scrolled) {
+    return (
+      <>
+        <header
+          lang={locale}
+          className="sticky top-0 z-50 backdrop-blur-md border-b"
+          style={{
+            background:   "rgba(245, 241, 234, 0.92)",   /* paper/92 */
+            borderColor:  "var(--color-line)",
+          }}
+        >
+          <div className="max-w-[1440px] mx-auto px-5 md:px-14">
+            <div className="h-14 flex items-center justify-between gap-6">
+              {/* Nav links */}
+              <nav className="hidden md:flex items-center gap-9">
+                {navLinks.map(({ href, label }) => {
+                  const active = pathname.startsWith(href);
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      className="text-[11px] uppercase font-medium transition-colors"
+                      style={{
+                        letterSpacing: "var(--tracking-nav)",
+                        color:         active ? "var(--color-coral)" : "var(--color-ink)",
+                        borderBottom:  active ? "1px solid var(--color-coral)" : "1px solid transparent",
+                        paddingBottom: "6px",
+                      }}
+                    >
+                      {label}
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              {/* Center wordmark (klein) */}
+              <Link href="/" className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
+                <span className="wordmark" style={{ fontSize: 18, color: "var(--color-ink)" }}>
                   GALERIE
                 </span>
-                <span className="brand-line-2">du Temps</span>
+                <span className="wordmark-italic" style={{ fontSize: 12, color: "var(--color-ink-soft)" }}>
+                  du Temps
+                </span>
               </Link>
+
+              {/* Right icons + login pill */}
+              <div className="flex items-center gap-1 ml-auto">
+                <button
+                  onClick={() => setSucheOffen(v => !v)}
+                  className="p-2 hover:text-coral transition-colors"
+                  style={{ color: "var(--color-ink)" }}
+                  aria-label={t.nav.suche}
+                >
+                  {sucheOffen ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+                </button>
+                <Link
+                  href="/wunschliste"
+                  className="relative p-2 hover:text-coral transition-colors"
+                  style={{ color: "var(--color-ink)" }}
+                  aria-label={`${t.nav.wunschliste} (${ids.length})`}
+                >
+                  <Heart className="w-4 h-4" />
+                  {ids.length > 0 && (
+                    <span
+                      className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 text-[10px] font-medium flex items-center justify-center"
+                      style={{
+                        background:   "var(--color-coral)",
+                        color:        "#fff",
+                        borderRadius: "999px",
+                      }}
+                    >
+                      {ids.length > 9 ? "9+" : ids.length}
+                    </span>
+                  )}
+                </Link>
+                <CartBadge />
+                <LanguageSwitcher ariaLabel={t.nav.sprache} />
+                <Link
+                  href="/kunde/anmelden"
+                  className="hidden sm:inline-flex items-center gap-1.5 ml-2 btn-coral btn-coral-sm"
+                >
+                  {t.nav.anmelden}
+                </Link>
+              </div>
             </div>
 
-            {/* ─── Mitte: Nav (Desktop) ──────────────────────────────────── */}
-            <nav className="hidden md:flex items-center justify-center gap-10">
-              {NAV_LINKS.map(({ href, label }) => {
-                const active = pathname.startsWith(href);
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    className={`
-                      text-xs font-sans tracking-[0.25em] uppercase transition-colors
-                      ${active
-                        ? "text-vintage-gold"
-                        : "text-vintage-cream/70 hover:text-vintage-gold"
-                      }
-                    `}
-                  >
-                    {label}
-                  </Link>
-                );
-              })}
-            </nav>
+            {sucheOffen && <SearchBar inputRef={sucheRef} value={suchText} onChange={setSuchText} onSubmit={handleSuche} placeholder={t.nav.suche_placeholder} tone="paper" />}
+          </div>
+        </header>
+        <MobileDrawer
+          open={menuOffen}
+          onClose={() => setMenuOffen(false)}
+          t={t}
+          navLinks={navLinks}
+          kategorien={kategorien}
+          wunschCount={ids.length}
+        />
+      </>
+    );
+  }
 
-            {/* ─── Rechts: Icons ──────────────────────────────────────────── */}
-            <div className="flex items-center justify-end gap-0.5 md:gap-1 flex-shrink-0">
+  // ── D1 (Top, Cobalt 3-Bar) ──────────────────────────────────────────────
+  return (
+    <>
+      <header lang={locale} className="relative z-50">
+
+        {/* ─ Bar 1: Promo (cobalt-dark) ──────────────────────────────────── */}
+        <div
+          className="hidden md:block"
+          style={{ background: "var(--color-cobalt-dark)" }}
+        >
+          <div className="max-w-[1440px] mx-auto px-14 py-2 flex items-center justify-between text-[10px] uppercase font-medium"
+               style={{ letterSpacing: "0.22em", color: "rgba(255,255,255,0.7)" }}>
+            {/* TODO i18n: promo.versand */}
+            <span>◆ Бесплатная доставка по Казахстану от ₸ 50 000</span>
+            <span style={{ color: "var(--color-coral)" }}>
+              Новые поступления каждую среду
+            </span>
+            <LanguageSwitcher ariaLabel={t.nav.sprache} />
+          </div>
+        </div>
+
+        {/* ─ Bar 2: Main (cobalt) ────────────────────────────────────────── */}
+        <div style={{ background: "var(--color-cobalt)" }}>
+          <div className="max-w-[1440px] mx-auto px-5 md:px-14 py-3 md:py-6">
+            {/* Mobile: hamburger | wordmark | search */}
+            <div className="flex md:hidden items-center justify-between h-9">
+              <button
+                onClick={() => setMenuOffen(true)}
+                className="p-1 text-white/80 hover:text-coral transition-colors"
+                aria-label={t.nav.menu}
+                aria-expanded={menuOffen}
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              <Link href="/" className="flex items-center gap-2">
+                <span className="wordmark" style={{ fontSize: 16 }}>GALERIE</span>
+                <span className="wordmark-italic" style={{ fontSize: 11 }}>du Temps</span>
+              </Link>
               <button
                 onClick={() => setSucheOffen(v => !v)}
-                className="p-2 text-vintage-cream/70 hover:text-vintage-gold transition-colors"
+                className="p-1 text-white/80 hover:text-coral transition-colors"
                 aria-label={t.nav.suche}
               >
-                {sucheOffen ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+                {sucheOffen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
               </button>
+            </div>
 
-              <Link
-                href="/wunschliste"
-                className="relative p-2 text-vintage-cream/70 hover:text-vintage-gold transition-colors"
-                aria-label={`${t.nav.wunschliste} (${ids.length})`}
-              >
-                <Heart className="w-4 h-4" />
-                {ids.length > 0 && (
-                  <span
-                    className="
-                      absolute -top-0.5 -right-0.5
-                      min-w-4 h-4 px-1
-                      bg-vintage-gold text-vintage-espresso
-                      text-[10px] font-sans font-semibold
-                      flex items-center justify-center
-                    "
-                    style={{ borderRadius: "999px" }}
-                  >
-                    {ids.length > 9 ? "9+" : ids.length}
+            {/* Desktop: 3-col (nav | logo | actions) */}
+            <div className="hidden md:grid grid-cols-[1fr_auto_1fr] items-center gap-6">
+              {/* Nav left */}
+              <nav className="flex items-center gap-9">
+                {navLinks.map(({ href, label }) => {
+                  const active = pathname.startsWith(href);
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      className="text-[11px] uppercase font-medium transition-colors"
+                      style={{
+                        letterSpacing: "var(--tracking-nav)",
+                        color:         active ? "var(--color-coral)" : "rgba(255,255,255,0.85)",
+                        borderBottom:  active ? "1px solid var(--color-coral)" : "1px solid transparent",
+                        paddingBottom: "6px",
+                      }}
+                    >
+                      {label}
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              {/* Stacked logo center */}
+              <Link href="/" className="flex flex-col items-center gap-1">
+                <Hourglass size={20} className="text-coral" />
+                <span className="wordmark mt-1" style={{ fontSize: 22 }}>GALERIE</span>
+                <span className="wordmark-italic" style={{ fontSize: 11, marginTop: 2 }}>du Temps</span>
+              </Link>
+
+              {/* Actions right */}
+              <div className="flex items-center justify-end gap-2">
+                {/* Search input pseudo */}
+                <button
+                  onClick={() => setSucheOffen(v => !v)}
+                  className="flex items-center gap-2 px-3 py-2 text-xs"
+                  style={{
+                    background:    "rgba(255,255,255,0.06)",
+                    border:        "1px solid rgba(255,255,255,0.18)",
+                    color:         "rgba(255,255,255,0.7)",
+                    letterSpacing: "0.04em",
+                    minWidth:      180,
+                  }}
+                  aria-label={t.nav.suche}
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  <span className="italic font-italic" style={{ opacity: 0.7 }}>
+                    {t.nav.suche_placeholder}
                   </span>
-                )}
-              </Link>
-
-              <LanguageSwitcher ariaLabel={t.nav.sprache} />
-
-              <CartBadge />
-
-              {/* Login-Pill (wie im Vorbild) */}
-              <Link
-                href="/kunde/anmelden"
-                className="
-                  hidden sm:inline-flex items-center gap-1.5 ml-2
-                  px-4 py-2
-                  border border-vintage-gold/40
-                  text-vintage-gold text-xs font-sans tracking-widest uppercase
-                  hover:bg-vintage-gold hover:text-vintage-espresso
-                  transition-colors
-                "
-                style={{ borderRadius: "999px" }}
-              >
-                {t.nav.anmelden}
-              </Link>
-
-              {/* Mobile Menü-Button */}
-              <button
-                onClick={() => setMenuOffen(v => !v)}
-                className="md:hidden p-2 text-vintage-cream/70 hover:text-vintage-gold transition-colors"
-                aria-label={t.nav.menu}
-              >
-                {menuOffen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
+                </button>
+                <Link
+                  href="/wunschliste"
+                  className="relative p-2 text-white/80 hover:text-coral transition-colors"
+                  aria-label={`${t.nav.wunschliste} (${ids.length})`}
+                >
+                  <Heart className="w-4 h-4" />
+                  {ids.length > 0 && (
+                    <span
+                      className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 text-[10px] font-medium flex items-center justify-center"
+                      style={{ background: "var(--color-coral)", color: "#fff", borderRadius: "999px" }}
+                    >
+                      {ids.length > 9 ? "9+" : ids.length}
+                    </span>
+                  )}
+                </Link>
+                <CartBadge />
+                <Link
+                  href="/kunde/anmelden"
+                  className="ml-1 p-2 text-white/80 hover:text-coral transition-colors"
+                  aria-label={t.nav.anmelden}
+                >
+                  <User className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
           </div>
-
-          {/* ─── Such-Leiste (ausklappbar) ──────────────────────────────── */}
-          {sucheOffen && (
-            <div className="pb-4">
-              <form onSubmit={handleSuche} className="relative max-w-xl mx-auto">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-vintage-gold pointer-events-none" />
-                <input
-                  ref={sucheRef}
-                  type="search"
-                  value={suchText}
-                  onChange={e => setSuchText(e.target.value)}
-                  placeholder={t.nav.suche_placeholder}
-                  className="
-                    w-full pl-11 pr-4 py-3
-                    bg-vintage-brown border border-vintage-sand
-                    text-vintage-cream font-sans text-sm
-                    placeholder:text-vintage-dust
-                    focus:outline-none focus:border-vintage-gold
-                    transition-colors
-                  "
-                  style={{ borderRadius: "var(--radius-card)" }}
-                />
-              </form>
-            </div>
-          )}
         </div>
+
+        {/* ─ Bar 3: Sub (cobalt-deep) — Category Chips ─────────────────── */}
+        {kategorien.length > 0 && (
+          <div
+            className="hidden md:block border-t"
+            style={{
+              background:  "var(--color-cobalt-deep)",
+              borderColor: "rgba(232,112,58,0.15)",
+            }}
+          >
+            <div className="max-w-[1440px] mx-auto px-14 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-5 overflow-x-auto">
+                {kategorien.slice(0, 8).map(k => (
+                  <Link
+                    key={k.id}
+                    href={`/kategorien/${k.slug}`}
+                    className="text-[11px] uppercase font-medium whitespace-nowrap hover:text-coral transition-colors"
+                    style={{
+                      letterSpacing: "var(--tracking-nav)",
+                      color:         "rgba(255,255,255,0.7)",
+                    }}
+                  >
+                    {k.name}
+                    {k.anzahl !== undefined && k.anzahl > 0 && (
+                      <span style={{ color: "rgba(255,255,255,0.4)", marginLeft: 6, fontSize: 10 }}>
+                        ({k.anzahl})
+                      </span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+              <Link
+                href="/katalog?sort=neue"
+                className="text-[11px] uppercase font-medium whitespace-nowrap hover:opacity-80 transition-opacity"
+                style={{
+                  letterSpacing: "var(--tracking-nav)",
+                  color:         "var(--color-coral)",
+                }}
+              >
+                ★ Избранное недели →
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* ─ Such-Leiste (ausklappbar) ─────────────────────────────────── */}
+        {sucheOffen && (
+          <div style={{ background: "var(--color-cobalt)" }}>
+            <div className="max-w-[1440px] mx-auto px-5 md:px-14 pb-4">
+              <SearchBar
+                inputRef={sucheRef}
+                value={suchText}
+                onChange={setSuchText}
+                onSubmit={handleSuche}
+                placeholder={t.nav.suche_placeholder}
+                tone="cobalt"
+              />
+            </div>
+          </div>
+        )}
       </header>
 
-      {/* ─── Mobile Nav Overlay ────────────────────────────────────────── */}
-      {menuOffen && (
-        <div className="fixed inset-0 z-40 md:hidden">
-          <div
-            className="absolute inset-0 bg-vintage-ink/80 backdrop-blur-sm"
-            onClick={() => setMenuOffen(false)}
-          />
-          <nav
-            className="absolute right-0 top-0 bottom-0 w-72 bg-vintage-espresso flex flex-col pt-24 px-6 pb-6 border-l border-vintage-sand/30"
-          >
-            <p className="eyebrow mb-6">{t.nav.menu}</p>
-            {NAV_LINKS.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className={`
-                  py-3 border-b border-vintage-sand/20
-                  font-serif text-xl transition-colors
-                  ${pathname.startsWith(href)
-                    ? "text-vintage-gold"
-                    : "text-vintage-cream hover:text-vintage-gold"
-                  }
-                `}
-              >
-                {label}
-              </Link>
-            ))}
-            <Link
-              href="/kunde/anmelden"
-              className="mt-6 px-4 py-3 border border-vintage-gold text-vintage-gold text-xs font-sans tracking-widest uppercase text-center hover:bg-vintage-gold hover:text-vintage-espresso transition-colors"
-              style={{ borderRadius: "999px" }}
-            >
-              {t.nav.anmelden}
-            </Link>
-          </nav>
-        </div>
-      )}
+      <MobileDrawer
+        open={menuOffen}
+        onClose={() => setMenuOffen(false)}
+        t={t}
+        navLinks={navLinks}
+        kategorien={kategorien}
+        wunschCount={ids.length}
+      />
     </>
   );
 }
+
+/* ── Sub-components ────────────────────────────────────────────────────── */
+
+function SearchBar({
+  inputRef, value, onChange, onSubmit, placeholder, tone,
+}: {
+  inputRef:    React.RefObject<HTMLInputElement | null>;
+  value:       string;
+  onChange:    (v: string) => void;
+  onSubmit:    (e: React.FormEvent) => void;
+  placeholder: string;
+  tone:        "cobalt" | "paper";
+}) {
+  const isCobalt = tone === "cobalt";
+  return (
+    <form onSubmit={onSubmit} className="relative max-w-xl mx-auto pt-2">
+      <Search
+        className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+        style={{ color: "var(--color-coral)" }}
+      />
+      <input
+        ref={inputRef}
+        type="search"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full pl-11 pr-4 py-3 text-sm focus:outline-none transition-colors"
+        style={{
+          background:  isCobalt ? "rgba(255,255,255,0.06)" : "#fff",
+          border:      `1px solid ${isCobalt ? "rgba(255,255,255,0.18)" : "var(--color-line)"}`,
+          color:       isCobalt ? "var(--color-vintage-white)" : "var(--color-ink)",
+          fontFamily:  "var(--font-italic)",
+          fontStyle:   "italic",
+        }}
+      />
+    </form>
+  );
+}
+

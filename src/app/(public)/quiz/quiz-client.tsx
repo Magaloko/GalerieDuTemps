@@ -46,35 +46,55 @@ export function QuizClient() {
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-28 text-center">
         <div
-          className="inline-flex items-center justify-center w-16 h-16 mb-8 border border-vintage-gold/40"
-          style={{ borderRadius: "50%", boxShadow: "var(--shadow-gold-glow)" }}
+          className="inline-flex items-center justify-center w-16 h-16 mb-8"
+          style={{
+            borderRadius: "50%",
+            border:       "1px solid rgba(232,112,58,0.4)",
+            color:        "var(--color-coral)",
+          }}
         >
-          <Sparkles className="w-6 h-6 text-vintage-gold" />
+          <Sparkles className="w-6 h-6" />
         </div>
         <p className="eyebrow mb-6">Персональный тест</p>
-        <h1 className="font-serif text-4xl md:text-5xl text-vintage-white mb-2">
+        <h1
+          className="mb-1"
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize:   "clamp(2.5rem, 6vw, 3.5rem)",
+            color:      "var(--color-vintage-white)",
+            lineHeight: 1.05,
+          }}
+        >
           Какой у вас
         </h1>
-        <p className="font-serif text-4xl md:text-5xl italic text-vintage-gold mb-2">
+        <p
+          className="font-italic mb-1"
+          style={{
+            fontFamily: "var(--font-italic)",
+            fontStyle:  "italic",
+            fontSize:   "clamp(2.5rem, 6vw, 3.5rem)",
+            color:      "var(--color-coral)",
+            lineHeight: 1.05,
+          }}
+        >
           винтажный
         </p>
-        <h1 className="font-serif text-4xl md:text-5xl text-vintage-white mb-10">
-          характер?
+        <h1
+          className="mb-10"
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize:   "clamp(2.5rem, 6vw, 3.5rem)",
+            color:      "var(--color-vintage-white)",
+            lineHeight: 1.05,
+          }}
+        >
+          архетип?
         </h1>
-        <p className="text-vintage-cream/70 text-base font-sans max-w-md mx-auto mb-10 leading-relaxed">
+        <p className="text-vintage-cream/80 text-base max-w-md mx-auto mb-10 leading-relaxed"
+           style={{ fontFamily: "var(--font-italic)", fontStyle: "italic", fontSize: 16 }}>
           5 вопросов · 1 минута · ваш уникальный профиль и подборка вещей специально для вас
         </p>
-        <button
-          onClick={start}
-          className="
-            inline-flex items-center gap-2
-            px-10 py-4
-            bg-vintage-gold text-vintage-espresso
-            font-sans text-xs tracking-[0.25em] uppercase
-            hover:bg-vintage-amber transition-colors
-          "
-          style={{ borderRadius: "var(--radius-button)" }}
-        >
+        <button onClick={start} className="btn-coral btn-coral-lg">
           Начать тест <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -103,7 +123,16 @@ export function QuizClient() {
         </div>
 
         {/* Frage */}
-        <h2 className="font-serif italic text-3xl md:text-4xl text-vintage-white text-center mb-12 leading-tight">
+        <h2
+          className="text-center mb-12"
+          style={{
+            fontFamily: "var(--font-italic)",
+            fontStyle:  "italic",
+            fontSize:   "clamp(1.75rem, 4vw, 2.5rem)",
+            color:      "var(--color-vintage-white)",
+            lineHeight: 1.15,
+          }}
+        >
           {frage.titel}
         </h2>
 
@@ -113,20 +142,25 @@ export function QuizClient() {
             <button
               key={i}
               onClick={() => waehleAntwort(a)}
-              className="
-                group flex items-center justify-between gap-4
-                w-full text-left
-                px-6 py-5
-                bg-vintage-brown/60 border border-vintage-sand/30
-                hover:border-vintage-gold hover:bg-vintage-brown
-                transition-all
-              "
-              style={{ borderRadius: "var(--radius-card)" }}
+              className="group flex items-center justify-between gap-4 w-full text-left px-6 py-5 transition-all"
+              style={{
+                background:  "rgba(255,255,255,0.04)",
+                border:      "1px solid rgba(255,255,255,0.15)",
+                color:       "var(--color-vintage-white)",
+              }}
             >
-              <span className="font-serif text-vintage-cream text-base group-hover:text-vintage-gold transition-colors">
+              <span
+                className="group-hover:text-coral transition-colors"
+                style={{
+                  fontFamily: "var(--font-italic)",
+                  fontStyle:  "italic",
+                  fontSize:   17,
+                  color:      "var(--color-vintage-white)",
+                }}
+              >
                 {a.text}
               </span>
-              <ArrowRight className="w-4 h-4 text-vintage-sand group-hover:text-vintage-gold group-hover:translate-x-1 transition-all flex-shrink-0" />
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform flex-shrink-0" style={{ color: "var(--color-coral)" }} />
             </button>
           ))}
         </div>
@@ -166,11 +200,27 @@ export function QuizClient() {
         <Sparkles className="w-8 h-8 text-vintage-gold" />
       </div>
 
-      <p className="eyebrow mb-4">Ваш винтажный характер</p>
-      <h1 className="font-serif italic text-5xl md:text-6xl text-vintage-gold mb-4">
+      <p className="eyebrow mb-4">Ваш винтажный архетип</p>
+      <h1
+        className="mb-4"
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize:   "clamp(4rem, 12vw, 8.25rem)",
+          color:      "var(--color-coral)",
+          lineHeight: 0.95,
+        }}
+      >
         {result.titel}
       </h1>
-      <p className="font-serif italic text-vintage-cream/70 text-lg mb-10">
+      <p
+        className="mb-10"
+        style={{
+          fontFamily: "var(--font-italic)",
+          fontStyle:  "italic",
+          fontSize:   "clamp(1.1rem, 2vw, 1.5rem)",
+          color:      "rgba(255,255,255,0.78)",
+        }}
+      >
         {result.zitat}
       </p>
 
@@ -223,27 +273,11 @@ export function QuizClient() {
       <div className="flex flex-wrap justify-center gap-4">
         <Link
           href={`/katalog?suche=${encodeURIComponent(suchQuery)}`}
-          className="
-            inline-flex items-center gap-2
-            px-8 py-3.5
-            bg-vintage-gold text-vintage-espresso
-            font-sans text-xs tracking-[0.25em] uppercase
-            hover:bg-vintage-amber transition-colors
-          "
-          style={{ borderRadius: "var(--radius-button)" }}
+          className="btn-coral btn-coral-lg"
         >
           <Check className="w-3.5 h-3.5" /> Смотреть подборку
         </Link>
-        <button
-          onClick={reset}
-          className="
-            inline-flex items-center gap-2
-            px-6 py-3.5
-            text-vintage-cream/50 hover:text-vintage-gold
-            font-sans text-xs tracking-[0.25em] uppercase
-            transition-colors
-          "
-        >
+        <button onClick={reset} className="btn-coral btn-coral-ghost-light btn-coral-lg">
           <RotateCcw className="w-3.5 h-3.5" /> Пройти заново
         </button>
       </div>

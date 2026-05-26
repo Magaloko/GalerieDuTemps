@@ -1,8 +1,9 @@
 import { katalogProdukte } from "@/lib/db/produkte-public";
 import { alleKategorien } from "@/lib/db/kategorien";
 import { ProduktGrid } from "@/components/produkte/produkt-grid";
+import { FilterGroup } from "@/components/catalog/filter-group";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import { getDictionary } from "@/i18n";
 import { SortSelect } from "./sort-select";
@@ -18,6 +19,15 @@ interface Props {
   searchParams: Promise<Record<string, string>>;
 }
 
+/* ──────────────────────────────────────────────────────────────────────────
+ * Katalog — Handoff B1 (Paper-BG).
+ *
+ * 2-col Grid: 260px Sidebar (bone bg, sticky) + 1fr Main (paper bg).
+ * Main: 3-row Header (eyebrow / display-md H1 / sort row mit Result-Count).
+ * Grid: ProduktKarte (4/5 ratio, Paper-Card mit Heart top-right).
+ *
+ * Mobile: Sidebar wird zu horizontal Chip-Rail + Bottom-Sheet-Filter-Trigger.
+ * ────────────────────────────────────────────────────────────────────────── */
 export default async function KatalogPage({ searchParams }: Props) {
   const [sp, { t }] = await Promise.all([searchParams, getDictionary()]);
 
@@ -40,162 +50,203 @@ export default async function KatalogPage({ searchParams }: Props) {
   const hatFilter = !!(params.suche || params.kategorie || params.zustand || params.era || params.min_preis || params.max_preis);
 
   const buildUrl = (overrides: Record<string, string | undefined>) => {
-    const merged = { ...Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined).map(([k, v]) => [k, String(v)])), ...overrides };
-    const qs = new URLSearchParams(Object.entries(merged).filter(([, v]) => v !== undefined) as [string, string][]);
+    const merged = {
+      ...Object.fromEntries(
+        Object.entries(params)
+          .filter(([, v]) => v !== undefined)
+          .map(([k, v]) => [k, String(v)])
+      ),
+      ...overrides,
+    };
+    const qs = new URLSearchParams(
+      Object.entries(merged).filter(([, v]) => v !== undefined) as [string, string][]
+    );
     return `/katalog?${qs}`;
   };
 
-  // Query-Map für Client-SortSelect (ohne sortierung + seite)
   const baseQuery: Record<string, string> = Object.fromEntries(
     Object.entries(params)
       .filter(([k, v]) => v !== undefined && k !== "sortierung" && k !== "seite")
       .map(([k, v]) => [k, String(v)])
   );
 
-  const zustandsLabel: Record<string, string> = {
-    sehr_gut:    "★★★★★",
-    gut:         "★★★★",
-    akzeptabel:  "★★★",
-    restauriert: "✦",
-  };
+  const zustandsItems = [
+    { value: "sehr_gut",   label: "★★★★★ Превосходное" },
+    { value: "gut",        label: "★★★★ Очень хорошее" },
+    { value: "akzeptabel", label: "★★★ Приемлемое"    },
+    { value: "restauriert",label: "✦ Реставрировано"  },
+  ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div style={{ background: "var(--color-paper)", color: "var(--color-ink)" }}>
+      <div className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-[260px_1fr]">
 
-      {/* Header */}
-      <div className="mb-8">
-        <p className="text-vintage-gold text-xs tracking-widest uppercase mb-1">✦</p>
-        <h1 className="font-serif text-3xl text-vintage-cream">{t.katalog.titel}</h1>
-        <p className="text-vintage-dust text-sm font-sans mt-1">
-          {daten.gesamt} {daten.gesamt === 1 ? t.katalog.treffer_singular : t.katalog.treffer}
-        </p>
-      </div>
-
-      <div className="flex flex-col lg:flex-row gap-8">
-
-        {/* ─── Sidebar Filter ─────────────────────────────────────── */}
-        <aside className="lg:w-60 flex-shrink-0">
-          <div className="sticky top-24 space-y-6">
-
-            <div className="flex items-center gap-2 text-xs font-sans uppercase tracking-widest text-vintage-dust">
-              <SlidersHorizontal className="w-3.5 h-3.5" />
+        {/* ─── Sidebar (bone bg, sticky) ───────────────────────────────── */}
+        <aside
+          className="hidden lg:block"
+          style={{
+            background:  "var(--color-bone)",
+            borderRight: "1px solid var(--color-line)",
+          }}
+        >
+          <div
+            className="sticky top-0 overflow-y-auto p-8"
+            style={{ maxHeight: "100vh" }}
+          >
+            <p
+              className="text-[10px] uppercase font-medium mb-8"
+              style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}
+            >
               {t.katalog.filter}
-            </div>
+            </p>
 
             {/* Kategorien */}
-            <div>
-              <p className="text-xs font-sans uppercase tracking-widest text-vintage-cream/80 mb-3">{t.nav.kategorien}</p>
-              <div className="space-y-1">
-                <Link
-                  href={buildUrl({ kategorie: undefined, seite: "1" })}
-                  className={`block text-sm font-sans py-1 px-2 transition-colors ${!params.kategorie ? "text-vintage-cream font-medium" : "text-vintage-dust hover:text-vintage-cream"}`}
-                  style={{ borderRadius: "var(--radius-vintage)" }}
-                >
-                  {t.katalog.kategorie_alle}
-                </Link>
-                {kategorien.map(k => (
-                  <Link
-                    key={k.id}
-                    href={buildUrl({ kategorie: k.slug, seite: "1" })}
-                    className={`flex items-center justify-between text-sm font-sans py-1 px-2 transition-colors ${params.kategorie === k.slug ? "text-vintage-cream font-medium bg-vintage-brown/40" : "text-vintage-dust hover:text-vintage-cream"}`}
-                    style={{ borderRadius: "var(--radius-vintage)" }}
-                  >
-                    <span>{k.name}</span>
-                    {k.anzahl !== undefined && <span className="text-xs text-vintage-dust">({k.anzahl})</span>}
-                  </Link>
-                ))}
-              </div>
-            </div>
+            <FilterGroup
+              title={t.nav.kategorien}
+              items={[
+                { label: t.katalog.kategorie_alle, href: buildUrl({ kategorie: undefined, seite: "1" }), active: !params.kategorie },
+                ...kategorien.map(k => ({
+                  label:  k.name,
+                  href:   buildUrl({ kategorie: k.slug, seite: "1" }),
+                  count:  k.anzahl,
+                  active: params.kategorie === k.slug,
+                })),
+              ]}
+              className="border-b"
+            />
 
             {/* Zustand */}
-            <div>
-              <p className="text-xs font-sans uppercase tracking-widest text-vintage-cream/80 mb-3">{t.produkt.zustand}</p>
-              <div className="space-y-1">
-                {[
-                  { value: "",          label: t.katalog.kategorie_alle },
-                  { value: "sehr_gut",  label: zustandsLabel.sehr_gut    },
-                  { value: "gut",       label: zustandsLabel.gut         },
-                  { value: "akzeptabel",label: zustandsLabel.akzeptabel  },
-                  { value: "restauriert",label:zustandsLabel.restauriert },
-                ].map(z => (
-                  <Link
-                    key={z.value}
-                    href={buildUrl({ zustand: z.value || undefined, seite: "1" })}
-                    className={`block text-sm font-sans py-1 px-2 transition-colors ${(params.zustand ?? "") === z.value ? "text-vintage-cream font-medium bg-vintage-brown/40" : "text-vintage-dust hover:text-vintage-cream"}`}
-                    style={{ borderRadius: "var(--radius-vintage)" }}
-                  >
-                    {z.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
+            <FilterGroup
+              title={t.produkt.zustand}
+              items={[
+                { label: t.katalog.kategorie_alle, href: buildUrl({ zustand: undefined, seite: "1" }), active: !params.zustand },
+                ...zustandsItems.map(z => ({
+                  label:  z.label,
+                  href:   buildUrl({ zustand: z.value, seite: "1" }),
+                  active: params.zustand === z.value,
+                })),
+              ]}
+              className="border-b"
+            />
 
-            {/* Filter zurücksetzen */}
+            {/* Reset */}
             {hatFilter && (
               <Link
                 href="/katalog"
-                className="block text-xs font-sans text-vintage-dust hover:text-vintage-burgundy transition-colors underline"
+                className="inline-block mt-4 text-[11px] uppercase font-medium hover:opacity-80 transition-opacity"
+                style={{ letterSpacing: "0.22em", color: "var(--color-coral)" }}
               >
-                {t.katalog.zuruecksetzen}
+                {t.katalog.zuruecksetzen} ×
               </Link>
             )}
           </div>
         </aside>
 
-        {/* ─── Hauptbereich ───────────────────────────────────────── */}
-        <div className="flex-1 space-y-6">
+        {/* ─── Main ───────────────────────────────────────────────────── */}
+        <div className="px-5 md:px-14 py-10 md:py-16">
 
-          {/* Sortierung + Suche */}
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <form method="GET" action="/katalog" className="flex gap-2">
-              <input
-                name="suche"
-                defaultValue={params.suche}
-                placeholder={`${t.nav.suche} …`}
-                className="px-4 py-2 bg-vintage-espresso border border-vintage-sand/40 text-sm font-sans text-vintage-cream focus:outline-none focus:border-vintage-brown transition-colors"
-                style={{ borderRadius: "var(--radius-vintage)", width: "220px" }}
-              />
-              <button
-                type="submit"
-                className="px-4 py-2 bg-vintage-espresso text-vintage-cream text-xs font-sans tracking-widest uppercase hover:bg-vintage-brown transition-colors"
-                style={{ borderRadius: "var(--radius-button)" }}
-              >
-                {t.aktion.suchen}
-              </button>
-            </form>
-
-            <SortSelect
-              current={params.sortierung}
-              baseQuery={baseQuery}
-              labels={{
-                neu:        t.katalog.sortier_neu,
-                preis_asc:  t.katalog.sortier_preis_asc,
-                preis_desc: t.katalog.sortier_preis_desc,
-                name:       t.katalog.sortier_name,
+          {/* Header */}
+          <header
+            className="pb-6 mb-10"
+            style={{ borderBottom: "1px solid var(--color-line)" }}
+          >
+            <p
+              className="text-[11px] uppercase font-medium mb-3"
+              style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}
+            >
+              {t.katalog.untertitel ?? "Все винтажные находки"}
+            </p>
+            <h1
+              className="mb-6"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize:   "clamp(2.5rem, 6vw, 3.5rem)",
+                color:      "var(--color-ink)",
+                lineHeight: 1,
               }}
-            />
+            >
+              {t.katalog.titel}
+            </h1>
+
+            {/* Sort + Result-Count */}
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <p
+                className="text-[11px] uppercase font-medium"
+                style={{ letterSpacing: "0.22em", color: "var(--color-ink-mute)" }}
+              >
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    color:      "var(--color-ink)",
+                  }}
+                >
+                  {daten.gesamt}
+                </span>{" "}
+                {daten.gesamt === 1 ? t.katalog.treffer_singular : t.katalog.treffer}
+              </p>
+
+              <div className="flex items-center gap-3">
+                <SortSelect
+                  current={params.sortierung}
+                  baseQuery={baseQuery}
+                  labels={{
+                    neu:        t.katalog.sortier_neu,
+                    preis_asc:  t.katalog.sortier_preis_asc,
+                    preis_desc: t.katalog.sortier_preis_desc,
+                    name:       t.katalog.sortier_name,
+                  }}
+                />
+              </div>
+            </div>
+          </header>
+
+          {/* Mobile Chip-Rail (Kategorien) */}
+          <div className="lg:hidden -mx-5 mb-8 overflow-x-auto">
+            <div className="flex items-center gap-2 px-5 pb-1">
+              <Link
+                href={buildUrl({ kategorie: undefined, seite: "1" })}
+                className="text-[11px] uppercase font-medium whitespace-nowrap px-4 py-2 transition-colors"
+                style={{
+                  letterSpacing: "0.22em",
+                  background:    !params.kategorie ? "var(--color-cobalt)" : "transparent",
+                  color:         !params.kategorie ? "var(--color-coral)" : "var(--color-ink)",
+                  border:        `1px solid ${!params.kategorie ? "var(--color-cobalt)" : "var(--color-line)"}`,
+                }}
+              >
+                {t.katalog.kategorie_alle}
+              </Link>
+              {kategorien.map(k => {
+                const active = params.kategorie === k.slug;
+                return (
+                  <Link
+                    key={k.id}
+                    href={buildUrl({ kategorie: k.slug, seite: "1" })}
+                    className="text-[11px] uppercase font-medium whitespace-nowrap px-4 py-2 transition-colors"
+                    style={{
+                      letterSpacing: "0.22em",
+                      background:    active ? "var(--color-cobalt)" : "transparent",
+                      color:         active ? "var(--color-coral)" : "var(--color-ink)",
+                      border:        `1px solid ${active ? "var(--color-cobalt)" : "var(--color-line)"}`,
+                    }}
+                  >
+                    {k.name}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Aktive Filter anzeigen */}
+          {/* Aktive Filter-Chips (Desktop) */}
           {hatFilter && (
-            <div className="flex flex-wrap gap-2">
+            <div className="hidden lg:flex flex-wrap gap-2 mb-8">
               {params.suche && (
-                <span className="flex items-center gap-1 px-3 py-1 bg-vintage-brown/40 border border-vintage-sand/40 text-xs font-sans text-vintage-cream/80" style={{ borderRadius: "var(--radius-vintage)" }}>
-                  {t.nav.suche}: &ldquo;{params.suche}&rdquo;
-                  <Link href={buildUrl({ suche: undefined, seite: "1" })} className="ml-1 text-vintage-dust hover:text-vintage-burgundy">×</Link>
-                </span>
+                <ChipRemove label={`"${params.suche}"`} href={buildUrl({ suche: undefined, seite: "1" })} />
               )}
               {params.kategorie && (
-                <span className="flex items-center gap-1 px-3 py-1 bg-vintage-brown/40 border border-vintage-sand/40 text-xs font-sans text-vintage-cream/80" style={{ borderRadius: "var(--radius-vintage)" }}>
-                  {kategorien.find(k => k.slug === params.kategorie)?.name ?? params.kategorie}
-                  <Link href={buildUrl({ kategorie: undefined, seite: "1" })} className="ml-1 text-vintage-dust hover:text-vintage-burgundy">×</Link>
-                </span>
+                <ChipRemove label={kategorien.find(k => k.slug === params.kategorie)?.name ?? params.kategorie} href={buildUrl({ kategorie: undefined, seite: "1" })} />
               )}
               {params.zustand && (
-                <span className="flex items-center gap-1 px-3 py-1 bg-vintage-brown/40 border border-vintage-sand/40 text-xs font-sans text-vintage-cream/80" style={{ borderRadius: "var(--radius-vintage)" }}>
-                  {params.zustand}
-                  <Link href={buildUrl({ zustand: undefined, seite: "1" })} className="ml-1 text-vintage-dust hover:text-vintage-burgundy">×</Link>
-                </span>
+                <ChipRemove label={params.zustand} href={buildUrl({ zustand: undefined, seite: "1" })} />
               )}
             </div>
           )}
@@ -205,36 +256,61 @@ export default async function KatalogPage({ searchParams }: Props) {
             produkte={daten.items}
             leerText={t.katalog.keine_ergebnisse}
             leerUntertext={hatFilter ? t.katalog.versuche : t.home.leer_text}
+            prioCount={4}
           />
 
           {/* Paginierung */}
           {daten.seiten > 1 && (
-            <div className="flex items-center justify-center gap-3 pt-8">
-              {daten.seite > 1 && (
+            <div className="flex items-center justify-center gap-6 pt-16">
+              {daten.seite > 1 ? (
                 <Link
                   href={buildUrl({ seite: String(daten.seite - 1) })}
-                  className="flex items-center gap-1 px-4 py-2 border border-vintage-sand/40 text-vintage-cream/80 text-sm font-sans hover:bg-vintage-brown/40 transition-colors"
-                  style={{ borderRadius: "var(--radius-button)" }}
+                  className="inline-flex items-center gap-2 text-[11px] uppercase font-medium hover:opacity-80 transition-opacity"
+                  style={{ letterSpacing: "0.22em", color: "var(--color-ink)" }}
                 >
                   <ChevronLeft className="w-4 h-4" /> {t.aktion.zurueck}
                 </Link>
-              )}
-              <span className="text-sm font-sans text-vintage-dust">
-                {daten.seite} / {daten.seiten}
+              ) : <span />}
+              <span
+                className="text-[11px] uppercase"
+                style={{
+                  fontFamily:    "var(--font-mono)",
+                  letterSpacing: "0.22em",
+                  color:         "var(--color-ink-mute)",
+                }}
+              >
+                {String(daten.seite).padStart(2, "0")} / {String(daten.seiten).padStart(2, "0")}
               </span>
-              {daten.seite < daten.seiten && (
+              {daten.seite < daten.seiten ? (
                 <Link
                   href={buildUrl({ seite: String(daten.seite + 1) })}
-                  className="flex items-center gap-1 px-4 py-2 border border-vintage-sand/40 text-vintage-cream/80 text-sm font-sans hover:bg-vintage-brown/40 transition-colors"
-                  style={{ borderRadius: "var(--radius-button)" }}
+                  className="inline-flex items-center gap-2 text-[11px] uppercase font-medium hover:opacity-80 transition-opacity"
+                  style={{ letterSpacing: "0.22em", color: "var(--color-ink)" }}
                 >
                   {t.aktion.weiter} <ChevronRight className="w-4 h-4" />
                 </Link>
-              )}
+              ) : <span />}
             </div>
           )}
         </div>
       </div>
     </div>
+  );
+}
+
+function ChipRemove({ label, href }: { label: string; href: string }) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex items-center gap-2 px-3 py-1.5 text-[11px] uppercase font-medium hover:opacity-80 transition-opacity"
+      style={{
+        letterSpacing: "0.18em",
+        background:    "var(--color-bone)",
+        color:         "var(--color-ink-soft)",
+        border:        "1px solid var(--color-line)",
+      }}
+    >
+      {label} <span style={{ color: "var(--color-coral)" }}>×</span>
+    </Link>
   );
 }

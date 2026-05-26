@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import {
+  Playfair_Display,
+  Inter,
+  Italiana,
+  Cormorant_Garamond,
+  JetBrains_Mono,
+} from "next/font/google";
 import "./globals.css";
 import { getLocale } from "@/i18n";
 
@@ -14,6 +20,31 @@ const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin", "cyrillic"],
   display: "swap",
+});
+
+// Italiana: Latin-only auf Google Fonts. Wird nur für GALERIE-Wordmark und
+// rein-lateinische Display-Headlines benutzt. Russische Display-Headlines
+// nutzen Cormorant (das Cyrillic hat).
+const italiana = Italiana({
+  variable: "--font-italiana",
+  subsets:  ["latin"],
+  display:  "swap",
+  weight:   ["400"],
+});
+
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
+  subsets:  ["latin", "cyrillic"],
+  display:  "swap",
+  weight:   ["300", "400", "500"],
+  style:    ["normal", "italic"],
+});
+
+const jetbrains = JetBrains_Mono({
+  variable: "--font-jetbrains",
+  subsets:  ["latin", "cyrillic"],
+  display:  "swap",
+  weight:   ["400", "500"],
 });
 
 const BASE_URL = process.env.NEXTAUTH_URL ?? "https://galeriedutemps.kz";
@@ -69,7 +100,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${playfair.variable} ${inter.variable} h-full`}
+      className={`${playfair.variable} ${inter.variable} ${italiana.variable} ${cormorant.variable} ${jetbrains.variable} h-full`}
     >
       <body className="min-h-full flex flex-col antialiased">
         {children}

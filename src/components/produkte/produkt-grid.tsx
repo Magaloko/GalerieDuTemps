@@ -18,15 +18,32 @@ export function ProduktGrid({
   if (produkte.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
-        <Package className="w-14 h-14 text-vintage-sand mb-4" />
-        <p className="font-serif text-xl text-vintage-brown">{leerText}</p>
-        <p className="text-vintage-dust text-sm font-sans mt-2">{leerUntertext}</p>
+        <Package className="w-14 h-14 mb-4" style={{ color: "var(--color-ink-mute)" }} />
+        <p
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize:   28,
+            color:      "var(--color-ink)",
+          }}
+        >
+          {leerText}
+        </p>
+        <p
+          className="mt-2 text-sm"
+          style={{
+            fontFamily: "var(--font-italic)",
+            fontStyle:  "italic",
+            color:      "var(--color-ink-mute)",
+          }}
+        >
+          {leerUntertext}
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-x-3.5 sm:gap-x-6 md:gap-x-8 gap-y-8 md:gap-y-10">
       {produkte.map((p, i) => (
         <ProduktKarte key={p.id} produkt={p} priority={i < prioCount} />
       ))}

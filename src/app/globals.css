@@ -37,10 +37,53 @@
   --color-vintage-sage:        #6BA88A;
   --color-vintage-burgundy:    #C24747;   /* Error — wärmer, Coral-Familie */
 
+  /* ─ Handoff-Tokens (neuer Namensraum, parallel zu vintage-*) ─────────────
+     Erlaubt es, Komponenten aus dem Design-Handoff (Cobalt+Coral) 1:1 mit
+     den dort verwendeten Klassen (bg-cobalt, text-coral, font-display) zu
+     bauen, ohne die bestehenden vintage-* Tokens zu brechen. Werte spiegeln
+     die README-Definition (siehe design_handoff_galerie_du_temps/README.md).
+     ─────────────────────────────────────────────────────────────────────── */
+  --color-cobalt:        #1B2566;
+  --color-cobalt-deep:   #141A4D;
+  --color-cobalt-dark:   #0E1336;
+  --color-coral:         #E8703A;
+  --color-coral-bright:  #F08550;
+  --color-coral-deep:    #C95820;
+  --color-paper:         #F5F1EA;
+  --color-paper-warm:    #EDE6D7;
+  --color-paper-cool:    #E8E4DC;
+  --color-bone:          #FAF7F1;
+  --color-ink:           #0F1430;
+  --color-ink-soft:      #3A3E5C;
+  --color-ink-mute:      #7A7D92;
+  --color-line:          #D9D3C5;
+
+  /* Letter-Spacing-Tokens für Brand-Lockup & Eyebrows */
+  --tracking-galerie:    0.22em;
+  --tracking-eyebrow:    0.28em;
+  --tracking-nav:        0.22em;
+
+  /* Display-Größen (Italiana / Cormorant) */
+  --text-display-xs:     1.75rem;
+  --text-display-sm:     2.25rem;
+  --text-display-md:     3.5rem;
+  --text-display-lg:     5rem;
+  --text-display-xl:     6rem;
+  --text-display-2xl:    8.25rem;
+
+  /* Gallery-Schatten (sparsam) */
+  --shadow-soft:         0 1px 3px rgba(15, 20, 48, 0.08), 0 4px 16px rgba(15, 20, 48, 0.06);
+  --shadow-lift:         0 20px 50px rgba(15, 20, 48, 0.3);
+
   /* ─ Typografie ─────────────────────────────────────────────────────────── */
-  --font-serif:   "Playfair Display", Georgia, "Times New Roman", serif;
-  --font-sans:    "Inter", system-ui, -apple-system, sans-serif;
-  --font-mono:    "JetBrains Mono", "Fira Code", monospace;
+  /* Fonts werden über next/font in layout.tsx geladen und als CSS-Variablen
+     (--font-italiana, --font-cormorant, …) gesetzt. Diese Tokens kombinieren
+     sie zu Brand-Stacks mit Fallback-Familien. */
+  --font-serif:    var(--font-playfair), Georgia, "Times New Roman", serif;
+  --font-display:  var(--font-italiana), var(--font-cormorant), ui-serif, Georgia, serif;
+  --font-italic:   var(--font-cormorant), var(--font-italiana), ui-serif, Georgia, serif;
+  --font-sans:     var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-mono:     var(--font-jetbrains), "Fira Code", monospace;
 
   /* ─ Abstände ───────────────────────────────────────────────────────────── */
   --spacing-section: 5rem;
@@ -146,11 +189,95 @@
 /* ─── Section-Eyebrow (kleine Überschriften über H2) ─────────────────────── */
 .eyebrow {
   font-family:    var(--font-sans);
-  font-size:      0.7rem;
-  letter-spacing: 0.3em;
+  font-size:      0.6875rem;
+  letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
-  color:          var(--color-vintage-gold);
+  color:          var(--color-coral);
+  font-weight:    500;
+}
+.eyebrow-mute  { color: var(--color-ink-mute); }
+.eyebrow-light { color: rgba(255, 255, 255, 0.6); }
+.eyebrow-ink   { color: var(--color-ink); }
+
+/* ─── Wordmark — Italiana, sehr gespreizt ───────────────────────────────── */
+.wordmark {
+  font-family:    var(--font-display);
+  letter-spacing: var(--tracking-galerie);
+  padding-left:   var(--tracking-galerie);   /* kompensiert trailing kerning */
   font-weight:    400;
+  line-height:    1;
+  color:          var(--color-coral);
+}
+.wordmark-italic {
+  font-family: var(--font-italic);
+  font-style:  italic;
+  color:       var(--color-coral);
+  line-height: 1;
+}
+
+/* ─── Coral CTA Button — uppercase, no radius ───────────────────────────── */
+.btn-coral {
+  display:         inline-flex;
+  align-items:     center;
+  justify-content: center;
+  gap:             0.75rem;
+  padding:         0.875rem 1.625rem;
+  font-family:     var(--font-sans);
+  font-size:       0.8125rem;
+  font-weight:     500;
+  letter-spacing:  var(--tracking-nav);
+  text-transform:  uppercase;
+  background:      var(--color-coral);
+  color:           #fff;
+  border:          0;
+  border-radius:   0;
+  cursor:          pointer;
+  transition:      background 150ms ease;
+}
+.btn-coral:hover  { background: var(--color-coral-bright); }
+.btn-coral:active { background: var(--color-coral-deep); }
+.btn-coral-lg     { padding: 1.0625rem 2.25rem;  font-size: 0.875rem; }
+.btn-coral-sm     { padding: 0.5625rem 1.125rem; font-size: 0.75rem;  }
+.btn-coral-ghost {
+  background: transparent;
+  color:      var(--color-coral);
+  border:     1px solid var(--color-coral);
+}
+.btn-coral-ghost:hover { background: rgba(232, 112, 58, 0.08); }
+.btn-coral-ghost-light {
+  color:        #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+  background:   transparent;
+}
+.btn-coral-ghost-light:hover { background: rgba(255, 255, 255, 0.08); }
+
+/* ─── Hairline ──────────────────────────────────────────────────────────── */
+.hairline         { height: 1px; background: var(--color-line); }
+.hairline-cobalt  { height: 1px; background: rgba(232, 112, 58, 0.22); }
+
+/* ─── Italic-Helper (für inline em.font-italic in headings) ─────────────── */
+em.font-italic, .font-italic {
+  font-family: var(--font-italic);
+  font-style:  italic;
+  font-weight: 400;
+}
+
+/* ─── Striped product placeholder ───────────────────────────────────────── */
+.placeholder-stripes {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.04) 0 2px,
+    transparent 2px 8px
+  );
+}
+
+/* ─── Soft pulse skeleton ───────────────────────────────────────────────── */
+@keyframes gdt-pulse {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 0.85; }
+}
+.animate-pulse-soft {
+  animation: gdt-pulse 1.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 /* ─── Scrollbar – Gold auf Dunkel ───────────────────────────────────────── */
