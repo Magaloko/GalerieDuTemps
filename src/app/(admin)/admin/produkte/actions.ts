@@ -1,7 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth/config";
+import { revalidatePath } from "next/cache";
+import { auth, requireAdminSession } from "@/lib/auth/config";
 import { produktErstellen, produktAktualisieren, produktLoeschen, produktById } from "@/lib/db/produkte";
 import { ProduktCreateSchema } from "@/lib/utils/validierung";
 
@@ -66,8 +67,8 @@ export async function produktErstellenAction(
   _prev: FormState,
   formData: FormData
 ): Promise<FormState> {
-  const session = await auth();
-  if (!session) return { message: "Nicht angemeldet" };
+  const session = await requireAdminSession();
+  if (!session) return { message: "Нет прав" };
 
   const parsed = ProduktCreateSchema.safeParse(parseProduktFormData(formData));
   if (!parsed.success) {
@@ -86,8 +87,8 @@ export async function produktAktualisierenAction(
   _prev: FormState,
   formData: FormData
 ): Promise<FormState> {
-  const session = await auth();
-  if (!session) return { message: "Nicht angemeldet" };
+  const session = await requireAdminSession();
+  if (!session) return { message: "Нет прав" };
 
   const parsed = ProduktCreateSchema.safeParse(parseProduktFormData(formData));
   if (!parsed.success) {
@@ -99,11 +100,38 @@ export async function produktAktualisierenAction(
 }
 
 // ---------------------------------------------------------------------------
+// Quick-Toggles für Listen-Aktionen — kein redirect, nur revalidatePath
+// ---------------------------------------------------------------------------
+type ToggleField = "aktiv" | "featured" | "verkauft";
+
+export async function produktQuickToggleAction(
+  id:    string,
+  feld:  ToggleField,
+  value: boolean
+): Promise<{ ok: boolean; error?: string }> {
+  const session = await requireAdminSession();
+  if (!session) return { ok: false, error: "Нет прав" };
+
+  if (!["aktiv","featured","verkauft"].includes(feld)) {
+    return { ok: false, error: "Ungültiges Feld" };
+  }
+
+  try {
+    await produktAktualisieren(id, { [feld]: value });
+    revalidatePath("/admin/produkte");
+    return { ok: true };
+  } catch (err) {
+    console.error("[quickToggle]", err);
+    return { ok: false, error: "Aktualisierung fehlgeschlagen" };
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Produkt löschen
 // ---------------------------------------------------------------------------
 export async function produktLoeschenAction(id: string): Promise<void> {
-  const session = await auth();
-  if (!session) throw new Error("Nicht angemeldet");
+  const session = await requireAdminSession();
+  if (!session) throw new Error("Нет прав");
   await produktLoeschen(id);
   redirect("/admin/produkte");
 }
@@ -113,8 +141,8 @@ export async function produktLoeschenAction(id: string): Promise<void> {
 // aktiv=false (damit Admin erst editieren kann bevor live)
 // ---------------------------------------------------------------------------
 export async function produktDuplizierenAction(id: string): Promise<void> {
-  const session = await auth();
-  if (!session) throw new Error("Nicht angemeldet");
+  const session = await requireAdminSession();
+  if (!session) throw new Error("Нет прав");
 
   const original = await produktById(id);
   if (!original) throw new Error("Produkt nicht gefunden");

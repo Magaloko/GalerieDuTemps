@@ -5,6 +5,7 @@ import { uebersichtStats } from "@/lib/db/statistiken";
 import { formatPreis } from "@/lib/utils/preis";
 import { ZustandBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { QuickToggleRow } from "@/components/produkte/quick-toggle-row";
 import {
   Plus,
   Search,
@@ -14,11 +15,9 @@ import {
   ChevronLeft,
   ChevronRight,
   CheckCircle2,
-  XCircle,
   Star,
   ExternalLink,
   AlertTriangle,
-  EyeOff,
 } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -230,7 +229,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
                   <th className="text-center px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal hidden lg:table-cell">
                     Zustand
                   </th>
-                  <th className="text-center px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal hidden lg:table-cell">
+                  <th className="text-center px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">
                     Status
                   </th>
                   <th className="px-4 py-3" />
@@ -271,11 +270,9 @@ export default async function ProduktListePage({ searchParams }: Props) {
                           <p className="text-vintage-ink font-sans text-sm truncate max-w-52">
                             {p.name}
                           </p>
-                          {p.featured && (
-                            <p className="flex items-center gap-1 text-vintage-gold text-xs">
-                              <Star className="w-3 h-3 fill-current" /> Featured
-                            </p>
-                          )}
+                          <p className="text-xs text-vintage-dust font-mono truncate max-w-52">
+                            {p.slug}
+                          </p>
                         </div>
                       </div>
                     </td>
@@ -302,25 +299,15 @@ export default async function ProduktListePage({ searchParams }: Props) {
                       <ZustandBadge zustand={p.zustand} />
                     </td>
 
-                    {/* Status */}
-                    <td className="px-4 py-3 text-center hidden lg:table-cell">
-                      {!p.aktiv ? (
-                        <span className="flex items-center justify-center gap-1 text-vintage-dust text-xs">
-                          <EyeOff className="w-3.5 h-3.5" /> Inaktiv
-                        </span>
-                      ) : p.verkauft ? (
-                        <span className="flex items-center justify-center gap-1 text-vintage-dust text-xs">
-                          <XCircle className="w-3.5 h-3.5" /> Verkauft
-                        </span>
-                      ) : p.lagerbestand > 0 ? (
-                        <span className="flex items-center justify-center gap-1 text-vintage-sage text-xs">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Verfügbar
-                        </span>
-                      ) : (
-                        <span className="flex items-center justify-center gap-1 text-vintage-copper text-xs">
-                          <XCircle className="w-3.5 h-3.5" /> Ausverkauft
-                        </span>
-                      )}
+                    {/* Status — inline interaktiv */}
+                    <td className="px-4 py-3 text-center">
+                      <QuickToggleRow
+                        id={p.id}
+                        aktiv={p.aktiv}
+                        featured={p.featured}
+                        verkauft={p.verkauft}
+                        lagerbestand={p.lagerbestand}
+                      />
                     </td>
 
                     {/* Aktionen */}
