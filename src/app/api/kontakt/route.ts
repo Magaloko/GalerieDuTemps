@@ -5,6 +5,7 @@ import { rateLimitPruefen, getClientIp, tooManyRequestsResponse } from "@/lib/ut
 import { getAffiliateCookie, clearAffiliateCookie, hashWithSalt } from "@/lib/affiliate/cookie";
 import { affiliateByReferralCode } from "@/lib/db/affiliates";
 import { attributionAnlegen } from "@/lib/db/affiliate-tracking";
+import { notifyNewLead } from "@/lib/notifications/lead-notify";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -93,6 +94,27 @@ export async function POST(req: NextRequest) {
       htmlContent: kontaktBestaetigung(name, nachricht),
       tags:        ["kontakt"],
     }).catch(err => console.error("[Kontakt] Brevo-Fehler:", err));
+
+    // 3b. Admin-Notification (Brevo-Mail) via Lead-System — Trigger hat den Lead schon angelegt.
+    //     Wir lesen die lead-Id aus dem Trigger-Effekt.
+    const leadRes = await query<{ id: string; vorschau: string | null }>(
+      `SELECT id, vorschau FROM sebo.leads
+       WHERE quelle = 'kontaktanfrage' AND externe_id = $1::text LIMIT 1`,
+      [kontaktId]
+    ).catch(() => ({ rows: [] as { id: string; vorschau: string | null }[] }));
+    const leadRow = leadRes.rows[0];
+    if (leadRow) {
+      notifyNewLead({
+        id:             leadRow.id,
+        quelle:         "kontaktanfrage",
+        kontakt_name:   name,
+        kontakt_email:  email,
+        kontakt_handle: null,
+        betreff:        betreff ?? null,
+        vorschau:       leadRow.vorschau,
+        produkt_id:     produkt_id ?? null,
+      }).catch(err => console.error("[notify lead]", err));
+    }
 
     // 4. Admin-Benachrichtigung via N8N Webhook (non-blocking)
     const n8nUrl = process.env.N8N_KONTAKT_WEBHOOK_URL;

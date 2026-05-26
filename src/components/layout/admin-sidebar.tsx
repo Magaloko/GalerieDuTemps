@@ -173,9 +173,10 @@ const navItems = [
 interface AdminSidebarProps {
   userName?: string | null;
   userEmail?: string | null;
+  inboxCount?: number;
 }
 
-export function AdminSidebar({ userName, userEmail }: AdminSidebarProps) {
+export function AdminSidebar({ userName, userEmail, inboxCount = 0 }: AdminSidebarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -283,7 +284,15 @@ export function AdminSidebar({ userName, userEmail }: AdminSidebarProps) {
                 }`}
               />
               <span>{label}</span>
-              {active && (
+              {href === "/admin/leads" && inboxCount > 0 && (
+                <span
+                  className="ml-auto min-w-5 h-5 px-1.5 bg-vintage-burgundy text-vintage-cream text-[10px] font-semibold flex items-center justify-center"
+                  style={{ borderRadius: "999px" }}
+                >
+                  {inboxCount > 99 ? "99+" : inboxCount}
+                </span>
+              )}
+              {href !== "/admin/leads" && active && (
                 <span className="ml-auto w-1 h-4 bg-vintage-gold rounded-full" />
               )}
             </Link>

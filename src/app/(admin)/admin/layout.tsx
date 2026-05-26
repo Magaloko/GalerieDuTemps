@@ -1,7 +1,9 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
+import { AdminBell }    from "@/components/layout/admin-bell";
 import { AuthSessionProvider } from "@/components/layout/session-provider";
+import { ungeleseneCount }    from "@/lib/notifications/lead-notify";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -28,6 +30,8 @@ export default async function AdminLayout({
     redirect("/login");
   }
 
+  const inboxCount = await ungeleseneCount().catch(() => 0);
+
   return (
     <AuthSessionProvider session={session}>
       <div className="min-h-screen bg-vintage-parchment">
@@ -35,6 +39,7 @@ export default async function AdminLayout({
         <AdminSidebar
           userName={session.user?.name}
           userEmail={session.user?.email}
+          inboxCount={inboxCount}
         />
 
         {/* Hauptinhalt – Sidebar-Offset nur ab md (auf Mobile ist Sidebar ein Drawer) */}
@@ -43,13 +48,16 @@ export default async function AdminLayout({
           <header className="sticky top-0 z-20 bg-vintage-parchment/95 backdrop-blur border-b border-vintage-sand px-4 md:px-8 py-4">
             <div className="flex items-center justify-between pl-12 md:pl-0">
               <div id="admin-page-title" />
-              <div className="text-xs text-vintage-dust font-sans tracking-wider">
-                {new Date().toLocaleDateString("de-DE", {
-                  weekday: "long",
-                  day:     "numeric",
-                  month:   "long",
-                  year:    "numeric",
-                })}
+              <div className="flex items-center gap-3">
+                <AdminBell />
+                <div className="text-xs text-vintage-dust font-sans tracking-wider hidden sm:block">
+                  {new Date().toLocaleDateString("de-DE", {
+                    weekday: "long",
+                    day:     "numeric",
+                    month:   "long",
+                    year:    "numeric",
+                  })}
+                </div>
               </div>
             </div>
           </header>
