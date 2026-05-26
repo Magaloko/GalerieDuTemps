@@ -8,7 +8,10 @@ export const metadata: Metadata = {
 
 export default function QuizPage() {
   return (
-    <div className="hero-vignette texture-paper min-h-[calc(100vh-5rem)]">
+    <div
+      className="min-h-[calc(100vh-5rem)]"
+      style={{ background: "var(--color-cobalt)" }}
+    >
       <QuizClient />
     </div>
   );
