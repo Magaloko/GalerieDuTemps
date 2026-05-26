@@ -7,6 +7,7 @@ import {
   customerByTelegramChatId,
 } from "@/lib/db/customer-telegram";
 import { sendMessage } from "@/lib/telegram/client";
+import { handleCustomerCommand } from "@/lib/telegram/customer-commands";
 import type { TelegramUpdate } from "@/lib/telegram/client";
 
 export const dynamic     = "force-dynamic";
@@ -136,19 +137,28 @@ export async function POST(
     return NextResponse.json({ ok: true });
   }
 
-  // ── Route d: bekannter Customer schreibt → KEIN Lead, nur Acknowledgment ──
+  // ── Route d: bekannter Customer ─────────────────────────────────────────
+  // Zuerst prüfen ob es ein Command ist (/orders, /status, /wishlist, /help).
+  // Wenn ja → handle und fertig. Wenn nein → Acknowledgment senden.
   const linkedCustomer = await customerByTelegramChatId(chat.id);
-  if (linkedCustomer) {
-    if (konto.access_token) {
-      await sendMessage(
-        konto.access_token,
-        chat.id,
-        `Danke für deine Nachricht, ${linkedCustomer.vorname ?? "—"}!\n\n` +
-        `Aktuell antwortet hier kein Mensch live. Für konkrete Anfragen ` +
-        `schreibe uns bitte über das Kontaktformular auf der Website oder ` +
-        `direkt an bonjour@galeriedutemps.kz.`,
-      ).catch(err => console.error("[tg send ack]", err));
+  if (linkedCustomer && konto.access_token) {
+    const wasCommand = await handleCustomerCommand(text, {
+      botToken: konto.access_token,
+      chatId:   chat.id,
+      customer: linkedCustomer,
+    });
+    if (wasCommand) {
+      return NextResponse.json({ ok: true });
     }
+
+    // Nicht-Command-Message von verknüpftem Customer → Ack, KEIN Lead
+    await sendMessage(
+      konto.access_token,
+      chat.id,
+      `Danke für deine Nachricht, ${linkedCustomer.vorname ?? "—"}!\n\n` +
+      `Befehle: /orders /status /help\n\n` +
+      `Für persönliche Anfragen: bonjour@galeriedutemps.kz`,
+    ).catch(err => console.error("[tg send ack]", err));
     return NextResponse.json({ ok: true });
   }
 
