@@ -34,7 +34,7 @@ export default async function AdminLayout({
 
   return (
     <AuthSessionProvider session={session}>
-      <div className="min-h-screen bg-vintage-parchment">
+      <div className="min-h-screen" style={{ background: "var(--color-paper)" }}>
         {/* Sidebar */}
         <AdminSidebar
           userName={session.user?.name}
@@ -44,13 +44,22 @@ export default async function AdminLayout({
 
         {/* Hauptinhalt – Sidebar-Offset nur ab md (auf Mobile ist Sidebar ein Drawer) */}
         <div className="md:ml-64 flex flex-col min-h-screen">
-          {/* Top Bar — auf Mobile etwas weniger Padding + Hamburger-Spacer links */}
-          <header className="sticky top-0 z-20 bg-vintage-parchment/95 backdrop-blur border-b border-vintage-sand px-4 md:px-8 py-4">
+          {/* Top Bar */}
+          <header
+            className="sticky top-0 z-20 backdrop-blur px-4 md:px-8 py-4"
+            style={{
+              background:  "rgba(245, 241, 234, 0.95)",  /* paper/95 */
+              borderBottom: "1px solid var(--color-line)",
+            }}
+          >
             <div className="flex items-center justify-between pl-12 md:pl-0">
               <div id="admin-page-title" />
               <div className="flex items-center gap-3">
                 <AdminBell />
-                <div className="text-xs text-vintage-dust font-sans tracking-wider hidden sm:block">
+                <div
+                  className="hidden sm:block text-[11px] uppercase font-medium"
+                  style={{ letterSpacing: "0.18em", color: "var(--color-ink-mute)" }}
+                >
                   {new Date().toLocaleDateString("de-DE", {
                     weekday: "long",
                     day:     "numeric",
@@ -62,8 +71,8 @@ export default async function AdminLayout({
             </div>
           </header>
 
-          {/* Seiteninhalt — Mobile weniger horizontal padding */}
-          <main className="flex-1 px-4 md:px-8 py-6 md:py-8">
+          {/* Seiteninhalt */}
+          <main className="flex-1 px-4 md:px-8 py-6 md:py-8" style={{ color: "var(--color-ink)" }}>
             {children}
           </main>
         </div>

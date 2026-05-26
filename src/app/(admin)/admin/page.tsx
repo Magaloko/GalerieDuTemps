@@ -47,28 +47,62 @@ interface KpiProps {
 }
 
 function Kpi({ label, value, trend, icon: Icon, href, variant = "default" }: KpiProps) {
-  const variantStyles = {
-    default: "bg-vintage-white border-vintage-sand text-vintage-espresso",
-    warn:    "bg-vintage-gold/10 border-vintage-gold/30 text-vintage-espresso",
-    good:    "bg-vintage-sage/10 border-vintage-sage/30 text-vintage-espresso",
-    bad:     "bg-vintage-burgundy/10 border-vintage-burgundy/30 text-vintage-espresso",
+  // Variants: weißer Card-Background, nur Border-Akzent differenziert die
+  // Bedeutung. Vermeidet die peachy/pinky Fill-Optik von /10-opacity-Coral.
+  const variantBorder = {
+    default: "var(--color-line)",
+    warn:    "var(--color-coral)",
+    good:    "var(--color-vintage-sage)",
+    bad:     "var(--color-coral-deep)",
   }[variant];
 
   const inner = (
     <div
-      className={`border p-5 transition-shadow hover:shadow-[var(--shadow-vintage-md)] group ${variantStyles}`}
-      style={{ borderRadius: "var(--radius-card)" }}
+      className="group p-5 transition-shadow hover:shadow-[0_2px_12px_rgba(15,20,48,0.08)]"
+      style={{
+        background:   "#fff",
+        border:       `1px solid ${variantBorder}`,
+        borderRadius: 0,
+        color:        "var(--color-ink)",
+      }}
     >
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs font-sans uppercase tracking-widest text-vintage-dust mb-1 flex items-center gap-1.5">
-            <Icon className="w-3.5 h-3.5" /> {label}
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p
+            className="text-[10px] uppercase font-medium mb-2 flex items-center gap-1.5"
+            style={{ letterSpacing: "0.22em", color: "var(--color-ink-soft)" }}
+          >
+            <Icon className="w-3.5 h-3.5" style={{ color: "var(--color-coral)" }} />
+            {label}
           </p>
-          <p className="font-serif text-2xl">{value}</p>
-          {trend && <p className="text-xs text-vintage-dust mt-1 font-sans">{trend}</p>}
+          <p
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize:   28,
+              color:      "var(--color-ink)",
+              lineHeight: 1.1,
+            }}
+          >
+            {value}
+          </p>
+          {trend && (
+            <p
+              className="text-[12px] mt-2"
+              style={{
+                fontFamily: "var(--font-italic)",
+                fontStyle:  "italic",
+                color:      "var(--color-ink-mute)",
+              }}
+            >
+              {trend}
+            </p>
+          )}
         </div>
         {href && (
-          <ArrowUpRight className="w-4 h-4 text-vintage-dust opacity-0 group-hover:opacity-100 transition-opacity" />
+          <ArrowUpRight
+            className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+            style={{ color: "var(--color-coral)" }}
+          />
         )}
       </div>
     </div>

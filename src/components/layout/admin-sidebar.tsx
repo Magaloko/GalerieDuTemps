@@ -197,18 +197,22 @@ export function AdminSidebar({ userName, userEmail, inboxCount = 0 }: AdminSideb
 
   return (
     <>
-      {/* Mobile Hamburger-Button — fixed oben links */}
+      {/* Mobile Hamburger-Button — fixed oben links. Paper-Style damit er
+          sich in den Admin-Light-Look einfügt statt als Cobalt-Block zu wirken. */}
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
         aria-label="Меню открыть"
-        className="
-          md:hidden fixed top-3 left-3 z-30
-          p-2.5 bg-vintage-espresso text-vintage-cream
-          border border-vintage-cream/20
-          hover:bg-vintage-brown transition-colors
-        "
-        style={{ borderRadius: "var(--radius-vintage)", boxShadow: "var(--shadow-vintage-md)" }}
+        className="md:hidden fixed top-3 left-3 z-30 p-2.5 transition-colors"
+        style={{
+          background:   "#fff",
+          color:        "var(--color-ink)",
+          border:       "1px solid var(--color-line)",
+          borderRadius: 0,
+          boxShadow:    "var(--shadow-soft)",
+          touchAction:  "manipulation",
+          WebkitTapHighlightColor: "transparent",
+        }}
       >
         <Menu className="w-5 h-5" />
       </button>
