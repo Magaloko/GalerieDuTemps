@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth/config";
+import { requireAdminSession } from "@/lib/auth/config";
 import {
   orderStatusUpdate,
   orderNotizenAktualisieren,
@@ -18,7 +18,7 @@ export async function statusAktualisierenAction(
   orderId: string,
   formData: FormData
 ): Promise<ActionResult> {
-  const session = await auth();
+  const session = await requireAdminSession();
   if (!session) return { ok: false, error: "Не авторизовано" };
 
   const status = formData.get("status") as OrderStatus;
@@ -36,7 +36,7 @@ export async function notizenAktualisierenAction(
   orderId: string,
   formData: FormData
 ): Promise<ActionResult> {
-  const session = await auth();
+  const session = await requireAdminSession();
   if (!session) return { ok: false, error: "Не авторизовано" };
 
   const interne = (formData.get("interne_notiz") as string) || null;
@@ -51,7 +51,7 @@ export async function trackingAktualisierenAction(
   orderId: string,
   formData: FormData
 ): Promise<ActionResult> {
-  const session = await auth();
+  const session = await requireAdminSession();
   if (!session) return { ok: false, error: "Не авторизовано" };
 
   const nummer = (formData.get("tracking_nummer") as string) || null;
@@ -66,7 +66,7 @@ export async function bestellungStornierenAction(
   orderId: string,
   grund: string
 ): Promise<ActionResult> {
-  const session = await auth();
+  const session = await requireAdminSession();
   if (!session) return { ok: false, error: "Не авторизовано" };
 
   await orderCanceln(orderId, grund || "Storno durch Admin");

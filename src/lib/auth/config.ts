@@ -199,3 +199,15 @@ const authConfig: NextAuthConfig = {
 };
 
 export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);
+
+// ---------------------------------------------------------------------------
+// Helper für Admin-Routen / Server-Actions: gibt Session zurück wenn Admin,
+// sonst null. Caller entscheidet selbst über redirect/throw/Response.
+// ---------------------------------------------------------------------------
+const ADMIN_ROLLEN: AuthRole[] = ["admin", "superadmin"];
+
+export async function requireAdminSession() {
+  const session = await auth();
+  if (!session?.user?.role) return null;
+  return ADMIN_ROLLEN.includes(session.user.role as AuthRole) ? session : null;
+}

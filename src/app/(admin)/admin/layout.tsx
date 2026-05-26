@@ -16,9 +16,17 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Server-seitige Auth-Prüfung (zusätzlich zur Middleware)
+  // Server-seitige Auth + Rollen-Prüfung (zusätzlich zur Middleware).
+  // Nur admin/superadmin/affiliate dürfen ins Admin-Backend; alle anderen
+  // (customer, unauthentifiziert) werden zum Login geschickt.
   const session = await auth();
   if (!session) redirect("/login");
+  const rolle = session.user?.role;
+  if (rolle !== "admin" && rolle !== "superadmin") {
+    if (rolle === "customer")  redirect("/kunde");
+    if (rolle === "affiliate") redirect("/affiliate");
+    redirect("/login");
+  }
 
   return (
     <AuthSessionProvider session={session}>

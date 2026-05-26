@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth/config";
+import { requireAdminSession } from "@/lib/auth/config";
 import { bildSpeichern } from "@/lib/storage/upload";
 import { bildEinfuegen, bilderFuerProdukt } from "@/lib/db/bilder";
+import { rateLimitPruefen, getClientIp, tooManyRequestsResponse } from "@/lib/utils/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -9,8 +10,13 @@ export const dynamic = "force-dynamic";
 // POST /api/bilder  – Bild hochladen (nur Admin)
 // ---------------------------------------------------------------------------
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session) return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
+  const session = await requireAdminSession();
+  if (!session) return NextResponse.json({ error: "Нет прав" }, { status: 403 });
+
+  // Rate-Limit: 60 Uploads/Stunde/Admin
+  const ip = getClientIp(req);
+  const rl = rateLimitPruefen(`upload:${session.user.id}:${ip}`, 60, 60 * 60 * 1000);
+  if (!rl.erlaubt) return tooManyRequestsResponse(rl) as unknown as NextResponse;
 
   try {
     const formData  = await req.formData();

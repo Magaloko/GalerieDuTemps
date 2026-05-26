@@ -165,8 +165,8 @@ export async function tasksListe(params: {
        CASE t.prioritaet WHEN 'dringend' THEN 0 WHEN 'hoch' THEN 1 WHEN 'normal' THEN 2 ELSE 3 END,
        t.faellig_am NULLS LAST,
        t.erstellt_am DESC
-     LIMIT ${limit}`,
-    vals
+     LIMIT $${vals.length + 1}`,
+    [...vals, Math.max(1, Math.min(1000, Number(limit) || 100))]
   );
   return r.rows;
 }
@@ -193,9 +193,12 @@ export async function taskErstellen(data: {
 }
 
 export async function taskStatusAendern(id: string, status: TaskStatus): Promise<void> {
-  const erledigt = status === "erledigt" ? "now()" : "NULL";
+  // erledigt_am: bei "erledigt" jetzt setzen, sonst NULL — alles parameterisiert.
   await query(
-    `UPDATE sebo.tasks SET status = $1, erledigt_am = ${erledigt} WHERE id = $2`,
+    `UPDATE sebo.tasks
+     SET status = $1,
+         erledigt_am = CASE WHEN $1 = 'erledigt' THEN now() ELSE NULL END
+     WHERE id = $2`,
     [status, id]
   );
 }
@@ -260,9 +263,10 @@ export async function segmentVorschau(filter: SegmentFilter, limit = 100): Promi
   }
 
   const where = `WHERE ${conds.join(" AND ")}`;
+  const safeLimit = Math.max(1, Math.min(10000, Number(limit) || 100));
   const [c, d] = await Promise.all([
     query<{ treffer: number }>(`SELECT COUNT(*)::int AS treffer FROM sebo.customers c ${where}`, vals),
-    query<{ id: string }>(`SELECT c.id FROM sebo.customers c ${where} LIMIT ${limit}`, vals),
+    query<{ id: string }>(`SELECT c.id FROM sebo.customers c ${where} LIMIT $${vals.length + 1}`, [...vals, safeLimit]),
   ]);
 
   return {
