@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Store } from "lucide-react";
+import { Hourglass } from "@/components/brand/hourglass";
 import type { Dictionary } from "@/i18n";
 import {
   type KontaktKanaele,
@@ -8,192 +8,289 @@ import {
   instagramUrl,
 } from "@/lib/db/kontakt-kanaele";
 
-/** Inline-SVG für WhatsApp (keine zusätzliche Icon-Lib) */
-function WhatsAppIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" fill="currentColor">
-      <path d="M19.05 4.91A10 10 0 0 0 12.04 2c-5.5 0-9.96 4.46-9.96 9.96 0 1.76.46 3.47 1.34 4.99L2 22l5.2-1.37a9.95 9.95 0 0 0 4.84 1.23h.01c5.49 0 9.96-4.46 9.96-9.96 0-2.66-1.04-5.16-2.96-7.04zm-7.01 15.3a8.27 8.27 0 0 1-4.22-1.16l-.3-.18-3.09.81.82-3-.2-.31a8.26 8.26 0 0 1-1.27-4.4c0-4.57 3.72-8.29 8.29-8.29 2.22 0 4.3.86 5.86 2.42a8.23 8.23 0 0 1 2.42 5.87c.01 4.57-3.71 8.24-8.31 8.24zm4.55-6.18c-.25-.13-1.47-.73-1.7-.81-.23-.08-.4-.13-.56.13s-.64.81-.78.97c-.14.17-.29.19-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.14-.25-.02-.39.11-.51.11-.11.25-.29.38-.43.13-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.13-.56-1.34-.76-1.84-.2-.49-.41-.42-.56-.43h-.48c-.16 0-.42.06-.64.31-.22.25-.85.83-.85 2.03 0 1.2.87 2.36.99 2.52.13.17 1.72 2.62 4.16 3.67.58.25 1.04.4 1.39.51.58.18 1.12.16 1.54.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.14-1.18-.06-.1-.23-.16-.48-.29z" />
-    </svg>
-  );
-}
-function TelegramIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" fill="currentColor">
-      <path d="M21.95 4.41 18.5 20.79c-.27 1.18-.97 1.47-1.97.91l-5.44-4.01-2.62 2.52c-.29.29-.53.53-1.09.53l.39-5.51 10.02-9.05c.43-.39-.1-.6-.66-.22L5 12.92l-5.32-1.66C-1.48 10.91-1.5 10.1.95 9.13l19.43-7.49c.97-.36 1.82.22 1.57 2.77z" transform="translate(1.5 0)" />
-    </svg>
-  );
-}
-function InstagramIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6">
-      <rect x="3" y="3" width="18" height="18" rx="5" />
-      <circle cx="12" cy="12" r="4" />
-      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
+/* ──────────────────────────────────────────────────────────────────────────
+ * Footer — Handoff E1.
+ *
+ * Drei Bänder:
+ * 1. Newsletter (coral bg, cobalt text): Headline + Inline-Form.
+ * 2. 4-col (cobalt bg): Brand | Магазин | Информация | Связь.
+ * 3. Bottom (cobalt, hairline-cobalt top): © + Legal + Payment.
+ *
+ * Mobile: Newsletter stackt vertikal, Cols kollabieren zu 2-col + 2 full-rows.
+ * ────────────────────────────────────────────────────────────────────────── */
 export function Footer({
   t,
   kontakt,
   jahr,
 }: {
-  t: Dictionary;
+  t:       Dictionary;
   kontakt: KontaktKanaele;
-  jahr: number;
+  jahr:    number;
 }) {
   const wa = whatsappUrl(kontakt.whatsapp_nummer);
   const tg = telegramUrl(kontakt.telegram_channel);
   const ig = instagramUrl(kontakt.instagram_handle);
-  const hatSozial = Boolean(wa || tg || ig);
 
   return (
-    <footer className="bg-vintage-ink text-vintage-cream/70 mt-auto border-t border-vintage-sand/20">
-      {/* Ornament-Divider oben */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
-        <div className="divider-ornament max-w-xs mx-auto">
-          <span className="text-vintage-gold text-base">◆</span>
+    <footer className="mt-auto">
+
+      {/* ─── Band 1: Newsletter (coral) ─────────────────────────────── */}
+      <section
+        className="px-6 md:px-14 py-10 md:py-12"
+        style={{ background: "var(--color-coral)", color: "var(--color-cobalt)" }}
+      >
+        <div className="max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-center">
+          <div>
+            <p className="text-[11px] uppercase font-medium mb-3" style={{ letterSpacing: "0.28em" }}>
+              Newsletter
+            </p>
+            {/* TODO i18n: "Подписка на журнал" → footer.newsletter_titel split */}
+            <h2
+              className="leading-[1.02]"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize:   "clamp(2rem, 4vw, 2.5rem)",
+                color:      "var(--color-cobalt)",
+              }}
+            >
+              Подписка на <em className="font-italic">журнал</em>
+            </h2>
+            <p
+              className="mt-3 text-[12px] uppercase font-medium"
+              style={{ letterSpacing: "0.18em", color: "rgba(15,20,48,0.7)" }}
+            >
+              {t.newsletter.untertitel}
+            </p>
+          </div>
+
+          <form
+            action="/newsletter/anmelden"
+            method="get"
+            className="flex flex-col sm:flex-row gap-2 sm:gap-0 w-full"
+          >
+            <input
+              type="email"
+              name="email"
+              required
+              placeholder="ваш@email.com"
+              className="flex-1 px-4 py-3 text-sm focus:outline-none"
+              style={{
+                background:  "var(--color-cobalt)",
+                color:       "var(--color-vintage-white)",
+                border:      "1px solid var(--color-cobalt-deep)",
+                fontFamily:  "var(--font-italic)",
+                fontStyle:   "italic",
+              }}
+            />
+            <button
+              type="submit"
+              className="px-6 py-3 text-[12px] uppercase font-medium whitespace-nowrap"
+              style={{
+                background:    "var(--color-cobalt)",
+                color:         "var(--color-coral)",
+                borderTop:     "1px solid var(--color-cobalt-deep)",
+                borderRight:   "1px solid var(--color-cobalt-deep)",
+                borderBottom:  "1px solid var(--color-cobalt-deep)",
+                borderLeft:    "1px solid var(--color-coral)",
+                letterSpacing: "0.22em",
+              }}
+            >
+              {/* TODO i18n: newsletter.absenden */}
+              Подписаться →
+            </button>
+          </form>
         </div>
-      </div>
+      </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+      {/* ─── Band 2: 4-col Brand/Links/Связь (cobalt) ───────────────── */}
+      <section style={{ background: "var(--color-cobalt)" }}>
+        <div className="max-w-[1440px] mx-auto px-6 md:px-14 py-12 md:py-14">
+          <div className="grid grid-cols-2 md:grid-cols-[1.6fr_1fr_1fr_1fr] gap-8 md:gap-14">
 
-          {/* Marke */}
-          <div className="md:col-span-1">
-            <Link href="/" className="brand-logo items-start mb-5">
-              <span className="brand-line-1 text-vintage-gold">GALERIE</span>
-              <span className="brand-line-2">du Temps</span>
-            </Link>
-            <p className="text-sm leading-relaxed text-vintage-cream/50 font-serif italic">
-              {t.footer.tagline}
-            </p>
-          </div>
-
-          {/* Shop-Links */}
-          <div>
-            <p className="text-xs uppercase tracking-widest text-vintage-gold mb-4">{t.footer.shop}</p>
-            <ul className="space-y-2">
-              {[
-                { href: "/katalog",     label: t.footer.alle_produkte },
-                { href: "/kategorien",  label: t.nav.kategorien },
-                { href: "/wunschliste", label: t.footer.meine_wunschliste },
-                { href: "/kontakt",     label: t.nav.kontakt },
-              ].map(({ href, label }) => (
-                <li key={href}>
-                  <Link
-                    href={href}
-                    className="text-sm font-serif italic text-vintage-cream/60 hover:text-vintage-gold transition-colors"
-                  >
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Info-Links */}
-          <div>
-            <p className="text-xs uppercase tracking-widest text-vintage-gold mb-4">{t.footer.info}</p>
-            <ul className="space-y-2">
-              {[
-                { href: "/about",               label: t.footer.ueber_uns },
-                { href: "/journal",             label: t.nav.journal },
-                { href: "/newsletter/anmelden", label: t.newsletter.titel },
-                { href: "/kontakt",             label: t.footer.anfrage_stellen },
-              ].map(({ href, label }) => (
-                <li key={href}>
-                  <Link
-                    href={href}
-                    className="text-sm font-serif italic text-vintage-cream/60 hover:text-vintage-gold transition-colors"
-                  >
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Kontakt-Kanäle */}
-          <div>
-            <p className="text-xs uppercase tracking-widest text-vintage-gold mb-4">
-              {hatSozial ? t.footer.folge_uns : t.footer.schreiben_sie}
-            </p>
-            <div className="flex items-center gap-3">
-              {wa && (
-                <a
-                  href={wa}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={t.kontakt_kanal.whatsapp}
-                  className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-vintage-gold/20 text-vintage-cream/70 hover:text-vintage-gold transition-colors"
-                  style={{ borderRadius: "var(--radius-card)" }}
-                >
-                  <WhatsAppIcon className="w-5 h-5" />
-                </a>
-              )}
-              {tg && (
-                <a
-                  href={tg}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={t.kontakt_kanal.telegram}
-                  className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-vintage-gold/20 text-vintage-cream/70 hover:text-vintage-gold transition-colors"
-                  style={{ borderRadius: "var(--radius-card)" }}
-                >
-                  <TelegramIcon className="w-5 h-5" />
-                </a>
-              )}
-              {ig && (
-                <a
-                  href={ig}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={t.kontakt_kanal.instagram}
-                  className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-vintage-gold/20 text-vintage-cream/70 hover:text-vintage-gold transition-colors"
-                  style={{ borderRadius: "var(--radius-card)" }}
-                >
-                  <InstagramIcon className="w-5 h-5" />
-                </a>
-              )}
+            {/* Col 1: Brand */}
+            <div className="col-span-2 md:col-span-1">
+              <Link href="/" className="inline-flex items-end gap-3 mb-5 text-coral">
+                <Hourglass size={28} stroke={1.4} className="text-coral" />
+                <div>
+                  <div className="wordmark" style={{ fontSize: 22 }}>GALERIE</div>
+                  <div className="wordmark-italic" style={{ fontSize: 12, marginTop: 2 }}>du Temps</div>
+                </div>
+              </Link>
+              <p
+                className="text-sm leading-relaxed mb-4 max-w-xs"
+                style={{
+                  fontFamily: "var(--font-italic)",
+                  fontStyle:  "italic",
+                  color:      "rgba(255,255,255,0.7)",
+                }}
+              >
+                {t.footer.tagline}
+              </p>
+              <p
+                className="text-[10px] uppercase font-medium"
+                style={{ letterSpacing: "0.22em", color: "rgba(255,255,255,0.45)" }}
+              >
+                Алматы · Казахстан
+              </p>
             </div>
-            <p className="text-xs text-vintage-cream/40 mt-4">
+
+            {/* Col 2: Магазин */}
+            <div>
+              <p
+                className="text-[10px] uppercase font-medium mb-4"
+                style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}
+              >
+                {t.footer.shop}
+              </p>
+              <ul className="space-y-2.5">
+                {[
+                  { href: "/katalog",           label: t.footer.alle_produkte },
+                  /* TODO i18n: footer.neue_eingaenge */
+                  { href: "/katalog?sort=neue", label: "Новые поступления" },
+                  { href: "/wunschliste",       label: t.footer.meine_wunschliste },
+                  /* TODO i18n: nav.quiz */
+                  { href: "/quiz",              label: "Квиз" },
+                ].map(({ href, label }) => (
+                  <li key={href}>
+                    <FooterLink href={href}>{label}</FooterLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Col 3: Информация */}
+            <div>
+              <p
+                className="text-[10px] uppercase font-medium mb-4"
+                style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}
+              >
+                {t.footer.info}
+              </p>
+              <ul className="space-y-2.5">
+                {[
+                  { href: "/about",                  label: t.footer.ueber_uns },
+                  { href: "/journal",                label: t.nav.journal },
+                  { href: "/impressum",              label: t.footer.impressum },
+                  { href: "/datenschutz",            label: t.footer.datenschutz },
+                  { href: "/affiliate/programm",     label: t.footer.partner_werden },
+                ].map(({ href, label }) => (
+                  <li key={href}>
+                    <FooterLink href={href}>{label}</FooterLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Col 4: Связь */}
+            <div className="col-span-2 md:col-span-1">
+              <p
+                className="text-[10px] uppercase font-medium mb-4"
+                style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}
+              >
+                {t.footer.schreiben_sie}
+              </p>
               <a
                 href="mailto:bonjour@galeriedutemps.kz"
-                className="hover:text-vintage-cream transition-colors"
+                className="block text-sm mb-2 hover:text-coral transition-colors"
+                style={{ color: "rgba(255,255,255,0.75)" }}
               >
                 bonjour@galeriedutemps.kz
               </a>
-            </p>
+              {kontakt.whatsapp_nummer && (
+                <a
+                  href={wa ?? "#"}
+                  target="_blank" rel="noopener noreferrer"
+                  className="block text-sm mb-4 hover:text-coral transition-colors"
+                  style={{
+                    color:      "rgba(255,255,255,0.6)",
+                    fontFamily: "var(--font-italic)",
+                    fontStyle:  "italic",
+                  }}
+                >
+                  {kontakt.whatsapp_nummer}
+                </a>
+              )}
+
+              {/* Social squares — 34×34, coral letterforms */}
+              <div className="flex items-center gap-2 mt-4">
+                {ig && <SocialSquare href={ig} label="Instagram">IG</SocialSquare>}
+                {tg && <SocialSquare href={tg} label="Telegram">TG</SocialSquare>}
+                {wa && <SocialSquare href={wa} label="WhatsApp">WA</SocialSquare>}
+              </div>
+            </div>
           </div>
         </div>
+      </section>
 
-        {/* Legal-Links */}
-        <div className="border-t border-white/10 mt-10 pt-6">
-          <div className="flex flex-wrap gap-x-5 gap-y-2 justify-center text-xs text-vintage-cream/40">
-            <Link href="/impressum"        className="hover:text-vintage-cream transition-colors">{t.footer.impressum}</Link>
-            <Link href="/datenschutz"      className="hover:text-vintage-cream transition-colors">{t.footer.datenschutz}</Link>
-            <Link href="/affiliate/agb"    className="hover:text-vintage-cream transition-colors">{t.footer.partner_agb}</Link>
-            <Link href="/affiliate/programm" className="hover:text-vintage-cream transition-colors">{t.footer.partner_werden}</Link>
+      {/* ─── Band 3: Bottom (cobalt, hairline-cobalt top) ──────────── */}
+      <section style={{ background: "var(--color-cobalt)" }}>
+        <div className="hairline-cobalt" />
+        <div className="max-w-[1440px] mx-auto px-6 md:px-14 py-5 flex flex-col md:flex-row items-center justify-between gap-3">
+          <p
+            className="text-[10px] uppercase font-medium order-2 md:order-1"
+            style={{ letterSpacing: "0.22em", color: "rgba(255,255,255,0.5)" }}
+          >
+            © Galerie du Temps · {jahr} · Алматы
+          </p>
+          <div className="flex flex-wrap gap-x-5 gap-y-2 justify-center order-1 md:order-2">
+            <Link href="/datenschutz"      className="text-[10px] uppercase font-medium hover:text-coral transition-colors" style={{ letterSpacing: "0.22em", color: "rgba(255,255,255,0.5)" }}>{t.footer.datenschutz}</Link>
+            <Link href="/impressum"        className="text-[10px] uppercase font-medium hover:text-coral transition-colors" style={{ letterSpacing: "0.22em", color: "rgba(255,255,255,0.5)" }}>{t.footer.impressum}</Link>
+            <Link href="/affiliate/agb"    className="text-[10px] uppercase font-medium hover:text-coral transition-colors" style={{ letterSpacing: "0.22em", color: "rgba(255,255,255,0.5)" }}>{t.footer.partner_agb}</Link>
             <button
               data-cookie-settings
-              className="hover:text-vintage-cream transition-colors cursor-pointer"
+              className="text-[10px] uppercase font-medium hover:text-coral transition-colors cursor-pointer"
+              style={{ letterSpacing: "0.22em", color: "rgba(255,255,255,0.5)" }}
             >
               {t.footer.cookies}
             </button>
           </div>
-        </div>
-
-        {/* Bottom Bar */}
-        <div className="border-t border-white/10 mt-6 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-vintage-cream/40">
-            © {jahr} Galerie du Temps. Казахстан.
-          </p>
-          <p className="text-vintage-gold/60 text-xs font-serif italic tracking-wider">
-            Le temps embellit toute chose
+          <p
+            className="text-[10px] uppercase font-medium order-3"
+            style={{ letterSpacing: "0.22em", color: "var(--color-coral)" }}
+          >
+            ◆ KASPI · HALYK · VISA · MC
           </p>
         </div>
-      </div>
+      </section>
     </footer>
+  );
+}
+
+/* ── Sub-components ────────────────────────────────────────────────────── */
+
+function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="text-sm hover:text-coral transition-colors"
+      style={{
+        color:      "rgba(255,255,255,0.7)",
+        fontFamily: "var(--font-italic)",
+        fontStyle:  "italic",
+      }}
+    >
+      {children}
+    </Link>
+  );
+}
+
+function SocialSquare({ href, label, children }: { href: string; label: string; children: React.ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      className="flex items-center justify-center text-[11px] uppercase font-medium hover:text-coral transition-colors"
+      style={{
+        width:         34,
+        height:        34,
+        border:        "1px solid rgba(255,255,255,0.25)",
+        color:         "var(--color-coral)",
+        letterSpacing: "0.08em",
+      }}
+    >
+      {children}
+    </a>
   );
 }
