@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
              coalesce(p.herkunft,'') || ' ' ||
              coalesce(p.material,'') || ' ' ||
              coalesce(p.artikel_code,'') || ' ' ||
-             coalesce(p.tags::text,'')
+             sebo.fts_tags(p.tags)
            ),
            plainto_tsquery('simple', $1)
          ) AS relevanz
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
                coalesce(p.name,'') || ' ' || coalesce(p.kurzbeschreibung,'') || ' ' ||
                coalesce(p.beschreibung,'') || ' ' || coalesce(p.era,'') || ' ' ||
                coalesce(p.herkunft,'') || ' ' || coalesce(p.material,'') || ' ' ||
-               coalesce(p.artikel_code,'') || ' ' || coalesce(p.tags::text,'')
+               coalesce(p.artikel_code,'') || ' ' || sebo.fts_tags(p.tags)
              ) @@ plainto_tsquery('simple', $1)
        ORDER BY relevanz DESC, p.featured DESC
        LIMIT 20`,

@@ -71,7 +71,7 @@ export async function katalogProdukte(params: {
          coalesce(p.material,'') || ' ' ||
          coalesce(p.herkunft,'') || ' ' ||
          coalesce(p.artikel_code,'') || ' ' ||
-         coalesce(p.tags::text, '')
+         sebo.fts_tags(p.tags)
        ) @@ plainto_tsquery('simple', $${idx++})`
     );
     vals.push(params.suche);
