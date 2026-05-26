@@ -110,6 +110,15 @@ export async function orderErstellen(data: {
       }
     }
 
+    // Telegram-Notification: fire-and-forget AUSSERHALB der Transaction,
+    // damit der Order-Insert nicht von einer Telegram-API-Latenz blockiert
+    // wird. Dynamischer Import um zirkuläre Abhängigkeiten zu vermeiden.
+    if (order.customer_id) {
+      import("@/lib/notifications/customer-telegram")
+        .then(m => m.notifyOrderPlaced(order.id))
+        .catch(err => console.warn("[order-notify-placed]", err));
+    }
+
     return order;
   });
 }
@@ -161,6 +170,27 @@ export async function orderStatusUpdate(
     `UPDATE sebo.orders SET ${felder.join(", ")} WHERE id = $${idx}`,
     werte
   );
+
+  // Telegram-Notification je nach Status. Async — kein await, damit
+  // Admin-UI nicht auf Telegram-API wartet.
+  void notifyOrderStatusChange(id, status, extra?.tracking);
+}
+
+/** Interner Helper: passende Notification je Status-Übergang triggern. */
+async function notifyOrderStatusChange(
+  orderId: string,
+  status:  OrderStatus,
+  tracking?: { nummer: string; url?: string },
+): Promise<void> {
+  try {
+    const mod = await import("@/lib/notifications/customer-telegram");
+    if (status === "paid")        return mod.notifyOrderPaid(orderId);
+    if (status === "fulfilled")   return mod.notifyOrderShipped(orderId, tracking);
+    if (status === "cancelled")   return mod.notifyOrderCancelled(orderId);
+    // 'pending' / 'completed' / 'refunded' bewusst ohne Push
+  } catch (err) {
+    console.warn("[order-notify-status]", err);
+  }
 }
 
 /** Notizen aktualisieren (intern + Kunde) */
