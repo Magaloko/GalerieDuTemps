@@ -71,7 +71,7 @@ export async function katalogProdukte(params: {
          coalesce(p.material,'') || ' ' ||
          coalesce(p.herkunft,'') || ' ' ||
          coalesce(p.artikel_code,'') || ' ' ||
-         coalesce(array_to_string(p.tags, ' '), '')
+         coalesce(p.tags::text, '')
        ) @@ plainto_tsquery('simple', $${idx++})`
     );
     vals.push(params.suche);
