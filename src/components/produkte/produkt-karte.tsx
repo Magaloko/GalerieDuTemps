@@ -1,136 +1,202 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Heart } from "lucide-react";
 import { useWunschliste } from "@/hooks/use-wunschliste";
 import { formatPreis, rabattProzent } from "@/lib/utils/preis";
 import type { ProduktListItem } from "@/types/produkt";
 
 interface ProduktKarteProps {
-  produkt: ProduktListItem & { era?: string | null };
+  produkt:   ProduktListItem & { era?: string | null };
   priority?: boolean;
 }
 
+/* ──────────────────────────────────────────────────────────────────────────
+ * ProduktKarte — Handoff B1 Catalog-Card auf Paper.
+ * Bild: ratio 4/5 + absolute Heart-Button top-right (paper/85 + blur).
+ * Info: 18px Padding-Top, 2-col flex (links eyebrow+title+era, rechts price).
+ * Hover: Title bekommt Coral-Underline 1px.
+ * ────────────────────────────────────────────────────────────────────────── */
 export function ProduktKarte({ produkt, priority = false }: ProduktKarteProps) {
   const { toggle, istGemerkt, isLoading } = useWunschliste();
-  const gemerkt  = istGemerkt(produkt.id);
-  const rabatt   = produkt.originalpreis
+  const gemerkt = istGemerkt(produkt.id);
+  const rabatt  = produkt.originalpreis
     ? rabattProzent(produkt.preis, produkt.originalpreis)
     : 0;
 
+  const waehrung = (produkt.waehrung as "KZT" | "EUR" | "USD" | "RUB" | undefined) ?? "KZT";
+
   return (
-    <article
-      className="group bg-vintage-brown border border-vintage-sand/30 hover:border-vintage-gold/60 transition-all overflow-hidden"
-      style={{
-        borderRadius: "var(--radius-card)",
-        boxShadow:    "var(--shadow-vintage-md)",
-      }}
-    >
+    <article className="group">
       {/* Bild */}
-      <Link href={`/katalog/${produkt.slug}`} className="block relative aspect-square overflow-hidden bg-vintage-ink">
+      <Link
+        href={`/katalog/${produkt.slug}`}
+        className="block relative overflow-hidden"
+        style={{ aspectRatio: "4/5", background: "var(--color-paper-warm)" }}
+      >
         {produkt.hauptbild_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={produkt.hauptbild_url}
             alt={produkt.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            loading={priority ? "eager" : "lazy"}
+            fill
+            sizes="(max-width:640px) 50vw, (max-width:1280px) 33vw, 25vw"
+            className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+            priority={priority}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-vintage-sand">
-            <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </div>
+          <div
+            aria-hidden
+            className="absolute inset-0 placeholder-stripes"
+            style={{
+              background:
+                "linear-gradient(135deg, #C9B292 0%, #A88B65 50%, #7A5E3F 100%)",
+            }}
+          />
         )}
 
         {/* Badges */}
-        <div className="absolute top-2 left-2 flex flex-col gap-1">
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5">
           {rabatt > 0 && (
             <span
-              className="px-2 py-0.5 bg-vintage-burgundy text-white text-xs font-sans"
-              style={{ borderRadius: "var(--radius-vintage)" }}
+              className="px-2 py-0.5 text-[10px] uppercase font-medium"
+              style={{
+                background:    "var(--color-coral)",
+                color:         "#fff",
+                letterSpacing: "0.18em",
+              }}
             >
               −{rabatt}%
             </span>
           )}
           {produkt.featured && (
             <span
-              className="px-2 py-0.5 bg-vintage-gold text-vintage-espresso text-xs font-sans"
-              style={{ borderRadius: "var(--radius-vintage)" }}
+              className="px-2 py-0.5 text-[10px] uppercase font-medium"
+              style={{
+                background:    "var(--color-cobalt)",
+                color:         "var(--color-coral)",
+                letterSpacing: "0.18em",
+              }}
             >
-              Топ
+              ★ Топ
             </span>
           )}
         </div>
 
-        {/* Wunschliste Button */}
+        {/* Wunschliste-Button (32×32 round, paper/85 + blur) */}
         <button
           onClick={(e) => { e.preventDefault(); toggle(produkt.id); }}
           disabled={isLoading}
-          className="
-            absolute top-2 right-2
-            p-2 bg-vintage-espresso/70 backdrop-blur-sm
-            hover:bg-vintage-espresso transition-colors
-            disabled:opacity-50
-          "
-          style={{ borderRadius: "var(--radius-card)" }}
+          className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center transition-colors disabled:opacity-50"
+          style={{
+            background:    "rgba(245, 241, 234, 0.85)",
+            backdropFilter:"blur(6px)",
+            borderRadius:  "999px",
+          }}
           aria-label={gemerkt ? "Убрать из избранного" : "Добавить в избранное"}
+          aria-pressed={gemerkt}
         >
           <Heart
-            className={`w-4 h-4 transition-colors ${
-              gemerkt
-                ? "fill-vintage-burgundy text-vintage-burgundy"
-                : "text-vintage-dust hover:text-vintage-burgundy"
-            }`}
+            className="w-4 h-4 transition-colors"
+            style={{
+              color: gemerkt ? "var(--color-coral)" : "var(--color-ink-soft)",
+              fill:  gemerkt ? "var(--color-coral)" : "none",
+            }}
           />
         </button>
       </Link>
 
       {/* Info */}
-      <div className="p-5">
-        {(produkt.kategorie_name || (produkt as { era?: string | null }).era) && (
-          <p className="text-vintage-gold/70 text-[10px] font-sans tracking-[0.2em] uppercase mb-2 truncate">
-            {[(produkt as { era?: string | null }).era, produkt.kategorie_name]
-              .filter(Boolean)
-              .join(" · ")}
-          </p>
-        )}
-        <Link href={`/katalog/${produkt.slug}`}>
-          <h3 className="font-serif italic text-base text-vintage-cream group-hover:text-vintage-gold transition-colors line-clamp-2 leading-snug">
-            {produkt.name}
-          </h3>
-        </Link>
+      <div className="pt-4 flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          {(produkt.kategorie_name || produkt.era) && (
+            <p
+              className="text-[10px] uppercase font-medium mb-1.5 truncate"
+              style={{ letterSpacing: "0.22em", color: "var(--color-coral)" }}
+            >
+              {produkt.kategorie_name ?? ""}
+            </p>
+          )}
+          <Link href={`/katalog/${produkt.slug}`}>
+            <h3
+              className="leading-tight group-hover:[text-decoration:underline] group-hover:[text-decoration-color:var(--color-coral)] group-hover:[text-decoration-thickness:1px] group-hover:[text-underline-offset:4px] transition-all line-clamp-2"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize:   22,
+                color:      "var(--color-ink)",
+              }}
+            >
+              {produkt.name}
+            </h3>
+          </Link>
+          {produkt.era && (
+            <p
+              className="mt-1 text-[13px]"
+              style={{
+                fontFamily: "var(--font-italic)",
+                fontStyle:  "italic",
+                color:      "var(--color-ink-mute)",
+              }}
+            >
+              {produkt.era}
+            </p>
+          )}
+        </div>
 
-        <div className="flex items-center justify-between mt-4">
-          <div>
-            {produkt.b2c_mode === "teaser" ? (
-              <Link href="/kunde/registrieren?tab=business" className="font-sans text-xs text-vintage-gold hover:text-vintage-amber transition-colors">
-                Зарегистрироваться как студия →
-              </Link>
-            ) : (
-              <>
-                <p className="font-serif text-lg text-vintage-gold">
-                  {formatPreis(produkt.preis, (produkt.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT")}
+        {/* Price */}
+        <div className="text-right shrink-0">
+          {produkt.b2c_mode === "teaser" ? (
+            <Link
+              href="/kunde/registrieren?tab=business"
+              className="text-[11px] uppercase font-medium"
+              style={{ letterSpacing: "0.22em", color: "var(--color-coral)" }}
+            >
+              Pro →
+            </Link>
+          ) : (
+            <>
+              <p
+                className="text-[10px] uppercase"
+                style={{ letterSpacing: "0.18em", color: "var(--color-ink-mute)" }}
+              >
+                ₸
+              </p>
+              <p
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize:   20,
+                  color:      "var(--color-ink)",
+                  lineHeight: 1,
+                  marginTop:  2,
+                }}
+              >
+                {formatPreis(produkt.preis, waehrung).replace(/^[^\d-]+/, "")}
+              </p>
+              {produkt.originalpreis && (
+                <p
+                  className="text-[11px] line-through mt-0.5"
+                  style={{ color: "var(--color-ink-mute)" }}
+                >
+                  {formatPreis(produkt.originalpreis, waehrung)}
                 </p>
-                {produkt.originalpreis && (
-                  <p className="text-vintage-dust text-xs line-through">
-                    {formatPreis(produkt.originalpreis, (produkt.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT")}
-                  </p>
-                )}
-              </>
-            )}
-          </div>
-          {produkt.verkauft ? (
-            <span className="text-xs text-vintage-dust font-sans">Продано</span>
-          ) : produkt.lagerbestand === 0 ? (
-            <span className="text-xs text-vintage-copper font-sans">Нет в наличии</span>
-          ) : produkt.b2c_mode === "teaser" ? (
-            <span className="text-xs text-vintage-gold font-sans">Pro-линейка</span>
-          ) : null}
+              )}
+            </>
+          )}
         </div>
       </div>
+
+      {/* Status — verkauft / ausverkauft / Pro */}
+      {(produkt.verkauft || produkt.lagerbestand === 0) && (
+        <p
+          className="mt-2 text-[10px] uppercase font-medium"
+          style={{
+            letterSpacing: "0.22em",
+            color:         produkt.verkauft ? "var(--color-ink-mute)" : "var(--color-coral)",
+          }}
+        >
+          {produkt.verkauft ? "Продано" : "Нет в наличии"}
+        </p>
+      )}
     </article>
   );
 }
