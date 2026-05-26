@@ -18,6 +18,7 @@ import {
   Star,
   ExternalLink,
   AlertTriangle,
+  Sparkles,
 } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -52,11 +53,21 @@ export default async function ProduktListePage({ searchParams }: Props) {
             Управление ценами, складом и видимостью
           </p>
         </div>
-        <Link href="/admin/produkte/neu">
-          <Button icon={<Plus className="w-3.5 h-3.5" />}>
-            Neues Produkt
-          </Button>
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/admin/produkte/schnell"
+            className="flex items-center gap-2 px-4 py-2.5 bg-vintage-gold text-vintage-espresso text-xs font-sans tracking-[0.2em] uppercase hover:bg-vintage-amber transition-colors"
+            style={{ borderRadius: "var(--radius-button)" }}
+            title="Schnell mit KI hinzufügen"
+          >
+            <Sparkles className="w-3.5 h-3.5" /> Schnell + KI
+          </Link>
+          <Link href="/admin/produkte/neu">
+            <Button variant="secondary" icon={<Plus className="w-3.5 h-3.5" />}>
+              Vollständig
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* ─── KPI-Cards ───────────────────────────────────────────── */}

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth/config";
+import { auth, requireAdminSession } from "@/lib/auth/config";
 import { produkteListe, produktErstellen } from "@/lib/db/produkte";
 import { katalogProdukte } from "@/lib/db/produkte-public";
 import { ProduktCreateSchema, PaginierungSchema } from "@/lib/utils/validierung";
@@ -70,9 +70,9 @@ export async function GET(req: NextRequest) {
 // POST /api/produkte  – Produkt erstellen (nur Admin)
 // ---------------------------------------------------------------------------
 export async function POST(req: NextRequest) {
-  const session = await auth();
+  const session = await requireAdminSession();
   if (!session) {
-    return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
+    return NextResponse.json({ error: "Нет прав" }, { status: 403 });
   }
 
   try {
