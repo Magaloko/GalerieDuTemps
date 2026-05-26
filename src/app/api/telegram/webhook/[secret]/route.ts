@@ -6,8 +6,9 @@ import {
   customerTelegramVerknuepfen,
   customerByTelegramChatId,
 } from "@/lib/db/customer-telegram";
-import { sendMessage } from "@/lib/telegram/client";
+import { sendMessage, answerPreCheckoutQuery } from "@/lib/telegram/client";
 import { handleCustomerCommand } from "@/lib/telegram/customer-commands";
+import { handleSuccessfulPayment } from "@/lib/telegram/payment-handler";
 import type { TelegramUpdate } from "@/lib/telegram/client";
 
 export const dynamic     = "force-dynamic";
@@ -64,6 +65,25 @@ export async function POST(
     update = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  // ── Payments-Pfad (pre_checkout_query + successful_payment) ────────────
+  // Telegram schickt diese als separate update-Typen, BEVOR die normale
+  // Message kommt. Müssen vor dem Lead-/Command-Routing behandelt werden.
+  if (update.pre_checkout_query && konto.access_token) {
+    // 10-Sekunden-Frist von Telegram zu antworten — wir bestätigen sofort
+    // (Server-side-Validation lief schon beim sendInvoice-Aufruf).
+    await answerPreCheckoutQuery(konto.access_token, update.pre_checkout_query.id, true)
+      .catch(err => console.error("[tg pre_checkout]", err));
+    return NextResponse.json({ ok: true });
+  }
+  if (update.message?.successful_payment && konto.access_token) {
+    await handleSuccessfulPayment(
+      update.message.successful_payment,
+      update.message.chat.id,
+      konto.access_token,
+    ).catch(err => console.error("[tg successful_payment]", err));
+    return NextResponse.json({ ok: true });
   }
 
   const msg = update.message ?? update.edited_message ?? update.channel_post;

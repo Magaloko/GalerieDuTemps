@@ -34,12 +34,37 @@ export interface TelegramMessage {
   document?:  { file_id: string; file_unique_id: string; file_name?: string; mime_type?: string; file_size?: number };
 }
 
+export interface TelegramShippingAddress {
+  country_code: string; state: string; city: string;
+  street_line1: string; street_line2: string; post_code: string;
+}
+
+export interface TelegramPreCheckoutQuery {
+  id:                 string;
+  from:               TelegramUser;
+  currency:           string;
+  total_amount:       number;
+  invoice_payload:    string;
+  shipping_option_id?: string;
+  order_info?: { name?: string; phone_number?: string; email?: string; shipping_address?: TelegramShippingAddress };
+}
+
+export interface TelegramSuccessfulPayment {
+  currency:                   string;
+  total_amount:               number;
+  invoice_payload:            string;
+  telegram_payment_charge_id: string;
+  provider_payment_charge_id: string;
+  order_info?: { name?: string; phone_number?: string; email?: string; shipping_address?: TelegramShippingAddress };
+}
+
 export interface TelegramUpdate {
   update_id: number;
-  message?:        TelegramMessage;
+  message?:        TelegramMessage & { successful_payment?: TelegramSuccessfulPayment };
   edited_message?: TelegramMessage;
   channel_post?:   TelegramMessage;
   callback_query?: { id: string; from: TelegramUser; message?: TelegramMessage; data?: string };
+  pre_checkout_query?: TelegramPreCheckoutQuery;
 }
 
 async function callApi<T = unknown>(token: string, method: string, body?: object): Promise<T> {
@@ -92,4 +117,56 @@ export async function sendMessage(token: string, chat_id: number | string, text:
   parse_mode?: "Markdown" | "HTML";
 }): Promise<TelegramMessage> {
   return callApi<TelegramMessage>(token, "sendMessage", { chat_id, text, ...options });
+}
+
+/**
+ * Telegram Payments — sendInvoice
+ *
+ * Schickt einem Chat eine native Payment-Aufforderung. Telegram zeigt sein
+ * eigenes Bezahl-Sheet mit Provider-Karte/Apple-Pay/etc.
+ *
+ * provider_token bekommt man via BotFather → /mybots → Payments. Pro Land
+ * unterschiedliche Provider: Stripe (global), KASPI (für KZ), etc.
+ *
+ * Spec: https://core.telegram.org/bots/api#sendinvoice
+ */
+export interface InvoiceLabeledPrice { label: string; amount: number }   // amount in minor units (kopejka/cent)
+
+export async function sendInvoice(
+  token: string,
+  params: {
+    chat_id:        number;
+    title:          string;
+    description:    string;
+    payload:        string;                            // wird zurückgeschickt beim successful_payment, max 128 bytes
+    provider_token: string;
+    currency:       string;                            // ISO 4217 — "KZT", "USD", "EUR", "RUB"
+    prices:         InvoiceLabeledPrice[];
+    need_name?:           boolean;
+    need_email?:          boolean;
+    need_shipping_address?: boolean;
+    is_flexible?:         boolean;
+    photo_url?:           string;
+    start_parameter?:     string;
+  },
+): Promise<TelegramMessage> {
+  return callApi<TelegramMessage>(token, "sendInvoice", params);
+}
+
+/**
+ * Antwort auf pre_checkout_query.
+ * Wird gerufen direkt vor dem tatsächlichen Zahlungs-Abbuchen — letzte
+ * Chance um Lagerbestand, Bezahl-Möglichkeit etc. zu prüfen.
+ */
+export async function answerPreCheckoutQuery(
+  token: string,
+  pre_checkout_query_id: string,
+  ok: boolean,
+  error_message?: string,
+): Promise<boolean> {
+  return callApi<boolean>(token, "answerPreCheckoutQuery", {
+    pre_checkout_query_id,
+    ok,
+    error_message,
+  });
 }
