@@ -49,3 +49,6 @@ next-env.d.ts
 
 # Caddy-Daten
 caddy_data/
+
+# Analyse-Reports (lokal, nicht ins Repo)
+website-analyse-*.html

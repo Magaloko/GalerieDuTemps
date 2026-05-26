@@ -7,7 +7,10 @@ import { CartLeerenClient } from "./cart-leeren-client";
 import type { Metadata } from "next";
 import { getDictionary } from "@/i18n";
 
-export const metadata: Metadata = { title: "Заказ оформлен — Galerie du Temps" };
+export const metadata: Metadata = {
+  title:  "Заказ оформлен",
+  robots: { index: false, follow: false },
+};
 export const dynamic = "force-dynamic";
 
 export default async function ErfolgPage({

@@ -7,8 +7,9 @@ import type { Metadata } from "next";
 import { getDictionary } from "@/i18n";
 
 export const metadata: Metadata = {
-  title: "Журнал — Galerie du Temps",
+  title:       "Журнал",
   description: "Истории, советы по уходу и тренды винтажа.",
+  alternates:  { canonical: "/journal" },
 };
 
 export const revalidate = 600;

@@ -6,8 +6,9 @@ import { AlertTriangle } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title:       "Partner-AGB – Galerie du Temps",
-  description: "Allgemeine Geschäftsbedingungen für das Partner-/Affiliate-Programm",
+  title:       "Партнёрское соглашение",
+  description: "Условия партнёрской программы Galerie du Temps.",
+  alternates:  { canonical: "/affiliate/agb" },
 };
 export const revalidate = 3600;
 

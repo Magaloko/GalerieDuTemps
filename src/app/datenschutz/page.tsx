@@ -5,8 +5,9 @@ import { AlertTriangle } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title:       "Datenschutzerklärung – Galerie du Temps",
-  description: "Informationen zum Umgang mit personenbezogenen Daten gemäß DSGVO",
+  title:       "Политика конфиденциальности",
+  description: "Информация об обработке персональных данных согласно Закону РК «О персональных данных и их защите».",
+  alternates:  { canonical: "/datenschutz" },
 };
 export const revalidate = 3600;
 

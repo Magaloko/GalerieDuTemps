@@ -48,6 +48,7 @@ export interface Produkt {
   waehrung:           string;
   kategorie_id:       number | null;
   kategorie_name?:    string | null;
+  kategorie_slug?:    string | null;
   zustand:            Zustand;
   era:                string | null;
   herkunft:           string | null;

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title:       "О нас — Galerie du Temps",
+  title:       "О нас",
   description: "Наша история и страсть к качественным винтажным вещам.",
+  alternates:  { canonical: "/about" },
 };
 
 export default function AboutPage() {
