@@ -113,16 +113,16 @@ export function ProduktFormular({
             name="slug"
             defaultValue={produkt?.slug ?? ""}
             error={e("slug")}
-            placeholder="komod-bidermeier"
-            hint="Автоматически из названия, можно изменить"
+            placeholder="оставьте пустым → создаётся автоматически"
+            hint="Создаётся из названия. Можно отредактировать вручную."
           />
           <Input
             label="Артикул-код"
             name="artikel_code"
             defaultValue={produkt?.artikel_code ?? ""}
             error={e("artikel_code")}
-            placeholder="напр. V-001"
-            hint="Опционально. Должен быть уникальным."
+            placeholder="оставьте пустым → V-0001, V-0002 …"
+            hint="Создаётся автоматически по очереди. Можно перезаписать."
           />
         </div>
 

@@ -152,15 +152,34 @@ export async function produktErstellen(
   input: ProduktCreateInput,
   benutzer_id?: string
 ): Promise<Produkt> {
-  // Slug generieren
+  // Slug generieren (auto wenn leer)
   let slug = input.slug ? generateSlug(input.slug) : generateSlug(input.name);
-  // Kollision prüfen
   const existing = await query(
     `SELECT 1 FROM sebo.produkte WHERE slug = $1`,
     [slug]
   );
   if (existing.rowCount && existing.rowCount > 0) {
     slug = uniqueSlug(input.name);
+  }
+
+  // Artikel-Code automatisch generieren wenn nicht gesetzt (V-0001, V-0002, …).
+  // Falls die DB-Funktion noch nicht migriert ist (alte DB ohne 021), bleibt null.
+  let artikelCode = input.artikel_code?.trim() || null;
+  if (!artikelCode) {
+    try {
+      const seq = await query<{ code: string }>(`SELECT sebo.next_artikel_code() AS code`);
+      artikelCode = seq.rows[0]?.code ?? null;
+      // Falls aus irgendeinem Grund kollidiert: einmal neu ziehen
+      if (artikelCode) {
+        const dup = await query(`SELECT 1 FROM sebo.produkte WHERE artikel_code = $1`, [artikelCode]);
+        if ((dup.rowCount ?? 0) > 0) {
+          const seq2 = await query<{ code: string }>(`SELECT sebo.next_artikel_code() AS code`);
+          artikelCode = seq2.rows[0]?.code ?? null;
+        }
+      }
+    } catch (err) {
+      console.warn("[artikel_code-Auto] Sequence nicht verfügbar — bleibt null. Migration 021 noch nicht eingespielt?", err);
+    }
   }
 
   const tags = Array.isArray(input.tags) ? input.tags : [];
@@ -183,7 +202,7 @@ export async function produktErstellen(
     [
       input.name,
       slug,
-      input.artikel_code       ?? null,
+      artikelCode,
       input.beschreibung       ?? null,
       input.kurzbeschreibung   ?? null,
       input.preis,
