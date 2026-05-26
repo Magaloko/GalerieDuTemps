@@ -1,20 +1,27 @@
-import { redirect } from "next/navigation";
-import { auth, signIn } from "@/lib/auth/config";
+import { signIn } from "@/lib/auth/config";
 import { AuthError } from "next-auth";
 
 export type LoginResult = { error: string };
 
-const ROLE_HOME: Record<string, string> = {
-  superadmin: "/admin",
-  admin:      "/admin",
-  affiliate:  "/affiliate",
-  customer:   "/kunde",
-};
-
-function homeForRole(role: string | undefined, fallback: string): string {
-  return (role && ROLE_HOME[role]) || fallback;
-}
-
+/* ──────────────────────────────────────────────────────────────────────────
+ * loginWithRoleRedirect
+ *
+ * Login + Rollen-basierter Redirect — in EINEM atomaren Schritt.
+ *
+ * Frühere Variante rief erst signIn(redirect:false), dann auth(), dann
+ * redirect(). Problem: auth() las Cookies aus dem eingehenden Request —
+ * den frisch gesetzten Session-Cookie sah es noch nicht, also war
+ * session.user.role undefined → falscher Redirect-Target.
+ *
+ * Neu: signIn schreibt den Set-Cookie-Header UND macht den Redirect selbst
+ * (NextAuth wirft intern eine spezielle Redirect-Exception die Next.js
+ * propagiert). Damit ist Session-Cookie garantiert in der Response wenn
+ * der Browser zum Target navigiert.
+ *
+ * Rollen-spezifischer Target: signIn akzeptiert nur EINE redirectTo URL,
+ * wir kennen die Rolle noch nicht. Lösung: ein generischer /post-login
+ * Endpoint der auth() lädt und je nach Rolle weiterleitet.
+ * ────────────────────────────────────────────────────────────────────────── */
 export async function loginWithRoleRedirect(
   formData: FormData,
   fallback: string
@@ -23,16 +30,22 @@ export async function loginWithRoleRedirect(
   const password = formData.get("password") as string;
 
   try {
-    await signIn("credentials", { email, password, redirect: false });
+    await signIn("credentials", {
+      email,
+      password,
+      // signIn führt selbst den Redirect aus (default), wirft NEXT_REDIRECT
+      // welches Next.js fängt und zur Browser-Navigation übersetzt.
+      // /post-login resolved dann je nach Rolle das richtige Target.
+      redirectTo: `/post-login?fallback=${encodeURIComponent(fallback)}`,
+    });
+    // Unerreichbar — signIn wirft immer eine Redirect-Exception.
+    return { error: "Unerwarteter Zustand." };
   } catch (err) {
     if (err instanceof AuthError) {
       return { error: "E-Mail oder Passwort falsch — oder Account nicht freigeschaltet." };
     }
-    console.error("[Auth] Login-Fehler:", err);
-    return { error: "Unbekannter Fehler. Bitte erneut versuchen." };
+    // NEXT_REDIRECT-Errors müssen weiter-throwed werden, sonst geht der
+    // Redirect verloren und der User landet wieder auf der Login-Page.
+    throw err;
   }
-
-  const session = await auth();
-  const target  = homeForRole(session?.user?.role, fallback);
-  redirect(target);
 }

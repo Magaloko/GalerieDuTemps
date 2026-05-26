@@ -183,17 +183,12 @@ const authConfig: NextAuthConfig = {
     error:  "/login",
   },
 
-  cookies: {
-    sessionToken: {
-      name: "__Secure-next-auth.session-token",
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path:     "/",
-        secure:   process.env.NODE_ENV === "production",
-      },
-    },
-  },
+  // KEIN cookies-Override: Auth.js v5 setzt von sich aus `__Secure-authjs.session-token`
+  // mit korrekten options (httpOnly, sameSite=lax, secure=true wenn NEXTAUTH_URL https).
+  // Der vorherige Override auf den v4-Namen `__Secure-next-auth.session-token` führte
+  // dazu, dass signIn() den Cookie unter dem v4-Namen schrieb, aber andere v5-Internals
+  // gelegentlich unter dem v5-Default suchten — Session war nach Login leer → User wurde
+  // direkt wieder auf /login redirected.
 
   debug: process.env.NODE_ENV === "development",
 };
