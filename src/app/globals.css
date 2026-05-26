@@ -8,28 +8,34 @@
    gespiegelt von Goldakzenten. Italic-Serif für Eleganz.
    ─────────────────────────────────────────────────────────────────────────── */
 @theme {
-  /* ─ Hauptfarben (Dark-Mode-Default) ─────────────────────────────────────── */
-  /* Hintergründe — von tiefschwarz-warm bis braun */
-  --color-vintage-ink:         #0F0A06;   /* tiefster Hintergrund */
-  --color-vintage-espresso:    #1A120B;   /* primärer Page-Background */
-  --color-vintage-brown:       #2A1F15;   /* Sektion / Card Hintergrund */
-  --color-vintage-sand:        #3A2D20;   /* Border / Subtle */
+  /* ─ Design "Cobalt + Coral" ────────────────────────────────────────────────
+     Neue Marken-Identität: tiefes Cobalt-Blau als Hauptbühne, vibrant Coral
+     als einziger Akzent. Inspiration: Brand-Tote-Bag von Galerie du Temps.
+     Die Token-Namen bleiben `vintage-*` für Backwards-Compat — alle
+     existierenden Komponenten ziehen sich automatisch um.
+     ──────────────────────────────────────────────────────────────────────── */
 
-  /* Text — warmes Creme auf Dunkel */
-  --color-vintage-white:       #F5EBD9;   /* Headlines */
-  --color-vintage-cream:       #E8DFD0;   /* Body-Text */
-  --color-vintage-parchment:   #C9B89A;   /* Sekundärer Text */
-  --color-vintage-dust:        #998973;   /* Tertiär / Muted — heller für besseren Kontrast auf Espresso (war #7A6A55, Ratio 3.6 → jetzt 5.2) */
+  /* Hintergründe — tief blau in vier Stufen */
+  --color-vintage-ink:         #0A0F2E;   /* tiefster Hintergrund (fast schwarz-blau) */
+  --color-vintage-espresso:    #1B2566;   /* primärer Page-Background — Cobalt */
+  --color-vintage-brown:       #232E78;   /* Card-Hintergrund — heller Cobalt */
+  --color-vintage-sand:        #3A4490;   /* Border / Subtle Divider auf Blau */
 
-  /* Akzente — Gold-Spektrum (Hauptakzent) */
-  --color-vintage-gold:        #C9A86A;   /* Primär — CTAs, Logo */
-  --color-vintage-copper:      #B8945A;   /* Hover-State */
-  --color-vintage-amber:       #DAB87D;   /* Highlight */
+  /* Text — warm-weiß auf Blau */
+  --color-vintage-white:       #FAF7F0;   /* Headlines — warmes Off-White */
+  --color-vintage-cream:       #F0EBE0;   /* Body-Text */
+  --color-vintage-parchment:   #C8C2B6;   /* Sekundärer Text */
+  --color-vintage-dust:        #9BA0BC;   /* Tertiär / Muted (Ratio 4.6+ auf Cobalt) */
 
-  /* Status */
-  --color-vintage-forest:      #4A6B4E;   /* Success */
-  --color-vintage-sage:        #6B8B6F;   /* Success-Light */
-  --color-vintage-burgundy:    #8B2F37;   /* Error / Verkauft */
+  /* Akzente — Coral-Orange-Spektrum (Hauptakzent) */
+  --color-vintage-gold:        #E8703A;   /* Primär — CTAs, Logo, Highlights */
+  --color-vintage-copper:      #DC6230;   /* Hover-State — tieferes Coral */
+  --color-vintage-amber:       #F39B6A;   /* Highlight — softer Coral */
+
+  /* Status — angepasst auf neue Palette */
+  --color-vintage-forest:      #4A8A6E;   /* Success — Teal-Grün, passt zu Blau */
+  --color-vintage-sage:        #6BA88A;
+  --color-vintage-burgundy:    #C24747;   /* Error — wärmer, Coral-Familie */
 
   /* ─ Typografie ─────────────────────────────────────────────────────────── */
   --font-serif:   "Playfair Display", Georgia, "Times New Roman", serif;
@@ -51,7 +57,7 @@
   --shadow-vintage-md: 0 4px 16px rgba(0, 0, 0, 0.50);
   --shadow-vintage-lg: 0 8px 32px rgba(0, 0, 0, 0.55);
   --shadow-vintage-xl: 0 16px 48px rgba(0, 0, 0, 0.60);
-  --shadow-gold-glow:  0 0 24px rgba(201, 168, 106, 0.25);
+  --shadow-gold-glow:  0 0 32px rgba(232, 112, 58, 0.30);  /* Coral-Glow */
 
   /* ─ Übergänge ──────────────────────────────────────────────────────────── */
   --transition-vintage: 300ms ease-in-out;
@@ -171,15 +177,17 @@
 }
 .brand-logo .brand-line-1 {
   font-family:    var(--font-serif);
-  font-size:      1.125rem;    /* Mobile: 18px */
-  letter-spacing: 0.3em;
-  color:          var(--color-vintage-white);
-  padding-left:   0.3em;
+  font-weight:    300;            /* thin — wie auf Tote-Bag */
+  font-size:      1.125rem;
+  letter-spacing: 0.25em;
+  color:          var(--color-vintage-gold); /* Coral */
+  padding-left:   0.25em;
   white-space:    nowrap;
 }
 .brand-logo .brand-line-2 {
   font-family:    var(--font-serif);
   font-style:     italic;
+  font-weight:    400;
   font-size:      0.65rem;
   letter-spacing: 0.2em;
   color:          var(--color-vintage-gold);
@@ -187,7 +195,7 @@
   white-space:    nowrap;
 }
 @media (min-width: 640px) {
-  .brand-logo .brand-line-1 { font-size: 1.5rem; letter-spacing: 0.4em; padding-left: 0.4em; }
+  .brand-logo .brand-line-1 { font-size: 1.5rem; letter-spacing: 0.35em; padding-left: 0.35em; }
   .brand-logo .brand-line-2 { font-size: 0.75rem; letter-spacing: 0.25em; margin-top: 0.15rem; }
 }
 
