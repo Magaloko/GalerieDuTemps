@@ -42,9 +42,31 @@ export function Header({ t, locale, kategorien = [] }: HeaderProps) {
   const [suchText,   setSuchText]   = useState("");
   const sucheRef = useRef<HTMLInputElement>(null);
 
-  // Scroll-Morph: D1 → D2 nach ~480px (Hero-Höhe).
+  // Scroll-Morph: D1 → D2.
+  //
+  // Hysterese (zeigen ab 600px, verstecken erst unter 100px) verhindert das
+  // Flackern wenn die scroll-position genau am Threshold pendelt — z.B. wenn
+  // ein iOS-Rubberband oder das ein/ausblendende sticky-D2 selbst minimal
+  // den scrollY-Wert verschiebt.
+  //
+  // requestAnimationFrame-Throttling stellt sicher dass wir pro Frame nur
+  // einmal setState rufen — sonst rendert React beim schnellen Scrollen zig
+  // mal pro Sekunde und der Header wirkt zappelig.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 480);
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        setScrolled(prev => {
+          if (!prev && y > 600) return true;
+          if (prev  && y < 100) return false;
+          return prev;
+        });
+        ticking = false;
+      });
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -70,12 +92,20 @@ export function Header({ t, locale, kategorien = [] }: HeaderProps) {
   ];
 
   // ── D2 (gescrollt, Paper-Bar) ───────────────────────────────────────────
+  //
+  // Wichtig: D2 ist `fixed`, NICHT `sticky`. Sticky würde Platz im normalen
+  // Flow beanspruchen sobald die Komponente mounted und sofort einen
+  // Layout-Shift verursachen — Content darunter würde plötzlich nach unten
+  // springen. Fixed overlay-t den content ohne Flow-Eintrag.
+  //
+  // Slide-In via CSS-Animation animate-gdt-header-down (in globals.css) damit
+  // der Mount nicht „aus dem Nichts" erscheint sondern sanft von oben kommt.
   if (scrolled) {
     return (
       <>
         <header
           lang={locale}
-          className="sticky top-0 z-50 backdrop-blur-md border-b"
+          className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b animate-gdt-header-down"
           style={{
             background:   "rgba(245, 241, 234, 0.92)",   /* paper/92 */
             borderColor:  "var(--color-line)",

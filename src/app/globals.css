@@ -280,6 +280,23 @@ em.font-italic, .font-italic {
   animation: gdt-pulse 1.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* ─── Header D2 Slide-In ────────────────────────────────────────────────
+ * Wird auf den fixed-D2-Header angewandt sobald er gemountet wird (Scroll
+ * > 600 px). Slide kommt von -100% (oberhalb Viewport) auf 0. Reduced-motion-
+ * User bekommen keinen Slide — der Header erscheint sofort.
+ */
+@keyframes gdt-header-down {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+.animate-gdt-header-down {
+  animation: gdt-header-down 220ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-gdt-header-down { animation: none; }
+}
+
 /* ─── Scrollbar – Gold auf Dunkel ───────────────────────────────────────── */
 ::-webkit-scrollbar       { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--color-vintage-espresso); }
