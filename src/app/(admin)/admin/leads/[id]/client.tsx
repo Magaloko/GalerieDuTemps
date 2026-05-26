@@ -15,6 +15,7 @@ import {
   leadStatusAction, leadPrioritaetAction, leadZuweisenAction,
   leadNotizAction, leadAlsCustomerAnlegenAction,
 } from "../actions";
+import { OrderFromLead } from "@/components/leads/order-from-lead";
 import type { Lead, LeadMessage, AdminBenutzer, LeadStatus, LeadPrioritaet } from "@/lib/db/leads";
 
 const STATUS_OPTIONS: { value: LeadStatus; label: string }[] = [
@@ -177,6 +178,9 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
             </div>
           )}
         </section>
+
+        {/* Bestellung aus Lead */}
+        <OrderFromLead leadId={lead.id} hatEmail={!!(lead.kontakt_email || lead.customer_email)} />
 
         {/* Original-Text (Kontaktformular) */}
         {originalText && (

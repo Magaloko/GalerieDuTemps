@@ -171,10 +171,14 @@ export async function produktErstellen(
         preis, originalpreis, einkaufspreis, b2b_preis, waehrung,
         kategorie_id, zustand, era, herkunft, material, lagerbestand, featured, verkauft,
         aktiv, b2c_mode, seo_titel, seo_beschreibung, tags,
-        hauptbild_url, rueckbild_url, video_url, abmessungen, veroeffentlicht_am)
+        hauptbild_url, rueckbild_url, video_url, abmessungen,
+        name_i18n, kurzbeschreibung_i18n, beschreibung_i18n,
+        veroeffentlicht_am)
      VALUES
        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,
-        $24,$25,$26,$27::jsonb,now())
+        $24,$25,$26,$27::jsonb,
+        $28::jsonb, $29::jsonb, $30::jsonb,
+        now())
      RETURNING id`,
     [
       input.name,
@@ -204,6 +208,9 @@ export async function produktErstellen(
       input.rueckbild_url      ?? null,
       input.video_url          ?? null,
       input.abmessungen ? JSON.stringify(input.abmessungen) : null,
+      JSON.stringify(input.name_i18n             ?? {}),
+      JSON.stringify(input.kurzbeschreibung_i18n ?? {}),
+      JSON.stringify(input.beschreibung_i18n     ?? {}),
     ]
   );
 
@@ -260,6 +267,17 @@ export async function produktAktualisieren(
   if (input.abmessungen !== undefined) {
     felder.push(`abmessungen = $${idx++}::jsonb`);
     werte.push(input.abmessungen ? JSON.stringify(input.abmessungen) : null);
+  }
+
+  for (const [key, col] of [
+    ["name_i18n", "name_i18n"],
+    ["kurzbeschreibung_i18n", "kurzbeschreibung_i18n"],
+    ["beschreibung_i18n", "beschreibung_i18n"],
+  ] as const) {
+    if (key in input && input[key as keyof ProduktUpdateInput] !== undefined) {
+      felder.push(`${col} = $${idx++}::jsonb`);
+      werte.push(JSON.stringify(input[key as keyof ProduktUpdateInput] ?? {}));
+    }
   }
 
   if (input.tags !== undefined) {

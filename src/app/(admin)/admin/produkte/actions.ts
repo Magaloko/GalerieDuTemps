@@ -15,7 +15,33 @@ export type FormState = {
 // FormData → Input-Struktur (shared zwischen Erstellen + Aktualisieren).
 // Wichtig: alle Felder müssen hier auftauchen, sonst gehen sie beim Edit verloren.
 // ---------------------------------------------------------------------------
+function parseJsonField(v: FormDataEntryValue | null): Record<string,string> | undefined {
+  if (!v) return undefined;
+  try {
+    const parsed = JSON.parse(String(v));
+    if (typeof parsed === "object" && parsed !== null) {
+      // nur string-Values behalten
+      const out: Record<string,string> = {};
+      for (const [k, val] of Object.entries(parsed)) {
+        if (typeof val === "string" && val.trim().length > 0) out[k] = val;
+      }
+      return Object.keys(out).length > 0 ? out : undefined;
+    }
+  } catch { /* fall-through */ }
+  return undefined;
+}
+
 function parseProduktFormData(formData: FormData) {
+  const nameI18n   = parseJsonField(formData.get("name_i18n"));
+  const kurzI18n   = parseJsonField(formData.get("kurzbeschreibung_i18n"));
+  const beschrI18n = parseJsonField(formData.get("beschreibung_i18n"));
+
+  // Default-Werte für name/kurz/beschr aus ru-Locale wenn möglich,
+  // sonst aus formData (für Backwards-Compat / Schnell-Form ohne Tabs)
+  const nameDefault   = (formData.get("name")             ?? nameI18n?.ru   ?? "") as string;
+  const kurzDefault   = (formData.get("kurzbeschreibung") ?? kurzI18n?.ru   ?? "") as string;
+  const beschrDefault = (formData.get("beschreibung")     ?? beschrI18n?.ru ?? "") as string;
+
   const abmessungen = (() => {
     const breite  = formData.get("abmessungen_breite");
     const hoehe   = formData.get("abmessungen_hoehe");
@@ -31,11 +57,14 @@ function parseProduktFormData(formData: FormData) {
   })();
 
   return {
-    name:             formData.get("name"),
+    name:             nameDefault || formData.get("name"),
     slug:             formData.get("slug")           || undefined,
     artikel_code:     formData.get("artikel_code")   || undefined,
-    beschreibung:     formData.get("beschreibung"),
-    kurzbeschreibung: formData.get("kurzbeschreibung"),
+    beschreibung:     beschrDefault || formData.get("beschreibung"),
+    kurzbeschreibung: kurzDefault   || formData.get("kurzbeschreibung"),
+    name_i18n:             nameI18n,
+    kurzbeschreibung_i18n: kurzI18n,
+    beschreibung_i18n:     beschrI18n,
     preis:            formData.get("preis"),
     originalpreis:    formData.get("originalpreis")  || undefined,
     einkaufspreis:    formData.get("einkaufspreis")  || undefined,
@@ -123,6 +152,49 @@ export async function produktQuickToggleAction(
   } catch (err) {
     console.error("[quickToggle]", err);
     return { ok: false, error: "Aktualisierung fehlgeschlagen" };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Bulk-Aktionen — Liste von IDs gleichzeitig manipulieren
+// ---------------------------------------------------------------------------
+type BulkAction = "aktivieren" | "deaktivieren" | "featured_an" | "featured_aus" | "verkauft" | "loeschen";
+
+export async function produktBulkAction(
+  ids:    string[],
+  action: BulkAction
+): Promise<{ ok: boolean; count?: number; error?: string }> {
+  const session = await requireAdminSession();
+  if (!session) return { ok: false, error: "Нет прав" };
+  if (!Array.isArray(ids) || ids.length === 0) return { ok: false, error: "Keine Auswahl" };
+  if (ids.length > 200) return { ok: false, error: "Max 200 pro Bulk" };
+
+  const valid = ids.filter(id => /^[0-9a-f-]{36}$/i.test(id));
+  if (valid.length === 0) return { ok: false, error: "Ungültige IDs" };
+
+  try {
+    let count = 0;
+    for (const id of valid) {
+      try {
+        switch (action) {
+          case "aktivieren":    await produktAktualisieren(id, { aktiv: true });    break;
+          case "deaktivieren":  await produktAktualisieren(id, { aktiv: false });   break;
+          case "featured_an":   await produktAktualisieren(id, { featured: true }); break;
+          case "featured_aus":  await produktAktualisieren(id, { featured: false });break;
+          case "verkauft":      await produktAktualisieren(id, { verkauft: true }); break;
+          case "loeschen":      await produktLoeschen(id); break;
+          default: return { ok: false, error: "Unbekannte Aktion" };
+        }
+        count++;
+      } catch (err) {
+        console.error("[bulk]", action, id, err);
+      }
+    }
+    revalidatePath("/admin/produkte");
+    return { ok: true, count };
+  } catch (err) {
+    console.error("[bulk]", err);
+    return { ok: false, error: "Bulk-Operation fehlgeschlagen" };
   }
 }
 

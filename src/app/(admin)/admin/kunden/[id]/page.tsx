@@ -5,8 +5,10 @@ import { ordersFuerCustomer } from "@/lib/db/orders";
 import {
   alleTags, tagsFuerCustomer,
   notesFuerCustomer, tasksListe,
-  alleStages, customerCrmStats, eventsFuerCustomer,
+  alleStages, customerCrmStats,
 } from "@/lib/db/crm";
+import { customerTimeline } from "@/lib/db/leads";
+import { ActivityTimeline } from "@/components/customer/activity-timeline";
 import { formatPreis } from "@/lib/utils/preis";
 import { ChevronLeft, Mail, Phone, Briefcase, Calendar, Hash, ShoppingBag, Coins } from "lucide-react";
 import { TagsSection } from "./tags-section";
@@ -30,7 +32,7 @@ export default async function KundenDetailPage({
   params,
 }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [customer, orders, allTags, kundenTags, notes, tasks, stages, stats, events] = await Promise.all([
+  const [customer, orders, allTags, kundenTags, notes, tasks, stages, stats, timeline] = await Promise.all([
     customerById(id),
     ordersFuerCustomer(id),
     alleTags(),
@@ -39,7 +41,7 @@ export default async function KundenDetailPage({
     tasksListe({ customer_id: id, limit: 20 }),
     alleStages(),
     customerCrmStats(id),
-    eventsFuerCustomer(id, 10).catch(() => []),
+    customerTimeline(id, 30).catch(() => []),
   ]);
 
   if (!customer) notFound();
@@ -130,20 +132,8 @@ export default async function KundenDetailPage({
         )}
       </section>
 
-      {/* Activity-Stream */}
-      {events.length > 0 && (
-        <section className="bg-vintage-white border border-vintage-sand p-5" style={{ borderRadius: "var(--radius-card)" }}>
-          <h2 className="font-serif text-lg text-vintage-espresso mb-3">Letzte Aktivität</h2>
-          <ul className="space-y-1 text-xs font-sans text-vintage-dust">
-            {events.map(e => (
-              <li key={e.id} className="flex justify-between border-b border-vintage-sand/30 py-1.5">
-                <span><span className="text-vintage-brown font-mono">{e.typ}</span> · {e.quelle}</span>
-                <span>{new Date(e.erstellt_am).toLocaleString("de-DE")}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      {/* Activity-Timeline (Orders + Leads + Events + Tasks + Notes unified) */}
+      <ActivityTimeline entries={timeline} />
     </div>
   );
 }

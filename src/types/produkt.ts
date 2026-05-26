@@ -38,6 +38,9 @@ export interface Produkt {
   artikel_code:       string | null;
   beschreibung:       string | null;
   kurzbeschreibung:   string | null;
+  name_i18n:          Record<string, string>;
+  kurzbeschreibung_i18n: Record<string, string>;
+  beschreibung_i18n:  Record<string, string>;
   preis:              number;
   originalpreis:      number | null;
   einkaufspreis:      number | null;

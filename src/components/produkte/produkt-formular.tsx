@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select }   from "@/components/ui/select";
 import { Button }   from "@/components/ui/button";
 import { MarkdownEditor } from "@/components/ui/markdown-editor";
+import { MultilingualInput } from "@/components/ui/multilingual-input";
 import { SingleMediaUpload } from "@/components/ui/single-media-upload";
 import { Save, Trash2, AlertCircle, CheckCircle2 } from "lucide-react";
 import type { Produkt } from "@/types/produkt";
@@ -94,14 +95,17 @@ export function ProduktFormular({
           Основная информация
         </h2>
 
-        <Input
+        <MultilingualInput
           label="Название"
-          name="name"
-          required
-          defaultValue={produkt?.name}
-          error={e("name")}
+          name="name_i18n"
+          variant="input"
+          initial={produkt?.name_i18n ?? {}}
+          fallbackValue={produkt?.name}
+          maxLength={300}
           placeholder="напр. Комод бидермейер"
         />
+        {/* Hidden default-Sprache (ru) für name-Spalte fallback */}
+        <input type="hidden" name="name" value={produkt?.name ?? ""} />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
@@ -161,24 +165,28 @@ export function ProduktFormular({
         <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
           Описания
         </h2>
-        <Textarea
+        <MultilingualInput
           label="Краткое описание"
-          name="kurzbeschreibung"
-          defaultValue={produkt?.kurzbeschreibung ?? ""}
-          error={e("kurzbeschreibung")}
-          placeholder="Краткое резюме (макс. 500 символов)"
-          maxLength={500}
+          name="kurzbeschreibung_i18n"
+          variant="textarea"
+          initial={produkt?.kurzbeschreibung_i18n ?? {}}
+          fallbackValue={produkt?.kurzbeschreibung ?? undefined}
           rows={3}
+          maxLength={500}
+          placeholder="Краткое резюме (макс. 500 символов)"
         />
-        <MarkdownEditor
+        <MultilingualInput
           label="Подробное описание"
-          name="beschreibung"
-          defaultValue={produkt?.beschreibung ?? ""}
-          error={e("beschreibung")}
-          placeholder="Подробное описание, история, особенности …  Можно использовать **жирный**, *курсив*, ## заголовки, списки."
+          name="beschreibung_i18n"
+          variant="markdown"
+          initial={produkt?.beschreibung_i18n ?? {}}
+          fallbackValue={produkt?.beschreibung ?? undefined}
           rows={10}
-          hint="Markdown поддерживается — переключитесь на «Превью» для проверки"
+          placeholder="Подробное описание, история, особенности …"
         />
+        {/* Hidden-Felder für Backwards-Compat (Action liest auch i18n) */}
+        <input type="hidden" name="kurzbeschreibung" value={produkt?.kurzbeschreibung ?? ""} />
+        <input type="hidden" name="beschreibung"     value={produkt?.beschreibung ?? ""} />
       </section>
 
       {/* ─── Details ──────────────────────────────────────────────── */}

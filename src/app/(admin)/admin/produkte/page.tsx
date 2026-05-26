@@ -6,6 +6,7 @@ import { formatPreis } from "@/lib/utils/preis";
 import { ZustandBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { QuickToggleRow } from "@/components/produkte/quick-toggle-row";
+import { BulkToolbar, BulkCheckbox, BulkSelectAll } from "@/components/produkte/bulk-toolbar";
 import {
   Plus,
   Search,
@@ -200,6 +201,9 @@ export default async function ProduktListePage({ searchParams }: Props) {
         )}
       </form>
 
+      {/* ─── Bulk-Toolbar (erscheint sticky wenn Auswahl > 0) ──── */}
+      <BulkToolbar />
+
       {/* ─── Tabelle ─────────────────────────────────────────────── */}
       <div
         className="bg-vintage-white border border-vintage-sand overflow-hidden"
@@ -225,6 +229,9 @@ export default async function ProduktListePage({ searchParams }: Props) {
             <table className="w-full text-sm font-sans">
               <thead>
                 <tr className="border-b border-vintage-sand bg-vintage-parchment/50">
+                  <th className="px-3 py-3 w-10">
+                    <BulkSelectAll />
+                  </th>
                   <th className="text-left px-3 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal w-20">
                     Art.-Code
                   </th>
@@ -252,6 +259,11 @@ export default async function ProduktListePage({ searchParams }: Props) {
                     key={p.id}
                     className="hover:bg-vintage-parchment/30 transition-colors"
                   >
+                    {/* Bulk-Checkbox */}
+                    <td className="px-3 py-3 text-center">
+                      <BulkCheckbox id={p.id} />
+                    </td>
+
                     {/* Artikel-Code */}
                     <td className="px-3 py-3 font-mono text-xs text-vintage-dust">
                       {p.artikel_code ?? "—"}

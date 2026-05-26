@@ -7,9 +7,10 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { formatPreis } from "@/lib/utils/preis";
 import { markdownToHtml } from "@/lib/utils/markdown";
+import { i18nOr } from "@/lib/utils/i18n-text";
 import { ZustandBadge } from "@/components/ui/badge";
 import type { Metadata } from "next";
-import { getDictionary } from "@/i18n";
+import { getDictionary, getLocale } from "@/i18n";
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -27,11 +28,16 @@ function videoEmbedSrc(url: string): { type: "iframe" | "video"; src: string } |
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const p = await oeffentlichesProduktBySlug(slug);
+  const [p, locale] = await Promise.all([
+    oeffentlichesProduktBySlug(slug),
+    getLocale(),
+  ]);
   if (!p) return { title: "Товар не найден" };
+  const lokalName = i18nOr(p.name_i18n, locale, p.name);
+  const lokalKurz = i18nOr(p.kurzbeschreibung_i18n, locale, p.kurzbeschreibung);
   return {
-    title:       p.seo_titel        ?? `${p.name} – Galerie du Temps`,
-    description: p.seo_beschreibung ?? p.kurzbeschreibung ?? undefined,
+    title:       p.seo_titel        ?? `${lokalName} – Galerie du Temps`,
+    description: p.seo_beschreibung ?? lokalKurz ?? undefined,
   };
 }
 
@@ -42,6 +48,12 @@ export default async function ProduktDetailPage({ params }: Props) {
     getDictionary(),
   ]);
   if (!produkt) notFound();
+
+  // Lokalisierte Texte (i18n-JSONB → fallback auf Default-Spalte)
+  const locale = await getLocale();
+  const name   = i18nOr(produkt.name_i18n,             locale, produkt.name);
+  const kurz   = i18nOr(produkt.kurzbeschreibung_i18n, locale, produkt.kurzbeschreibung);
+  const lang   = i18nOr(produkt.beschreibung_i18n,     locale, produkt.beschreibung);
 
   const aehnliche = await aehnlicheProdukte(
     produkt.id,
@@ -56,14 +68,14 @@ export default async function ProduktDetailPage({ params }: Props) {
   if (produkt.hauptbild_url) {
     extraBilder.push({
       id: "haupt", produkt_id: produkt.id, url: produkt.hauptbild_url,
-      alt_text: produkt.name, sortierung: -2, ist_hauptbild: true,
+      alt_text: name, sortierung: -2, ist_hauptbild: true,
       breite: null, hoehe: null, dateigroesse: null, erstellt_am: produkt.erstellt_am,
     });
   }
   if (produkt.rueckbild_url) {
     extraBilder.push({
       id: "rueck", produkt_id: produkt.id, url: produkt.rueckbild_url,
-      alt_text: `${produkt.name} — обратная сторона`, sortierung: -1, ist_hauptbild: false,
+      alt_text: `${name} — обратная сторона`, sortierung: -1, ist_hauptbild: false,
       breite: null, hoehe: null, dateigroesse: null, erstellt_am: produkt.erstellt_am,
     });
   }
@@ -86,12 +98,12 @@ export default async function ProduktDetailPage({ params }: Props) {
           </>
         )}
         <span>/</span>
-        <span className="text-vintage-cream truncate max-w-48">{produkt.name}</span>
+        <span className="text-vintage-cream truncate max-w-48">{name}</span>
       </nav>
 
       <div className="grid lg:grid-cols-2 gap-12 xl:gap-16">
         {/* ─── Bildbereich (Client Component für Galerie-Interaktion) ── */}
-        <ProduktDetailClient bilder={bilder} produktName={produkt.name} />
+        <ProduktDetailClient bilder={bilder} produktName={name} />
 
         {/* ─── Info ─────────────────────────────────────────────────── */}
         <div className="space-y-6">
@@ -103,7 +115,7 @@ export default async function ProduktDetailPage({ params }: Props) {
 
           <div>
             <h1 className="font-serif text-3xl md:text-4xl text-vintage-cream leading-tight">
-              {produkt.name}
+              {name}
             </h1>
             {produkt.era && (
               <p className="text-vintage-dust text-sm font-sans mt-1">{produkt.era}</p>
@@ -138,19 +150,19 @@ export default async function ProduktDetailPage({ params }: Props) {
           </div>
 
           {/* Kurzbeschreibung */}
-          {produkt.kurzbeschreibung && (
+          {kurz && (
             <p className="text-vintage-cream/80 leading-relaxed font-sans">
-              {produkt.kurzbeschreibung}
+              {kurz}
             </p>
           )}
 
           {/* Beschreibung */}
-          {produkt.beschreibung && (
+          {lang && (
             <div className="border-t border-vintage-sand/40 pt-5">
               <p className="text-xs font-sans uppercase tracking-widest text-vintage-dust mb-3">{t.produkt.beschreibung}</p>
               <div
                 className="prose-vintage text-sm"
-                dangerouslySetInnerHTML={{ __html: markdownToHtml(produkt.beschreibung) }}
+                dangerouslySetInnerHTML={{ __html: markdownToHtml(lang) }}
               />
             </div>
           )}

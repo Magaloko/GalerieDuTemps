@@ -359,6 +359,95 @@ export async function logLeadActivity(
 }
 
 // ===========================================================================
+// Unified Customer-Timeline (Orders + Leads + Events + Tasks)
+// ===========================================================================
+
+export type TimelineEntry = {
+  ts:     string;
+  typ:    "order" | "lead" | "event" | "task" | "note";
+  titel:  string;
+  detail: string | null;
+  meta:   Record<string, unknown>;
+  ref_id: string;
+};
+
+export async function customerTimeline(
+  customer_id: string,
+  limit = 50
+): Promise<TimelineEntry[]> {
+  const r = await query<TimelineEntry>(
+    `
+    WITH events AS (
+      SELECT
+        erstellt_am AS ts,
+        'event'     AS typ,
+        typ         AS titel,
+        quelle      AS detail,
+        daten       AS meta,
+        id::text    AS ref_id
+      FROM sebo.crm_events
+      WHERE customer_id = $1
+    ),
+    orders AS (
+      SELECT
+        erstellt_am AS ts,
+        'order'     AS typ,
+        'Bestellung GDT-' || lpad(order_number::text, 4, '0') AS titel,
+        status      AS detail,
+        jsonb_build_object('total_cents', total_cents, 'order_number', order_number) AS meta,
+        id::text    AS ref_id
+      FROM sebo.orders
+      WHERE customer_id = $1
+    ),
+    leads AS (
+      SELECT
+        erstellt_am AS ts,
+        'lead'      AS typ,
+        COALESCE(betreff, vorschau, 'Anfrage')              AS titel,
+        quelle::text                                        AS detail,
+        jsonb_build_object('quelle', quelle, 'status', status) AS meta,
+        id::text                                            AS ref_id
+      FROM sebo.leads
+      WHERE customer_id = $1
+    ),
+    tasks AS (
+      SELECT
+        erstellt_am AS ts,
+        'task'      AS typ,
+        titel       AS titel,
+        status      AS detail,
+        jsonb_build_object('prioritaet', prioritaet, 'faellig_am', faellig_am) AS meta,
+        id::text    AS ref_id
+      FROM sebo.tasks
+      WHERE customer_id = $1
+    ),
+    notes AS (
+      SELECT
+        erstellt_am   AS ts,
+        'note'        AS typ,
+        left(inhalt, 80) AS titel,
+        NULL::text    AS detail,
+        '{}'::jsonb   AS meta,
+        id::text      AS ref_id
+      FROM sebo.notes
+      WHERE customer_id = $1
+    )
+    SELECT * FROM (
+      SELECT * FROM events
+      UNION ALL SELECT * FROM orders
+      UNION ALL SELECT * FROM leads
+      UNION ALL SELECT * FROM tasks
+      UNION ALL SELECT * FROM notes
+    ) t
+    ORDER BY ts DESC
+    LIMIT $2
+    `,
+    [customer_id, limit]
+  );
+  return r.rows;
+}
+
+// ===========================================================================
 // Admin-User-Auflistung (für Zuweisen-Select)
 // ===========================================================================
 
