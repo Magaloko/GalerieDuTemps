@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ordersListe } from "@/lib/db/orders";
 import { query } from "@/lib/db";
 import { formatPreis } from "@/lib/utils/preis";
-import { Package, ChevronLeft, ChevronRight, ExternalLink, Clock, CreditCard, Truck } from "lucide-react";
+import { Package, ChevronLeft, ChevronRight, ExternalLink, Clock, CreditCard, Truck, Plus } from "lucide-react";
 import type { Metadata } from "next";
 import type { OrderStatus } from "@/types/commerce";
 
@@ -77,12 +77,21 @@ export default async function BestellungenAdminPage({
 
   return (
     <div className="space-y-6 max-w-6xl">
-      <div>
-        <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-        <h1 className="font-serif text-2xl text-vintage-espresso">Bestellungen</h1>
-        <p className="text-vintage-dust text-xs font-sans mt-0.5">
-          {counts.gesamt} {counts.gesamt === 1 ? "Bestellung" : "Bestellungen"} insgesamt
-        </p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <p className="text-vintage-gold text-xs tracking-widest">✦</p>
+          <h1 className="font-serif text-2xl text-vintage-espresso">Bestellungen</h1>
+          <p className="text-vintage-dust text-xs font-sans mt-0.5">
+            {counts.gesamt} {counts.gesamt === 1 ? "Bestellung" : "Bestellungen"} insgesamt
+          </p>
+        </div>
+        <Link
+          href="/admin/bestellungen/neu"
+          className="flex items-center gap-2 px-4 py-2.5 bg-vintage-espresso text-vintage-cream text-xs font-sans tracking-[0.2em] uppercase hover:bg-vintage-brown transition-colors"
+          style={{ borderRadius: "var(--radius-button)" }}
+        >
+          <Plus className="w-3.5 h-3.5" /> Manuelle Bestellung
+        </Link>
       </div>
 
       {/* KPI-Cards */}
