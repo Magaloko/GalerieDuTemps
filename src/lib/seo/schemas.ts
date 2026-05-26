@@ -55,14 +55,18 @@ export function storeSchema(opts: {
   };
 }
 
-/** Product — pro Produkt-Detail-Seite. */
+/** Product — pro Produkt-Detail-Seite.
+ *
+ * Hinweis: PostgreSQL `numeric` kommt via node-pg als JavaScript-String —
+ * obwohl der TS-Type oft `number` sagt. `toNum` deckt beide Fälle ab.
+ */
 export function productSchema(opts: {
   id:          number | string;
   slug:        string;
   name:        string;
   description?: string;
   images:      string[];
-  price:       number;
+  price:       number | string;
   currency:    Currency;
   inStock:     boolean;
   condition?:  "new" | "used" | "refurbished";
@@ -81,6 +85,9 @@ export function productSchema(opts: {
     .filter(Boolean)
     .map(img => img.startsWith("http") ? img : `${url}${img.startsWith("/") ? "" : "/"}${img}`);
 
+  const priceNum = typeof opts.price === "string" ? parseFloat(opts.price) : opts.price;
+  const priceFormatted = Number.isFinite(priceNum) ? priceNum.toFixed(2) : "0.00";
+
   return {
     "@context":   "https://schema.org",
     "@type":      "Product",
@@ -98,7 +105,7 @@ export function productSchema(opts: {
       "@type":         "Offer",
       url:             productUrl,
       priceCurrency:   opts.currency,
-      price:           opts.price.toFixed(2),
+      price:           priceFormatted,
       availability:    opts.inStock
         ? "https://schema.org/InStock"
         : "https://schema.org/OutOfStock",

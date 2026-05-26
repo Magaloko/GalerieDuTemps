@@ -5,7 +5,7 @@ import { ProduktDetailClient } from "./client";
 import { AddToCartButton } from "@/components/produkte/add-to-cart-button";
 import { SpecTable } from "@/components/product/spec-table";
 import { JsonLd } from "@/components/seo/json-ld";
-import { productSchema, breadcrumbSchema, getSiteUrl } from "@/lib/seo/schemas";
+import { productSchema, breadcrumbSchema } from "@/lib/seo/schemas";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { formatPreis } from "@/lib/utils/preis";
@@ -96,7 +96,6 @@ export default async function ProduktDetailPage({ params }: Props) {
   const waehrung = (produkt.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT";
 
   // ── JSON-LD ───────────────────────────────────────────────────────────
-  const siteUrl   = getSiteUrl();
   const allImages = [
     produkt.hauptbild_url,
     produkt.rueckbild_url,
@@ -124,8 +123,6 @@ export default async function ProduktDetailPage({ params }: Props) {
       : []),
     { name, url: `/katalog/${produkt.slug}` },
   ]);
-  // siteUrl reserved für künftige Erweiterungen (z.B. Author/Person)
-  void siteUrl;
 
   // Headline: split name into two lines if possible (last word → italic+coral)
   const nameParts = name.trim().split(/\s+/);
