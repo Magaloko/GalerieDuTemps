@@ -2,10 +2,11 @@ import Link from "next/link";
 import { systemEinstellungenLaden } from "@/lib/db/system-einstellungen";
 import { getStripeConfig } from "@/lib/affiliate/stripe";
 import { EinstellungenFormular } from "./einstellungen-formular";
+import { EmailHealthBanner } from "@/components/produkte/email-health-banner";
 import { Settings, MessageSquareText, Send, Bell, ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Globale Einstellungen" };
+export const metadata: Metadata = { title: "Глобальные настройки" };
 export const dynamic = "force-dynamic";
 
 async function stripeSdkVerfuegbar(): Promise<boolean> {
@@ -32,9 +33,9 @@ export default async function GlobaleEinstellungenPage() {
         <Settings className="w-5 h-5 text-vintage-gold" />
         <div>
           <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-          <h1 className="font-serif text-2xl text-vintage-espresso">Globale Einstellungen</h1>
+          <h1 className="font-serif text-2xl text-vintage-espresso">Глобальные настройки</h1>
           <p className="text-vintage-dust text-xs font-sans mt-0.5">
-            Firma, SEPA, Stripe, Cookies — wirken sich auf das gesamte System aus
+            Компания, реквизиты, Stripe, cookies — действуют на всю систему
           </p>
         </div>
       </div>
@@ -44,22 +45,24 @@ export default async function GlobaleEinstellungenPage() {
         <SettingsLink
           href="/admin/einstellungen/marketing"
           icon={MessageSquareText}
-          title="Marketing-Texte"
-          desc="Hero, Ticker, Promo-Bar editieren"
+          title="Маркетинговые тексты"
+          desc="Hero, тикер, баннер · реквизиты для оплаты"
         />
         <SettingsLink
           href="/admin/einstellungen/telegram"
           icon={Send}
-          title="Telegram-Bot"
-          desc="Bot für Lead-Inbox verbinden"
+          title="Telegram-бот"
+          desc="Бот для входящих сообщений + уведомления"
         />
         <SettingsLink
           href="/admin/einstellungen/benutzer"
           icon={Bell}
-          title="Admin-Benutzer"
-          desc="Zugänge verwalten"
+          title="Администраторы"
+          desc="Управление доступом"
         />
       </div>
+
+      <EmailHealthBanner />
 
       <EinstellungenFormular
         settings={settings}

@@ -14,18 +14,18 @@ const BaseSchema = z.object({
   email:    z.string().email(),
   passwort: z.string().min(8),
   passwort_wdh: z.string().min(8),
-  agb_akzeptiert: z.literal("on", { message: "Bitte AGB akzeptieren" }),
+  agb_akzeptiert: z.literal("on", { message: "Подтвердите согласие с условиями" }),
 }).refine(d => d.passwort === d.passwort_wdh, {
-  message: "Passwörter stimmen nicht überein",
+  message: "Пароли не совпадают",
   path:    ["passwort_wdh"],
 });
 
 const B2bSchema = BaseSchema.safeExtend({
-  company_name: z.string().min(2, "Firmenname erforderlich"),
+  company_name: z.string().min(2, "Название компании обязательно"),
   ust_id:       z.string().optional(),
   company_note: z.string().optional(),
 }).refine(d => d.ust_id || (d.company_note && d.company_note.length > 10), {
-  message: "USt-IdNr. oder Begründung erforderlich",
+  message: "Укажите БИН/ИИН или комментарий (минимум 10 символов)",
   path:    ["ust_id"],
 });
 
@@ -68,7 +68,7 @@ export async function customerRegistrierenAction(
 
   const existing = await customerByEmail(data.email);
   if (existing) {
-    return { fehler: "E-Mail bereits registriert. Melde dich an oder setze dein Passwort zurück." };
+    return { fehler: "Этот e-mail уже зарегистрирован. Войдите или восстановите пароль." };
   }
 
   const passwortHash = await bcrypt.hash(data.passwort, 12);
@@ -89,7 +89,7 @@ export async function customerRegistrierenAction(
   const url   = `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/kunde/bestaetigt?token=${token}`;
   sendEmail({
     to: [{ email: customer.email, name: `${customer.vorname} ${customer.nachname}` }],
-    subject: "Bestätige deine E-Mail – Galerie du Temps",
+    subject: "Подтвердите ваш e-mail · Galerie du Temps",
     htmlContent: emailBestaetigungMail(customer.vorname ?? "", url),
     tags: ["customer-confirm"],
   }).catch(err => console.error("[Registrierung] Brevo:", err));
@@ -98,7 +98,7 @@ export async function customerRegistrierenAction(
   if (isB2B && data.company_name) {
     sendEmail({
       to: [{ email: customer.email, name: `${customer.vorname} ${customer.nachname}` }],
-      subject: "B2B-Antrag erhalten – Galerie du Temps",
+      subject: "B2B-заявка принята · Galerie du Temps",
       htmlContent: b2bWelcomeMail(customer.vorname ?? "", data.company_name),
       tags: ["b2b-pending"],
     }).catch(err => console.error("[Registrierung B2B] Brevo:", err));
