@@ -6,7 +6,7 @@ import { BestellungEditor } from "@/components/bestellungen/bestellung-editor";
 import { ChevronLeft, Package, Mail, MapPin, CreditCard } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Bestelldetail" };
+export const metadata: Metadata = { title: "Детали заказа" };
 export const dynamic = "force-dynamic";
 
 export default async function BestellungDetailPage({
@@ -20,7 +20,7 @@ export default async function BestellungDetailPage({
     <div className="space-y-6 max-w-4xl">
       <nav className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
         <Link href="/admin/bestellungen" className="hover:text-vintage-brown flex items-center gap-1 transition-colors">
-          <ChevronLeft className="w-3 h-3" /> Bestellungen
+          <ChevronLeft className="w-3 h-3" /> Заказы
         </Link>
         <span>/</span>
         <span className="font-mono text-vintage-gold">GDT-{String(order.order_number).padStart(4, "0")}</span>
@@ -30,7 +30,7 @@ export default async function BestellungDetailPage({
         {/* Items */}
         <section className="lg:col-span-2 bg-vintage-white border border-vintage-sand p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
           <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2">
-            <Package className="w-4 h-4 text-vintage-gold" /> Artikel
+            <Package className="w-4 h-4 text-vintage-gold" /> Товары
           </h2>
           <div className="divide-y divide-vintage-sand/50">
             {(order.items ?? []).map(item => (
@@ -46,7 +46,7 @@ export default async function BestellungDetailPage({
                 <div className="flex-1 min-w-0">
                   <p className="font-serif text-vintage-espresso truncate">{item.produkt_name}</p>
                   <p className="text-xs text-vintage-dust font-sans">
-                    {item.menge}× · {formatPreis(item.einzelpreis_cents / 100)} · USt. {item.tax_rate}%
+                    {item.menge}× · {formatPreis(item.einzelpreis_cents / 100)} · НДС {item.tax_rate}%
                   </p>
                 </div>
                 <p className="font-serif text-vintage-espresso">{formatPreis(item.zeile_total_cents / 100)}</p>
@@ -57,18 +57,18 @@ export default async function BestellungDetailPage({
           {/* Summen */}
           <div className="space-y-1 text-sm font-sans border-t border-vintage-sand pt-4">
             <div className="flex justify-between text-vintage-dust">
-              <span>Zwischensumme</span><span>{formatPreis(order.subtotal_cents / 100)}</span>
+              <span>Промежуточная сумма</span><span>{formatPreis(order.subtotal_cents / 100)}</span>
             </div>
             {order.rabatt_cents > 0 && (
               <div className="flex justify-between text-vintage-sage">
-                <span>Rabatt ({order.coupon_code_snapshot})</span><span>− {formatPreis(order.rabatt_cents / 100)}</span>
+                <span>Скидка ({order.coupon_code_snapshot})</span><span>− {formatPreis(order.rabatt_cents / 100)}</span>
               </div>
             )}
             <div className="flex justify-between text-vintage-dust text-xs">
-              <span>inkl. USt.</span><span>{formatPreis(order.tax_total_cents / 100)}</span>
+              <span>вкл. НДС</span><span>{formatPreis(order.tax_total_cents / 100)}</span>
             </div>
             <div className="flex justify-between font-serif text-vintage-espresso text-lg pt-2 border-t border-vintage-sand">
-              <span>Gesamt</span><span>{formatPreis(order.total_cents / 100)}</span>
+              <span>Итого</span><span>{formatPreis(order.total_cents / 100)}</span>
             </div>
           </div>
         </section>
@@ -77,20 +77,20 @@ export default async function BestellungDetailPage({
         <div className="space-y-4">
           <section className="bg-vintage-white border border-vintage-sand p-5 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
             <h3 className="font-serif text-vintage-espresso flex items-center gap-2">
-              <Mail className="w-3.5 h-3.5 text-vintage-gold" /> Kunde
+              <Mail className="w-3.5 h-3.5 text-vintage-gold" /> Клиент
             </h3>
             <div className="text-sm font-sans text-vintage-brown space-y-1">
-              <p>{order.customer_name ?? "Gast"}</p>
+              <p>{order.customer_name ?? "Гость"}</p>
               <p className="text-vintage-dust">{order.customer_email}</p>
               <p className="text-xs uppercase tracking-wider text-vintage-dust mt-2">
-                Typ: {order.customer_type_snapshot}
+                Тип: {order.customer_type_snapshot}
               </p>
             </div>
           </section>
 
           <section className="bg-vintage-white border border-vintage-sand p-5 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
             <h3 className="font-serif text-vintage-espresso flex items-center gap-2">
-              <MapPin className="w-3.5 h-3.5 text-vintage-gold" /> Lieferadresse
+              <MapPin className="w-3.5 h-3.5 text-vintage-gold" /> Адрес доставки
             </h3>
             <div className="text-sm font-sans text-vintage-brown space-y-0.5">
               {order.shipping_address.vorname || order.shipping_address.nachname ? (
@@ -101,18 +101,18 @@ export default async function BestellungDetailPage({
                   <p>{order.shipping_address.land}</p>
                 </>
               ) : (
-                <p className="text-vintage-dust italic">Aus Stripe-Checkout — wird per Webhook übernommen</p>
+                <p className="text-vintage-dust italic">Из Stripe Checkout — будет добавлено через webhook</p>
               )}
             </div>
           </section>
 
           <section className="bg-vintage-white border border-vintage-sand p-5 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
             <h3 className="font-serif text-vintage-espresso flex items-center gap-2">
-              <CreditCard className="w-3.5 h-3.5 text-vintage-gold" /> Zahlung
+              <CreditCard className="w-3.5 h-3.5 text-vintage-gold" /> Оплата
             </h3>
             <div className="text-sm font-sans text-vintage-brown space-y-1">
-              <p>Status: <strong>{order.status}</strong></p>
-              {order.bezahlt_am && <p className="text-xs text-vintage-dust">Bezahlt: {new Date(order.bezahlt_am).toLocaleString("de-DE")}</p>}
+              <p>Статус: <strong>{order.status}</strong></p>
+              {order.bezahlt_am && <p className="text-xs text-vintage-dust">Оплачен: {new Date(order.bezahlt_am).toLocaleString("ru-RU")}</p>}
               {order.stripe_payment_intent && (
                 <p className="text-xs font-mono text-vintage-dust truncate">PI: {order.stripe_payment_intent}</p>
               )}

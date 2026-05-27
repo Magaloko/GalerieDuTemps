@@ -22,14 +22,14 @@ export async function statusAktualisierenAction(
   if (!session) return { ok: false, error: "Не авторизовано" };
 
   const status = formData.get("status") as OrderStatus;
-  if (!STATI.includes(status)) return { ok: false, error: "Ungültiger Status" };
+  if (!STATI.includes(status)) return { ok: false, error: "Некорректный статус" };
 
   await orderStatusUpdate(orderId, status, {
     bezahlt: status === "paid",
   });
   revalidatePath(`/admin/bestellungen/${orderId}`);
   revalidatePath("/admin/bestellungen");
-  return { ok: true, message: "Status обновлён." };
+  return { ok: true, message: "Статус обновлён." };
 }
 
 export async function notizenAktualisierenAction(
@@ -59,7 +59,7 @@ export async function trackingAktualisierenAction(
 
   await orderTrackingAktualisieren(orderId, nummer, url);
   revalidatePath(`/admin/bestellungen/${orderId}`);
-  return { ok: true, message: "Tracking gespeichert." };
+  return { ok: true, message: "Трекинг сохранён." };
 }
 
 export async function bestellungStornierenAction(
@@ -69,7 +69,7 @@ export async function bestellungStornierenAction(
   const session = await requireAdminSession();
   if (!session) return { ok: false, error: "Не авторизовано" };
 
-  await orderCanceln(orderId, grund || "Storno durch Admin");
+  await orderCanceln(orderId, grund || "Отмена администратором");
   revalidatePath(`/admin/bestellungen/${orderId}`);
   revalidatePath("/admin/bestellungen");
   return { ok: true, message: "Заказ отменён." };
@@ -132,10 +132,10 @@ export async function bestellungManuellAnlegenAction(
   if (!session) return { ok: false, error: "Нет прав" };
 
   if (!input.customer_email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.customer_email)) {
-    return { ok: false, error: "Ungültige Kunden-E-Mail" };
+    return { ok: false, error: "Некорректный e-mail клиента" };
   }
   if (!Array.isArray(input.items) || input.items.length === 0) {
-    return { ok: false, error: "Keine Artikel ausgewählt" };
+    return { ok: false, error: "Товары не выбраны" };
   }
 
   const email = input.customer_email.toLowerCase().trim();
@@ -174,12 +174,12 @@ export async function bestellungManuellAnlegenAction(
 
   for (const it of input.items) {
     if (!it.produkt_id || it.menge < 1) {
-      return { ok: false, error: "Ungültiger Artikel" };
+      return { ok: false, error: "Некорректный товар" };
     }
     const p = await produktById(it.produkt_id);
-    if (!p) return { ok: false, error: `Produkt ${it.produkt_id.slice(0,8)} nicht gefunden` };
+    if (!p) return { ok: false, error: `Товар ${it.produkt_id.slice(0,8)} не найден` };
     if (p.lagerbestand < it.menge) {
-      return { ok: false, error: `${p.name}: nur ${p.lagerbestand} auf Lager (angefordert: ${it.menge})` };
+      return { ok: false, error: `${p.name}: на складе только ${p.lagerbestand} (запрошено: ${it.menge})` };
     }
     const preisCents      = Math.round(p.preis * 100);
     const zeileBrutto     = preisCents * it.menge;
@@ -226,7 +226,7 @@ export async function bestellungManuellAnlegenAction(
       shipping_address: shippingAddr,
       versandart:     input.versandart ?? "standard",
       customer_type:  customerType,
-      kunden_notiz:   input.kunden_notiz?.trim() || `Manuell angelegt durch ${session.user.name ?? session.user.email}`,
+      kunden_notiz:   input.kunden_notiz?.trim() || `Создано вручную: ${session.user.name ?? session.user.email}`,
     });
 
     // Optional sofort als bezahlt markieren
@@ -239,6 +239,6 @@ export async function bestellungManuellAnlegenAction(
   } catch (err) {
     if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) throw err;
     console.error("[manuell-anlegen]", err);
-    return { ok: false, error: err instanceof Error ? err.message : "Erstellung fehlgeschlagen" };
+    return { ok: false, error: err instanceof Error ? err.message : "Не удалось создать заказ" };
   }
 }
