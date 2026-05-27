@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth/config";
+import { requireAdminSession } from "@/lib/auth/config";
 import {
   uebersichtStats,
   produktTimeline,
@@ -10,9 +10,9 @@ import {
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const session = await auth();
+  const session = await requireAdminSession();
   if (!session) {
-    return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
+    return NextResponse.json({ error: "Нет прав" }, { status: 403 });
   }
 
   // allSettled: ein Query-Fehler reißt nicht alle anderen ab
