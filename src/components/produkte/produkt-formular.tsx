@@ -657,7 +657,7 @@ function PreiseSektion({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input
           label="Закупочная цена (нетто)"
           name="einkaufspreis"
@@ -670,29 +670,16 @@ function PreiseSektion({
           hint="Внутреннее, для расчёта маржи"
           onChange={(ev) => setEinkauf(Number((ev.target as HTMLInputElement).value) || 0)}
         />
-        <div className="md:col-span-1">
-          <PreisMultiCurrency
-            label="B2C-цена"
-            name="preis"
-            waehrungName="waehrung"
-            defaultPreis={produkt?.preis}
-            defaultWaehrung={produkt?.waehrung ?? "KZT"}
-            required
-            error={e("preis")}
-            hint="Видна клиентам · автоконвертация в другие валюты"
-            onChange={(p) => setB2c(p)}
-          />
-        </div>
-        <Input
-          label="B2B-цена (опционально)"
-          name="b2b_preis"
-          type="number"
-          step="0.01"
-          min="0"
-          defaultValue={produkt?.b2b_preis ?? ""}
-          error={e("b2b_preis")}
-          placeholder="0.00"
-          hint="Пусто → B2B видят B2C-цену"
+        <PreisMultiCurrency
+          label="Цена"
+          name="preis"
+          waehrungName="waehrung"
+          defaultPreis={produkt?.preis}
+          defaultWaehrung={produkt?.waehrung ?? "KZT"}
+          required
+          error={e("preis")}
+          hint="Видна клиентам · автоконвертация в другие валюты"
+          onChange={(p) => setB2c(p)}
         />
       </div>
 
