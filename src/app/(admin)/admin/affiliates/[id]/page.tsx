@@ -7,7 +7,7 @@ import { formatPreis } from "@/lib/utils/preis";
 import { ChevronLeft, Mail, Calendar, Coins, Users, MousePointerClick, Hash } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Affiliate Details" };
+export const metadata: Metadata = { title: "Партнёр: детали" };
 export const dynamic = "force-dynamic";
 
 export default async function AffiliateDetailPage({
@@ -27,7 +27,7 @@ export default async function AffiliateDetailPage({
     <div className="space-y-6 max-w-4xl">
       <nav className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
         <Link href="/admin/affiliates" className="hover:text-vintage-brown flex items-center gap-1 transition-colors">
-          <ChevronLeft className="w-3 h-3" /> Affiliates
+          <ChevronLeft className="w-3 h-3" /> Партнёры
         </Link>
         <span>/</span>
         <span className="text-vintage-ink">{affiliate.vorname} {affiliate.nachname}</span>
@@ -48,10 +48,10 @@ export default async function AffiliateDetailPage({
             <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-vintage-dust font-sans">
               <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> {affiliate.email}</span>
               <span className="flex items-center gap-1"><Hash className="w-3.5 h-3.5" /> <span className="font-mono text-vintage-gold">{affiliate.referral_code}</span></span>
-              <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> Mitglied seit {new Date(affiliate.erstellt_am).toLocaleDateString("de-DE")}</span>
+              <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> С нами с {new Date(affiliate.erstellt_am).toLocaleDateString("ru-RU")}</span>
             </div>
             <p className="text-xs text-vintage-dust mt-2 font-sans">
-              Status: <strong className="text-vintage-brown uppercase tracking-wider">{affiliate.status}</strong>
+              Статус: <strong className="text-vintage-brown uppercase tracking-wider">{affiliate.status}</strong>
             </p>
           </div>
         </div>
@@ -59,20 +59,20 @@ export default async function AffiliateDetailPage({
 
       {/* Stat-Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatBox icon={Coins}             label="Offen"        wert={summen ? formatPreis(summen.offen_cent/100) : "–"} />
-        <StatBox icon={Coins}             label="Ausgezahlt"   wert={summen ? formatPreis(summen.ausgezahlt_cent/100) : "–"} />
-        <StatBox icon={MousePointerClick} label="Klicks (30d)" wert={klickStats?.letzte_30 ?? "–"} />
+        <StatBox icon={Coins}             label="Открыто"      wert={summen ? formatPreis(summen.offen_cent/100) : "–"} />
+        <StatBox icon={Coins}             label="Выплачено"    wert={summen ? formatPreis(summen.ausgezahlt_cent/100) : "–"} />
+        <StatBox icon={MousePointerClick} label="Клики (30 д.)" wert={klickStats?.letzte_30 ?? "–"} />
         <StatBox icon={Users}             label="Downline"     wert={downline.length} />
       </div>
 
       {/* Steuer-Info */}
       <section className="bg-vintage-white border border-vintage-sand p-5" style={{ borderRadius: "var(--radius-card)" }}>
-        <h2 className="font-serif text-base text-vintage-espresso mb-3">Steuer-Status</h2>
+        <h2 className="font-serif text-base text-vintage-espresso mb-3">Налоговый статус</h2>
         <div className="text-sm font-sans text-vintage-brown space-y-1">
-          <p>Kleinunternehmer (§19 UStG): <strong>{affiliate.ist_kleinunternehmer ? "Ja" : "Nein"}</strong></p>
-          <p>Gewerbe angemeldet: <strong>{affiliate.gewerbe_angemeldet ? "Ja" : "Nein"}</strong></p>
-          <p>Steuer-ID: <strong>{affiliate.steuer_id ?? "–"}</strong></p>
-          <p>Auszahlungsmethode: <strong className="uppercase">{affiliate.auszahlungs_methode}</strong></p>
+          <p>Малый предприниматель (§19 UStG): <strong>{affiliate.ist_kleinunternehmer ? "Да" : "Нет"}</strong></p>
+          <p>Бизнес зарегистрирован: <strong>{affiliate.gewerbe_angemeldet ? "Да" : "Нет"}</strong></p>
+          <p>Налоговый ID: <strong>{affiliate.steuer_id ?? "–"}</strong></p>
+          <p>Способ выплаты: <strong className="uppercase">{affiliate.auszahlungs_methode}</strong></p>
         </div>
       </section>
 
@@ -86,7 +86,7 @@ export default async function AffiliateDetailPage({
                 className="py-2 flex items-center justify-between hover:bg-vintage-parchment/40 -mx-2 px-2 transition-colors">
                 <div>
                   <p className="text-sm text-vintage-ink">{d.vorname} {d.nachname}</p>
-                  <p className="text-xs text-vintage-dust font-sans">Ebene {d.ebene_relativ} · {d.status}</p>
+                  <p className="text-xs text-vintage-dust font-sans">Уровень {d.ebene_relativ} · {d.status}</p>
                 </div>
                 <span className="font-mono text-xs text-vintage-gold tracking-widest">{d.referral_code}</span>
               </Link>

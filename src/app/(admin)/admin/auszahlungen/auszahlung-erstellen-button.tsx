@@ -20,8 +20,8 @@ export function AuszahlungErstellenButton({
 
   const handle = () => {
     if (!confirm(
-      `Auszahlung für ${affiliateName} in Höhe von ${formatPreis(summeCent / 100)} via ${methode.toUpperCase()} erstellen?\n\n` +
-      `Alle bestätigten Provisionen werden auf "ausgezahlt" gesetzt.`
+      `Создать выплату для ${affiliateName} на сумму ${formatPreis(summeCent / 100)} через ${methode.toUpperCase()}?\n\n` +
+      `Все подтверждённые комиссии будут переведены в статус «Выплачено».`
     )) return;
 
     startTransition(async () => {
@@ -37,7 +37,7 @@ export function AuszahlungErstellenButton({
       className="flex items-center gap-1.5 px-3 py-1.5 bg-vintage-gold text-vintage-espresso text-xs font-sans tracking-widest uppercase hover:bg-vintage-copper transition-colors disabled:opacity-50"
       style={{ borderRadius: "var(--radius-button)" }}
     >
-      <Wallet className="w-3 h-3" /> {pending ? "..." : "Erstellen"}
+      <Wallet className="w-3 h-3" /> {pending ? "..." : "Создать"}
     </button>
   );
 }

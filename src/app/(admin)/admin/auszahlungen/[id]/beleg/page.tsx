@@ -6,7 +6,7 @@ import { PrintButton } from "./print-button";
 import type { Auszahlung, Provision } from "@/types/affiliate";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Gutschrift-Beleg" };
+export const metadata: Metadata = { title: "Акт начисления" };
 export const dynamic = "force-dynamic";
 
 interface DetailRow extends Provision {
@@ -41,14 +41,14 @@ export default async function BelegPage({
 
   if (!affiliate) notFound();
 
-  const datum = new Date(auszahlung.erstellt_am).toLocaleDateString("de-DE");
+  const datum = new Date(auszahlung.erstellt_am).toLocaleDateString("ru-RU");
   const belegnr = `GDT-${id.slice(0, 8).toUpperCase()}`;
 
   return (
     <div className="min-h-screen bg-white print:bg-white">
       {/* Print-Button (nur Bildschirm) */}
       <div className="print:hidden p-4 bg-vintage-parchment border-b border-vintage-sand flex items-center justify-between">
-        <p className="text-sm font-sans text-vintage-brown">Gutschrift-Beleg #{belegnr}</p>
+        <p className="text-sm font-sans text-vintage-brown">Акт начисления #{belegnr}</p>
         <PrintButton />
       </div>
 
@@ -67,21 +67,21 @@ export default async function BelegPage({
             </p>
           </div>
           <div className="text-right">
-            <h2 className="font-serif text-2xl text-black mb-1">Gutschrift</h2>
-            <p className="text-sm text-black/70">Beleg-Nr.: <strong>{belegnr}</strong></p>
-            <p className="text-sm text-black/70">Datum: <strong>{datum}</strong></p>
+            <h2 className="font-serif text-2xl text-black mb-1">Акт начисления</h2>
+            <p className="text-sm text-black/70">№ акта: <strong>{belegnr}</strong></p>
+            <p className="text-sm text-black/70">Дата: <strong>{datum}</strong></p>
           </div>
         </div>
 
         {/* Empfänger */}
         <div className="mb-10">
-          <p className="text-xs uppercase tracking-widest text-black/50 mb-2">Gutschrift an</p>
+          <p className="text-xs uppercase tracking-widest text-black/50 mb-2">Начисление для</p>
           <p className="text-base text-black font-serif">
             {affiliate.vorname} {affiliate.nachname}
           </p>
           <p className="text-sm text-black/70">{affiliate.email}</p>
           {affiliate.steuer_id && (
-            <p className="text-sm text-black/70 mt-1">Steuer-ID: {affiliate.steuer_id}</p>
+            <p className="text-sm text-black/70 mt-1">Налоговый ID: {affiliate.steuer_id}</p>
           )}
         </div>
 
@@ -89,18 +89,18 @@ export default async function BelegPage({
         <table className="w-full mb-8 border-collapse text-sm">
           <thead>
             <tr className="border-b-2 border-black">
-              <th className="text-left  py-2 text-xs uppercase tracking-widest font-normal">Bezeichnung</th>
-              <th className="text-center py-2 text-xs uppercase tracking-widest font-normal">Ebene</th>
-              <th className="text-right py-2 text-xs uppercase tracking-widest font-normal">Basis</th>
-              <th className="text-right py-2 text-xs uppercase tracking-widest font-normal">Satz</th>
-              <th className="text-right py-2 text-xs uppercase tracking-widest font-normal">Betrag</th>
+              <th className="text-left  py-2 text-xs uppercase tracking-widest font-normal">Описание</th>
+              <th className="text-center py-2 text-xs uppercase tracking-widest font-normal">Уровень</th>
+              <th className="text-right py-2 text-xs uppercase tracking-widest font-normal">База</th>
+              <th className="text-right py-2 text-xs uppercase tracking-widest font-normal">Ставка</th>
+              <th className="text-right py-2 text-xs uppercase tracking-widest font-normal">Сумма</th>
             </tr>
           </thead>
           <tbody>
             {provisionenRes.rows.map(p => (
               <tr key={p.id} className="border-b border-black/20">
                 <td className="py-2 text-black">
-                  Vermittlungsprovision{p.produkt_name ? ` – ${p.produkt_name}` : ""}
+                  Партнёрская комиссия{p.produkt_name ? ` – ${p.produkt_name}` : ""}
                 </td>
                 <td className="py-2 text-center text-black/70">L{p.ebene}</td>
                 <td className="py-2 text-right text-black/70">{formatPreis(p.verkaufspreis_cent / 100)}</td>
@@ -111,7 +111,7 @@ export default async function BelegPage({
           </tbody>
           <tfoot>
             <tr className="border-t-2 border-black">
-              <td colSpan={4} className="py-3 text-right font-serif text-base">Gesamtbetrag</td>
+              <td colSpan={4} className="py-3 text-right font-serif text-base">Итого</td>
               <td className="py-3 text-right font-serif text-xl">{formatPreis(auszahlung.betrag_cent / 100)}</td>
             </tr>
           </tfoot>
@@ -121,43 +121,43 @@ export default async function BelegPage({
         <div className="mb-8 p-4 border border-black/20 bg-black/5">
           {affiliate.ist_kleinunternehmer ? (
             <p className="text-xs text-black leading-relaxed">
-              <strong>Hinweis:</strong> Gemäß § 19 Abs. 1 UStG wird keine Umsatzsteuer berechnet
-              (Kleinunternehmerregelung). Der ausgewiesene Betrag ist endgültig.
+              <strong>Примечание:</strong> Согласно § 19 Abs. 1 UStG НДС не начисляется
+              (режим малого предпринимателя). Указанная сумма является окончательной.
             </p>
           ) : (
             <p className="text-xs text-black leading-relaxed">
-              <strong>Hinweis:</strong> Diese Gutschrift wird gemäß § 14 Abs. 2 Satz 2 UStG vom
-              Leistungsempfänger (Galerie du Temps) ausgestellt. Bitte prüfe diese Gutschrift
-              und widersprich ggf. innerhalb von 14 Tagen schriftlich.
-              {!affiliate.steuer_id && <> Bitte teile uns deine Steuer-Nr. mit.</>}
+              <strong>Примечание:</strong> Этот акт начисления выставляется получателем услуги
+              (Galerie du Temps) согласно § 14 Abs. 2 Satz 2 UStG. Пожалуйста, проверьте его
+              и при необходимости направьте письменное возражение в течение 14 дней.
+              {!affiliate.steuer_id && <> Пожалуйста, сообщите Ваш налоговый номер.</>}
             </p>
           )}
         </div>
 
         {/* Zahlungsinfo */}
         <div className="mb-12 text-sm">
-          <p className="text-xs uppercase tracking-widest text-black/50 mb-2">Zahlungsweise</p>
+          <p className="text-xs uppercase tracking-widest text-black/50 mb-2">Способ оплаты</p>
           <p className="text-black">
-            {auszahlung.methode === "sepa" ? "SEPA-Überweisung" : "PayPal"}
+            {auszahlung.methode === "sepa" ? "SEPA-перевод" : "PayPal"}
           </p>
           {auszahlung.status === "bezahlt" && auszahlung.bezahlt_am && (
             <p className="text-xs text-black/70 mt-1">
-              Bezahlt am {new Date(auszahlung.bezahlt_am).toLocaleDateString("de-DE")}
+              Оплачено {new Date(auszahlung.bezahlt_am).toLocaleDateString("ru-RU")}
             </p>
           )}
           {auszahlung.status === "erstellt" && (
-            <p className="text-xs text-black/70 mt-1">Status: Zahlung in Vorbereitung</p>
+            <p className="text-xs text-black/70 mt-1">Статус: платёж готовится</p>
           )}
         </div>
 
         {/* Footer */}
         <div className="border-t border-black/20 pt-6 text-xs text-black/50 leading-relaxed">
           <p>
-            Galerie du Temps · Affiliate-Partner-Programm<br/>
-            Bei Fragen wende dich an hallo@galeriedutemps.kz
+            Galerie du Temps · Партнёрская программа<br/>
+            По вопросам обращайтесь на hallo@galeriedutemps.kz
           </p>
           <p className="mt-2">
-            Diese Gutschrift wurde maschinell erstellt und ist ohne Unterschrift gültig.
+            Этот акт начисления создан автоматически и действителен без подписи.
           </p>
         </div>
       </div>

@@ -13,7 +13,7 @@ import { sendEmail } from "@/lib/email/brevo";
 export async function freischaltenAction(id: string): Promise<void> {
   const session = await auth();
   if (!session || (session.user.role !== "admin" && session.user.role !== "superadmin")) {
-    throw new Error("Nicht berechtigt");
+    throw new Error("Нет прав");
   }
 
   await affiliateFreischalten(id, session.user.id);
@@ -35,7 +35,7 @@ export async function freischaltenAction(id: string): Promise<void> {
 export async function sperrenAction(id: string, grund: string): Promise<void> {
   const session = await auth();
   if (!session || (session.user.role !== "admin" && session.user.role !== "superadmin")) {
-    throw new Error("Nicht berechtigt");
+    throw new Error("Нет прав");
   }
   await affiliateSperren(id, grund);
   revalidatePath("/admin/affiliates");

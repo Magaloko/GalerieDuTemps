@@ -10,7 +10,7 @@ export function PrintButton() {
       style={{ borderRadius: "var(--radius-button)" }}
     >
       <Printer className="w-3.5 h-3.5" />
-      Drucken / PDF speichern
+      Печать / сохранить PDF
     </button>
   );
 }

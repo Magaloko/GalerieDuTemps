@@ -9,7 +9,7 @@ export function BezahltButton({ auszahlungId }: { auszahlungId: string }) {
   const [pending, startTransition] = useTransition();
 
   const handle = () => {
-    if (!confirm("Diese Auszahlung als bezahlt markieren? Der Affiliate wird per E-Mail benachrichtigt.")) return;
+    if (!confirm("Отметить эту выплату как оплаченную? Партнёр получит уведомление по e-mail.")) return;
     startTransition(async () => {
       const result = await alsBezahltMarkierenAction(auszahlungId);
       if (result.fehler) alert(result.fehler);
@@ -23,7 +23,7 @@ export function BezahltButton({ auszahlungId }: { auszahlungId: string }) {
         target="_blank"
         className="flex items-center gap-1 px-2 py-1 border border-vintage-sand text-vintage-brown text-xs font-sans hover:bg-vintage-parchment transition-colors"
         style={{ borderRadius: "var(--radius-vintage)" }}
-        title="Gutschrift-Beleg anzeigen"
+        title="Показать акт начисления"
       >
         <FileText className="w-3 h-3" />
       </Link>
@@ -33,7 +33,7 @@ export function BezahltButton({ auszahlungId }: { auszahlungId: string }) {
         className="flex items-center gap-1 px-2 py-1 bg-vintage-sage text-white text-xs font-sans hover:bg-vintage-forest transition-colors disabled:opacity-50"
         style={{ borderRadius: "var(--radius-vintage)" }}
       >
-        <CheckCircle2 className="w-3 h-3" /> {pending ? "..." : "Bezahlt"}
+        <CheckCircle2 className="w-3 h-3" /> {pending ? "..." : "Оплачено"}
       </button>
     </div>
   );
