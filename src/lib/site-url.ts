@@ -46,6 +46,12 @@ function resolveSiteUrl(): string {
   const raw     = pubUrl || authUrl;
 
   if (!raw) {
+    // Build-Phase (next build): KEIN hard-error — Build-Zeit-Prerendering
+    // hat keine ENV-Vars. Stattdessen Placeholder zurückgeben.
+    // Runtime in production wird trotzdem hart erkannt (NEXT_PHASE unset).
+    if (process.env.NEXT_PHASE === "phase-production-build") {
+      return "https://galeriedutemps.kz";
+    }
     if (process.env.NODE_ENV === "production") {
       // Hard-Error in Production. Das ist absichtlich laut — sonst gehen
       // alle E-Mail-Links auf localhost und Customers können sich nie aktivieren.

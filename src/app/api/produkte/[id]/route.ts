@@ -4,12 +4,16 @@ import { produktById, produktAktualisieren, produktLoeschen } from "@/lib/db/pro
 import { ProduktUpdateSchema } from "@/lib/utils/validierung";
 
 // ---------------------------------------------------------------------------
-// GET /api/produkte/[id]
+// GET /api/produkte/[id]  (nur Admin — produktById() liefert volle Admin-Daten
+// inkl. einkaufspreis, internal notes etc. Kein Public-Endpoint.)
 // ---------------------------------------------------------------------------
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await requireAdminSession();
+  if (!session) return NextResponse.json({ error: "Нет прав" }, { status: 403 });
+
   const { id } = await params;
   try {
     const produkt = await produktById(id);

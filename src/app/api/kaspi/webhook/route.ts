@@ -31,17 +31,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  // Order via payment_id oder order_id finden
+  // Order via payment_id oder order_id finden.
+  // WICHTIG: DB-Lookup-Fehler dürfen NICHT als „Order nicht gefunden"
+  // maskiert werden — sonst antwortet die Route mit 200 OK, Kaspi retryt nie,
+  // und die Zahlung bleibt für immer im wrong-status.
   const paymentId = event.data.payment_id;
-  const r = await query<{ id: string }>(
-    `SELECT id FROM sebo.orders WHERE kaspi_payment_id = $1 OR id = $2 LIMIT 1`,
-    [paymentId, event.data.order_id ?? paymentId]
-  ).catch(() => ({ rows: [] as { id: string }[] }));
+  let r: { rows: { id: string }[] };
+  try {
+    r = await query<{ id: string }>(
+      `SELECT id FROM sebo.orders WHERE kaspi_payment_id = $1 OR id = $2 LIMIT 1`,
+      [paymentId, event.data.order_id ?? paymentId],
+    );
+  } catch (err) {
+    console.error("[Kaspi Webhook] DB-Lookup fehlgeschlagen:", err);
+    // 500 → Kaspi retryt automatisch
+    return NextResponse.json({ error: "DB-Lookup fehlgeschlagen" }, { status: 500 });
+  }
 
   const orderId = r.rows[0]?.id;
   if (!orderId) {
+    // Echtes „nicht gefunden" → 200 (kein Retry, fachlich unbekannte payment_id)
     console.warn("[Kaspi Webhook] Order nicht gefunden:", paymentId);
-    return NextResponse.json({ ok: true });   // 200 damit Kaspi nicht endlos retry'd
+    return NextResponse.json({ ok: true });
   }
 
   switch (event.type) {

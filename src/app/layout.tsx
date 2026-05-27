@@ -63,7 +63,8 @@ const sourceSans = Source_Sans_3({
   weight:   ["400", "500", "600"],
 });
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXTAUTH_URL ?? "https://galeriedutemps.kz";
+import { getSiteUrl } from "@/lib/site-url";
+const BASE_URL = getSiteUrl();
 
 /* metadata-Vorlage:
  * - title.default greift auf der Root-Page (/), title.template auf allen Subseiten.

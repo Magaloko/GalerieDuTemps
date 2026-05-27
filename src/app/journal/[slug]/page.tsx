@@ -3,7 +3,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { postBySlug, postAufrufenInkrement } from "@/lib/db/journal";
-import { marked } from "marked";
+import { markdownToHtml } from "@/lib/utils/markdown";
 import { ChevronLeft, Calendar, Eye } from "lucide-react";
 import type { Metadata } from "next";
 import { getDictionary } from "@/i18n";
@@ -35,9 +35,8 @@ export default async function JournalDetailPage({
   // Aufrufe-Counter (Best-Effort)
   postAufrufenInkrement(slug).catch(() => {});
 
-  // Markdown → HTML
-  marked.setOptions({ gfm: true, breaks: false });
-  const html = marked.parse(post.markdown ?? "") as string;
+  // Markdown → sanitiziertes HTML (kein XSS via stored journal content)
+  const html = markdownToHtml(post.markdown);
 
   return (
     <div className="flex flex-col min-h-screen">

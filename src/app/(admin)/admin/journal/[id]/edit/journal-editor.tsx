@@ -5,7 +5,7 @@ import { Save, Trash2, Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { marked } from "marked";
+import { markdownToHtml } from "@/lib/utils/markdown";
 import { postUpdateAction, postDeleteAction } from "../../actions";
 import type { JournalPost } from "@/types/newsletter";
 
@@ -22,7 +22,7 @@ export function JournalEditor({ post }: { post: JournalPost }) {
   const [meldung,  setMeldung]  = useState("");
   const [pending, startTransition] = useTransition();
 
-  const html = marked.parse(markdown ?? "", { gfm: true, async: false }) as string;
+  const html = markdownToHtml(markdown);
 
   const handleSpeichern = () => {
     setMeldung("Сохранение…");
