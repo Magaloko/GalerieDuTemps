@@ -118,3 +118,15 @@ export async function checkDbConnection(): Promise<{
 
 // Kompatibilitäts-Export (für direkten Pool-Zugriff wenn nötig)
 export const db = { query, withTransaction, checkDbConnection };
+
+// ---------------------------------------------------------------------------
+// Test-Hook — nur für Vitest/Jest. NIEMALS aus App-Code aufrufen.
+// Erlaubt Tests einen alternativen Pool (z.B. gegen TEST_DATABASE_URL)
+// einzuhängen, ohne dass die App-Funktionen umgebaut werden müssen.
+// ---------------------------------------------------------------------------
+export function __setPoolForTesting(testPool: Pool | null): void {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("[DB] __setPoolForTesting() darf NICHT in production!");
+  }
+  globalThis._pgPool = testPool ?? undefined;
+}

@@ -22,7 +22,9 @@ export default defineConfig({
     globals:     true,
     include:     [
       "src/**/*.{test,spec}.{ts,tsx}",
-      "src/**/__tests__/**/*.{ts,tsx}",
+      // __tests__ — aber NUR *.test.ts/*.spec.ts (Helper-Files wie test-db.ts
+      // sollen NICHT als Test-Suite geladen werden, sie haben kein describe()).
+      "src/**/__tests__/**/*.{test,spec}.{ts,tsx}",
     ],
     exclude: [
       "node_modules",
