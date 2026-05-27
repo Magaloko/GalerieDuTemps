@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAdminSession } from "@/lib/auth/config";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,11 @@ export const dynamic = "force-dynamic";
  * ────────────────────────────────────────────────────────────────────────── */
 
 export async function GET() {
+  const session = await requireAdminSession();
+  if (!session) {
+    return NextResponse.json({ error: "Нет прав" }, { status: 403 });
+  }
+
   const apiKey       = process.env.BREVO_API_KEY;
   const senderEmail  = process.env.BREVO_SENDER_EMAIL ?? "noreply@galeriedutemps.kz (default)";
   const senderName   = process.env.BREVO_SENDER_NAME  ?? "Galerie du Temps (default)";
