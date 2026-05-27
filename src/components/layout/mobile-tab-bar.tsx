@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Home, Search, Sparkles, Heart, User } from "lucide-react";
 import { useWunschliste } from "@/hooks/use-wunschliste";
 import type { Dictionary } from "@/i18n";
@@ -23,6 +23,7 @@ type Item = {
  * ────────────────────────────────────────────────────────────────────────── */
 export function MobileTabBar({ t }: { t: Dictionary }) {
   const pathname    = usePathname();
+  const router      = useRouter();
   const { ids }     = useWunschliste();
   const wunschCount = ids.length;
 
@@ -53,21 +54,31 @@ export function MobileTabBar({ t }: { t: Dictionary }) {
       {items.map(({ href, label, icon: Icon, isActive }) => {
         const active = isActive(pathname);
         const isHeart = href === "/wunschliste";
+        // Hybrid-Click-Handler: Falls Next.js-Link aus irgendeinem Grund den
+        // Click nicht fängt (Mobile-Browser-Quirks), navigieren wir manuell
+        // via router.push. onClick wird vor Link-Default ausgeführt, beides
+        // greift — falls eins fehlschlägt, fällt's auf das andere zurück.
         return (
           <Link
             key={href}
             href={href}
             className="relative flex-1 flex flex-col items-center justify-center gap-1 py-2"
             style={{
-              // touch-action: manipulation entfernt 300ms-Click-Delay auf iOS
-              // und priorisiert unsere Tap-Events vor Browser-Gesten.
               touchAction:             "manipulation",
               WebkitTapHighlightColor: "rgba(232,112,58,0.25)",
-              minHeight:               48,  // Apple-HIG / Material min-tap-target
+              minHeight:               48,
               userSelect:              "none",
             }}
             aria-current={active ? "page" : undefined}
             prefetch={false}
+            onClick={(e) => {
+              // Falls Modifier-Tasten (Strg/Cmd+Click etc.) → Default-Verhalten
+              if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+              // Sonst: explizit router.push damit Mobile-Browser-Quirks
+              // (z.B. Touch-Cancel beim Bottom-Edge) keinen Effekt haben.
+              e.preventDefault();
+              router.push(href);
+            }}
           >
             {/* Active indicator (2px coral bar above icon) */}
             {active && (

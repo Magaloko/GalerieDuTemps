@@ -50,7 +50,20 @@ export function CookieBanner() {
           (sonst überlagert er Аккаунт- und Wishlist-Tab und macht die TabBar
           komplett unklickbar). Desktop: normales bottom-0. */}
       {zeigeBanner && (
-        <div className="fixed inset-x-0 z-50 p-4 sm:p-6 cookie-banner-mobile">
+        <div
+          className="fixed inset-x-0 z-50 p-4 sm:p-6"
+          style={{
+            // Mobile: 100px (TabBar = 12+22+12+~28 padding ≈ ~80px + safe-area).
+            // Desktop: bottom-0 (keine TabBar).
+            // Inline-style overridden Tailwind; mit CSS-Variable steuern wir
+            // per Media-Query.
+            bottom: "var(--cookie-banner-bottom, 100px)",
+          }}
+        >
+          <style>{`
+            :root { --cookie-banner-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+            @media (min-width: 768px) { :root { --cookie-banner-bottom: 0px; } }
+          `}</style>
           <div
             className="max-w-4xl mx-auto bg-vintage-espresso text-vintage-cream p-5 sm:p-6 grid md:grid-cols-[1fr,auto] gap-4 items-center"
             style={{ borderRadius: "var(--radius-card)", boxShadow: "var(--shadow-vintage-xl)" }}
