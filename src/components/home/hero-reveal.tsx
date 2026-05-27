@@ -158,11 +158,23 @@ export function HeroReveal({
         ))}
       </div>
 
-      {/* Text Overlay */}
+      {/* Text Overlay
+          Statt mixBlendMode:difference (würde gegen helle Bildbereiche brechen)
+          legen wir einen radialen Cobalt-Verlauf vom Zentrum nach außen — das
+          dunkelt die Bildmitte ab, wo der Titel sitzt, ohne die Image-Stack-
+          Kanten zu verdecken. Plus subtiler text-shadow als Belt-and-Braces. */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(ellipse at center, rgba(15,20,48,0.55) 0%, rgba(15,20,48,0.25) 45%, rgba(15,20,48,0) 75%)',
+        }}
+      />
       <div
         ref={textRef}
         className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pointer-events-none"
-        style={{ mixBlendMode: 'difference' }}
+        style={{ textShadow: '0 2px 18px rgba(15,20,48,0.45)' }}
       >
         <p
           className="text-[11px] uppercase font-medium mb-6 md:mb-8 tracking-[0.28em]"
