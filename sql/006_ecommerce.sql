@@ -248,5 +248,5 @@ ALTER TABLE sebo.produkte
 CREATE INDEX IF NOT EXISTS idx_produkte_b2c_mode ON sebo.produkte(b2c_mode);
 
 -- =============================================================================
--- ENDE 005_ecommerce.sql
+-- ENDE 006_ecommerce.sql
 -- =============================================================================

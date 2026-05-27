@@ -1,5 +1,5 @@
 -- ────────────────────────────────────────────────────────────────────────────
--- 026_theme_settings.sql — Theme-Customizer (Farben, Logo, Branding)
+-- 028_theme_settings.sql — Theme-Customizer (Farben, Logo, Branding)
 --
 -- Erlaubt dem Admin die komplette visuelle Identität (alle 14 Brand-Farben,
 -- Logo-URL, Favicon, Brand-Name + Tagline) ohne Code-Deploy zu ändern.

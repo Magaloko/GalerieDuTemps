@@ -12,5 +12,5 @@ COMMENT ON COLUMN sebo.affiliates.kaspi_telefon IS
     'Kaspi.kz-Telefonnummer für Auszahlung (E.164 ohne führendes "+", z.B. 77011234567)';
 
 -- =============================================================================
--- ENDE 010_affiliate_kaspi.sql
+-- ENDE 011_affiliate_kaspi.sql
 -- =============================================================================

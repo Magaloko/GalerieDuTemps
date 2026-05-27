@@ -1,5 +1,5 @@
 -- ────────────────────────────────────────────────────────────────────────────
--- 023_marketing_strings.sql — Editierbare Marketing-Texte (Hero, Ticker, etc.)
+-- 025_marketing_strings.sql — Editierbare Marketing-Texte (Hero, Ticker, etc.)
 --
 -- Bisher waren Slogans, CTA-Labels und Promo-Texte im Code hardcoded — nur
 -- per Re-Deploy änderbar. Diese Tabelle bringt sie in die Admin-Oberfläche.

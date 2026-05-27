@@ -97,5 +97,5 @@ UPDATE sebo.affiliate_einstellungen
     WHERE schluessel = 'mindestauszahlung_cent' AND wert = '2000';
 
 -- =============================================================================
--- ENDE 009_kasachstan.sql
+-- ENDE 010_kasachstan.sql
 -- =============================================================================

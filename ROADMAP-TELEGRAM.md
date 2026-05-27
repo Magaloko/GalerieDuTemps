@@ -17,7 +17,7 @@ Damit das alles in Produktion funktioniert:
    ```bash
    npm run db:migrate
    ```
-   Wendet `sql/023_marketing_strings.sql` + `sql/024_customer_telegram.sql` an.
+   Wendet `sql/025_marketing_strings.sql` + `sql/026_customer_telegram.sql` an.
 
 2. **Bot bei BotFather einrichten** (falls noch nicht passiert):
    - Telegram → @BotFather → /newbot → Token bekommen
@@ -69,7 +69,7 @@ Notifications-Trigger:
 
 ### Konkrete Schritte (chronologisch)
 
-1. **Migration** `sql/024_customer_telegram.sql`:
+1. **Migration** `sql/026_customer_telegram.sql`:
    - 3 Spalten zu `sebo.customers` hinzufügen
    - Index auf `telegram_chat_id` (für Reverse-Lookup)
 

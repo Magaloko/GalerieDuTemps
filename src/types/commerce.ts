@@ -58,7 +58,7 @@ export interface Customer {
   letzter_login_am:   string | null;
   erstellt_am:        string;
   aktualisiert_am:    string;
-  // Telegram-Verknüpfung (siehe sql/024_customer_telegram.sql)
+  // Telegram-Verknüpfung (siehe sql/026_customer_telegram.sql)
   telegram_chat_id?:       number | null;
   telegram_username?:      string | null;
   telegram_link_token?:    string | null;

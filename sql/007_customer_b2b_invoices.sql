@@ -84,5 +84,5 @@ CREATE INDEX IF NOT EXISTS idx_invoices_customer ON sebo.invoices(customer_id);
 CREATE INDEX IF NOT EXISTS idx_invoices_status   ON sebo.invoices(status);
 
 -- =============================================================================
--- ENDE 006_customer_b2b_invoices.sql
+-- ENDE 007_customer_b2b_invoices.sql
 -- =============================================================================

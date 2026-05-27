@@ -1,5 +1,5 @@
 -- ────────────────────────────────────────────────────────────────────────────
--- 024_customer_telegram.sql — Customer ↔ Telegram-Verknüpfung
+-- 026_customer_telegram.sql — Customer ↔ Telegram-Verknüpfung
 --
 -- Phase B1 der Telegram-Integration (siehe ROADMAP-TELEGRAM.md). Erlaubt
 -- Customers ihren Telegram-Account zu verbinden um Bestell-Notifications

@@ -48,5 +48,5 @@ INSERT INTO sebo.affiliate_einstellungen (schluessel, wert, beschreibung) VALUES
 ON CONFLICT (schluessel) DO NOTHING;
 
 -- =============================================================================
--- ENDE 004_polish.sql
+-- ENDE 005_polish.sql
 -- =============================================================================

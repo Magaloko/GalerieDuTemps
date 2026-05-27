@@ -4,7 +4,7 @@ import type { Locale } from "@/i18n/types";
 /* ──────────────────────────────────────────────────────────────────────────
  * Marketing-Strings — KV-Store mit i18n für editierbare Marketing-Texte.
  *
- * Tabelle: sebo.marketing_strings (siehe sql/023_marketing_strings.sql)
+ * Tabelle: sebo.marketing_strings (siehe sql/025_marketing_strings.sql)
  *   schluessel    string PK (z.B. 'home.hero.h1_unten')
  *   wert_i18n     {ru?: string, en?: string, de?: string, kz?: string}
  *   fallback      string (wenn weder Sprache noch Default-Sprache vorhanden)

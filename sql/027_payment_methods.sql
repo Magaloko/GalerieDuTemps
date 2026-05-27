@@ -1,5 +1,5 @@
 -- ────────────────────────────────────────────────────────────────────────────
--- 025_payment_methods.sql — Multi-Provider-Payment + Anzahlung
+-- 027_payment_methods.sql — Multi-Provider-Payment + Anzahlung
 --
 -- Erweitert sebo.orders um payment_method + payment_status + payment_meta,
 -- damit Bestellungen auch via PayPal, Crypto, Bank-Transfer oder vor-Ort
@@ -75,7 +75,7 @@ COMMENT ON COLUMN sebo.orders.anzahlung_cents IS
 
 -- ────────────────────────────────────────────────────────────────────────────
 -- Seed: Bank-Daten + Vor-Ort-Anweisungen als editierbare Marketing-Strings
--- (siehe sql/023_marketing_strings.sql). Auch wenn Tabelle leer — User kann
+-- (siehe sql/025_marketing_strings.sql). Auch wenn Tabelle leer — User kann
 -- nach Migration die echten Werte im Admin → Marketing-Texte eintragen.
 -- ────────────────────────────────────────────────────────────────────────────
 INSERT INTO sebo.marketing_strings (schluessel, wert_i18n, beschreibung, fallback) VALUES

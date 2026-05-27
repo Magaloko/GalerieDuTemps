@@ -86,7 +86,7 @@ describe.skipIf(!testDbAvailable())("db/produkte (Integration)", () => {
       expect(a.artikel_code).toBeTruthy();
       expect(b.artikel_code).toBeTruthy();
       expect(a.artikel_code).not.toBe(b.artikel_code);
-      // Format aus 021_artikel_code_seq.sql — meist "V-0001" o.ä.
+      // Format aus 022_artikel_code_seq.sql — meist "V-0001" o.ä.
       expect(a.artikel_code).toMatch(/^[A-Z]+-?\d+/);
     });
 

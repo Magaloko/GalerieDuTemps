@@ -29,7 +29,7 @@
 
 ### Was läuft jetzt
 
-- Migration `sql/025_payment_methods.sql` erweitert `sebo.orders` um
+- Migration `sql/027_payment_methods.sql` erweitert `sebo.orders` um
   `payment_method`, `payment_status`, `payment_meta`, `anzahlung_cents`,
   `payment_reference`. Plus 8 Marketing-Strings für Bank-Daten + Vor-Ort.
 - `src/lib/payment/methods.ts`: Registry aller 9 Methoden mit i18n-Labels,

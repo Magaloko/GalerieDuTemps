@@ -57,9 +57,13 @@ const { rows: ausgefuehrt } = await client.query(
 );
 const ausgefuehrtMap = new Map(ausgefuehrt.map(r => [r.filename, r.sha256]));
 
-// 3. Alle SQL-Files alphabetisch durchgehen
+// 3. Alle SQL-Files alphabetisch durchgehen.
+//    _APPLY_*.sql + _supabase_combined.sql sind manuelle Supabase-Editor-Scripts
+//    (historisch / Bulk-Apply) — die laufen NICHT durch db:migrate, sonst würden
+//    bereits applied Migrationen mit anderem Filename doppelt in schema_migrations
+//    landen.
 const files = readdirSync(sqlDir)
-  .filter(f => f.endsWith(".sql") && f !== "000_schema_migrations.sql")
+  .filter(f => f.endsWith(".sql") && !f.startsWith("_") && f !== "000_schema_migrations.sql")
   .sort();
 
 let neue = 0;

@@ -111,5 +111,5 @@ CREATE TRIGGER trg_journal_updated
     FOR EACH ROW EXECUTE FUNCTION sebo.update_aktualisiert_am();
 
 -- =============================================================================
--- ENDE 008_newsletter_journal.sql
+-- ENDE 009_newsletter_journal.sql
 -- =============================================================================
