@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { oeffentlichesProduktBySlug, aehnlicheProdukte } from "@/lib/db/produkte-public";
+import { InstagramEmbeds } from "@/components/produkte/instagram-embeds";
 import { ProduktGrid } from "@/components/produkte/produkt-grid";
 import { ProduktDetailClient } from "./client";
 import { AddToCartButton } from "@/components/produkte/add-to-cart-button";
@@ -72,6 +73,7 @@ export default async function ProduktDetailPage({ params }: Props) {
     4
   ).catch(() => []);
 
+  const instagramUrls = produkt.instagram_urls ?? [];
   const galerie = produkt.bilder ?? [];
   const extraBilder: typeof galerie = [];
   if (produkt.hauptbild_url) {
@@ -422,6 +424,16 @@ export default async function ProduktDetailPage({ params }: Props) {
               </div>
             </div>
           )}
+        </section>
+      )}
+
+      {/* ── Instagram-Embeds ───────────────────────────────────── */}
+      {instagramUrls.length > 0 && (
+        <section
+          className="max-w-[1440px] mx-auto px-5 md:px-14 py-12 md:py-16 border-t"
+          style={{ borderColor: "var(--color-line)" }}
+        >
+          <InstagramEmbeds urls={instagramUrls} />
         </section>
       )}
 

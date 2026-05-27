@@ -193,11 +193,13 @@ export async function produktErstellen(
         aktiv, b2c_mode, seo_titel, seo_beschreibung, tags,
         hauptbild_url, rueckbild_url, video_url, abmessungen,
         name_i18n, kurzbeschreibung_i18n, beschreibung_i18n,
+        instagram_urls,
         veroeffentlicht_am)
      VALUES
        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,
         $24,$25,$26,$27::jsonb,
         $28::jsonb, $29::jsonb, $30::jsonb,
+        $31,
         now())
      RETURNING id`,
     [
@@ -231,6 +233,8 @@ export async function produktErstellen(
       JSON.stringify(input.name_i18n             ?? {}),
       JSON.stringify(input.kurzbeschreibung_i18n ?? {}),
       JSON.stringify(input.beschreibung_i18n     ?? {}),
+      // Postgres TEXT[]-Literal — Werte in doppelte Quotes für safety
+      `{${(input.instagram_urls ?? []).map(u => `"${u.replace(/"/g, '\\"')}"`).join(",")}}`,
     ]
   );
 
@@ -305,6 +309,12 @@ export async function produktAktualisieren(
     const tags = Array.isArray(input.tags) ? input.tags : [];
     felder.push(`tags = $${idx++}`);
     werte.push(`{${tags.map(t => `"${t.replace(/"/g, '\\"')}"`).join(",")}}`);
+  }
+
+  if (input.instagram_urls !== undefined) {
+    const urls = Array.isArray(input.instagram_urls) ? input.instagram_urls : [];
+    felder.push(`instagram_urls = $${idx++}`);
+    werte.push(`{${urls.map(u => `"${u.replace(/"/g, '\\"')}"`).join(",")}}`);
   }
 
   if (felder.length === 0) return produktById(id);

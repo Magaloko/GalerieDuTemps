@@ -10,7 +10,9 @@ import { PreisMultiCurrency } from "./preis-multi-currency";
 import { MultilingualInput } from "@/components/ui/multilingual-input";
 import { SingleMediaUpload } from "@/components/ui/single-media-upload";
 import { BildManager } from "./bild-manager";
+import { InstagramUrlsInput } from "./instagram-urls-input";
 import { Save, Trash2, AlertCircle, CheckCircle2, ImagePlus, Info } from "lucide-react";
+import { InstagramIcon } from "./instagram-icon";
 import type { Produkt, Produktbild } from "@/types/produkt";
 import type { Kategorie } from "@/types/produkt";
 import type { FormState } from "@/app/(admin)/admin/produkte/actions";
@@ -431,6 +433,28 @@ export function ProduktFormular({
           defaultValue={produkt?.video_url ?? ""}
           placeholder="https://… .mp4  или  https://youtu.be/…"
           hint="MP4 (макс. 100 МБ) или URL YouTube/Vimeo"
+        />
+      </section>
+
+      {/* ─── Instagram-Embeds (опционально) ───────────────────────── */}
+      <section
+        className="bg-vintage-white border border-vintage-sand p-6 space-y-3"
+        style={{ borderRadius: "var(--radius-card)" }}
+      >
+        <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
+          <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2">
+            <InstagramIcon className="w-4 h-4" style={{ color: "#C13584" }} />
+            Instagram
+          </h2>
+          <p className="text-xs font-sans text-vintage-dust">Reels и посты · до 5 на товар</p>
+        </div>
+        <p className="text-xs text-vintage-dust font-sans">
+          Скопируй ссылку с reel или поста (либо весь embed-код прямо из Instagram).
+          Будет показано на странице товара как нативный embed.
+        </p>
+        <InstagramUrlsInput
+          name="instagram_urls"
+          defaultValue={produkt?.instagram_urls ?? []}
         />
       </section>
 

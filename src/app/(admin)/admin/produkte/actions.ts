@@ -93,6 +93,12 @@ function parseProduktFormData(formData: FormData) {
     hauptbild_url:    formData.get("hauptbild_url") || undefined,
     rueckbild_url:    formData.get("rueckbild_url") || undefined,
     video_url:        formData.get("video_url")     || undefined,
+    // Instagram-URLs: kommen als mehrere Hidden-Inputs mit selbem name aus
+    // InstagramUrlsInput. formData.getAll() liefert das Array.
+    // Leere Strings ausfiltern (kommen vor wenn 0 URLs → ein leerer placeholder).
+    instagram_urls:   formData.getAll("instagram_urls")
+                        .map(v => typeof v === "string" ? v.trim() : "")
+                        .filter(v => v.length > 0),
     abmessungen,
   };
 }

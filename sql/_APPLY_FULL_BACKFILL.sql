@@ -1,6 +1,6 @@
 -- ═══════════════════════════════════════════════════════════════════════════
 -- _APPLY_FULL_BACKFILL.sql
--- Generiert: 2026-05-27T20:29:55.888Z
+-- Generiert: 2026-05-27T20:40:52.805Z
 --
 -- EINMALIG in Supabase SQL Editor ausführen (paste → Run).
 --
@@ -142,6 +142,31 @@ INSERT INTO sebo.marketing_strings (schluessel, wert_i18n, beschreibung, fallbac
 ON CONFLICT (schluessel) DO NOTHING;
 
 
+-- ─── 032_produkt_instagram.sql ─────────────────────────────────────────────────────────
+-- ────────────────────────────────────────────────────────────────────────────
+-- 032_produkt_instagram.sql — Instagram-Reels/Posts pro Produkt
+--
+-- Galerie du Temps postet ihre Vintage-Funde auch auf Instagram. Bei manchen
+-- Produkten ist das IG-Reel besonders informativ (Detail-Aufnahmen, Story
+-- des Stücks). Admin soll diese Reels direkt am Produkt verlinken können.
+--
+-- Storage: TEXT[] mit kanonisierten Permalink-URLs.
+--   Format: https://www.instagram.com/(p|reel|tv)/{shortcode}/
+--   Reihenfolge des Arrays = Anzeige-Reihenfolge auf der Produktseite.
+--
+-- Pro Produkt: 0 bis 5 Embeds (UI begrenzt es).
+--
+-- Frontend rendert pro URL ein <blockquote class="instagram-media">,
+-- danach läuft window.instgrm.Embeds.process() das Embed-Skript einmal.
+-- ────────────────────────────────────────────────────────────────────────────
+
+ALTER TABLE sebo.produkte
+  ADD COLUMN IF NOT EXISTS instagram_urls TEXT[] NOT NULL DEFAULT '{}';
+
+COMMENT ON COLUMN sebo.produkte.instagram_urls IS
+  'Liste der Instagram-Permalink-URLs für dieses Produkt (Posts, Reels, TV). Reihenfolge = Anzeige-Reihenfolge.';
+
+
 -- ═══ Tracking-Backfill ═══════════════════════════════════════════════════
 -- Marker für ALLE Migrations-Files mit echtem SHA256 der aktuellen Datei.
 -- ON CONFLICT DO NOTHING → bestehende Einträge bleiben unverändert.
@@ -178,14 +203,15 @@ INSERT INTO sebo.schema_migrations (filename, sha256, dauer_ms) VALUES
   ('028_theme_settings.sql', 'e9a0b1b88bd5298677edc5a8dcbd75212705530ef38612a6a864c604d05aac37', 0),
   ('029_feature_flags.sql', 'dbd4b96c7b73fe084c37fc9430ebb9245a370195133a3b7945353ed280288f11', 0),
   ('030_bilder_varianten.sql', '31e055c96331b5ef6dc22863e8efb929abb73c8c5398fed04abb913b30b5c215', 0),
-  ('031_hero_background.sql', 'dd91f59912b1fdc07fe387384f5a1be6a8fb81b23a88a5a66f09e5843cf5e9b9', 0)
+  ('031_hero_background.sql', 'dd91f59912b1fdc07fe387384f5a1be6a8fb81b23a88a5a66f09e5843cf5e9b9', 0),
+  ('032_produkt_instagram.sql', '3331199b1f30ad3b76e029f9617fd8c6cbfcba4593eca618bdc2d15444655707', 0)
 ON CONFLICT (filename) DO NOTHING;
 
 COMMIT;
 
 -- Verifikation:
 -- SELECT COUNT(*) AS migrationen FROM sebo.schema_migrations;
---   → Sollte 32 sein.
+--   → Sollte 33 sein.
 -- SELECT * FROM sebo.feature_flags;
 -- SELECT column_name FROM information_schema.columns
 --  WHERE table_schema='sebo' AND table_name='produktbilder' ORDER BY ordinal_position;

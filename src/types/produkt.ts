@@ -78,6 +78,8 @@ export interface Produkt {
   hauptbild_url:      string | null;
   rueckbild_url:      string | null;
   video_url:          string | null;
+  /** Instagram-Permalink-URLs (Posts/Reels/TV) für dieses Produkt. Reihenfolge = Anzeige. */
+  instagram_urls:     string[];
   // Relations
   bilder?:            Produktbild[];
   dateien?:           Produktdatei[];
