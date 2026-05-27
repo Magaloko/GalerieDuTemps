@@ -6,7 +6,7 @@ import { couponValidieren } from "@/lib/db/coupons";
 import { customerById } from "@/lib/db/customers";
 import { auth } from "@/lib/auth/config";
 import { getStripeServer, stripeKonfiguriert } from "@/lib/stripe-server";
-import { berechneCart } from "@/lib/cart";
+import { berechneCart } from "@/lib/cart-berechnung";
 import { findeRabattTier } from "@/lib/db/customer-b2b";
 import { istReverseCharge } from "@/lib/vat";
 import { systemEinstellungenLaden } from "@/lib/db/system-einstellungen";
