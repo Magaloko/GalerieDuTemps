@@ -26,11 +26,11 @@ export function SegmentZeile({ segment }: { segment: Segment & { treffer?: numbe
           <p className="font-serif text-vintage-gold text-xl flex items-center gap-1">
             <Users className="w-4 h-4" /> {segment.treffer ?? 0}
           </p>
-          <p className="text-[10px] font-sans text-vintage-dust uppercase tracking-widest">Treffer</p>
+          <p className="text-[10px] font-sans text-vintage-dust uppercase tracking-widest">Найдено</p>
         </div>
         <button
           onClick={() => {
-            if (confirm(`Segment "${segment.name}" löschen?`)) startTransition(() => segmentLoeschenAction(segment.id));
+            if (confirm(`Удалить сегмент «${segment.name}»?`)) startTransition(() => segmentLoeschenAction(segment.id));
           }}
           disabled={pending}
           className="p-2 text-vintage-dust hover:text-vintage-burgundy disabled:opacity-50"

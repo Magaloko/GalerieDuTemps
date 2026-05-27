@@ -4,7 +4,7 @@ import { SegmentZeile } from "./segment-zeile";
 import { Filter } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Segmente" };
+export const metadata: Metadata = { title: "Сегменты" };
 export const dynamic = "force-dynamic";
 
 export default async function SegmentsPage() {
@@ -24,9 +24,9 @@ export default async function SegmentsPage() {
         <Filter className="w-5 h-5 text-vintage-gold" />
         <div>
           <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-          <h1 className="font-serif text-2xl text-vintage-espresso">Segmente</h1>
+          <h1 className="font-serif text-2xl text-vintage-espresso">Сегменты</h1>
           <p className="text-vintage-dust text-xs font-sans mt-0.5">
-            Gespeicherte Filter zur Zielgruppen-Ansprache · {segments.length} Segmente
+            Сохранённые фильтры для работы с аудиториями · {segments.length} сегментов
           </p>
         </div>
       </div>
@@ -36,8 +36,8 @@ export default async function SegmentsPage() {
       {segmentsMitTreffer.length === 0 ? (
         <div className="text-center py-12 bg-vintage-white border border-vintage-sand" style={{ borderRadius: "var(--radius-card)" }}>
           <Filter className="w-10 h-10 text-vintage-sand mx-auto mb-3" />
-          <p className="font-serif text-vintage-brown">Noch keine Segmente</p>
-          <p className="text-xs text-vintage-dust font-sans mt-1">Erstelle dein erstes Segment oben.</p>
+          <p className="font-serif text-vintage-brown">Сегментов пока нет</p>
+          <p className="text-xs text-vintage-dust font-sans mt-1">Создайте первый сегмент выше.</p>
         </div>
       ) : (
         <div className="space-y-2">

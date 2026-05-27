@@ -14,7 +14,7 @@ export function FlowZeile({ flow }: { flow: DripFlow }) {
       <div>
         <p className="font-serif text-vintage-espresso">{flow.name}</p>
         <p className="text-xs text-vintage-dust font-sans mt-0.5">
-          Trigger: <span className="text-vintage-brown">{flow.trigger_typ}</span>
+          Триггер: <span className="text-vintage-brown">{flow.trigger_typ}</span>
           {flow.trigger_param && ` (${flow.trigger_param})`}
         </p>
         {flow.beschreibung && <p className="text-xs text-vintage-dust font-sans mt-0.5">{flow.beschreibung}</p>}
@@ -26,7 +26,7 @@ export function FlowZeile({ flow }: { flow: DripFlow }) {
           style={{ borderRadius: "var(--radius-vintage)" }}>
           {flow.aktiv ? <ToggleRight className="w-5 h-5 text-vintage-sage" /> : <ToggleLeft className="w-5 h-5 text-vintage-dust" />}
         </button>
-        <button onClick={() => { if (confirm(`Flow "${flow.name}" löschen?`)) startTransition(() => flowDeleteAction(flow.id)); }}
+        <button onClick={() => { if (confirm(`Удалить цепочку «${flow.name}»?`)) startTransition(() => flowDeleteAction(flow.id)); }}
           disabled={pending}
           className="p-2 text-vintage-dust hover:text-vintage-burgundy transition-colors">
           <Trash2 className="w-4 h-4" />

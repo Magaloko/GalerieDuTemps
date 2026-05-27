@@ -13,6 +13,13 @@ const PRIO_STYLE: Record<TaskPrioritaet, string> = {
   dringend: "bg-vintage-burgundy/10 text-vintage-burgundy",
 };
 
+const PRIO_LABEL: Record<TaskPrioritaet, string> = {
+  niedrig:  "Низкий",
+  normal:   "Обычный",
+  hoch:     "Высокий",
+  dringend: "Срочный",
+};
+
 export function TaskRow({ task }: { task: Task }) {
   const [pending, startTransition] = useTransition();
 
@@ -39,7 +46,7 @@ export function TaskRow({ task }: { task: Task }) {
         </p>
         <div className="flex flex-wrap items-center gap-2 mt-1 text-xs font-sans">
           <span className={`px-2 py-0.5 ${PRIO_STYLE[task.prioritaet]}`} style={{ borderRadius: "var(--radius-vintage)" }}>
-            {task.prioritaet}
+            {PRIO_LABEL[task.prioritaet]}
           </span>
           {task.customer_name && (
             <Link href={`/admin/kunden/${task.customer_id}`} className="text-vintage-brown hover:text-vintage-espresso flex items-center gap-1">
@@ -48,14 +55,14 @@ export function TaskRow({ task }: { task: Task }) {
           )}
           {task.faellig_am && (
             <span className="text-vintage-dust">
-              bis {new Date(task.faellig_am).toLocaleDateString("de-DE")}
+              до {new Date(task.faellig_am).toLocaleDateString("ru-RU")}
             </span>
           )}
         </div>
       </div>
 
       <button
-        onClick={() => { if (confirm("Task löschen?")) startTransition(() => taskDeleteAction(task.id, task.customer_id ?? undefined)); }}
+        onClick={() => { if (confirm("Удалить задачу?")) startTransition(() => taskDeleteAction(task.id, task.customer_id ?? undefined)); }}
         className="text-vintage-dust hover:text-vintage-burgundy p-1.5"
         style={{ borderRadius: "var(--radius-vintage)" }}
       >
