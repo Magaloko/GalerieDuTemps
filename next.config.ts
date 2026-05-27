@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   // Standalone-Output für Docker (minimales Production-Image)
   output: "standalone",
 
+  // sharp hat native Binaries (libvips) die NICHT durch Webpack bundlen sollen
+  // — sonst gehen die platform-spezifischen .node-Dateien in der Coolify-
+  // Standalone-Build verloren und Image-Uploads crashen mit "sharp not found".
+  serverExternalPackages: ["sharp"],
+
   // Turbopack: NFT-Warnung für /api/uploads unterdrücken.
   // Die Route nutzt process.cwd() als Dev-Fallback — in Production ist
   // UPLOAD_DIR immer gesetzt, sodass cwd() nie erreicht wird.
