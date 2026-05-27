@@ -2,7 +2,15 @@ import { writeFile, mkdir } from "fs/promises";
 import { join, extname } from "path";
 import { randomUUID } from "crypto";
 
-const ALLOWED_IMAGE = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/avif"];
+// iOS Safari liefert HEIC/HEIF als Default — wenn nicht erlaubt scheitert
+// jeder iPhone-Upload still. Next/Image kann HEIC nicht direkt, aber wir
+// akzeptieren es serverseitig (User soll sehen können dass Upload klappte);
+// für Anzeige fällt next/image dann auf das Original zurück, was meist
+// vom Browser ge-rendert werden kann.
+const ALLOWED_IMAGE = [
+  "image/jpeg", "image/jpg", "image/png", "image/webp", "image/avif",
+  "image/heic", "image/heif",
+];
 const ALLOWED_VIDEO = ["video/mp4", "video/webm", "video/quicktime"];
 const ALLOWED_DOC   = ["application/pdf"];
 const ALLOWED_TYPES = [...ALLOWED_IMAGE, ...ALLOWED_VIDEO, ...ALLOWED_DOC];

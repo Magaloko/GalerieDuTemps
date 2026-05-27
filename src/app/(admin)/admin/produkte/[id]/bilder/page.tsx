@@ -5,6 +5,7 @@ import { dateienFuerProdukt, zertifikateFuerProdukt } from "@/lib/db/produkt-med
 import { BildManager } from "@/components/produkte/bild-manager";
 import { DateienManager } from "@/components/produkte/dateien-manager";
 import { ZertifikateManager } from "@/components/produkte/zertifikate-manager";
+import { UploadVolumeBanner } from "@/components/produkte/upload-volume-banner";
 import Link from "next/link";
 import { ChevronLeft, FileText, Award } from "lucide-react";
 import type { Metadata } from "next";
@@ -52,6 +53,8 @@ export default async function BilderPage({ params }: Props) {
           <span className="text-vintage-brown">{produkt.name}</span>
         </p>
       </div>
+
+      <UploadVolumeBanner />
 
       <BildManager produktId={id} initialBilder={bilder} />
 

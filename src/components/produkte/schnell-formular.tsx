@@ -54,10 +54,17 @@ export function SchnellFormular({ kategorien }: Props) {
   ];
 
   // ───────── Fotos
+  // Akzeptiert: JPG/PNG/WebP/AVIF + iOS-HEIC/HEIF. Filename-Endung als
+  // Fallback weil manche Browser bei HEIC den MIME-Type leer lassen.
   const addFotos = (files: FileList | null) => {
     if (!files) return;
-    const valid = [...files].filter(f => /^image\/(jpe?g|png|webp|avif)$/.test(f.type) && f.size <= 10 * 1024 * 1024);
-    if (valid.length < files.length) setError(`${files.length - valid.length} Datei(en) übersprungen (Format/Größe)`);
+    const valid = [...files].filter(f => {
+      const okType = /^image\/(jpe?g|png|webp|avif|heic|heif)$/.test(f.type);
+      const okExt  = /\.(jpe?g|png|webp|avif|heic|heif)$/i.test(f.name);
+      const okSize = f.size <= 10 * 1024 * 1024;
+      return (okType || okExt) && okSize;
+    });
+    if (valid.length < files.length) setError(`${files.length - valid.length} файл(ов) пропущено (формат/размер)`);
     setFotos(prev => [...prev, ...valid].slice(0, 12));
   };
 
@@ -93,14 +100,32 @@ export function SchnellFormular({ kategorien }: Props) {
   };
 
   // ───────── Speichern: Produkt erstellen + Fotos hochladen
+  // Akzeptiert auch leeren ai-State — dann mit Notizen als Beschreibung
+  // (manueller Modus wenn KI nicht verfügbar oder User KI überspringen will).
   const speichern = () => {
-    if (!ai) return;
     setError(null);
     if (!preis) { setError("Preis fehlt"); return; }
 
+    // Manueller Fallback wenn KI nicht gelaufen: aus Notizen + Default-Name bauen.
+    const data = ai ?? {
+      name:             notizen.slice(0, 80).split(/[.\n]/)[0].trim() || "Без названия",
+      kurzbeschreibung: notizen.slice(0, 160),
+      beschreibung:     notizen,
+      era:              null,
+      herkunft:         null,
+      material:         null,
+      zustand:          "gut" as const,
+      tags:             [],
+      seo_titel:        "",
+      seo_beschreibung: notizen.slice(0, 140),
+      instagram_caption:  "",
+      instagram_hashtags: [],
+    };
+    const isManual = !ai;
+
     startSave(async () => {
       try {
-        setProgress("Produkt wird angelegt …");
+        setProgress(isManual ? "Produkt wird ohne KI angelegt …" : "Produkt wird angelegt …");
 
         // 1. Produkt erstellen via Server Action wäre cleaner, aber FormData-Aufruf
         //    auf existing API ist hier schneller. Wir nutzen direkten DB-Endpoint /api/produkte (POST).
@@ -108,19 +133,19 @@ export function SchnellFormular({ kategorien }: Props) {
           method:  "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name:             ai.name,
-            kurzbeschreibung: ai.kurzbeschreibung,
-            beschreibung:     ai.beschreibung,
+            name:             data.name,
+            kurzbeschreibung: data.kurzbeschreibung,
+            beschreibung:     data.beschreibung,
             preis:            Number(preis),
             waehrung:         waehrung,
             kategorie_id:     kategorie ? Number(kategorie) : undefined,
-            zustand:          ai.zustand,
-            era:              ai.era      ?? undefined,
-            herkunft:         ai.herkunft ?? undefined,
-            material:         ai.material ?? undefined,
-            tags:             ai.tags,
-            seo_titel:        ai.seo_titel,
-            seo_beschreibung: ai.seo_beschreibung,
+            zustand:          data.zustand,
+            era:              data.era      ?? undefined,
+            herkunft:         data.herkunft ?? undefined,
+            material:         data.material ?? undefined,
+            tags:             data.tags,
+            seo_titel:        data.seo_titel        || undefined,
+            seo_beschreibung: data.seo_beschreibung || undefined,
             lagerbestand:     1,
             aktiv:            true,
             b2c_mode:         "visible",
@@ -135,7 +160,7 @@ export function SchnellFormular({ kategorien }: Props) {
           const fd = new FormData();
           fd.append("datei", fotos[i]);
           fd.append("produkt_id", produkt.id);
-          fd.append("alt_text", `${ai.name} — Foto ${i + 1}`);
+          fd.append("alt_text", `${data.name} — Foto ${i + 1}`);
           const upRes = await fetch("/api/bilder", { method: "POST", body: fd });
           if (!upRes.ok) console.warn("[upload] Foto", i, "fehlgeschlagen");
         }
@@ -179,7 +204,8 @@ export function SchnellFormular({ kategorien }: Props) {
 
         <label className="block w-full cursor-pointer border-2 border-dashed border-vintage-sand hover:border-vintage-gold hover:bg-vintage-parchment/30 transition-colors p-8 text-center"
                style={{ borderRadius: "var(--radius-card)" }}>
-          <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp,image/avif"
+          <input ref={fileInput} type="file"
+                 accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif,.heic,.heif"
                  multiple className="sr-only"
                  onChange={(e) => { addFotos(e.target.files); if (fileInput.current) fileInput.current.value = ""; }} />
           <Upload className="w-8 h-8 mx-auto mb-2 text-vintage-gold" />
@@ -239,10 +265,28 @@ export function SchnellFormular({ kategorien }: Props) {
           />
         </div>
 
-        <Button type="button" onClick={generieren} loading={aiPending}
-                icon={<Wand2 className="w-3.5 h-3.5" />}>
-          Сгенерировать с KI
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button type="button" onClick={generieren} loading={aiPending}
+                  icon={<Wand2 className="w-3.5 h-3.5" />}>
+            Сгенерировать с KI
+          </Button>
+          <button
+            type="button"
+            onClick={speichern}
+            disabled={savePending || !preis || notizen.trim().length < 5}
+            className="text-[12px] uppercase font-medium px-4 py-2 transition-opacity hover:opacity-80 disabled:opacity-40"
+            style={{
+              letterSpacing: "0.22em",
+              background:    "transparent",
+              border:        "1px solid var(--color-ink-mute)",
+              color:         "var(--color-ink-soft)",
+              touchAction:   "manipulation",
+              minHeight:     40,
+            }}
+          >
+            {savePending && !ai ? "Сохраняется…" : "Без KI · Сохранить как есть"}
+          </button>
+        </div>
       </section>
 
       {/* ─── Block C: KI-Ergebnis (Review) ──────────────────────────── */}

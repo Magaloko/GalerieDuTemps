@@ -1,5 +1,6 @@
 import { alleKategorien } from "@/lib/db/kategorien";
 import { SchnellFormular } from "@/components/produkte/schnell-formular";
+import { UploadVolumeBanner } from "@/components/produkte/upload-volume-banner";
 import Link from "next/link";
 import { ChevronLeft, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
@@ -29,6 +30,8 @@ export default async function SchnellHinzufuegenPage() {
           Fotos hochladen, Notizen tippen, KI generiert Name + Beschreibung + Tags + SEO + Instagram-Post.
         </p>
       </div>
+
+      <UploadVolumeBanner />
 
       <SchnellFormular kategorien={kategorien} />
     </div>

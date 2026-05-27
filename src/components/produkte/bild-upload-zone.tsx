@@ -86,7 +86,7 @@ export function BildUploadZone({ produktId, onUpload }: BildUploadZoneProps) {
       >
         <input
           type="file"
-          accept="image/jpeg,image/png,image/webp,image/avif"
+          accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif,.heic,.heif"
           multiple
           className="sr-only"
           onChange={onChange}
