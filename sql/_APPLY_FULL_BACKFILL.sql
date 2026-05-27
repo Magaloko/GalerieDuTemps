@@ -1,6 +1,6 @@
 -- ═══════════════════════════════════════════════════════════════════════════
 -- _APPLY_FULL_BACKFILL.sql
--- Generiert: 2026-05-27T19:48:20.203Z
+-- Generiert: 2026-05-27T20:29:55.888Z
 --
 -- EINMALIG in Supabase SQL Editor ausführen (paste → Run).
 --
@@ -114,6 +114,34 @@ COMMENT ON COLUMN sebo.produktbilder.format IS
   'Original-Format (jpeg, png, webp, heic, avif) — für Debug + Statistik.';
 
 
+-- ─── 031_hero_background.sql ─────────────────────────────────────────────────────────
+-- ────────────────────────────────────────────────────────────────────────────
+-- 031_hero_background.sql — konfigurierbarer Hero-Hintergrund
+--
+-- Bisher waren Hero-Bilder hardcoded (5 Stack-Bilder in /images/).
+-- Jetzt: ein einzelnes Hintergrund-Bild ODER Video, vom Admin via
+-- /admin/einstellungen/marketing setzbar.
+--
+-- Format-Erkennung im Frontend:
+--   .mp4 / .webm / .mov  → <video> autoplay muted loop
+--   sonst                → <Image>
+-- ────────────────────────────────────────────────────────────────────────────
+
+INSERT INTO sebo.marketing_strings (schluessel, wert_i18n, beschreibung, fallback) VALUES
+
+('home.hero.background_url',
+ '{"ru":"/images/hero-stack-1.jpg","en":"/images/hero-stack-1.jpg","de":"/images/hero-stack-1.jpg"}'::jsonb,
+ 'Startseite → Hero → Hintergrund. Bild-URL (jpg/png/webp) ODER Video-URL (.mp4/.webm). Wenn leer: erstes Hero-Stack-Bild als Fallback.',
+ '/images/hero-stack-1.jpg'),
+
+('home.hero.background_poster',
+ '{"ru":"","en":"","de":""}'::jsonb,
+ 'Optional: Poster-Bild wenn background_url ein Video ist. Wird vor dem Video-Load angezeigt + im LCP-Test.',
+ '')
+
+ON CONFLICT (schluessel) DO NOTHING;
+
+
 -- ═══ Tracking-Backfill ═══════════════════════════════════════════════════
 -- Marker für ALLE Migrations-Files mit echtem SHA256 der aktuellen Datei.
 -- ON CONFLICT DO NOTHING → bestehende Einträge bleiben unverändert.
@@ -149,14 +177,15 @@ INSERT INTO sebo.schema_migrations (filename, sha256, dauer_ms) VALUES
   ('027_payment_methods.sql', '23fbac70ec50d7073574deb6ade40746d4471271ff8a19d73676253b5b8b41ce', 0),
   ('028_theme_settings.sql', 'e9a0b1b88bd5298677edc5a8dcbd75212705530ef38612a6a864c604d05aac37', 0),
   ('029_feature_flags.sql', 'dbd4b96c7b73fe084c37fc9430ebb9245a370195133a3b7945353ed280288f11', 0),
-  ('030_bilder_varianten.sql', '31e055c96331b5ef6dc22863e8efb929abb73c8c5398fed04abb913b30b5c215', 0)
+  ('030_bilder_varianten.sql', '31e055c96331b5ef6dc22863e8efb929abb73c8c5398fed04abb913b30b5c215', 0),
+  ('031_hero_background.sql', 'dd91f59912b1fdc07fe387384f5a1be6a8fb81b23a88a5a66f09e5843cf5e9b9', 0)
 ON CONFLICT (filename) DO NOTHING;
 
 COMMIT;
 
 -- Verifikation:
 -- SELECT COUNT(*) AS migrationen FROM sebo.schema_migrations;
---   → Sollte 31 sein.
+--   → Sollte 32 sein.
 -- SELECT * FROM sebo.feature_flags;
 -- SELECT column_name FROM information_schema.columns
 --  WHERE table_schema='sebo' AND table_name='produktbilder' ORDER BY ordinal_position;

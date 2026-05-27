@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { HeroReveal } from "@/components/home/hero-reveal";
+import { HeroEditorial } from "@/components/home/hero-editorial";
 import { ManifestoSection } from "@/components/home/manifesto-section";
 import { FeaturedCollection } from "@/components/home/featured-collection";
 import { CuratedEditions } from "@/components/home/curated-editions";
@@ -12,9 +12,11 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
 import { CookieBanner } from "@/components/cookie-banner";
 import { ChatWidget } from "@/components/ai/chat-widget";
+import { FeatureGate } from "@/components/feature-gate";
 
 import { featuredProdukte } from "@/lib/db/produkte-public";
-import { getDictionary } from "@/i18n";
+import { getMarketingStrings } from "@/lib/db/marketing-strings";
+import { getDictionary, getLocale } from "@/i18n";
 import { formatPreis } from "@/lib/utils/preis";
 
 export const metadata: Metadata = {
@@ -24,32 +26,41 @@ export const metadata: Metadata = {
 
 export const revalidate = 3600;
 
-const heroImages = [
-  "/images/hero-stack-1.jpg",
-  "/images/hero-stack-2.jpg",
-  "/images/hero-stack-3.jpg",
-  "/images/hero-stack-4.jpg",
-  "/images/hero-stack-5.jpg",
-];
-
 /* ──────────────────────────────────────────────────────────────────────────
- * Home — Editorial v2 (Lenis-Smooth + GSAP-ScrollTrigger).
+ * Home — Editorial v3
  *
- *   HeroReveal       → pinned, scroll-driven image-stack
+ *   HeroEditorial    → full-screen Hintergrund-Bild/Video, kein Pin
+ *                       Konfigurierbar via marketing_strings (home.hero.*)
  *   Manifesto        → 2-col, scroll-fade-in
  *   FeaturedCollection → hero + 3-up grid (live DB-Produkte)
  *   CuratedEditions  → cobalt block, journal teasers
  *   TestimonialSection
  *   CTABanner
  *
- * SiteHeader/Footer/MobileTabBar bleiben wie überall im Projekt.
- * Wenn featuredProdukte() leer/fehler liefert, fallen Hero-Stack-Bilder als
- * Platzhalter im FeaturedCollection ein — kein Crash.
+ * Hero-Hintergrund kommt aus marketing_strings.home.hero.background_url.
+ * Admin kann jederzeit ändern unter /admin/einstellungen/marketing.
+ * Falls Bild eine Video-Endung hat (.mp4/.webm/.mov), wird's als Video
+ * gerendert (autoplay/muted/loop).
  * ────────────────────────────────────────────────────────────────────────── */
 export default async function HomePage() {
-  const [produkte, dict] = await Promise.all([
+  const locale = await getLocale();
+
+  const [produkte, dict, heroStrings] = await Promise.all([
     featuredProdukte(8).catch(() => []),
     getDictionary(),
+    getMarketingStrings(
+      [
+        "home.hero.background_url",
+        "home.hero.background_poster",
+        "home.hero.eyebrow",
+        "home.hero.h1_oben",
+        "home.hero.h1_unten",
+        "home.hero.subhead",
+        "home.hero.cta_primary",
+        "home.hero.cta_secondary",
+      ],
+      locale,
+    ).catch(() => ({} as Record<string, string>)),
   ]);
   const { t } = dict;
 
@@ -71,12 +82,17 @@ export default async function HomePage() {
     <div className="flex flex-col min-h-screen" style={{ background: "var(--color-paper)" }}>
       <SiteHeader />
       <main className="flex-1 pb-24 md:pb-0">
-        <HeroReveal
-          images={heroImages}
-          kicker="Кураторский винтаж с 2015"
-          title="Редкие вещи"
-          titleAccent="с историей."
-          subtitle="Кураторская подборка винтажа — мебель, керамика, графика, текстиль. Каждый предмет проходит атрибуцию и реставрацию."
+        <HeroEditorial
+          backgroundUrl    = {heroStrings["home.hero.background_url"]     || "/images/hero-stack-1.jpg"}
+          backgroundPoster = {heroStrings["home.hero.background_poster"]  || undefined}
+          kicker           = {heroStrings["home.hero.eyebrow"]            || "Кураторский винтаж с 2015"}
+          title            = {heroStrings["home.hero.h1_oben"]            || "Редкие вещи"}
+          titleAccent      = {heroStrings["home.hero.h1_unten"]           || "с историей."}
+          subtitle         = {heroStrings["home.hero.subhead"]            || "Кураторская подборка винтажа — мебель, керамика, графика, текстиль."}
+          ctaPrimaryLabel  = {heroStrings["home.hero.cta_primary"]        || "Открыть каталог"}
+          ctaPrimaryHref   = "/katalog"
+          ctaSecondaryLabel= {heroStrings["home.hero.cta_secondary"]      || undefined}
+          ctaSecondaryHref = "/assistent"
         />
 
         <ManifestoSection />

@@ -25,7 +25,11 @@ const files = readdirSync(sqlDir)
   .sort();
 
 // Files die noch APPLIED werden müssen (Schema-Änderungen, nicht nur Tracking)
-const PENDING_APPLY = ["029_feature_flags.sql", "030_bilder_varianten.sql"];
+const PENDING_APPLY = [
+  "029_feature_flags.sql",
+  "030_bilder_varianten.sql",
+  "031_hero_background.sql",
+];
 
 // SHA256 pro File computen
 const sha256Map = new Map();
