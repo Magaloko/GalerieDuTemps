@@ -3,7 +3,7 @@ import { systemEinstellungenLaden } from "@/lib/db/system-einstellungen";
 import { getStripeConfig } from "@/lib/affiliate/stripe";
 import { EinstellungenFormular } from "./einstellungen-formular";
 import { EmailHealthBanner } from "@/components/produkte/email-health-banner";
-import { Settings, MessageSquareText, Send, Bell, ArrowRight } from "lucide-react";
+import { Settings, MessageSquareText, Send, Bell, Palette, ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Глобальные настройки" };
@@ -40,8 +40,14 @@ export default async function GlobaleEinstellungenPage() {
         </div>
       </div>
 
-      {/* Sub-Areale: Telegram, Marketing-Texte, Benutzer */}
+      {/* Sub-Areale: Design, Marketing, Telegram, Benutzer */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <SettingsLink
+          href="/admin/einstellungen/design"
+          icon={Palette}
+          title="Дизайн сайта"
+          desc="Цвета, логотип, фавикон, название бренда"
+        />
         <SettingsLink
           href="/admin/einstellungen/marketing"
           icon={MessageSquareText}

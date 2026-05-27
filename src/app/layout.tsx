@@ -12,6 +12,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { storeSchema, websiteSchema } from "@/lib/seo/schemas";
 import { systemEinstellungenLaden } from "@/lib/db/system-einstellungen";
 import { kontaktKanaeleLaden, whatsappUrl, telegramUrl, instagramUrl } from "@/lib/db/kontakt-kanaele";
+import { renderThemeCssVars, getThemeBranding } from "@/lib/db/theme";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -110,13 +111,16 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  // Locale, Firma-Stammdaten und Kontakt-Kanäle parallel laden für JSON-LD.
-  // Bei DB-Ausfall fallen wir auf Minimal-Schema zurück (kein Crash).
-  const [locale, sys, kontakt] = await Promise.all([
+  // Locale, Firma-Stammdaten, Kontakt-Kanäle, Theme parallel laden.
+  // Bei DB-Ausfall fallen wir auf Minimal-Schema + Code-Default-Theme zurück.
+  const [locale, sys, kontakt, themeCss, branding] = await Promise.all([
     getLocale(),
     systemEinstellungenLaden().catch(() => null),
     kontaktKanaeleLaden().catch(() => null),
+    renderThemeCssVars().catch(() => ""),
+    getThemeBranding().catch(() => null),
   ]);
+  void branding;  // Reserviert: Favicon-Override + Logo-Komponente lesen es separat.
 
   const sameAs = [
     kontakt && instagramUrl(kontakt.instagram_handle),
@@ -142,6 +146,13 @@ export default async function RootLayout({
       lang={locale}
       className={`${playfair.variable} ${inter.variable} ${italiana.variable} ${cormorant.variable} ${jetbrains.variable} h-full`}
     >
+      <head>
+        {/* Theme-Override aus DB (editierbar in /admin/einstellungen/design).
+            Wird VOR globals.css-Werten gerendert — sind aber gleicher Selector
+            (:root) und Cascade-Reihenfolge → unsere Tokens gewinnen weil
+            später deklariert. */}
+        {themeCss && <style dangerouslySetInnerHTML={{ __html: themeCss }} />}
+      </head>
       <body className="min-h-full flex flex-col antialiased">
         <JsonLd id="org-site" data={[orgJsonLd, siteJsonLd]} />
         {children}
