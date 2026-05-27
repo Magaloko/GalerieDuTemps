@@ -8,7 +8,17 @@ export const metadata: Metadata = { title: "Journal" };
 export const dynamic = "force-dynamic";
 
 export default async function JournalAdminPage() {
-  const posts = await allePostsAdmin();
+  // Defensive: in Produktion kann die Migration 009_newsletter_journal noch
+  // nicht angewendet sein → die Query wirft „relation does not exist". Statt
+  // 500 zeigen wir einen Hinweis-State, damit die Seite überhaupt rendert.
+  let posts: Awaited<ReturnType<typeof allePostsAdmin>> = [];
+  let dbFehler: string | null = null;
+  try {
+    posts = await allePostsAdmin();
+  } catch (err) {
+    console.error("[admin/journal] allePostsAdmin failed:", err);
+    dbFehler = err instanceof Error ? err.message : "Не удалось загрузить публикации";
+  }
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -23,7 +33,25 @@ export default async function JournalAdminPage() {
 
       <JournalNeuFormular />
 
-      {posts.length === 0 ? (
+      {dbFehler && (
+        <div
+          className="px-4 py-3 text-sm"
+          style={{
+            background: "rgba(232,112,58,0.08)",
+            border:     "1px solid rgba(232,112,58,0.35)",
+            color:      "var(--color-coral-deep, #A53E26)",
+            borderRadius: "var(--radius-card)",
+          }}
+        >
+          <p className="font-medium">База данных недоступна</p>
+          <p className="text-xs mt-1 opacity-80">
+            Таблица <code className="font-mono">sebo.journal_posts</code> не найдена — примените миграцию <code className="font-mono">009_newsletter_journal.sql</code>.
+          </p>
+          <p className="text-[10px] mt-1 opacity-60 font-mono">{dbFehler}</p>
+        </div>
+      )}
+
+      {!dbFehler && posts.length === 0 ? (
         <div className="text-center py-12 bg-vintage-white border border-vintage-sand" style={{ borderRadius: "var(--radius-card)" }}>
           <BookOpen className="w-10 h-10 text-vintage-sand mx-auto mb-3" />
           <p className="font-serif text-vintage-brown">Публикаций пока нет</p>

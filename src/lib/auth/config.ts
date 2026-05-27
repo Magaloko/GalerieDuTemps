@@ -126,6 +126,12 @@ const authConfig: NextAuthConfig = {
   // Alternativ ENV: AUTH_TRUST_HOST=true
   trustHost: true,
 
+  // Auth.js v5 erwartet AUTH_SECRET; in Production hat das Repo aber teilweise
+  // noch die v4-Name NEXTAUTH_SECRET in Coolify. Explizit fallback'en damit
+  // die Session bei Deploys nicht plötzlich invalid wird (anderer Secret →
+  // anderer JWT-HMAC → Cookie wird abgewiesen und User landet auf /anmelden).
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+
   providers: [
     Credentials({
       name: "Anmeldedaten",

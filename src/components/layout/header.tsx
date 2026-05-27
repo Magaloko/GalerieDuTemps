@@ -14,10 +14,14 @@ import type { Locale } from "@/i18n/types";
 import type { Kategorie } from "@/types/produkt";
 
 type HeaderProps = {
-  t:           Dictionary;
-  locale:      Locale;
-  kategorien?: Kategorie[];
-  promo?:      { links: string; rechts: string };
+  t:               Dictionary;
+  locale:          Locale;
+  kategorien?:     Kategorie[];
+  promo?:          { links: string; rechts: string };
+  /** Wohin der User-Icon-Link führt. Server-seitig aus Session abgeleitet. */
+  userHref?:       string;
+  /** True wenn eine Session existiert — bestimmt Tooltip/Icon-Tönung. */
+  userEingeloggt?: boolean;
 };
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -32,7 +36,11 @@ type HeaderProps = {
  * Mobile: Single 56px Bar (cobalt) — Hamburger links, Wordmark Mitte, Such-
  *     Icon rechts. Bottom-Tab-Bar separat (siehe mobile-tab-bar.tsx).
  * ────────────────────────────────────────────────────────────────────────── */
-export function Header({ t, locale, kategorien = [], promo }: HeaderProps) {
+export function Header({
+  t, locale, kategorien = [], promo,
+  userHref = "/kunde/anmelden",
+  userEingeloggt = false,
+}: HeaderProps) {
   const pathname = usePathname();
   const router   = useRouter();
   const { ids }  = useWunschliste();
@@ -208,10 +216,11 @@ export function Header({ t, locale, kategorien = [], promo }: HeaderProps) {
                 <CartBadge />
                 <LanguageSwitcher ariaLabel={t.nav.sprache} />
                 <Link
-                  href="/kunde/anmelden"
+                  href={userHref}
                   className="ml-2 btn-coral btn-coral-sm"
+                  aria-label={userEingeloggt ? t.kunde?.mein_konto ?? "Кабинет" : t.nav.anmelden}
                 >
-                  {t.nav.anmelden}
+                  {userEingeloggt ? (t.kunde?.mein_konto ?? "Кабинет") : t.nav.anmelden}
                 </Link>
               </div>
             </div>
@@ -345,9 +354,11 @@ export function Header({ t, locale, kategorien = [], promo }: HeaderProps) {
                 </Link>
                 <CartBadge />
                 <Link
-                  href="/kunde/anmelden"
-                  className="ml-1 p-2 text-white/80 hover:text-coral transition-colors"
-                  aria-label={t.nav.anmelden}
+                  href={userHref}
+                  className="ml-1 p-2 transition-colors hover:text-coral"
+                  style={{ color: userEingeloggt ? "var(--color-coral)" : "rgba(255,255,255,0.8)" }}
+                  aria-label={userEingeloggt ? t.kunde?.mein_konto ?? "Кабинет" : t.nav.anmelden}
+                  title={userEingeloggt ? t.kunde?.mein_konto ?? "Кабинет" : t.nav.anmelden}
                 >
                   <User className="w-4 h-4" />
                 </Link>
