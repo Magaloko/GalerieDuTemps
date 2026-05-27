@@ -4,6 +4,7 @@ import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminBell }    from "@/components/layout/admin-bell";
 import { AuthSessionProvider } from "@/components/layout/session-provider";
 import { ungeleseneCount }    from "@/lib/notifications/lead-notify";
+import { adminBadgeCounts }   from "@/lib/db/dashboard-v2";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -30,7 +31,11 @@ export default async function AdminLayout({
     redirect("/login");
   }
 
-  const inboxCount = await ungeleseneCount().catch(() => 0);
+  // Live-Badges für Sidebar (alle 6 Counts parallel, 30s gecached)
+  const [inboxCount, badges] = await Promise.all([
+    ungeleseneCount().catch(() => 0),
+    adminBadgeCounts().catch(() => undefined),
+  ]);
 
   return (
     <AuthSessionProvider session={session}>
@@ -40,6 +45,7 @@ export default async function AdminLayout({
           userName={session.user?.name}
           userEmail={session.user?.email}
           inboxCount={inboxCount}
+          badges={badges}
         />
 
         {/* Hauptinhalt – Sidebar-Offset nur ab md (auf Mobile ist Sidebar ein Drawer) */}

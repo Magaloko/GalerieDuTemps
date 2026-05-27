@@ -308,3 +308,67 @@ export function berechneTrend(current: number, previous: number): TrendVergleich
     Math.abs(prozent) < 5 ? "flat" : prozent > 0 ? "up" : "down";
   return { current, previous, delta, prozent, richtung };
 }
+
+// ── Admin-Sidebar Live-Badges ───────────────────────────────────────────
+
+export interface AdminBadgeCounts {
+  orders_pending:        number;
+  b2b_pending:           number;
+  leads_unread:          number;
+  kontakt_neu:           number;
+  crm_tasks_today:       number;
+  auszahlungen_pending:  number;
+}
+
+const BADGE_CACHE_TTL_MS = 30_000;  // 30s — kein DB-Hit bei jeder Page-Nav
+let badgeCache: { data: AdminBadgeCounts; loaded: number } | null = null;
+
+/**
+ * Counts für Admin-Sidebar-Badges. 1 DB-Round-Trip via 6 SELECT-
+ * Subqueries, 30s in-memory gecached.
+ *
+ * Bei DB-Fehler: alle Counts 0 zurück (Sidebar zeigt keine Badges,
+ * statt zu crashen).
+ */
+export async function adminBadgeCounts(): Promise<AdminBadgeCounts> {
+  const jetzt = Date.now();
+  if (badgeCache && jetzt - badgeCache.loaded < BADGE_CACHE_TTL_MS) {
+    return badgeCache.data;
+  }
+
+  try {
+    const r = await query<AdminBadgeCounts>(`
+      SELECT
+        (SELECT COUNT(*)::int FROM sebo.orders
+           WHERE status IN ('pending','paid') AND versendet_am IS NULL)         AS orders_pending,
+        (SELECT COUNT(*)::int FROM sebo.customers
+           WHERE customer_type = 'b2b_pending')                                  AS b2b_pending,
+        (SELECT COUNT(*)::int FROM sebo.leads
+           WHERE gelesen = false)                                                AS leads_unread,
+        (SELECT COUNT(*)::int FROM sebo.kontaktanfragen
+           WHERE status = 'neu')                                                 AS kontakt_neu,
+        (SELECT COUNT(*)::int FROM sebo.tasks
+           WHERE status IN ('offen','in_arbeit')
+             AND (faellig_am IS NULL OR faellig_am::date <= CURRENT_DATE))      AS crm_tasks_today,
+        (SELECT COUNT(*)::int FROM sebo.auszahlungen
+           WHERE status = 'erstellt')                                            AS auszahlungen_pending
+    `);
+
+    const data = r.rows[0] ?? EMPTY_BADGES;
+    badgeCache = { data, loaded: jetzt };
+    return data;
+  } catch (err) {
+    console.warn("[adminBadgeCounts] DB-Fehler — Badges ausgeblendet:", err);
+    return EMPTY_BADGES;
+  }
+}
+
+const EMPTY_BADGES: AdminBadgeCounts = {
+  orders_pending: 0, b2b_pending: 0, leads_unread: 0,
+  kontakt_neu: 0, crm_tasks_today: 0, auszahlungen_pending: 0,
+};
+
+/** Cache leeren — für Tests oder nach Bulk-Update */
+export function __clearBadgeCache(): void {
+  badgeCache = null;
+}
