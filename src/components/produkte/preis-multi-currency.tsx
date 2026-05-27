@@ -139,7 +139,7 @@ export function PreisMultiCurrency({
             ))}
             {!loaded && (
               <span className="flex items-center gap-1 text-vintage-dust/60">
-                <RefreshCw className="w-3 h-3 animate-spin" /> Kurse laden …
+                <RefreshCw className="w-3 h-3 animate-spin" /> Загрузка курсов …
               </span>
             )}
           </div>

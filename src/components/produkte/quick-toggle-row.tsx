@@ -30,7 +30,7 @@ export function QuickToggleRow({ id, aktiv, featured, verkauft, lagerbestand }: 
       if (!r.ok) {
         // Revert bei Fehler
         setOptimistic(o => ({ ...o, [feld]: !next }));
-        alert(r.error ?? "Fehler");
+        alert(r.error ?? "Ошибка");
       }
     });
   };
@@ -50,7 +50,7 @@ export function QuickToggleRow({ id, aktiv, featured, verkauft, lagerbestand }: 
         type="button"
         onClick={() => toggle("featured")}
         disabled={pending}
-        title={optimistic.featured ? "Featured (Klick = abwählen)" : "Als Featured markieren"}
+        title={optimistic.featured ? "Избранное (клик — снять)" : "Сделать избранным"}
         className={`p-1.5 transition-colors ${
           optimistic.featured ? "text-vintage-gold" : "text-vintage-sand hover:text-vintage-gold"
         }`}
@@ -64,7 +64,7 @@ export function QuickToggleRow({ id, aktiv, featured, verkauft, lagerbestand }: 
         type="button"
         onClick={() => toggle("aktiv")}
         disabled={pending}
-        title={optimistic.aktiv ? "Deaktivieren" : "Aktivieren"}
+        title={optimistic.aktiv ? "Отключить" : "Включить"}
         className={`flex items-center gap-1 px-2 py-1 border border-vintage-sand text-xs hover:bg-vintage-parchment transition-colors ${statusBadge.cls}`}
         style={{ borderRadius: "var(--radius-vintage)" }}
       >
@@ -78,11 +78,11 @@ export function QuickToggleRow({ id, aktiv, featured, verkauft, lagerbestand }: 
           type="button"
           onClick={() => toggle("verkauft")}
           disabled={pending}
-          title="Verkauft-Status entfernen"
+          title="Снять отметку «продано»"
           className="px-2 py-1 border border-vintage-burgundy/40 text-vintage-burgundy text-xs hover:bg-vintage-burgundy/10 transition-colors"
           style={{ borderRadius: "var(--radius-vintage)" }}
         >
-          Verkauft ↺
+          Продано ↺
         </button>
       )}
     </div>

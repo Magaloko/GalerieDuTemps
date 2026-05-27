@@ -133,7 +133,7 @@ export function AdminSidebar({ userName, userEmail, inboxCount = 0 }: AdminSideb
         <button
           type="button"
           onClick={() => setMobileOpen(false)}
-          aria-label="Меню закрыть"
+          aria-label="Закрыть меню"
           className="md:hidden absolute top-3 right-3 p-2 text-vintage-cream/70 hover:text-vintage-cream hover:bg-white/10 transition-colors"
           style={{ borderRadius: "var(--radius-vintage)" }}
         >
@@ -148,7 +148,7 @@ export function AdminSidebar({ userName, userEmail, inboxCount = 0 }: AdminSideb
               Galerie du Temps
             </p>
             <p className="text-vintage-dust text-xs tracking-wider uppercase">
-              Administration
+              Админ-панель
             </p>
           </div>
         </Link>

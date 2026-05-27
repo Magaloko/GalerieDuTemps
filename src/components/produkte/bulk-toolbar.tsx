@@ -53,17 +53,17 @@ export function BulkToolbar() {
 
   const apply = (action: Parameters<typeof produktBulkAction>[1]) => {
     if (selected.size === 0) return;
-    if (action === "loeschen" && !confirm(`${selected.size} Produkt(e) löschen? Aktion ist endgültig.`)) return;
+    if (action === "loeschen" && !confirm(`Удалить ${selected.size} товар(ов)? Действие необратимо.`)) return;
     start(async () => {
       const r = await produktBulkAction([...selected], action);
       if (r.ok) {
-        setFeedback({ ok: true, msg: `${r.count} Produkte aktualisiert.` });
+        setFeedback({ ok: true, msg: `Обновлено: ${r.count}` });
         setSelected(new Set());
         // DOM-Checkboxen zurücksetzen
         document.querySelectorAll<HTMLInputElement>("[data-bulk-id]").forEach(b => (b.checked = false));
         if (allCheckboxRef.current) allCheckboxRef.current.checked = false;
       } else {
-        setFeedback({ ok: false, msg: r.error ?? "Fehler" });
+        setFeedback({ ok: false, msg: r.error ?? "Ошибка" });
       }
       setTimeout(() => setFeedback(null), 4000);
     });
@@ -74,16 +74,16 @@ export function BulkToolbar() {
   return (
     <div className="sticky top-16 z-10 -mx-4 md:-mx-8 px-4 md:px-8 py-3 bg-vintage-espresso text-vintage-cream border-y border-vintage-gold/40 flex flex-wrap items-center gap-3 shadow-md">
       <span className="text-sm font-sans">
-        <strong className="text-vintage-gold">{selected.size}</strong> markiert
+        <strong className="text-vintage-gold">{selected.size}</strong> выбрано
       </span>
 
       <div className="flex flex-wrap gap-2 ml-auto">
-        <BulkBtn icon={CheckCircle2} label="Aktivieren"    onClick={() => apply("aktivieren")}    disabled={pending} />
-        <BulkBtn icon={EyeOff}        label="Deaktivieren"  onClick={() => apply("deaktivieren")}  disabled={pending} />
-        <BulkBtn icon={Star}          label="Featured an"   onClick={() => apply("featured_an")}   disabled={pending} />
-        <BulkBtn icon={Star}          label="Featured aus"  onClick={() => apply("featured_aus")}  disabled={pending} />
-        <BulkBtn icon={XCircle}       label="Verkauft"      onClick={() => apply("verkauft")}      disabled={pending} />
-        <BulkBtn icon={Trash2}        label="Löschen"       onClick={() => apply("loeschen")}      disabled={pending} variant="danger" />
+        <BulkBtn icon={CheckCircle2} label="Включить"        onClick={() => apply("aktivieren")}    disabled={pending} />
+        <BulkBtn icon={EyeOff}       label="Отключить"       onClick={() => apply("deaktivieren")}  disabled={pending} />
+        <BulkBtn icon={Star}         label="В избранное"     onClick={() => apply("featured_an")}   disabled={pending} />
+        <BulkBtn icon={Star}         label="Снять избр."     onClick={() => apply("featured_aus")}  disabled={pending} />
+        <BulkBtn icon={XCircle}      label="Отметить продано" onClick={() => apply("verkauft")}     disabled={pending} />
+        <BulkBtn icon={Trash2}       label="Удалить"         onClick={() => apply("loeschen")}      disabled={pending} variant="danger" />
 
         {pending && <Loader2 className="w-4 h-4 animate-spin text-vintage-gold" />}
 
@@ -93,7 +93,7 @@ export function BulkToolbar() {
           className="px-3 py-1.5 text-xs font-sans border border-vintage-cream/30 hover:bg-white/10 transition-colors"
           style={{ borderRadius: "var(--radius-button)" }}
         >
-          Auswahl aufheben
+          Снять выбор
         </button>
       </div>
 
