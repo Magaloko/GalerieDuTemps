@@ -271,6 +271,16 @@ em.font-italic, .font-italic {
   );
 }
 
+/* ─── Cookie-Banner über MobileTabBar positionieren ───────────────────── */
+/* Sonst überlagert er die TabBar (Cookie z-50 > TabBar z-40) und macht
+   Wishlist + Аккаунт Tab unklickbar bis User akzeptiert. */
+.cookie-banner-mobile {
+  bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 768px) {
+  .cookie-banner-mobile { bottom: 0; }
+}
+
 /* ─── Soft pulse skeleton ───────────────────────────────────────────────── */
 @keyframes gdt-pulse {
   0%, 100% { opacity: 0.45; }

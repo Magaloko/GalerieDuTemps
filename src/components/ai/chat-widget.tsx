@@ -59,7 +59,7 @@ export function ChatWidget() {
       <button
         onClick={() => setOffen(v => !v)}
         className={`
-          fixed bottom-4 right-4 md:bottom-6 md:right-6 z-30
+          fixed bottom-[110px] right-4 md:bottom-6 md:right-6 z-30
           w-12 h-12 md:w-14 md:h-14 flex items-center justify-center
           bg-vintage-espresso text-vintage-gold
           hover:bg-vintage-brown hover:scale-105
@@ -83,12 +83,13 @@ export function ChatWidget() {
       </button>
 
       {/* ─── Chat-Fenster ────────────────────────────────────────────── */}
+      {/* Mobile: bottom-[180px] (über Chat-Button + TabBar), Desktop: bottom-24 */}
       {offen && (
         <div
           className="
-            fixed bottom-24 right-6 z-50
-            w-[calc(100vw-3rem)] sm:w-96 max-w-md
-            h-[60vh] max-h-[600px]
+            fixed bottom-[180px] right-4 md:bottom-24 md:right-6 z-50
+            w-[calc(100vw-2rem)] sm:w-96 max-w-md
+            h-[55vh] max-h-[600px]
             bg-vintage-white border border-vintage-sand
             flex flex-col overflow-hidden
             animate-in slide-in-from-bottom-4 fade-in
