@@ -8,6 +8,8 @@
     "start": "next start -H 0.0.0.0 -p 3000",
     "db:migrate": "node scripts/db-migrate.mjs",
     "db:migrate:dry": "node scripts/db-migrate.mjs --dry-run",
+    "db:check": "node scripts/db-check.mjs",
+    "db:check:json": "node scripts/db-check.mjs --json",
     "db:admin": "node scripts/create-admin.mjs",
     "db:generate-secret": "node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\"",
     "affiliate:confirm": "node scripts/affiliate-confirm.mjs",
