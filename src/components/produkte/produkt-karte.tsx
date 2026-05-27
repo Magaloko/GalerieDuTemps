@@ -210,7 +210,7 @@ export function ProduktKarte({ produkt, priority = false }: ProduktKarteProps) {
           )}
           <Link href={`/katalog/${produkt.slug}`}>
             <h3
-              className="leading-tight group-hover:[text-decoration:underline] group-hover:[text-decoration-color:var(--color-coral)] group-hover:[text-decoration-thickness:1px] group-hover:[text-underline-offset:4px] transition-all line-clamp-2"
+              className="leading-tight transition-colors duration-300 line-clamp-2 group-hover:text-[var(--color-coral)]"
               style={{
                 fontFamily: "var(--font-display)",
                 fontSize:   20,
