@@ -41,7 +41,10 @@ export function generateSlug(input: string): string {
     .replace(/ú|ù|û/g, "u")
     .replace(/ñ/g, "n")
     .replace(/ç/g, "c")
-    .replace(/[^a-z0-9\s-]/g, "")
+    // Bug-Fix: Underscore MUSS in der Whitelist bleiben, sonst entfernt
+    // dieser Regex ihn bevor der nächste Schritt ihn zu Hyphen umwandeln
+    // kann. Vorher: 'my_product' → 'myproduct' statt 'my-product'.
+    .replace(/[^a-z0-9\s_-]/g, "")
     .trim()
     .replace(/[\s_]+/g, "-")
     .replace(/-+/g, "-")

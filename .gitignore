@@ -52,3 +52,7 @@ caddy_data/
 
 # Analyse-Reports (lokal, nicht ins Repo)
 website-analyse-*.html
+
+# Test-Output
+coverage/
+.vitest/
