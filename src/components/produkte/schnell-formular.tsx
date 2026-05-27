@@ -74,7 +74,7 @@ export function SchnellFormular({ kategorien }: Props) {
   const generieren = () => {
     setError(null);
     if (notizen.trim().length < 20) {
-      setError("Notizen zu kurz — mindestens 20 Zeichen");
+      setError("Заметки слишком короткие — минимум 20 символов");
       return;
     }
     const kat = kategorien.find(k => String(k.id) === kategorie)?.name;
@@ -104,7 +104,7 @@ export function SchnellFormular({ kategorien }: Props) {
   // (manueller Modus wenn KI nicht verfügbar oder User KI überspringen will).
   const speichern = () => {
     setError(null);
-    if (!preis) { setError("Preis fehlt"); return; }
+    if (!preis) { setError("Не указана цена"); return; }
 
     // Manueller Fallback wenn KI nicht gelaufen: aus Notizen + Default-Name bauen.
     const data = ai ?? {
@@ -125,7 +125,7 @@ export function SchnellFormular({ kategorien }: Props) {
 
     startSave(async () => {
       try {
-        setProgress(isManual ? "Produkt wird ohne KI angelegt …" : "Produkt wird angelegt …");
+        setProgress(isManual ? "Создаём товар без ИИ …" : "Создаём товар …");
 
         // 1. Produkt erstellen via Server Action wäre cleaner, aber FormData-Aufruf
         //    auf existing API ist hier schneller. Wir nutzen direkten DB-Endpoint /api/produkte (POST).
@@ -152,11 +152,11 @@ export function SchnellFormular({ kategorien }: Props) {
           }),
         });
         const produkt = await erstellenRes.json();
-        if (!erstellenRes.ok) throw new Error(produkt.error ?? "Produkt-Erstellung fehlgeschlagen");
+        if (!erstellenRes.ok) throw new Error(produkt.error ?? "Не удалось создать товар");
 
         // 2. Fotos sequentiell hochladen
         for (let i = 0; i < fotos.length; i++) {
-          setProgress(`Foto ${i + 1}/${fotos.length} wird hochgeladen …`);
+          setProgress(`Загружается фото ${i + 1}/${fotos.length} …`);
           const fd = new FormData();
           fd.append("datei", fotos[i]);
           fd.append("produkt_id", produkt.id);
@@ -165,10 +165,10 @@ export function SchnellFormular({ kategorien }: Props) {
           if (!upRes.ok) console.warn("[upload] Foto", i, "fehlgeschlagen");
         }
 
-        setProgress("Fertig — Weiterleitung …");
+        setProgress("Готово — переходим к товару …");
         router.push(`/admin/produkte/${produkt.id}`);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Speichern fehlgeschlagen");
+        setError(e instanceof Error ? e.message : "Не удалось сохранить");
         setProgress(null);
       }
     });
@@ -244,7 +244,7 @@ export function SchnellFormular({ kategorien }: Props) {
           onChange={(e) => setNotizen(e.target.value)}
           placeholder="напр. Биедермайер комод, около 1840 года, дуб с латунной фурнитурой. Высота 90 см, ширина 110 см. Лёгкая реставрация поверхности, исходные ключи сохранены."
           rows={6}
-          hint="Минимум 20 символов. Чем больше деталей, тем лучше KI."
+          hint="Минимум 20 символов. Чем больше деталей, тем лучше результат ИИ."
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -254,7 +254,7 @@ export function SchnellFormular({ kategorien }: Props) {
             defaultPreis={preis}
             defaultWaehrung={waehrung}
             required
-            hint="KI не угадывает цену — введите сами"
+            hint="ИИ не угадывает цену — введите сами"
             onChange={(p, w) => { setPreis(String(p)); setWaehrung(w); }}
           />
           <Select
@@ -268,7 +268,7 @@ export function SchnellFormular({ kategorien }: Props) {
         <div className="flex flex-wrap items-center gap-3">
           <Button type="button" onClick={generieren} loading={aiPending}
                   icon={<Wand2 className="w-3.5 h-3.5" />}>
-            Сгенерировать с KI
+            Сгенерировать с ИИ
           </Button>
           <button
             type="button"
@@ -284,7 +284,7 @@ export function SchnellFormular({ kategorien }: Props) {
               minHeight:     40,
             }}
           >
-            {savePending && !ai ? "Сохраняется…" : "Без KI · Сохранить как есть"}
+            {savePending && !ai ? "Сохраняется…" : "Без ИИ · Сохранить как есть"}
           </button>
         </div>
       </section>
@@ -293,7 +293,7 @@ export function SchnellFormular({ kategorien }: Props) {
       {aiPending && (
         <div className="flex items-center justify-center gap-3 p-12 text-vintage-dust">
           <Loader2 className="w-5 h-5 animate-spin" />
-          <span className="font-sans">KI denkt nach (5–15 Sek) …</span>
+          <span className="font-sans">ИИ обрабатывает (5–15 секунд) …</span>
         </div>
       )}
 
@@ -303,7 +303,7 @@ export function SchnellFormular({ kategorien }: Props) {
                    style={{ borderRadius: "var(--radius-card)" }}>
             <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
               <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-vintage-gold" /> Предложение KI — отредактируйте при необходимости
+                <Sparkles className="w-4 h-4 text-vintage-gold" /> Предложение ИИ — отредактируйте при необходимости
               </h2>
             </div>
 

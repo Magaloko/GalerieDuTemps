@@ -15,7 +15,7 @@ export async function AdminBell() {
       href="/admin/leads?status=neu"
       className="relative inline-flex items-center justify-center p-2 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-parchment transition-colors"
       style={{ borderRadius: "var(--radius-vintage)" }}
-      title={`${count} ungelesene Leads`}
+      title={`${count} непрочитанных запросов`}
     >
       <Bell className="w-4 h-4" />
       {count > 0 && (

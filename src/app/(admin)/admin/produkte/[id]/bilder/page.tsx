@@ -17,7 +17,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id }  = await params;
   const produkt = await produktById(id);
-  return { title: produkt ? `Bilder: ${produkt.name}` : "Produkt nicht gefunden" };
+  return { title: produkt ? `Фото: ${produkt.name}` : "Товар не найден" };
 }
 
 export default async function BilderPage({ params }: Props) {
@@ -35,21 +35,21 @@ export default async function BilderPage({ params }: Props) {
     <div className="max-w-4xl space-y-6">
       <div className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
         <Link href="/admin/produkte" className="hover:text-vintage-brown transition-colors flex items-center gap-1">
-          <ChevronLeft className="w-3 h-3" /> Produkte
+          <ChevronLeft className="w-3 h-3" /> Товары
         </Link>
         <span>/</span>
         <Link href={`/admin/produkte/${id}`} className="hover:text-vintage-brown transition-colors truncate max-w-40">
           {produkt.name}
         </Link>
         <span>/</span>
-        <span className="text-vintage-ink">Bilder</span>
+        <span className="text-vintage-ink">Фото</span>
       </div>
 
       <div>
         <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-        <h1 className="font-serif text-2xl text-vintage-espresso">Bilder verwalten</h1>
+        <h1 className="font-serif text-2xl text-vintage-espresso">Фото и медиа</h1>
         <p className="text-vintage-dust text-xs font-sans mt-0.5">
-          {bilder.length} {bilder.length === 1 ? "Bild" : "Bilder"} ·{" "}
+          {bilder.length} {bilder.length === 1 ? "фото" : "фото"} ·{" "}
           <span className="text-vintage-brown">{produkt.name}</span>
         </p>
       </div>
@@ -64,7 +64,7 @@ export default async function BilderPage({ params }: Props) {
       >
         <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
           <h2 className="font-serif text-base text-vintage-espresso flex items-center gap-2">
-            <FileText className="w-4 h-4 text-vintage-brown" /> Документы / Загрузки
+            <FileText className="w-4 h-4 text-vintage-brown" /> Документы
           </h2>
           <p className="text-xs font-sans text-vintage-dust">PDF · максимум 25 МБ</p>
         </div>

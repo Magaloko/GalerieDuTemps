@@ -8,8 +8,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: {
-    default: "Admin",
-    template: "%s | Admin – Galerie du Temps",
+    default: "Админ",
+    template: "%s | Админ · Galerie du Temps",
   },
 };
 
@@ -60,7 +60,7 @@ export default async function AdminLayout({
                   className="hidden sm:block text-[11px] uppercase font-medium"
                   style={{ letterSpacing: "0.18em", color: "var(--color-ink-mute)" }}
                 >
-                  {new Date().toLocaleDateString("de-DE", {
+                  {new Date().toLocaleDateString("ru-RU", {
                     weekday: "long",
                     day:     "numeric",
                     month:   "long",

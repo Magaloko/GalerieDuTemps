@@ -19,7 +19,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id }  = await params;
   const produkt = await produktById(id);
-  return { title: produkt ? `Bearbeiten: ${produkt.name}` : "Produkt nicht gefunden" };
+  return { title: produkt ? `Редактировать: ${produkt.name}` : "Товар не найден" };
 }
 
 export default async function ProduktBearbeitenPage({ params }: Props) {
@@ -53,7 +53,7 @@ export default async function ProduktBearbeitenPage({ params }: Props) {
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
             <Link href="/admin/produkte" className="hover:text-vintage-brown transition-colors flex items-center gap-1">
-              <ChevronLeft className="w-3 h-3" /> Produkte
+              <ChevronLeft className="w-3 h-3" /> Товары
             </Link>
             <span>/</span>
             <span className="text-vintage-ink truncate max-w-48">{produkt.name}</span>
@@ -66,7 +66,7 @@ export default async function ProduktBearbeitenPage({ params }: Props) {
               className="flex items-center gap-2 px-4 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans uppercase tracking-widest hover:bg-vintage-parchment transition-colors"
               style={{ borderRadius: "var(--radius-button)" }}
             >
-              <ExternalLink className="w-3.5 h-3.5" /> Im Shop ansehen
+              <ExternalLink className="w-3.5 h-3.5" /> В магазине
             </a>
             <form action={duplicateAction}>
               <button
@@ -74,7 +74,7 @@ export default async function ProduktBearbeitenPage({ params }: Props) {
                 className="flex items-center gap-2 px-4 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans uppercase tracking-widest hover:bg-vintage-parchment transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}
               >
-                <Copy className="w-3.5 h-3.5" /> Duplizieren
+                <Copy className="w-3.5 h-3.5" /> Дублировать
               </button>
             </form>
             <Link
@@ -82,7 +82,7 @@ export default async function ProduktBearbeitenPage({ params }: Props) {
               className="flex items-center gap-2 px-4 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans uppercase tracking-widest hover:bg-vintage-parchment transition-colors"
               style={{ borderRadius: "var(--radius-button)" }}
             >
-              <ImageIcon className="w-3.5 h-3.5" /> Bilder
+              <ImageIcon className="w-3.5 h-3.5" /> Фото
             </Link>
           </div>
         </div>
@@ -99,7 +99,7 @@ export default async function ProduktBearbeitenPage({ params }: Props) {
         </div>
         <p className="text-vintage-dust text-xs font-sans -mt-3">
           ID: {produkt.id} · Slug: {produkt.slug}
-          {produkt.artikel_code && ` · Art.-Code: ${produkt.artikel_code}`}
+          {produkt.artikel_code && ` · Артикул: ${produkt.artikel_code}`}
         </p>
 
         <ProduktFormular

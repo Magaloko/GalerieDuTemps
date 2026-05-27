@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Produkte" };
+export const metadata: Metadata = { title: "Товары" };
 export const dynamic = "force-dynamic";
 
 interface Props {
@@ -49,7 +49,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-          <h1 className="font-serif text-2xl text-vintage-espresso">Produkte</h1>
+          <h1 className="font-serif text-2xl text-vintage-espresso">Товары</h1>
           <p className="text-vintage-dust text-xs font-sans mt-0.5">
             Управление ценами, складом и видимостью
           </p>
@@ -59,13 +59,13 @@ export default async function ProduktListePage({ searchParams }: Props) {
             href="/admin/produkte/schnell"
             className="flex items-center gap-2 px-4 py-2.5 bg-vintage-gold text-vintage-espresso text-xs font-sans tracking-[0.2em] uppercase hover:bg-vintage-amber transition-colors"
             style={{ borderRadius: "var(--radius-button)" }}
-            title="Schnell mit KI hinzufügen"
+            title="Быстрое добавление с помощью ИИ"
           >
-            <Sparkles className="w-3.5 h-3.5" /> Schnell + KI
+            <Sparkles className="w-3.5 h-3.5" /> Быстро + ИИ
           </Link>
           <Link href="/admin/produkte/neu">
             <Button variant="secondary" icon={<Plus className="w-3.5 h-3.5" />}>
-              Vollständig
+              Полная форма
             </Button>
           </Link>
         </div>
@@ -97,7 +97,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
         </div>
         <div className="bg-vintage-gold/10 border border-vintage-gold/30 p-4" style={{ borderRadius: "var(--radius-card)" }}>
           <p className="text-xs uppercase tracking-widest text-vintage-brown flex items-center gap-1.5">
-            <Star className="w-3.5 h-3.5" /> Featured
+            <Star className="w-3.5 h-3.5" /> Избранные
           </p>
           <p className="font-serif text-2xl text-vintage-espresso mt-1">{stats?.produkte_featured ?? "—"}</p>
         </div>
@@ -108,14 +108,14 @@ export default async function ProduktListePage({ searchParams }: Props) {
         {/* Suche */}
         <div className="flex-1 min-w-48">
           <label className="text-xs font-sans uppercase tracking-widest text-vintage-brown block mb-1">
-            Suche
+            Поиск
           </label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-vintage-dust pointer-events-none" />
             <input
               name="suche"
               defaultValue={suche}
-              placeholder="Produktname, Slug oder Artikel-Code …"
+              placeholder="Название, slug или артикул …"
               className="
                 w-full pl-9 pr-4 py-2.5
                 bg-vintage-cream border border-vintage-sand
@@ -131,7 +131,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
         {/* Kategorie-Filter */}
         <div className="min-w-40">
           <label className="text-xs font-sans uppercase tracking-widest text-vintage-brown block mb-1">
-            Kategorie
+            Категория
           </label>
           <select
             name="kategorie"
@@ -144,7 +144,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
             "
             style={{ borderRadius: "var(--radius-vintage)" }}
           >
-            <option value="">Alle</option>
+            <option value="">Все</option>
             {kategorien.map(k => (
               <option key={k.id} value={k.id}>{k.name}</option>
             ))}
@@ -154,7 +154,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
         {/* Zustand-Filter */}
         <div className="min-w-36">
           <label className="text-xs font-sans uppercase tracking-widest text-vintage-brown block mb-1">
-            Zustand
+            Состояние
           </label>
           <select
             name="zustand"
@@ -167,11 +167,11 @@ export default async function ProduktListePage({ searchParams }: Props) {
             "
             style={{ borderRadius: "var(--radius-vintage)" }}
           >
-            <option value="">Alle</option>
-            <option value="sehr_gut">Sehr gut</option>
-            <option value="gut">Gut</option>
-            <option value="akzeptabel">Akzeptabel</option>
-            <option value="restauriert">Restauriert</option>
+            <option value="">Все</option>
+            <option value="sehr_gut">Отличное</option>
+            <option value="gut">Хорошее</option>
+            <option value="akzeptabel">Приемлемое</option>
+            <option value="restauriert">Реставрировано</option>
           </select>
         </div>
 
@@ -184,7 +184,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
           "
           style={{ borderRadius: "var(--radius-button)" }}
         >
-          Filtern
+          Фильтр
         </button>
 
         {(suche || katId || zustand) && (
@@ -196,7 +196,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
             "
             style={{ borderRadius: "var(--radius-button)" }}
           >
-            Zurücksetzen
+            Сбросить
           </Link>
         )}
       </form>
@@ -213,14 +213,14 @@ export default async function ProduktListePage({ searchParams }: Props) {
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <Package className="w-12 h-12 text-vintage-sand mb-3" />
             <p className="font-serif text-vintage-brown text-lg">
-              Keine Produkte gefunden
+              Товары не найдены
             </p>
             <p className="text-vintage-dust text-sm font-sans mt-1">
-              {suche ? "Suchbegriff anpassen oder" : "Füge dein erstes Produkt hinzu"}
+              {suche ? "Измени поисковой запрос или" : "Добавь свой первый товар"}
             </p>
             <Link href="/admin/produkte/neu">
               <Button className="mt-4" size="sm" icon={<Plus className="w-3 h-3" />}>
-                Produkt erstellen
+                Создать товар
               </Button>
             </Link>
           </div>
@@ -233,22 +233,22 @@ export default async function ProduktListePage({ searchParams }: Props) {
                     <BulkSelectAll />
                   </th>
                   <th className="text-left px-3 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal w-20">
-                    Art.-Code
+                    Артикул
                   </th>
                   <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">
-                    Produkt
+                    Товар
                   </th>
                   <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal hidden md:table-cell">
-                    Kategorie
+                    Категория
                   </th>
                   <th className="text-right px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">
-                    Preis
+                    Цена
                   </th>
                   <th className="text-center px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal hidden lg:table-cell">
-                    Zustand
+                    Состояние
                   </th>
                   <th className="text-center px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">
-                    Status
+                    Статус
                   </th>
                   <th className="px-4 py-3" />
                 </tr>
@@ -342,7 +342,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
                           rel="noopener noreferrer"
                           className="p-2 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-parchment transition-colors"
                           style={{ borderRadius: "var(--radius-vintage)" }}
-                          title="Im Shop ansehen"
+                          title="Посмотреть в магазине"
                         >
                           <ExternalLink className="w-4 h-4" />
                         </a>
@@ -350,7 +350,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
                           href={`/admin/produkte/${p.id}/bilder`}
                           className="p-2 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-parchment transition-colors"
                           style={{ borderRadius: "var(--radius-vintage)" }}
-                          title="Bilder verwalten"
+                          title="Управление изображениями"
                         >
                           <ImageIcon className="w-4 h-4" />
                         </Link>
@@ -358,7 +358,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
                           href={`/admin/produkte/${p.id}`}
                           className="p-2 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-parchment transition-colors"
                           style={{ borderRadius: "var(--radius-vintage)" }}
-                          title="Bearbeiten"
+                          title="Редактировать"
                         >
                           <Pencil className="w-4 h-4" />
                         </Link>
@@ -376,8 +376,8 @@ export default async function ProduktListePage({ searchParams }: Props) {
       {daten.seiten > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-xs text-vintage-dust font-sans">
-            Seite {daten.seite} von {daten.seiten} ·{" "}
-            {daten.gesamt} Produkte
+            Страница {daten.seite} из {daten.seiten} ·{" "}
+            {daten.gesamt} товаров
           </p>
           <div className="flex gap-2">
             {daten.seite > 1 && (

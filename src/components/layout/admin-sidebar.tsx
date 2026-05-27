@@ -32,139 +32,31 @@ import {
 // ---------------------------------------------------------------------------
 // Navigation Items
 // ---------------------------------------------------------------------------
+// Navigation — komplett auf Russisch. Pfade bleiben DE (keine URL-Änderung
+// um Bookmarks/SEO nicht zu brechen), nur Labels werden lokalisiert.
 const navItems = [
-  {
-    href:  "/admin",
-    label: "Dashboard",
-    icon:  LayoutDashboard,
-    exact: true,
-  },
-  {
-    href:  "/admin/produkte",
-    label: "Produkte",
-    icon:  Package,
-    exact: false,
-  },
-  {
-    href:  "/admin/kategorien",
-    label: "Kategorien",
-    icon:  Tag,
-    exact: false,
-  },
-  {
-    href:  "/admin/bestellungen",
-    label: "Bestellungen",
-    icon:  ShoppingBag,
-    exact: false,
-  },
-  {
-    href:  "/admin/coupons",
-    label: "Gutscheine",
-    icon:  Tag,
-    exact: false,
-  },
-  {
-    href:  "/admin/leads",
-    label: "Inbox",
-    icon:  Inbox,
-    exact: false,
-  },
-  {
-    href:  "/admin/kontakt",
-    label: "Kontaktanfragen",
-    icon:  Mail,
-    exact: false,
-  },
-  {
-    href:  "/admin/kunden",
-    label: "Kund:innen",
-    icon:  Users,
-    exact: true,
-  },
-  {
-    href:  "/admin/b2b",
-    label: "B2B-Anträge",
-    icon:  Briefcase,
-    exact: false,
-  },
-  {
-    href:  "/admin/crm/pipeline",
-    label: "CRM Pipeline",
-    icon:  Filter,
-    exact: false,
-  },
-  {
-    href:  "/admin/crm/segments",
-    label: "Segmente",
-    icon:  Filter,
-    exact: false,
-  },
-  {
-    href:  "/admin/crm/flows",
-    label: "Drip-Flows",
-    icon:  Workflow,
-    exact: false,
-  },
-  {
-    href:  "/admin/crm/tasks",
-    label: "Tasks",
-    icon:  CheckSquare,
-    exact: false,
-  },
-  {
-    href:  "/admin/rechnungen",
-    label: "Rechnungen",
-    icon:  FileText,
-    exact: false,
-  },
-  {
-    href:  "/admin/statistiken",
-    label: "Statistiken",
-    icon:  BarChart3,
-    exact: false,
-  },
-  {
-    href:  "/admin/preisanalyse",
-    label: "Preisanalyse",
-    icon:  TrendingUp,
-    exact: false,
-  },
-  {
-    href:  "/admin/affiliates",
-    label: "Affiliates",
-    icon:  Users,
-    exact: false,
-  },
-  {
-    href:  "/admin/provisionen",
-    label: "Provisionen",
-    icon:  Coins,
-    exact: false,
-  },
-  {
-    href:  "/admin/auszahlungen",
-    label: "Auszahlungen",
-    icon:  Wallet,
-    exact: false,
-  },
-  {
-    href:  "/admin/newsletter",
-    label: "Newsletter",
-    icon:  Mail,
-    exact: false,
-  },
-  {
-    href:  "/admin/journal",
-    label: "Journal",
-    icon:  BookOpen,
-    exact: false,
-  },
-  {
-    href:  "/admin/einstellungen",
-    label: "Einstellungen",
-    icon:  Settings,
-    exact: false,
-  },
+  { href: "/admin",                 label: "Главная",             icon: LayoutDashboard, exact: true  },
+  { href: "/admin/produkte",        label: "Товары",              icon: Package,         exact: false },
+  { href: "/admin/kategorien",      label: "Категории",           icon: Tag,             exact: false },
+  { href: "/admin/bestellungen",    label: "Заказы",              icon: ShoppingBag,     exact: false },
+  { href: "/admin/coupons",         label: "Промокоды",           icon: Tag,             exact: false },
+  { href: "/admin/leads",           label: "Входящие",            icon: Inbox,           exact: false },
+  { href: "/admin/kontakt",         label: "Сообщения с сайта",   icon: Mail,            exact: false },
+  { href: "/admin/kunden",          label: "Клиенты",             icon: Users,           exact: true  },
+  { href: "/admin/b2b",             label: "Заявки B2B",          icon: Briefcase,       exact: false },
+  { href: "/admin/crm/pipeline",    label: "CRM · Воронка",       icon: Filter,          exact: false },
+  { href: "/admin/crm/segments",    label: "Сегменты",            icon: Filter,          exact: false },
+  { href: "/admin/crm/flows",       label: "Авто-цепочки",        icon: Workflow,        exact: false },
+  { href: "/admin/crm/tasks",       label: "Задачи",              icon: CheckSquare,     exact: false },
+  { href: "/admin/rechnungen",      label: "Счета",               icon: FileText,        exact: false },
+  { href: "/admin/statistiken",     label: "Статистика",          icon: BarChart3,       exact: false },
+  { href: "/admin/preisanalyse",    label: "Анализ цен",          icon: TrendingUp,      exact: false },
+  { href: "/admin/affiliates",      label: "Партнёры",            icon: Users,           exact: false },
+  { href: "/admin/provisionen",     label: "Комиссии",            icon: Coins,           exact: false },
+  { href: "/admin/auszahlungen",    label: "Выплаты",             icon: Wallet,          exact: false },
+  { href: "/admin/newsletter",      label: "Рассылка",            icon: Mail,            exact: false },
+  { href: "/admin/journal",         label: "Журнал",              icon: BookOpen,        exact: false },
+  { href: "/admin/einstellungen",   label: "Настройки",           icon: Settings,        exact: false },
 ];
 
 // ---------------------------------------------------------------------------
@@ -202,7 +94,7 @@ export function AdminSidebar({ userName, userEmail, inboxCount = 0 }: AdminSideb
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
-        aria-label="Меню открыть"
+        aria-label="Открыть меню"
         className="md:hidden fixed top-3 left-3 z-30 p-2.5 transition-colors"
         style={{
           background:   "#fff",
@@ -318,7 +210,7 @@ export function AdminSidebar({ userName, userEmail, inboxCount = 0 }: AdminSideb
           style={{ borderRadius: "var(--radius-card)" }}
         >
           <Store className="w-3.5 h-3.5" />
-          Zur Website
+          На сайт
         </Link>
       </div>
 
@@ -336,7 +228,7 @@ export function AdminSidebar({ userName, userEmail, inboxCount = 0 }: AdminSideb
           </div>
           <div className="min-w-0">
             <p className="text-vintage-cream text-sm font-sans truncate">
-              {userName ?? "Administrator"}
+              {userName ?? "Администратор"}
             </p>
             <p className="text-vintage-dust text-xs truncate">
               {userEmail ?? ""}
@@ -356,7 +248,7 @@ export function AdminSidebar({ userName, userEmail, inboxCount = 0 }: AdminSideb
           style={{ borderRadius: "var(--radius-vintage)" }}
         >
           <LogOut className="w-3.5 h-3.5" />
-          Abmelden
+          Выйти
         </button>
       </div>
     </aside>

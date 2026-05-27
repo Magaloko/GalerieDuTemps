@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ChevronLeft, Zap } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Neues Produkt" };
+export const metadata: Metadata = { title: "Новый товар" };
 
 export default async function NeuesProduktPage() {
   const kategorien = await alleKategorien();
@@ -19,10 +19,10 @@ export default async function NeuesProduktPage() {
         style={{ letterSpacing: "0.18em", color: "var(--color-ink-mute)" }}
       >
         <Link href="/admin/produkte" className="hover:text-coral transition-colors flex items-center gap-1">
-          <ChevronLeft className="w-3 h-3" /> Produkte
+          <ChevronLeft className="w-3 h-3" /> Товары
         </Link>
         <span>/</span>
-        <span style={{ color: "var(--color-ink)" }}>Neues Produkt</span>
+        <span style={{ color: "var(--color-ink)" }}>Новый товар</span>
       </nav>
 
       <header className="flex flex-wrap items-baseline justify-between gap-3">
@@ -31,7 +31,7 @@ export default async function NeuesProduktPage() {
             className="text-[11px] uppercase font-medium mb-1"
             style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}
           >
-            ✦ Produktanlage
+            ✦ Добавление товара
           </p>
           <h1
             style={{
@@ -40,7 +40,7 @@ export default async function NeuesProduktPage() {
               color:      "var(--color-ink)",
             }}
           >
-            Neues Produkt
+            Новый товар
           </h1>
         </div>
         <Link
@@ -53,7 +53,7 @@ export default async function NeuesProduktPage() {
             border:        "1px solid var(--color-coral)",
           }}
         >
-          <Zap className="w-3 h-3" /> Schnell-Modus (KI)
+          <Zap className="w-3 h-3" /> Быстро (ИИ)
         </Link>
       </header>
 

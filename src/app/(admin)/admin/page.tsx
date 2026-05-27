@@ -23,18 +23,18 @@ import { formatPreis } from "@/lib/utils/preis";
 import { ZustandBadge } from "@/components/ui/badge";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Dashboard" };
+export const metadata: Metadata = { title: "Главная" };
 export const dynamic = "force-dynamic";
 
 const formatBestellnummer = (n: number) => `GDT-${String(n).padStart(4, "0")}`;
 
 const STATUS_BADGE: Record<string, { label: string; klasse: string }> = {
-  pending:   { label: "Wartet",        klasse: "text-vintage-gold     bg-vintage-gold/10"     },
-  paid:      { label: "Bezahlt",       klasse: "text-vintage-sage     bg-vintage-sage/10"     },
-  fulfilled: { label: "Versandt",      klasse: "text-vintage-forest   bg-vintage-forest/10"   },
-  completed: { label: "Abgeschlossen", klasse: "text-vintage-forest   bg-vintage-forest/10"   },
-  cancelled: { label: "Storniert",     klasse: "text-vintage-dust     bg-vintage-dust/10"     },
-  refunded:  { label: "Erstattet",     klasse: "text-vintage-burgundy bg-vintage-burgundy/10" },
+  pending:   { label: "Ожидает",      klasse: "text-vintage-gold     bg-vintage-gold/10"     },
+  paid:      { label: "Оплачен",      klasse: "text-vintage-sage     bg-vintage-sage/10"     },
+  fulfilled: { label: "Отправлен",    klasse: "text-vintage-forest   bg-vintage-forest/10"   },
+  completed: { label: "Завершён",     klasse: "text-vintage-forest   bg-vintage-forest/10"   },
+  cancelled: { label: "Отменён",      klasse: "text-vintage-dust     bg-vintage-dust/10"     },
+  refunded:  { label: "Возврат",      klasse: "text-vintage-burgundy bg-vintage-burgundy/10" },
 };
 
 interface KpiProps {
@@ -133,10 +133,10 @@ export default async function AdminDashboard() {
         style={{ borderRadius: "var(--radius-card)", boxShadow: "var(--shadow-vintage-lg)" }}
       >
         <p className="text-vintage-gold text-xs tracking-[0.3em] uppercase mb-3">
-          ✦ Admin-Übersicht
+          ✦ Обзор админки
         </p>
         <h1 className="font-serif text-3xl lg:text-4xl italic leading-tight max-w-2xl">
-          Heute zuerst das Wichtige, dann der laufende Betrieb.
+          Сначала самое важное, потом текущие дела.
         </h1>
         <p className="text-vintage-cream/70 text-sm font-sans mt-3 max-w-2xl">
           {session?.user?.name ? `${session.user.name} · ` : ""}{heute}
@@ -147,14 +147,14 @@ export default async function AdminDashboard() {
             className="inline-flex items-center gap-2 px-4 py-2 bg-vintage-gold text-vintage-espresso text-xs font-sans uppercase tracking-widest hover:bg-vintage-amber transition-colors"
             style={{ borderRadius: "var(--radius-button)" }}
           >
-            + Neues Produkt
+            + Новый товар
           </Link>
           <Link
             href="/admin/bestellungen?status=pending"
             className="inline-flex items-center gap-2 px-4 py-2 border border-vintage-cream/30 text-vintage-cream text-xs font-sans uppercase tracking-widest hover:bg-vintage-cream/10 transition-colors"
             style={{ borderRadius: "var(--radius-button)" }}
           >
-            Offene Bestellungen prüfen →
+            Открытые заказы →
           </Link>
         </div>
       </div>
@@ -162,60 +162,60 @@ export default async function AdminDashboard() {
       {/* ─── KPI-Grid ────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Kpi
-          label="Offene Bestellungen"
+          label="Открытые заказы"
           value={stats?.bestellungen_pending ?? "–"}
           icon={Clock}
           href="/admin/bestellungen?status=pending"
           variant={(stats?.bestellungen_pending ?? 0) > 0 ? "warn" : "default"}
-          trend={stats?.bestellungen_paid ? `${stats.bestellungen_paid} bezahlt, in Bearbeitung` : undefined}
+          trend={stats?.bestellungen_paid ? `${stats.bestellungen_paid} оплачено, в обработке` : undefined}
         />
         <Kpi
-          label="Heute verschickt"
+          label="Отправлено сегодня"
           value={stats?.bestellungen_heute_versandt ?? 0}
           icon={Truck}
           href="/admin/bestellungen?status=fulfilled"
           variant={(stats?.bestellungen_heute_versandt ?? 0) > 0 ? "good" : "default"}
         />
         <Kpi
-          label="Umsatz heute"
+          label="Выручка сегодня"
           value={stats ? formatPreis((stats.umsatz_heute_cents ?? 0) / 100) : "–"}
           icon={CreditCard}
-          trend={stats ? `30 Tage: ${formatPreis((stats.umsatz_30tage_cents ?? 0) / 100)}` : undefined}
+          trend={stats ? `30 дней: ${formatPreis((stats.umsatz_30tage_cents ?? 0) / 100)}` : undefined}
         />
         <Kpi
-          label="Niedriger Bestand"
+          label="Низкий остаток"
           value={stats?.produkte_niedrig ?? 0}
           icon={AlertTriangle}
           href="/admin/produkte"
           variant={(stats?.produkte_niedrig ?? 0) > 0 ? "bad" : "default"}
-          trend="1–5 Stück verfügbar"
+          trend="1–5 шт. в наличии"
         />
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Kpi
-          label="Produkte aktiv"
+          label="Товары активные"
           value={stats?.produkte_verfuegbar ?? "–"}
           icon={Package}
           href="/admin/produkte"
-          trend={stats ? `${stats.produkte_gesamt} gesamt` : undefined}
+          trend={stats ? `${stats.produkte_gesamt} всего` : undefined}
         />
         <Kpi
-          label="Featured"
+          label="Избранные"
           value={stats?.produkte_featured ?? "–"}
           icon={ShoppingBag}
           href="/admin/produkte"
         />
         <Kpi
-          label="Kontaktanfragen"
+          label="Запросы с сайта"
           value={stats?.kontakt_neu ?? "–"}
           icon={Mail}
           href="/admin/kontakt"
-          trend={stats ? `${stats.kontakt_gesamt} gesamt` : undefined}
+          trend={stats ? `${stats.kontakt_gesamt} всего` : undefined}
           variant={(stats?.kontakt_neu ?? 0) > 0 ? "warn" : "default"}
         />
         <Kpi
-          label="Umsatz gesamt"
+          label="Выручка всего"
           value={stats ? formatPreis((stats.umsatz_gesamt_cents ?? 0) / 100) : "–"}
           icon={TrendingUp}
           href="/admin/statistiken"
@@ -232,20 +232,20 @@ export default async function AdminDashboard() {
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2">
-              <Receipt className="w-4 h-4 text-vintage-gold" /> Letzte Bestellungen
+              <Receipt className="w-4 h-4 text-vintage-gold" /> Последние заказы
             </h2>
             <Link
               href="/admin/bestellungen"
               className="text-xs font-sans uppercase tracking-widest text-vintage-dust hover:text-vintage-brown transition-colors"
             >
-              Alle anzeigen →
+              Все заказы →
             </Link>
           </div>
 
           {recentOrders.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-center">
               <Receipt className="w-8 h-8 text-vintage-sand mb-2" />
-              <p className="text-sm font-sans text-vintage-dust">Noch keine Bestellungen</p>
+              <p className="text-sm font-sans text-vintage-dust">Пока нет заказов</p>
             </div>
           ) : (
             <div className="divide-y divide-vintage-sand/50">
@@ -270,7 +270,7 @@ export default async function AdminDashboard() {
                         {o.customer_name ?? o.customer_email}
                       </p>
                       <p className="text-xs text-vintage-dust font-sans">
-                        {new Date(o.erstellt_am).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })}
+                        {new Date(o.erstellt_am).toLocaleString("ru-RU", { dateStyle: "short", timeStyle: "short" })}
                       </p>
                     </div>
                     <p className="font-serif text-vintage-espresso text-sm flex-shrink-0">
@@ -289,13 +289,13 @@ export default async function AdminDashboard() {
           style={{ borderRadius: "var(--radius-card)" }}
         >
           <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2 mb-4">
-            <AlertTriangle className="w-4 h-4 text-vintage-burgundy" /> Niedriger Bestand
+            <AlertTriangle className="w-4 h-4 text-vintage-burgundy" /> Низкий остаток
           </h2>
 
           {niedrig.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <CheckCircle2 className="w-8 h-8 text-vintage-sage mb-2" />
-              <p className="text-sm font-sans text-vintage-dust">Alles aufgefüllt</p>
+              <p className="text-sm font-sans text-vintage-dust">Запасы в порядке</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -328,21 +328,21 @@ export default async function AdminDashboard() {
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2">
-              <Package className="w-4 h-4 text-vintage-gold" /> Zuletzt hinzugefügt
+              <Package className="w-4 h-4 text-vintage-gold" /> Недавно добавлено
             </h2>
             <Link
               href="/admin/produkte/neu"
               className="text-xs font-sans uppercase tracking-widest px-4 py-2 bg-vintage-espresso text-vintage-cream hover:bg-vintage-brown transition-colors"
               style={{ borderRadius: "var(--radius-button)" }}
             >
-              + Neu
+              + Новый
             </Link>
           </div>
 
           {recente.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-center">
               <Package className="w-8 h-8 text-vintage-sand mb-2" />
-              <p className="text-sm font-sans text-vintage-dust">Noch keine Produkte</p>
+              <p className="text-sm font-sans text-vintage-dust">Пока нет товаров</p>
             </div>
           ) : (
             <div className="divide-y divide-vintage-sand/50">
@@ -357,7 +357,7 @@ export default async function AdminDashboard() {
                     <div className="flex items-center gap-2 mt-0.5">
                       <ZustandBadge zustand={p.zustand} />
                       <span className="text-xs text-vintage-dust">
-                        {new Date(p.erstellt_am).toLocaleDateString("de-DE")}
+                        {new Date(p.erstellt_am).toLocaleDateString("ru-RU")}
                       </span>
                     </div>
                   </div>
@@ -376,29 +376,29 @@ export default async function AdminDashboard() {
           style={{ borderRadius: "var(--radius-card)" }}
         >
           <p className="text-vintage-gold text-xs tracking-widest uppercase mb-2">
-            Inventar-Wert
+            Стоимость инвентаря
           </p>
           <p className="font-serif text-3xl">
             {stats ? formatPreis(stats.gesamtwert) : "—"}
           </p>
           {stats && (
             <p className="text-vintage-cream/60 text-xs font-sans mt-2">
-              Ø {formatPreis(stats.durchschnittspreis)} pro Stück ·
-              {" "}{stats.produkte_verfuegbar} verfügbar
+              Ø {formatPreis(stats.durchschnittspreis)} за шт. ·
+              {" "}{stats.produkte_verfuegbar} в наличии
             </p>
           )}
 
           <div className="mt-6 pt-6 border-t border-vintage-cream/10 space-y-1.5">
             <div className="flex items-center justify-between text-xs font-sans">
-              <span className="text-vintage-cream/60">Kategorien</span>
+              <span className="text-vintage-cream/60">Категорий</span>
               <span className="font-serif">{stats?.kategorien ?? "–"}</span>
             </div>
             <div className="flex items-center justify-between text-xs font-sans">
-              <span className="text-vintage-cream/60">Wunschliste-User</span>
+              <span className="text-vintage-cream/60">В избранном (клиентов)</span>
               <span className="font-serif">{stats?.wunschliste_user ?? "–"}</span>
             </div>
             <div className="flex items-center justify-between text-xs font-sans">
-              <span className="text-vintage-cream/60">Verkauft total</span>
+              <span className="text-vintage-cream/60">Продано всего</span>
               <span className="font-serif">{stats?.produkte_verkauft ?? "–"}</span>
             </div>
           </div>
