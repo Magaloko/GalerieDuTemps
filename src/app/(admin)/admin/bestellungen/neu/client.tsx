@@ -94,11 +94,11 @@ export function ManuellBestellungClient() {
 
     const email = (custSelected?.email ?? newEmail).toLowerCase().trim();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError("Kunden-E-Mail fehlt oder ungültig");
+      setError("E-mail клиента отсутствует или указан неверно");
       return;
     }
     if (items.length === 0) {
-      setError("Mindestens 1 Artikel auswählen");
+      setError("Выберите минимум 1 товар");
       return;
     }
 
@@ -144,7 +144,7 @@ export function ManuellBestellungClient() {
                style={{ borderRadius: "var(--radius-card)" }}>
         <div className="flex items-center justify-between border-b border-vintage-sand/50 pb-3">
           <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2">
-            <User className="w-4 h-4 text-vintage-gold" /> Kunde
+            <User className="w-4 h-4 text-vintage-gold" /> Клиент
           </h2>
           <div className="flex gap-1">
             {(["search","new"] as const).map(m => (
@@ -154,7 +154,7 @@ export function ManuellBestellungClient() {
                         custMode === m ? "bg-vintage-espresso text-vintage-cream border-vintage-espresso" : "border-vintage-sand text-vintage-brown"
                       }`}
                       style={{ borderRadius: "var(--radius-vintage)" }}>
-                {m === "search" ? "Bestehend suchen" : "Neuer Kunde"}
+                {m === "search" ? "Найти клиента" : "Новый клиент"}
               </button>
             ))}
           </div>
@@ -166,23 +166,23 @@ export function ManuellBestellungClient() {
                  style={{ borderRadius: "var(--radius-vintage)" }}>
               <div>
                 <p className="text-sm text-vintage-ink">
-                  {[custSelected.vorname, custSelected.nachname].filter(Boolean).join(" ") || "Ohne Name"}
+                  {[custSelected.vorname, custSelected.nachname].filter(Boolean).join(" ") || "Без имени"}
                   <span className="text-xs text-vintage-dust ml-2">({custSelected.customer_type})</span>
                 </p>
                 <p className="text-xs text-vintage-dust flex items-center gap-1"><Mail className="w-3 h-3" /> {custSelected.email}</p>
               </div>
               <button onClick={() => setCustSelected(null)}
-                      className="text-xs text-vintage-burgundy hover:underline">Ändern</button>
+                      className="text-xs text-vintage-burgundy hover:underline">Изменить</button>
             </div>
           ) : (
             <div className="space-y-2">
               <Input
-                label="Suchen (E-Mail, Name, Firma)"
+                label="Поиск (e-mail, имя, компания)"
                 value={custQ}
                 onChange={(e) => searchCust(e.target.value)}
-                placeholder="z.B. olga@…"
+                placeholder="Например, olga@..."
               />
-              {custSearchPending && <p className="text-xs text-vintage-dust flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin"/> Suche…</p>}
+              {custSearchPending && <p className="text-xs text-vintage-dust flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin"/> Поиск...</p>}
               {custResults.length > 0 && (
                 <div className="border border-vintage-sand max-h-56 overflow-y-auto"
                      style={{ borderRadius: "var(--radius-vintage)" }}>
@@ -190,7 +190,7 @@ export function ManuellBestellungClient() {
                     <button key={c.id} onClick={() => { setCustSelected(c); setCustResults([]); setCustQ(""); }}
                             className="w-full p-2 text-left hover:bg-vintage-parchment border-b border-vintage-sand/40 last:border-0">
                       <p className="text-sm text-vintage-ink">
-                        {[c.vorname, c.nachname].filter(Boolean).join(" ") || "Ohne Name"}
+                        {[c.vorname, c.nachname].filter(Boolean).join(" ") || "Без имени"}
                         <span className="text-xs text-vintage-dust ml-2">({c.customer_type})</span>
                       </p>
                       <p className="text-xs text-vintage-dust">{c.email}</p>
@@ -202,10 +202,10 @@ export function ManuellBestellungClient() {
           )
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input label="E-Mail *"  type="email" value={newEmail} onChange={(e)=>setNewEmail(e.target.value)}
-                   placeholder="kunde@example.com" required />
-            <Input label="Name"      value={newName} onChange={(e)=>setNewName(e.target.value)}
-                   placeholder="Vorname Nachname" />
+            <Input label="E-mail *"  type="email" value={newEmail} onChange={(e)=>setNewEmail(e.target.value)}
+                   placeholder="client@example.com" required />
+            <Input label="Имя"      value={newName} onChange={(e)=>setNewName(e.target.value)}
+                   placeholder="Имя Фамилия" />
           </div>
         )}
       </section>
@@ -215,9 +215,9 @@ export function ManuellBestellungClient() {
                style={{ borderRadius: "var(--radius-card)" }}>
         <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
           <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2">
-            <Package className="w-4 h-4 text-vintage-gold" /> Artikel
+            <Package className="w-4 h-4 text-vintage-gold" /> Товары
           </h2>
-          <p className="text-xs text-vintage-dust">{items.length} Position{items.length !== 1 ? "en" : ""}</p>
+          <p className="text-xs text-vintage-dust">Позиций: {items.length}</p>
         </div>
 
         {/* Items-Liste */}
@@ -234,7 +234,7 @@ export function ManuellBestellungClient() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-vintage-ink truncate">{i.name}</p>
-                  <p className="text-xs text-vintage-dust">{formatPreis(i.preis)} · Lager: {i.lagerbestand}</p>
+                  <p className="text-xs text-vintage-dust">{formatPreis(i.preis)} · На складе: {i.lagerbestand}</p>
                 </div>
                 <input type="number" min={1} max={i.lagerbestand} value={i.menge}
                        onChange={(e) => updateMenge(i.id, parseInt(e.target.value) || 1)}
@@ -255,12 +255,12 @@ export function ManuellBestellungClient() {
         {/* Produkt-Suche */}
         <div className="border-t border-vintage-sand/30 pt-3 space-y-2">
           <Input
-            label="Artikel hinzufügen"
+            label="Добавить товар"
             value={prodQ}
             onChange={(e) => searchProd(e.target.value)}
-            placeholder="Name, Slug oder Artikel-Code …"
+            placeholder="Название, slug или артикул ..."
           />
-          {prodSearchPending && <p className="text-xs text-vintage-dust flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin"/> Suche…</p>}
+          {prodSearchPending && <p className="text-xs text-vintage-dust flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin"/> Поиск...</p>}
           {prodResults.length > 0 && (
             <div className="border border-vintage-sand max-h-64 overflow-y-auto"
                  style={{ borderRadius: "var(--radius-vintage)" }}>
@@ -279,7 +279,7 @@ export function ManuellBestellungClient() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-vintage-ink truncate">{p.name}</p>
                     <p className="text-xs text-vintage-dust">
-                      {p.artikel_code && `${p.artikel_code} · `}Lager: {p.lagerbestand}
+                      {p.artikel_code && `${p.artikel_code} · `}На складе: {p.lagerbestand}
                     </p>
                   </div>
                   <p className="font-serif text-sm text-vintage-espresso">{formatPreis(p.preis)}</p>
@@ -294,13 +294,13 @@ export function ManuellBestellungClient() {
         {items.length > 0 && (
           <div className="border-t border-vintage-sand pt-3 space-y-1 text-sm">
             <div className="flex justify-between text-vintage-dust">
-              <span>Netto (без НДС)</span><span>{formatPreis(totalNetto)}</span>
+              <span>Нетто (без НДС)</span><span>{formatPreis(totalNetto)}</span>
             </div>
             <div className="flex justify-between text-vintage-dust">
               <span>НДС 12 %</span><span>{formatPreis(totalTax)}</span>
             </div>
             <div className="flex justify-between font-serif text-lg text-vintage-espresso pt-1 border-t border-vintage-sand/40">
-              <span>Gesamt brutto</span><span>{formatPreis(totalBrutto)}</span>
+              <span>Итого брутто</span><span>{formatPreis(totalBrutto)}</span>
             </div>
           </div>
         )}
@@ -310,24 +310,24 @@ export function ManuellBestellungClient() {
       <section className="bg-vintage-white border border-vintage-sand p-6 space-y-4"
                style={{ borderRadius: "var(--radius-card)" }}>
         <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
-          Versand
+          Доставка
         </h2>
 
-        <Select label="Versandart" value={versandart}
+        <Select label="Способ доставки" value={versandart}
                 onChange={(e) => setVersandart((e.target as HTMLSelectElement).value)}
                 options={[
-                  { value: "abholung", label: "Abholung Алматы" },
-                  { value: "standard", label: "Standard-Versand (KZ)" },
-                  { value: "express",  label: "Express" },
-                  { value: "international", label: "International" },
+                  { value: "abholung", label: "Самовывоз, Алматы" },
+                  { value: "standard", label: "Стандартная доставка (KZ)" },
+                  { value: "express",  label: "Экспресс" },
+                  { value: "international", label: "Международная доставка" },
                 ]} />
 
         {versandart !== "abholung" && (
           <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_80px] gap-3">
-            <Input label="Straße + Nr." value={strasse} onChange={(e) => setStrasse(e.target.value)} />
-            <Input label="PLZ"          value={plz}     onChange={(e) => setPlz(e.target.value)} />
-            <Input label="Ort"          value={ort}     onChange={(e) => setOrt(e.target.value)} />
-            <Input label="Land"         value={land}    onChange={(e) => setLand(e.target.value)} maxLength={2} />
+            <Input label="Улица и дом" value={strasse} onChange={(e) => setStrasse(e.target.value)} />
+            <Input label="Индекс"      value={plz}     onChange={(e) => setPlz(e.target.value)} />
+            <Input label="Город"       value={ort}     onChange={(e) => setOrt(e.target.value)} />
+            <Input label="Страна"      value={land}    onChange={(e) => setLand(e.target.value)} maxLength={2} />
           </div>
         )}
       </section>
@@ -336,16 +336,16 @@ export function ManuellBestellungClient() {
       <section className="bg-vintage-white border border-vintage-sand p-6 space-y-4"
                style={{ borderRadius: "var(--radius-card)" }}>
         <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
-          Notiz & Status
+          Заметка и статус
         </h2>
-        <Textarea label="Kundennotiz / interne Notiz" rows={3}
+        <Textarea label="Заметка клиента / внутренняя заметка" rows={3}
                   value={notiz} onChange={(e) => setNotiz(e.target.value)}
-                  placeholder="Z.B. Sonderwunsch, Telefon-Bestellung, Liefertermin …" />
+                  placeholder="Например: особое пожелание, заказ по телефону, дата доставки ..." />
         <label className="flex items-center gap-3 cursor-pointer">
           <input type="checkbox" checked={paid} onChange={(e) => setPaid(e.target.checked)}
                  className="w-4 h-4 accent-vintage-sage" />
           <span className="text-sm text-vintage-ink font-sans">
-            <strong>Bereits bezahlt</strong> — Order direkt als &quot;paid&quot; markieren (z.B. Bar bei Abholung)
+            <strong>Уже оплачен</strong> — сразу отметить заказ как оплаченный (например, наличными при самовывозе)
           </span>
         </label>
       </section>
@@ -355,15 +355,15 @@ export function ManuellBestellungClient() {
            style={{ borderRadius: "var(--radius-card)" }}>
         <p className="text-sm text-vintage-dust">
           {items.length > 0 ? (
-            <>Gesamt: <strong className="font-serif text-vintage-espresso">{formatPreis(totalBrutto)}</strong> · {items.length} Position{items.length !== 1 && "en"}</>
+            <>Итого: <strong className="font-serif text-vintage-espresso">{formatPreis(totalBrutto)}</strong> · позиций: {items.length}</>
           ) : (
-            <>Noch keine Artikel ausgewählt</>
+            <>Товары ещё не выбраны</>
           )}
         </p>
         <Button onClick={submit} loading={submitPending}
                 disabled={items.length === 0 || (custMode === "new" && !newEmail) || (custMode === "search" && !custSelected)}
                 icon={<Save className="w-3.5 h-3.5" />} size="lg">
-          {paid ? "Bestellung anlegen + bezahlt" : "Bestellung anlegen (pending)"}
+          {paid ? "Создать заказ + оплачен" : "Создать заказ (ожидает)"}
         </Button>
       </div>
     </div>

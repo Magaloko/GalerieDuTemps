@@ -33,11 +33,11 @@ export function TelegramSetupClient({ verbunden, username, webhookUrl }: Props) 
   };
 
   const runTrennen = () => {
-    if (!confirm("Bot trennen? Webhook wird entfernt, bestehende Leads bleiben.")) return;
+    if (!confirm("Отключить бота? Webhook будет удалён, существующие лиды сохранятся.")) return;
     setActionMsg(null); setActionErr(null);
     startAction(async () => {
       const r = await telegramTrennenAction();
-      if (r.ok) setActionMsg(r.message ?? "Getrennt");
+      if (r.ok) setActionMsg(r.message ?? "Отключён");
       else setActionErr(r.error);
     });
   };
@@ -50,7 +50,7 @@ export function TelegramSetupClient({ verbunden, username, webhookUrl }: Props) 
                  style={{ borderRadius: "var(--radius-card)" }}>
           <div className="flex items-center gap-2 text-vintage-forest font-sans">
             <CheckCircle2 className="w-5 h-5" />
-            <strong>Bot verbunden</strong>
+            <strong>Бот подключён</strong>
             {username && <span className="text-vintage-dust">· @{username}</span>}
           </div>
           {webhookUrl && (
@@ -62,29 +62,29 @@ export function TelegramSetupClient({ verbunden, username, webhookUrl }: Props) 
           <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="ghost" onClick={runCheck} loading={actionPending}
                     icon={<RefreshCw className="w-3.5 h-3.5" />}>
-              Webhook-Status prüfen
+              Проверить статус webhook
             </Button>
             <Button size="sm" variant="danger" onClick={runTrennen}
                     icon={<Unlink className="w-3.5 h-3.5" />}>
-              Bot trennen
+              Отключить бота
             </Button>
           </div>
         </section>
       ) : (
         <section className="bg-vintage-white border border-vintage-sand p-5 space-y-4"
                  style={{ borderRadius: "var(--radius-card)" }}>
-          <h3 className="font-serif text-base text-vintage-espresso">Bot verbinden</h3>
+          <h3 className="font-serif text-base text-vintage-espresso">Подключить бота</h3>
           <form action={action} className="space-y-3">
             <Input
-              label="Bot Token (von BotFather)"
+              label="Токен бота (от BotFather)"
               name="token"
               type="password"
               required
               placeholder="123456789:ABCdefGhIjKlMnOpQrStUvWxYz1234567890"
-              hint="Wird sicher gespeichert. Nur als Server-Geheimnis verwendet."
+              hint="Сохраняется безопасно. Используется только как серверный секрет."
             />
             <Button type="submit" loading={pending} icon={<Send className="w-3.5 h-3.5" />}>
-              Verbinden + Webhook setzen
+              Подключить и установить webhook
             </Button>
           </form>
         </section>
@@ -108,7 +108,7 @@ export function TelegramSetupClient({ verbunden, username, webhookUrl }: Props) 
 
       {actionPending && (
         <div className="flex items-center gap-2 text-xs text-vintage-dust">
-          <Loader2 className="w-3.5 h-3.5 animate-spin" /> arbeite …
+          <Loader2 className="w-3.5 h-3.5 animate-spin" /> выполняется …
         </div>
       )}
     </div>

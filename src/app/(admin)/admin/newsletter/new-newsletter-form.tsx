@@ -12,12 +12,12 @@ export function NewNewsletterForm() {
   return (
     <details className="bg-vintage-white border border-vintage-sand p-5" style={{ borderRadius: "var(--radius-card)" }}>
       <summary className="font-serif text-vintage-espresso cursor-pointer flex items-center gap-2">
-        <Plus className="w-4 h-4 text-vintage-gold" /> Neuen Newsletter
+        <Plus className="w-4 h-4 text-vintage-gold" /> Новая рассылка
       </summary>
       <form action={formAction} className="mt-5 space-y-4">
-        <Input label="Interner Titel" name="titel" required placeholder="Sommer-Newsletter 2026" />
-        <Input label="Betreff (E-Mail)" name="betreff" required placeholder="Neue Vintage-Schätze ✦" />
-        <Button type="submit" loading={isPending}>Erstellen & öffnen</Button>
+        <Input label="Внутреннее название" name="titel" required placeholder="Летняя рассылка 2026" />
+        <Input label="Тема письма" name="betreff" required placeholder="Новые винтажные находки ✦" />
+        <Button type="submit" loading={isPending}>Создать и открыть</Button>
       </form>
     </details>
   );

@@ -3,7 +3,7 @@ import { KanbanBoard } from "./kanban-board";
 import { Users } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "CRM Pipeline" };
+export const metadata: Metadata = { title: "CRM Воронка" };
 export const dynamic = "force-dynamic";
 
 export default async function PipelinePage() {
@@ -18,9 +18,9 @@ export default async function PipelinePage() {
         <Users className="w-5 h-5 text-vintage-gold" />
         <div>
           <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-          <h1 className="font-serif text-2xl text-vintage-espresso">Pipeline</h1>
+          <h1 className="font-serif text-2xl text-vintage-espresso">Воронка</h1>
           <p className="text-vintage-dust text-xs font-sans mt-0.5">
-            {kunden.length} Kund:innen · {stages.length} Stages · Drag-and-Drop zum Verschieben
+            {kunden.length} клиентов · {stages.length} этапов · перетащите карточку для перемещения
           </p>
         </div>
       </div>

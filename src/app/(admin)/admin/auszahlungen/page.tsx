@@ -6,7 +6,7 @@ import { AuszahlungErstellenButton } from "./auszahlung-erstellen-button";
 import { BezahltButton } from "./bezahlt-button";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Auszahlungen" };
+export const metadata: Metadata = { title: "Выплаты" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminAuszahlungenPage() {
@@ -21,9 +21,9 @@ export default async function AdminAuszahlungenPage() {
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-          <h1 className="font-serif text-2xl text-vintage-espresso">Auszahlungen</h1>
+          <h1 className="font-serif text-2xl text-vintage-espresso">Выплаты</h1>
           <p className="text-vintage-dust text-xs font-sans mt-0.5">
-            Mindestbetrag: {formatPreis(settings.mindestauszahlung_cent / 100)}
+            Минимальная сумма: {formatPreis(settings.mindestauszahlung_cent / 100)}
           </p>
         </div>
         <a
@@ -31,23 +31,23 @@ export default async function AdminAuszahlungenPage() {
           download
           className="flex items-center gap-2 px-4 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans uppercase tracking-widest hover:bg-vintage-parchment transition-colors"
           style={{ borderRadius: "var(--radius-button)" }}
-          title="Alle offenen SEPA-Auszahlungen als XML-Datei (für Banking-Software)"
+          title="Все открытые SEPA-выплаты XML-файлом (для банковского ПО)"
         >
-          📥 SEPA-XML Export
+          📥 Экспорт SEPA-XML
         </a>
       </div>
 
       {/* Auszahlungs-Kandidaten */}
       <section className="bg-vintage-white border border-vintage-sand p-6" style={{ borderRadius: "var(--radius-card)" }}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-serif text-lg text-vintage-espresso">Bereit zur Auszahlung</h2>
-          <span className="text-xs text-vintage-dust font-sans">{kandidaten.length} Affiliates</span>
+          <h2 className="font-serif text-lg text-vintage-espresso">Готово к выплате</h2>
+          <span className="text-xs text-vintage-dust font-sans">{kandidaten.length} партнёров</span>
         </div>
         {kandidaten.length === 0 ? (
           <div className="text-center py-10">
             <Wallet className="w-10 h-10 text-vintage-sand mx-auto mb-3" />
-            <p className="text-vintage-dust text-sm font-sans">Keine Auszahlungen ausstehend</p>
-            <p className="text-xs text-vintage-dust font-sans mt-1">Provisionen müssen bestätigt und den Mindestbetrag erreichen.</p>
+            <p className="text-vintage-dust text-sm font-sans">Ожидающих выплат нет</p>
+            <p className="text-xs text-vintage-dust font-sans mt-1">Комиссии должны быть подтверждены и достигнуть минимальной суммы.</p>
           </div>
         ) : (
           <div className="divide-y divide-vintage-sand/40">
@@ -56,7 +56,7 @@ export default async function AdminAuszahlungenPage() {
                 <div>
                   <p className="font-serif text-vintage-espresso">{k.affiliate_name}</p>
                   <p className="text-xs text-vintage-dust font-sans">
-                    {k.affiliate_email} · {k.anzahl_provisionen} Provisionen · {k.auszahlungs_methode.toUpperCase()}
+                    {k.affiliate_email} · {k.anzahl_provisionen} комиссий · {k.auszahlungs_methode.toUpperCase()}
                   </p>
                 </div>
                 <div className="flex items-center gap-4">
@@ -78,9 +78,9 @@ export default async function AdminAuszahlungenPage() {
 
       {/* Historie */}
       <section className="bg-vintage-white border border-vintage-sand p-6" style={{ borderRadius: "var(--radius-card)" }}>
-        <h2 className="font-serif text-lg text-vintage-espresso mb-4">Historie</h2>
+        <h2 className="font-serif text-lg text-vintage-espresso mb-4">История</h2>
         {historie.length === 0 ? (
-          <p className="text-vintage-dust text-sm font-sans text-center py-6">Noch keine Auszahlungen</p>
+          <p className="text-vintage-dust text-sm font-sans text-center py-6">Выплат пока нет</p>
         ) : (
           <div className="divide-y divide-vintage-sand/40">
             {historie.map(a => (
@@ -89,8 +89,8 @@ export default async function AdminAuszahlungenPage() {
                   <p className="font-serif text-vintage-espresso">{a.affiliate_name}</p>
                   <p className="text-xs text-vintage-dust font-sans flex items-center gap-1">
                     {a.status === "bezahlt"
-                      ? <><CheckCircle2 className="w-3 h-3 text-vintage-sage" /> Bezahlt am {a.bezahlt_am ? new Date(a.bezahlt_am).toLocaleDateString("de-DE") : ""}</>
-                      : <><Clock className="w-3 h-3 text-vintage-gold" /> {new Date(a.erstellt_am).toLocaleDateString("de-DE")}</>
+                      ? <><CheckCircle2 className="w-3 h-3 text-vintage-sage" /> Оплачено {a.bezahlt_am ? new Date(a.bezahlt_am).toLocaleDateString("ru-RU") : ""}</>
+                      : <><Clock className="w-3 h-3 text-vintage-gold" /> {new Date(a.erstellt_am).toLocaleDateString("ru-RU")}</>
                     }
                   </p>
                 </div>
@@ -107,7 +107,7 @@ export default async function AdminAuszahlungenPage() {
                       className="px-2 py-1 border border-vintage-sand text-vintage-dust text-xs font-sans hover:bg-vintage-parchment transition-colors"
                       style={{ borderRadius: "var(--radius-vintage)" }}
                     >
-                      Beleg
+                      Акт
                     </a>
                   )}
                 </div>

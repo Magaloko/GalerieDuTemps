@@ -48,10 +48,10 @@ export function BenutzerVerwaltungClient({ users, currentUserId }: Props) {
       <section className="bg-vintage-white border border-vintage-sand p-6 space-y-4"
                style={{ borderRadius: "var(--radius-card)" }}>
         <div className="flex items-center justify-between">
-          <h2 className="font-serif text-lg text-vintage-espresso">Neuer Admin</h2>
+          <h2 className="font-serif text-lg text-vintage-espresso">Новый администратор</h2>
           <Button size="sm" variant={showForm ? "ghost" : "primary"} onClick={() => setShowForm(!showForm)}
                   icon={<UserPlus className="w-3.5 h-3.5" />}>
-            {showForm ? "Abbrechen" : "Hinzufügen"}
+            {showForm ? "Отмена" : "Добавить"}
           </Button>
         </div>
 
@@ -71,26 +71,26 @@ export function BenutzerVerwaltungClient({ users, currentUserId }: Props) {
         {showForm && (
           <form action={action} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Name" name="name" required placeholder="Max Mustermann" />
+              <Input label="Имя" name="name" required placeholder="Имя Фамилия" />
               <Input label="E-Mail" name="email" type="email" required placeholder="admin@galeriedutemps.kz" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-[1fr_140px_120px] gap-4">
-              <Input label="Temporäres Passwort" name="passwort" required
+              <Input label="Временный пароль" name="passwort" required
                      defaultValue={tempPw}
-                     hint="User muss es nach Login ändern. Per Mail versendet." />
+                     hint="Пользователь должен сменить его после входа. Отправляется по e-mail." />
               <div className="flex items-end">
                 <Button type="button" variant="ghost" size="sm" onClick={() => setTempPw(generatePassword())}>
-                  Neu generieren
+                  Сгенерировать
                 </Button>
               </div>
-              <Select label="Rolle" name="rolle" defaultValue="admin"
+              <Select label="Роль" name="rolle" defaultValue="admin"
                       options={[
                         { value: "admin",      label: "Admin"      },
                         { value: "superadmin", label: "Superadmin" },
                       ]} />
             </div>
             <Button type="submit" loading={pending} icon={<UserPlus className="w-3.5 h-3.5" />}>
-              Anlegen + Mail senden
+              Создать и отправить письмо
             </Button>
           </form>
         )}
@@ -110,11 +110,11 @@ export function BenutzerVerwaltungClient({ users, currentUserId }: Props) {
         <table className="w-full text-sm font-sans">
           <thead>
             <tr className="border-b border-vintage-sand bg-vintage-parchment/50 text-xs uppercase tracking-widest text-vintage-dust">
-              <th className="text-left px-4 py-3 font-normal">Name</th>
+              <th className="text-left px-4 py-3 font-normal">Имя</th>
               <th className="text-left px-4 py-3 font-normal">E-Mail</th>
-              <th className="text-left px-4 py-3 font-normal w-32">Rolle</th>
-              <th className="text-center px-4 py-3 font-normal w-24">Status</th>
-              <th className="text-right px-4 py-3 font-normal">Aktionen</th>
+              <th className="text-left px-4 py-3 font-normal w-32">Роль</th>
+              <th className="text-center px-4 py-3 font-normal w-24">Статус</th>
+              <th className="text-right px-4 py-3 font-normal">Действия</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-vintage-sand/40">
@@ -143,11 +143,11 @@ export function BenutzerVerwaltungClient({ users, currentUserId }: Props) {
                 <td className="px-4 py-3 text-center">
                   {u.aktiv ? (
                     <span className="inline-flex items-center gap-1 text-vintage-sage text-xs">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Aktiv
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Активен
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 text-vintage-dust text-xs">
-                      <XCircle className="w-3.5 h-3.5" /> Deaktiviert
+                      <XCircle className="w-3.5 h-3.5" /> Деактивирован
                     </span>
                   )}
                 </td>
@@ -155,13 +155,13 @@ export function BenutzerVerwaltungClient({ users, currentUserId }: Props) {
                   <div className="flex items-center justify-end gap-1">
                     <button
                       onClick={() => {
-                        const pw = prompt(`Neues Passwort für ${u.email} (min. 10 Zeichen):`, generatePassword());
+                        const pw = prompt(`Новый пароль для ${u.email} (мин. 10 символов):`, generatePassword());
                         if (pw && pw.length >= 10) {
                           callAction(() => benutzerPasswortResetAction(u.id, pw));
                         }
                       }}
                       disabled={actionPending}
-                      title="Passwort zurücksetzen"
+                      title="Сбросить пароль"
                       className="p-2 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-parchment transition-colors"
                       style={{ borderRadius: "var(--radius-vintage)" }}>
                       <KeyRound className="w-4 h-4" />
@@ -170,7 +170,7 @@ export function BenutzerVerwaltungClient({ users, currentUserId }: Props) {
                       <button
                         onClick={() => callAction(() => benutzerStatusAction(u.id, !u.aktiv))}
                         disabled={actionPending}
-                        title={u.aktiv ? "Deaktivieren" : "Aktivieren"}
+                        title={u.aktiv ? "Деактивировать" : "Активировать"}
                         className="p-2 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-parchment transition-colors"
                         style={{ borderRadius: "var(--radius-vintage)" }}>
                         {actionPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}

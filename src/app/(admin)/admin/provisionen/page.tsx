@@ -6,22 +6,22 @@ import { StornoButton } from "./storno-button";
 import type { Metadata } from "next";
 import type { ProvisionStatus } from "@/types/affiliate";
 
-export const metadata: Metadata = { title: "Provisionen" };
+export const metadata: Metadata = { title: "Комиссии" };
 export const dynamic = "force-dynamic";
 
 const STATUS_LABEL: Record<ProvisionStatus, { label: string; klasse: string }> = {
-  offen:      { label: "Offen",      klasse: "text-vintage-gold     bg-vintage-gold/10"     },
-  bestaetigt: { label: "Bestätigt",  klasse: "text-vintage-sage     bg-vintage-sage/10"     },
-  ausgezahlt: { label: "Ausgezahlt", klasse: "text-vintage-forest   bg-vintage-forest/10"   },
-  storniert:  { label: "Storniert",  klasse: "text-vintage-burgundy bg-vintage-burgundy/10" },
+  offen:      { label: "Открыта",     klasse: "text-vintage-gold     bg-vintage-gold/10"     },
+  bestaetigt: { label: "Подтверждена", klasse: "text-vintage-sage     bg-vintage-sage/10"     },
+  ausgezahlt: { label: "Выплачена",   klasse: "text-vintage-forest   bg-vintage-forest/10"   },
+  storniert:  { label: "Сторнирована", klasse: "text-vintage-burgundy bg-vintage-burgundy/10" },
 };
 
 const FILTER: Array<{ value: ProvisionStatus | ""; label: string }> = [
-  { value: "",           label: "Alle"        },
-  { value: "offen",      label: "Offen"       },
-  { value: "bestaetigt", label: "Bestätigt"   },
-  { value: "ausgezahlt", label: "Ausgezahlt"  },
-  { value: "storniert",  label: "Storniert"   },
+  { value: "",           label: "Все"          },
+  { value: "offen",      label: "Открыта"      },
+  { value: "bestaetigt", label: "Подтверждена" },
+  { value: "ausgezahlt", label: "Выплачена"    },
+  { value: "storniert",  label: "Сторнирована" },
 ];
 
 export default async function AdminProvisionenPage({
@@ -35,8 +35,8 @@ export default async function AdminProvisionenPage({
     <div className="space-y-6 max-w-6xl">
       <div>
         <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-        <h1 className="font-serif text-2xl text-vintage-espresso">Provisionen</h1>
-        <p className="text-vintage-dust text-xs font-sans mt-0.5">{daten.gesamt} Provisionen gesamt</p>
+        <h1 className="font-serif text-2xl text-vintage-espresso">Комиссии</h1>
+        <p className="text-vintage-dust text-xs font-sans mt-0.5">{daten.gesamt} комиссий всего</p>
       </div>
 
       <div className="flex flex-wrap gap-1.5 border-b border-vintage-sand pb-1">
@@ -55,8 +55,8 @@ export default async function AdminProvisionenPage({
       {daten.items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center bg-vintage-white border border-vintage-sand" style={{ borderRadius: "var(--radius-card)" }}>
           <Coins className="w-10 h-10 text-vintage-sand mb-3" />
-          <p className="font-serif text-lg text-vintage-brown">Keine Provisionen</p>
-          <p className="text-vintage-dust text-sm font-sans mt-1">Werden erstellt, sobald eine Kontaktanfrage als verkauft markiert wird.</p>
+          <p className="font-serif text-lg text-vintage-brown">Комиссий пока нет</p>
+          <p className="text-vintage-dust text-sm font-sans mt-1">Они создаются, когда контактная заявка отмечена как проданная.</p>
         </div>
       ) : (
         <div className="bg-vintage-white border border-vintage-sand overflow-hidden" style={{ borderRadius: "var(--radius-card)" }}>
@@ -64,12 +64,12 @@ export default async function AdminProvisionenPage({
             <table className="w-full text-sm font-sans">
               <thead className="bg-vintage-parchment/50 border-b border-vintage-sand">
                 <tr>
-                  <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Datum</th>
-                  <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Affiliate</th>
-                  <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Produkt</th>
-                  <th className="text-center px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Ebene</th>
-                  <th className="text-right px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Verkauf</th>
-                  <th className="text-right px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Provision</th>
+                  <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Дата</th>
+                  <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Партнёр</th>
+                  <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Товар</th>
+                  <th className="text-center px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Уровень</th>
+                  <th className="text-right px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Продажа</th>
+                  <th className="text-right px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Комиссия</th>
                   <th className="text-center px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Status</th>
                   <th className="px-4 py-3" />
                 </tr>
@@ -79,7 +79,7 @@ export default async function AdminProvisionenPage({
                   const s = STATUS_LABEL[p.status];
                   return (
                     <tr key={p.id} className="hover:bg-vintage-parchment/30 transition-colors">
-                      <td className="px-4 py-3 text-vintage-dust">{new Date(p.erstellt_am).toLocaleDateString("de-DE")}</td>
+                      <td className="px-4 py-3 text-vintage-dust">{new Date(p.erstellt_am).toLocaleDateString("ru-RU")}</td>
                       <td className="px-4 py-3">
                         <p className="text-vintage-ink">{p.affiliate_name}</p>
                         <p className="text-xs text-vintage-dust">{p.affiliate_email}</p>

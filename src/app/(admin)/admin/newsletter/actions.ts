@@ -15,7 +15,7 @@ import type { NewsletterBlock } from "@/types/newsletter";
 async function adminCheck() {
   const session = await auth();
   if (!session || (session.user.role !== "admin" && session.user.role !== "superadmin")) {
-    throw new Error("Nicht berechtigt");
+    throw new Error("Нет прав");
   }
   return session.user.id;
 }
@@ -27,7 +27,7 @@ export async function newsletterCreateAction(
   const adminId = await adminCheck();
   const titel   = String(formData.get("titel") ?? "").trim();
   const betreff = String(formData.get("betreff") ?? titel).trim();
-  if (titel.length < 2) return { fehler: "Titel erforderlich" };
+  if (titel.length < 2) return { fehler: "Укажите название" };
 
   const n = await newsletterErstellen({ titel, betreff, erstellt_von: adminId });
   redirect(`/admin/newsletter/${n.id}/edit`);
@@ -56,7 +56,7 @@ export async function newsletterDeleteAction(id: string): Promise<void> {
 export async function newsletterTestAction(id: string, email: string): Promise<{ ok?: boolean; fehler?: string }> {
   await adminCheck();
   const n = await newsletterById(id);
-  if (!n) return { fehler: "Newsletter nicht gefunden" };
+  if (!n) return { fehler: "Рассылка не найдена" };
 
   const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
   const html = renderNewsletter(n.blocks ?? [], {
@@ -73,7 +73,7 @@ export async function newsletterTestAction(id: string, email: string): Promise<{
     });
     return { ok: true };
   } catch (err) {
-    return { fehler: err instanceof Error ? err.message : "Fehler" };
+    return { fehler: err instanceof Error ? err.message : "Ошибка" };
   }
 }
 
@@ -81,11 +81,11 @@ export async function newsletterTestAction(id: string, email: string): Promise<{
 export async function newsletterVersendenAction(id: string): Promise<{ ok?: boolean; anzahl?: number; fehler?: string }> {
   await adminCheck();
   const n = await newsletterById(id);
-  if (!n) return { fehler: "Newsletter nicht gefunden" };
-  if (n.status === "versendet") return { fehler: "Bereits versendet" };
+  if (!n) return { fehler: "Рассылка не найдена" };
+  if (n.status === "versendet") return { fehler: "Уже отправлено" };
 
   const empfaenger = await newsletterEmpfaengerSammeln(n.segment_id ?? undefined);
-  if (empfaenger.length === 0) return { fehler: "Keine Empfänger" };
+  if (empfaenger.length === 0) return { fehler: "Нет получателей" };
 
   const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
 

@@ -17,10 +17,10 @@ export async function provisionenStornierenAction(
 ): Promise<{ anzahl: number; fehler?: string }> {
   const session = await auth();
   if (!session || (session.user.role !== "admin" && session.user.role !== "superadmin")) {
-    return { anzahl: 0, fehler: "Nicht berechtigt" };
+    return { anzahl: 0, fehler: "Нет прав" };
   }
   if (!grund.trim() || grund.length < 5) {
-    return { anzahl: 0, fehler: "Bitte einen Grund angeben (min. 5 Zeichen)" };
+    return { anzahl: 0, fehler: "Укажите причину (минимум 5 символов)" };
   }
 
   // Vor dem Stornieren: betroffene Affiliates laden

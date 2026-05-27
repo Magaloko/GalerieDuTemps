@@ -5,14 +5,14 @@ import { Users, Search, ChevronLeft, ChevronRight, Settings } from "lucide-react
 import type { Metadata } from "next";
 import type { AffiliateStatus } from "@/types/affiliate";
 
-export const metadata: Metadata = { title: "Affiliates" };
+export const metadata: Metadata = { title: "Партнёры" };
 export const dynamic = "force-dynamic";
 
 const STATUS_FILTER: Array<{ value: AffiliateStatus | ""; label: string }> = [
-  { value: "",         label: "Alle"     },
-  { value: "pending",  label: "Warten"   },
-  { value: "aktiv",    label: "Aktiv"    },
-  { value: "gesperrt", label: "Gesperrt" },
+  { value: "",         label: "Все"          },
+  { value: "pending",  label: "Ожидают"      },
+  { value: "aktiv",    label: "Активны"      },
+  { value: "gesperrt", label: "Заблокированы" },
 ];
 
 export default async function AffiliatesAdminPage({
@@ -31,15 +31,15 @@ export default async function AffiliatesAdminPage({
       <div className="flex items-center justify-between">
         <div>
           <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-          <h1 className="font-serif text-2xl text-vintage-espresso">Affiliates</h1>
+          <h1 className="font-serif text-2xl text-vintage-espresso">Партнёры</h1>
           <p className="text-vintage-dust text-xs font-sans mt-0.5">
-            {daten.gesamt} {daten.gesamt === 1 ? "Partner" : "Partner"}{status && ` · ${STATUS_FILTER.find(s => s.value === status)?.label}`}
+            {daten.gesamt} партнёров{status && ` · ${STATUS_FILTER.find(s => s.value === status)?.label}`}
           </p>
         </div>
         <Link href="/admin/affiliates/einstellungen"
           className="flex items-center gap-2 px-4 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans uppercase tracking-widest hover:bg-vintage-parchment transition-colors"
           style={{ borderRadius: "var(--radius-button)" }}>
-          <Settings className="w-3.5 h-3.5" /> Einstellungen
+          <Settings className="w-3.5 h-3.5" /> Настройки
         </Link>
       </div>
 
@@ -67,13 +67,13 @@ export default async function AffiliatesAdminPage({
             <input
               name="suche"
               defaultValue={suche}
-              placeholder="E-Mail, Name oder Code …"
+              placeholder="E-mail, имя или код …"
               className="w-full pl-9 pr-4 py-2 bg-vintage-cream border border-vintage-sand text-sm font-sans text-vintage-ink focus:outline-none focus:border-vintage-brown transition-colors"
               style={{ borderRadius: "var(--radius-vintage)" }}
             />
           </div>
           <button type="submit" className="px-4 py-2 bg-vintage-espresso text-vintage-cream text-xs font-sans tracking-widest uppercase hover:bg-vintage-brown transition-colors" style={{ borderRadius: "var(--radius-button)" }}>
-            Suchen
+            Найти
           </button>
         </form>
       </div>
@@ -82,9 +82,9 @@ export default async function AffiliatesAdminPage({
       {daten.items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center bg-vintage-white border border-vintage-sand" style={{ borderRadius: "var(--radius-card)" }}>
           <Users className="w-12 h-12 text-vintage-sand mb-4" />
-          <p className="font-serif text-lg text-vintage-brown">Keine Affiliates gefunden</p>
+          <p className="font-serif text-lg text-vintage-brown">Партнёры не найдены</p>
           <p className="text-vintage-dust text-sm font-sans mt-1">
-            {suche ? "Suchbegriff anpassen" : "Neue Anmeldungen erscheinen hier"}
+            {suche ? "Измените поисковый запрос" : "Новые регистрации появятся здесь"}
           </p>
         </div>
       ) : (
@@ -96,20 +96,20 @@ export default async function AffiliatesAdminPage({
       {/* Paginierung */}
       {daten.seiten > 1 && (
         <div className="flex items-center justify-between pt-4">
-          <p className="text-xs text-vintage-dust font-sans">Seite {daten.seite} von {daten.seiten}</p>
+          <p className="text-xs text-vintage-dust font-sans">Страница {daten.seite} из {daten.seiten}</p>
           <div className="flex gap-2">
             {daten.seite > 1 && (
               <Link href={`/admin/affiliates?seite=${daten.seite - 1}${status ? `&status=${status}` : ""}`}
                 className="flex items-center gap-1 px-3 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans hover:bg-vintage-parchment transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}>
-                <ChevronLeft className="w-3.5 h-3.5" /> Zurück
+                <ChevronLeft className="w-3.5 h-3.5" /> Назад
               </Link>
             )}
             {daten.seite < daten.seiten && (
               <Link href={`/admin/affiliates?seite=${daten.seite + 1}${status ? `&status=${status}` : ""}`}
                 className="flex items-center gap-1 px-3 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans hover:bg-vintage-parchment transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}>
-                Weiter <ChevronRight className="w-3.5 h-3.5" />
+                Вперёд <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             )}
           </div>

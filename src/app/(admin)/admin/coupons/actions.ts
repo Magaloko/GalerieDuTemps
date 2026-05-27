@@ -6,13 +6,13 @@ import { couponErstellen, couponLoeschen, couponToggleAktiv } from "@/lib/db/cou
 import { z } from "zod";
 
 const CouponSchema = z.object({
-  code:                 z.string().min(2).max(50),
-  beschreibung:         z.string().max(200).optional(),
+  code:                 z.string().min(2, "Код слишком короткий").max(50, "Код слишком длинный"),
+  beschreibung:         z.string().max(200, "Описание слишком длинное").optional(),
   typ:                  z.enum(["prozent", "fest"]),
-  wert:                 z.coerce.number().positive(),
-  min_bestellwert_eur:  z.coerce.number().min(0).default(0),
-  nutzungen_max:        z.coerce.number().int().min(0).optional(),
-  nutzungen_pro_user:   z.coerce.number().int().min(1).default(1),
+  wert:                 z.coerce.number().positive("Значение должно быть положительным"),
+  min_bestellwert_eur:  z.coerce.number().min(0, "Минимальная сумма не может быть отрицательной").default(0),
+  nutzungen_max:        z.coerce.number().int("Укажите целое число").min(0, "Количество не может быть отрицательным").optional(),
+  nutzungen_pro_user:   z.coerce.number().int("Укажите целое число").min(1, "Минимум 1 использование").default(1),
   gueltig_bis:          z.string().optional(),
   nur_b2b:              z.coerce.boolean().default(false),
   nur_b2c:              z.coerce.boolean().default(false),
@@ -24,7 +24,7 @@ export async function couponErstellenAction(
 ): Promise<{ ok?: boolean; fehler?: string }> {
   const session = await auth();
   if (!session || (session.user.role !== "admin" && session.user.role !== "superadmin")) {
-    return { fehler: "Nicht berechtigt" };
+    return { fehler: "Нет прав" };
   }
   const parsed = CouponSchema.safeParse({
     code:                formData.get("code"),
@@ -39,7 +39,7 @@ export async function couponErstellenAction(
     nur_b2c:             formData.get("nur_b2c") === "on",
   });
   if (!parsed.success) {
-    return { fehler: parsed.error.issues[0]?.message ?? "Ungültige Eingabe" };
+    return { fehler: parsed.error.issues[0]?.message ?? "Некорректный ввод" };
   }
 
   try {
@@ -59,10 +59,10 @@ export async function couponErstellenAction(
     return { ok: true };
   } catch (err) {
     if (err instanceof Error && err.message.includes("duplicate")) {
-      return { fehler: "Code existiert bereits" };
+      return { fehler: "Код уже существует" };
     }
     console.error("[Coupon]", err);
-    return { fehler: "Fehler beim Erstellen" };
+    return { fehler: "Не удалось создать" };
   }
 }
 

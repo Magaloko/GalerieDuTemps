@@ -11,11 +11,11 @@ export async function segmentCreateAction(
 ): Promise<{ ok?: boolean; fehler?: string }> {
   const session = await auth();
   if (!session || (session.user.role !== "admin" && session.user.role !== "superadmin")) {
-    return { fehler: "Nicht berechtigt" };
+    return { fehler: "Нет прав" };
   }
 
   const name = String(formData.get("name") ?? "").trim();
-  if (name.length < 2) return { fehler: "Name erforderlich" };
+  if (name.length < 2) return { fehler: "Укажите название" };
 
   const filter: SegmentFilter = {};
 
@@ -44,7 +44,7 @@ export async function segmentCreateAction(
     revalidatePath("/admin/crm/segments");
     return { ok: true };
   } catch {
-    return { fehler: "Fehler beim Erstellen" };
+    return { fehler: "Не удалось создать" };
   }
 }
 

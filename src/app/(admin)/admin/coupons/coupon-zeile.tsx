@@ -15,7 +15,7 @@ export function CouponZeile({
   const [pending, startTransition] = useTransition();
 
   const handleDelete = () => {
-    if (!confirm(`Coupon "${coupon.code}" wirklich löschen?`)) return;
+    if (!confirm(`Удалить промокод «${coupon.code}»?`)) return;
     startTransition(() => couponLoeschenAction(coupon.id));
   };
 
@@ -40,7 +40,7 @@ export function CouponZeile({
           </p>
           <p className="text-xs text-vintage-dust font-sans">
             {coupon.nutzungen_aktuell}/{coupon.nutzungen_max ?? "∞"} genutzt
-            {coupon.gueltig_bis && ` · bis ${new Date(coupon.gueltig_bis).toLocaleDateString("de-DE")}`}
+            {coupon.gueltig_bis && ` · до ${new Date(coupon.gueltig_bis).toLocaleDateString("ru-RU")}`}
             {coupon.nur_b2b && " · nur B2B"}
             {coupon.nur_b2c && " · nur B2C"}
           </p>
@@ -52,7 +52,7 @@ export function CouponZeile({
           disabled={pending}
           className="p-2 text-vintage-brown hover:bg-vintage-parchment transition-colors disabled:opacity-50"
           style={{ borderRadius: "var(--radius-vintage)" }}
-          title={coupon.aktiv ? "Deaktivieren" : "Aktivieren"}
+          title={coupon.aktiv ? "Деактивировать" : "Активировать"}
         >
           {coupon.aktiv ? <ToggleRight className="w-5 h-5 text-vintage-sage" /> : <ToggleLeft className="w-5 h-5 text-vintage-dust" />}
         </button>

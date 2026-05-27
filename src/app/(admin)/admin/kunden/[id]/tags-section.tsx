@@ -37,21 +37,21 @@ export function TagsSection({
     <section className="bg-vintage-white border border-vintage-sand p-5" style={{ borderRadius: "var(--radius-card)" }}>
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2">
-          <TagIcon className="w-4 h-4 text-vintage-gold" /> Tags
+          <TagIcon className="w-4 h-4 text-vintage-gold" /> Теги
         </h2>
         <button
           onClick={() => setPicker(p => !p)}
           className="px-3 py-1.5 text-xs font-sans uppercase tracking-widest text-vintage-brown border border-vintage-sand hover:bg-vintage-parchment transition-colors flex items-center gap-1"
           style={{ borderRadius: "var(--radius-button)" }}
         >
-          <Plus className="w-3 h-3" /> Tag hinzufügen
+          <Plus className="w-3 h-3" /> Добавить тег
         </button>
       </div>
 
       {/* Aktive Tags */}
       <div className="flex flex-wrap gap-1.5 mb-3 min-h-[24px]">
         {kundenTags.length === 0 && !pending ? (
-          <p className="text-xs text-vintage-dust font-sans italic">keine Tags</p>
+          <p className="text-xs text-vintage-dust font-sans italic">тегов нет</p>
         ) : kundenTags.map(t => (
           <span key={t.id}
             className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-sans border"
@@ -69,7 +69,7 @@ export function TagsSection({
         <div className="border-t border-vintage-sand pt-3 space-y-3">
           {verfuegbar.length > 0 && (
             <div>
-              <p className="text-xs font-sans text-vintage-dust mb-1.5">Verfügbar:</p>
+              <p className="text-xs font-sans text-vintage-dust mb-1.5">Доступно:</p>
               <div className="flex flex-wrap gap-1.5">
                 {verfuegbar.map(t => (
                   <button key={t.id} onClick={() => handleAdd(t.id)}
@@ -84,12 +84,12 @@ export function TagsSection({
 
           {/* Neuen Tag erstellen */}
           <div>
-            <p className="text-xs font-sans text-vintage-dust mb-1.5">Neuer Tag:</p>
+            <p className="text-xs font-sans text-vintage-dust mb-1.5">Новый тег:</p>
             <div className="flex gap-2">
               <input
                 value={neuName}
                 onChange={(e) => setNeuName(e.target.value)}
-                placeholder="Tag-Name"
+                placeholder="Название тега"
                 className="flex-1 px-3 py-1.5 bg-vintage-cream border border-vintage-sand text-sm font-sans focus:outline-none focus:border-vintage-brown"
                 style={{ borderRadius: "var(--radius-vintage)" }}
               />
@@ -106,7 +106,7 @@ export function TagsSection({
                 className="px-3 py-1.5 bg-vintage-espresso text-vintage-cream text-xs font-sans uppercase tracking-widest hover:bg-vintage-brown transition-colors disabled:opacity-50"
                 style={{ borderRadius: "var(--radius-button)" }}
               >
-                Erstellen
+                Создать
               </button>
             </div>
           </div>

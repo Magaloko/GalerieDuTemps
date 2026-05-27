@@ -7,10 +7,10 @@ import { freischaltenAction, sperrenAction } from "./actions";
 import type { AffiliateMitSponsor } from "@/types/affiliate";
 
 const STATUS_STYLE: Record<string, { label: string; klasse: string }> = {
-  pending:   { label: "Wartet",     klasse: "text-vintage-gold     bg-vintage-gold/10     border-vintage-gold/30"     },
-  aktiv:     { label: "Aktiv",      klasse: "text-vintage-sage     bg-vintage-sage/10     border-vintage-sage/30"     },
-  gesperrt:  { label: "Gesperrt",   klasse: "text-vintage-burgundy bg-vintage-burgundy/10 border-vintage-burgundy/30" },
-  geloescht: { label: "Gelöscht",   klasse: "text-vintage-dust     bg-vintage-dust/10     border-vintage-dust/30"     },
+  pending:   { label: "Ожидает",       klasse: "text-vintage-gold     bg-vintage-gold/10     border-vintage-gold/30"     },
+  aktiv:     { label: "Активен",       klasse: "text-vintage-sage     bg-vintage-sage/10     border-vintage-sage/30"     },
+  gesperrt:  { label: "Заблокирован",  klasse: "text-vintage-burgundy bg-vintage-burgundy/10 border-vintage-burgundy/30" },
+  geloescht: { label: "Удалён",        klasse: "text-vintage-dust     bg-vintage-dust/10     border-vintage-dust/30"     },
 };
 
 export function AffiliateZeile({ affiliate }: { affiliate: AffiliateMitSponsor }) {
@@ -22,7 +22,7 @@ export function AffiliateZeile({ affiliate }: { affiliate: AffiliateMitSponsor }
   };
 
   const handleSperren = () => {
-    const grund = prompt("Grund für die Sperrung:");
+    const grund = prompt("Причина блокировки:");
     if (!grund) return;
     startTransition(() => sperrenAction(affiliate.id, grund));
   };
@@ -58,14 +58,14 @@ export function AffiliateZeile({ affiliate }: { affiliate: AffiliateMitSponsor }
 
             <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-vintage-dust font-sans">
               <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {affiliate.email}</span>
-              <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(affiliate.erstellt_am).toLocaleDateString("de-DE")}</span>
+              <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(affiliate.erstellt_am).toLocaleDateString("ru-RU")}</span>
               {affiliate.sponsor_name && (
-                <span>Geworben von: <strong className="text-vintage-brown">{affiliate.sponsor_name}</strong></span>
+                <span>Привёл: <strong className="text-vintage-brown">{affiliate.sponsor_name}</strong></span>
               )}
             </div>
 
             {affiliate.sperr_grund && (
-              <p className="text-xs text-vintage-burgundy font-sans mt-2 italic">Grund: {affiliate.sperr_grund}</p>
+              <p className="text-xs text-vintage-burgundy font-sans mt-2 italic">Причина: {affiliate.sperr_grund}</p>
             )}
           </div>
         </div>
@@ -78,7 +78,7 @@ export function AffiliateZeile({ affiliate }: { affiliate: AffiliateMitSponsor }
               className="flex items-center gap-1.5 px-3 py-1.5 bg-vintage-sage text-white text-xs font-sans tracking-widest uppercase hover:bg-vintage-forest transition-colors disabled:opacity-50"
               style={{ borderRadius: "var(--radius-button)" }}
             >
-              <CheckCircle2 className="w-3 h-3" /> Freischalten
+              <CheckCircle2 className="w-3 h-3" /> Активировать
             </button>
           )}
 
@@ -89,7 +89,7 @@ export function AffiliateZeile({ affiliate }: { affiliate: AffiliateMitSponsor }
               className="flex items-center gap-1.5 px-3 py-1.5 border border-vintage-burgundy text-vintage-burgundy text-xs font-sans tracking-widest uppercase hover:bg-vintage-burgundy/10 transition-colors disabled:opacity-50"
               style={{ borderRadius: "var(--radius-button)" }}
             >
-              <Ban className="w-3 h-3" /> Sperren
+              <Ban className="w-3 h-3" /> Заблокировать
             </button>
           )}
 
@@ -97,7 +97,7 @@ export function AffiliateZeile({ affiliate }: { affiliate: AffiliateMitSponsor }
             href={`/admin/affiliates/${affiliate.id}`}
             className="p-2 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-parchment transition-colors"
             style={{ borderRadius: "var(--radius-vintage)" }}
-            title="Details"
+            title="Подробнее"
           >
             <ExternalLink className="w-4 h-4" />
           </Link>

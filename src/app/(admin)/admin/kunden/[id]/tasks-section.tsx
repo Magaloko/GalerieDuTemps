@@ -12,6 +12,13 @@ const PRIO_STYLE: Record<TaskPrioritaet, string> = {
   dringend: "text-vintage-burgundy",
 };
 
+const PRIO_LABEL: Record<TaskPrioritaet, string> = {
+  niedrig: "низкий",
+  normal: "обычный",
+  hoch: "высокий",
+  dringend: "срочный",
+};
+
 export function TasksSection({ customerId, tasks }: { customerId: string; tasks: Task[] }) {
   const [neuTitel, setNeuTitel] = useState("");
   const [neuFrist, setNeuFrist] = useState("");
@@ -34,7 +41,7 @@ export function TasksSection({ customerId, tasks }: { customerId: string; tasks:
   return (
     <section className="bg-vintage-white border border-vintage-sand p-5" style={{ borderRadius: "var(--radius-card)" }}>
       <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2 mb-4">
-        <CheckSquare className="w-4 h-4 text-vintage-gold" /> Tasks ({tasks.length})
+        <CheckSquare className="w-4 h-4 text-vintage-gold" /> Задачи ({tasks.length})
       </h2>
 
       {/* Neuer Task */}
@@ -42,7 +49,7 @@ export function TasksSection({ customerId, tasks }: { customerId: string; tasks:
         <input
           value={neuTitel}
           onChange={(e) => setNeuTitel(e.target.value)}
-          placeholder="Was ist zu tun?"
+          placeholder="Что нужно сделать?"
           className="w-full px-3 py-2 bg-vintage-cream border border-vintage-sand text-sm font-sans focus:outline-none focus:border-vintage-brown"
           style={{ borderRadius: "var(--radius-vintage)" }}
         />
@@ -50,10 +57,10 @@ export function TasksSection({ customerId, tasks }: { customerId: string; tasks:
           <select value={neuPrio} onChange={(e) => setNeuPrio(e.target.value as TaskPrioritaet)}
             className="flex-1 px-3 py-2 bg-vintage-cream border border-vintage-sand text-sm font-sans"
             style={{ borderRadius: "var(--radius-vintage)" }}>
-            <option value="niedrig">Niedrig</option>
-            <option value="normal">Normal</option>
-            <option value="hoch">Hoch</option>
-            <option value="dringend">Dringend</option>
+            <option value="niedrig">Низкий</option>
+            <option value="normal">Обычный</option>
+            <option value="hoch">Высокий</option>
+            <option value="dringend">Срочный</option>
           </select>
           <input type="date" value={neuFrist} onChange={(e) => setNeuFrist(e.target.value)}
             className="flex-1 px-3 py-2 bg-vintage-cream border border-vintage-sand text-sm font-sans"
@@ -61,13 +68,13 @@ export function TasksSection({ customerId, tasks }: { customerId: string; tasks:
           <button onClick={handleAdd} disabled={!neuTitel.trim() || pending}
             className="px-3 py-2 bg-vintage-espresso text-vintage-cream text-xs uppercase tracking-widest hover:bg-vintage-brown transition-colors disabled:opacity-50 flex items-center gap-1"
             style={{ borderRadius: "var(--radius-button)" }}>
-            <Plus className="w-3 h-3" /> Hinzufügen
+            <Plus className="w-3 h-3" /> Добавить
           </button>
         </div>
       </div>
 
       {tasks.length === 0 ? (
-        <p className="text-xs text-vintage-dust font-sans text-center py-4 italic">Keine Tasks</p>
+        <p className="text-xs text-vintage-dust font-sans text-center py-4 italic">Задач нет</p>
       ) : (
         <div className="space-y-1.5">
           {tasks.map(t => (
@@ -86,11 +93,11 @@ export function TasksSection({ customerId, tasks }: { customerId: string; tasks:
                   {t.titel}
                 </p>
                 <div className="flex gap-2 text-[10px] font-sans text-vintage-dust">
-                  <span className={PRIO_STYLE[t.prioritaet]}>{t.prioritaet}</span>
-                  {t.faellig_am && <span>· bis {new Date(t.faellig_am).toLocaleDateString("de-DE")}</span>}
+                  <span className={PRIO_STYLE[t.prioritaet]}>{PRIO_LABEL[t.prioritaet]}</span>
+                  {t.faellig_am && <span>· до {new Date(t.faellig_am).toLocaleDateString("ru-RU")}</span>}
                 </div>
               </div>
-              <button onClick={() => { if (confirm("Löschen?")) startTransition(() => taskDeleteAction(t.id, customerId)); }}
+              <button onClick={() => { if (confirm("Удалить?")) startTransition(() => taskDeleteAction(t.id, customerId)); }}
                 className="text-vintage-dust hover:text-vintage-burgundy p-1">
                 <Trash2 className="w-3 h-3" />
               </button>

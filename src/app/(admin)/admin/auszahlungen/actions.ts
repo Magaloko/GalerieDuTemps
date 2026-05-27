@@ -20,18 +20,18 @@ export async function auszahlungErstellenAction(
 ): Promise<{ ok?: boolean; betrag_cent?: number; auszahlung_id?: string; fehler?: string }> {
   const session = await auth();
   if (!session || (session.user.role !== "admin" && session.user.role !== "superadmin")) {
-    return { fehler: "Nicht berechtigt" };
+    return { fehler: "Нет прав" };
   }
 
   try {
     const auszahlung = await auszahlungErstellen({
       affiliate_id: affiliateId,
       methode,
-      notiz:        `Erstellt von ${session.user.name ?? session.user.email}`,
+      notiz:        `Создано: ${session.user.name ?? session.user.email}`,
     });
 
     if (!auszahlung) {
-      return { fehler: "Keine bestätigten Provisionen für diesen Affiliate" };
+      return { fehler: "У этого партнёра нет подтверждённых комиссий" };
     }
 
     revalidatePath("/admin/auszahlungen");
@@ -42,7 +42,7 @@ export async function auszahlungErstellenAction(
     };
   } catch (err) {
     console.error("[Auszahlung erstellen]", err);
-    return { fehler: "Fehler beim Erstellen der Auszahlung" };
+    return { fehler: "Не удалось создать выплату" };
   }
 }
 
@@ -54,7 +54,7 @@ export async function alsBezahltMarkierenAction(
 ): Promise<{ ok?: boolean; fehler?: string }> {
   const session = await auth();
   if (!session || (session.user.role !== "admin" && session.user.role !== "superadmin")) {
-    return { fehler: "Nicht berechtigt" };
+    return { fehler: "Нет прав" };
   }
 
   try {
@@ -106,6 +106,6 @@ export async function alsBezahltMarkierenAction(
     return { ok: true };
   } catch (err) {
     console.error("[Als bezahlt]", err);
-    return { fehler: "Fehler beim Markieren" };
+    return { fehler: "Не удалось отметить выплату" };
   }
 }

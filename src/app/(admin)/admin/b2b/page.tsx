@@ -4,14 +4,14 @@ import { B2bAntragZeile } from "./b2b-antrag-zeile";
 import { Briefcase, Inbox } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "B2B-Anträge" };
+export const metadata: Metadata = { title: "B2B-заявки" };
 export const dynamic = "force-dynamic";
 
 const FILTER = [
-  { value: "",         label: "Alle"        },
-  { value: "pending",  label: "Wartet"      },
-  { value: "verified", label: "Verifiziert" },
-  { value: "rejected", label: "Abgelehnt"   },
+  { value: "",         label: "Все"          },
+  { value: "pending",  label: "Ожидает"      },
+  { value: "verified", label: "Подтверждён"  },
+  { value: "rejected", label: "Отклонён"     },
 ];
 
 export default async function B2bAdminPage({
@@ -27,8 +27,8 @@ export default async function B2bAdminPage({
         <Briefcase className="w-5 h-5 text-vintage-gold" />
         <div>
           <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-          <h1 className="font-serif text-2xl text-vintage-espresso">B2B-Anträge</h1>
-          <p className="text-vintage-dust text-xs font-sans mt-0.5">{antraege.length} {antraege.length === 1 ? "Eintrag" : "Einträge"}</p>
+          <h1 className="font-serif text-2xl text-vintage-espresso">B2B-заявки</h1>
+          <p className="text-vintage-dust text-xs font-sans mt-0.5">Записей: {antraege.length}</p>
         </div>
       </div>
 
@@ -48,7 +48,7 @@ export default async function B2bAdminPage({
       {antraege.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center bg-vintage-white border border-vintage-sand" style={{ borderRadius: "var(--radius-card)" }}>
           <Inbox className="w-10 h-10 text-vintage-sand mb-3" />
-          <p className="font-serif text-lg text-vintage-brown">Keine Anträge</p>
+          <p className="font-serif text-lg text-vintage-brown">Заявок нет</p>
         </div>
       ) : (
         <div className="space-y-3">

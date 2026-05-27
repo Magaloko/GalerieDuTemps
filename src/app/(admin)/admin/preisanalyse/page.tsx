@@ -10,7 +10,7 @@ import { formatPreis } from "@/lib/utils/preis";
 import { TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Preisanalyse" };
+export const metadata: Metadata = { title: "Анализ цен" };
 export const dynamic = "force-dynamic";
 
 export default async function PreisanalysePage() {
@@ -27,9 +27,9 @@ export default async function PreisanalysePage() {
       {/* Header */}
       <div>
         <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-        <h1 className="font-serif text-3xl text-vintage-espresso">Preisanalyse</h1>
+        <h1 className="font-serif text-3xl text-vintage-espresso">Анализ цен</h1>
         <p className="text-vintage-dust text-sm font-sans mt-1">
-          Preisverteilung, Kategorie-Statistiken und Top-Performer
+          Распределение цен, статистика категорий и лидеры
         </p>
       </div>
 
@@ -40,9 +40,9 @@ export default async function PreisanalysePage() {
       >
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="font-serif text-lg text-vintage-espresso">Preisverteilung</h2>
+            <h2 className="font-serif text-lg text-vintage-espresso">Распределение цен</h2>
             <p className="text-vintage-dust text-xs font-sans mt-0.5">
-              Anzahl der Produkte je Preisspanne
+              Количество товаров по ценовым диапазонам
             </p>
           </div>
           <BarChart3 className="w-4 h-4 text-vintage-gold" />
@@ -50,12 +50,12 @@ export default async function PreisanalysePage() {
         {histogramm.length > 0 ? (
           <BarChartVintage
             data={histogramm.map(h => ({ name: h.label, wert: h.anzahl }))}
-            label="Produkte"
+            label="Товары"
             einfarbig
           />
         ) : (
           <div className="py-12 text-center text-vintage-dust text-sm font-sans">
-            Keine Daten verfügbar
+            Нет доступных данных
           </div>
         )}
       </section>
@@ -67,28 +67,28 @@ export default async function PreisanalysePage() {
       >
         <div className="px-6 py-5 border-b border-vintage-sand">
           <h2 className="font-serif text-lg text-vintage-espresso">
-            Statistik pro Kategorie
+            Статистика по категориям
           </h2>
           <p className="text-vintage-dust text-xs font-sans mt-0.5">
-            Min, Max, Durchschnitt und Median je Kategorie
+            Минимум, максимум, среднее и медиана по категориям
           </p>
         </div>
 
         {statsPerKat.length === 0 ? (
           <div className="py-12 text-center text-vintage-dust text-sm font-sans">
-            Keine Daten
+            Нет данных
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm font-sans">
               <thead>
                 <tr className="border-b border-vintage-sand bg-vintage-parchment/50">
-                  <th className="text-left  px-5 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Kategorie</th>
-                  <th className="text-right px-5 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Anzahl</th>
+                  <th className="text-left  px-5 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Категория</th>
+                  <th className="text-right px-5 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Количество</th>
                   <th className="text-right px-5 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Min</th>
                   <th className="text-right px-5 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Max</th>
                   <th className="text-right px-5 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Median</th>
-                  <th className="text-right px-5 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Ø Preis</th>
+                  <th className="text-right px-5 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Ø цена</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-vintage-sand/40">
@@ -118,10 +118,10 @@ export default async function PreisanalysePage() {
         >
           <div className="flex items-center gap-2 mb-5">
             <TrendingUp className="w-4 h-4 text-vintage-burgundy" />
-            <h2 className="font-serif text-lg text-vintage-espresso">Teuerste Produkte</h2>
+            <h2 className="font-serif text-lg text-vintage-espresso">Самые дорогие товары</h2>
           </div>
           {teuer.length === 0 ? (
-            <p className="text-vintage-dust text-sm font-sans text-center py-8">Keine Daten</p>
+            <p className="text-vintage-dust text-sm font-sans text-center py-8">Нет данных</p>
           ) : (
             <div className="space-y-1.5">
               {teuer.map((p, i) => (
@@ -154,10 +154,10 @@ export default async function PreisanalysePage() {
         >
           <div className="flex items-center gap-2 mb-5">
             <TrendingDown className="w-4 h-4 text-vintage-sage" />
-            <h2 className="font-serif text-lg text-vintage-espresso">Günstigste Produkte</h2>
+            <h2 className="font-serif text-lg text-vintage-espresso">Самые недорогие товары</h2>
           </div>
           {guenstig.length === 0 ? (
-            <p className="text-vintage-dust text-sm font-sans text-center py-8">Keine Daten</p>
+            <p className="text-vintage-dust text-sm font-sans text-center py-8">Нет данных</p>
           ) : (
             <div className="space-y-1.5">
               {guenstig.map((p, i) => (

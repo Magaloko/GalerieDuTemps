@@ -5,14 +5,14 @@ import { CheckSquare } from "lucide-react";
 import type { Metadata } from "next";
 import type { TaskStatus } from "@/types/crm";
 
-export const metadata: Metadata = { title: "Tasks" };
+export const metadata: Metadata = { title: "Задачи" };
 export const dynamic = "force-dynamic";
 
 const FILTER: Array<{ value: TaskStatus | ""; label: string }> = [
-  { value: "",          label: "Alle"        },
-  { value: "offen",     label: "Offen"       },
-  { value: "in_arbeit", label: "In Arbeit"   },
-  { value: "erledigt",  label: "Erledigt"    },
+  { value: "",          label: "Все"        },
+  { value: "offen",     label: "Открыта"    },
+  { value: "in_arbeit", label: "В работе"   },
+  { value: "erledigt",  label: "Завершена"  },
 ];
 
 export default async function TasksAdminPage({
@@ -28,8 +28,8 @@ export default async function TasksAdminPage({
         <CheckSquare className="w-5 h-5 text-vintage-gold" />
         <div>
           <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-          <h1 className="font-serif text-2xl text-vintage-espresso">Tasks</h1>
-          <p className="text-vintage-dust text-xs font-sans mt-0.5">{tasks.length} Tasks</p>
+          <h1 className="font-serif text-2xl text-vintage-espresso">Задачи</h1>
+          <p className="text-vintage-dust text-xs font-sans mt-0.5">{tasks.length} задач</p>
         </div>
       </div>
 
@@ -49,8 +49,8 @@ export default async function TasksAdminPage({
       {tasks.length === 0 ? (
         <div className="text-center py-16 bg-vintage-white border border-vintage-sand" style={{ borderRadius: "var(--radius-card)" }}>
           <CheckSquare className="w-10 h-10 text-vintage-sand mx-auto mb-3" />
-          <p className="font-serif text-vintage-brown">Keine Tasks</p>
-          <p className="text-xs text-vintage-dust font-sans mt-1">Tasks werden im Kunden-Detail angelegt.</p>
+          <p className="font-serif text-vintage-brown">Задач пока нет</p>
+          <p className="text-xs text-vintage-dust font-sans mt-1">Задачи создаются в карточке клиента.</p>
         </div>
       ) : (
         <div className="space-y-2">

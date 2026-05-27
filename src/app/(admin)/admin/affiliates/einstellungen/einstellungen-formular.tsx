@@ -15,7 +15,7 @@ export function EinstellungenFormular({ settings }: { settings: AffiliateEinstel
     <form action={formAction} className="space-y-6">
       {state?.ok && (
         <div className="flex items-center gap-3 p-4 bg-vintage-sage/10 border border-vintage-sage/30 text-vintage-forest text-sm font-sans" style={{ borderRadius: "var(--radius-card)" }}>
-          <CheckCircle2 className="w-4 h-4" /> Einstellungen gespeichert.
+          <CheckCircle2 className="w-4 h-4" /> Настройки сохранены.
         </div>
       )}
       {state?.fehler && (
@@ -27,36 +27,36 @@ export function EinstellungenFormular({ settings }: { settings: AffiliateEinstel
       {/* Provisionssätze */}
       <section className="bg-vintage-white border border-vintage-sand p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
         <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
-          Provisionssätze
+          Ставки комиссий
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Input
-            label="Ebene 1 (%)"
+            label="Уровень 1 (%)"
             name="provision_ebene_1_prozent"
             type="number"
             step="0.5"
             min="0" max="50"
             defaultValue={settings.provision_ebene_1_prozent}
-            hint="Direkt-Provision"
+            hint="Прямая комиссия"
           />
           <Input
-            label="Ebene 2 (%)"
+            label="Уровень 2 (%)"
             name="provision_ebene_2_prozent"
             type="number"
             step="0.5"
             min="0" max="20"
             defaultValue={settings.provision_ebene_2_prozent}
-            hint="Sponsor-Provision"
+            hint="Комиссия спонсора"
           />
           <Input
-            label="Ebene 3 (%)"
+            label="Уровень 3 (%)"
             name="provision_ebene_3_prozent"
             type="number"
             step="0.5"
             min="0" max="10"
             defaultValue={settings.provision_ebene_3_prozent}
             onChange={(e) => setEbene3(parseFloat(e.target.value) || 0)}
-            hint="0 = deaktiviert"
+            hint="0 = отключено"
           />
         </div>
 
@@ -64,10 +64,10 @@ export function EinstellungenFormular({ settings }: { settings: AffiliateEinstel
           <div className="flex items-start gap-3 p-4 bg-vintage-burgundy/10 border border-vintage-burgundy/30" style={{ borderRadius: "var(--radius-vintage)" }}>
             <AlertTriangle className="w-4 h-4 text-vintage-burgundy flex-shrink-0 mt-0.5" />
             <p className="text-xs text-vintage-burgundy font-sans">
-              <strong>Rechtlicher Hinweis:</strong> 3+ Provisionsebenen können in Deutschland
-              als Schneeballsystem (§16 UWG) eingestuft werden. Stelle sicher, dass die
-              Provisionen ausschließlich an reale Produktverkäufe gekoppelt sind und niemals
-              an reine Anwerbung.
+              <strong>Юридическое примечание:</strong> 3+ уровня комиссий в Германии
+              могут классифицироваться как финансовая пирамида (§16 UWG). Убедитесь, что
+              комиссии привязаны только к реальным продажам товаров и никогда
+              не начисляются за одно лишь привлечение.
             </p>
           </div>
         )}
@@ -76,18 +76,18 @@ export function EinstellungenFormular({ settings }: { settings: AffiliateEinstel
       {/* Tracking + Auszahlung */}
       <section className="bg-vintage-white border border-vintage-sand p-6 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
         <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
-          Tracking & Auszahlung
+          Трекинг и выплаты
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Input
-            label="Cookie-TTL (Tage)"
+            label="Cookie TTL (дни)"
             name="cookie_ttl_tage"
             type="number"
             min="1" max="365"
             defaultValue={settings.cookie_ttl_tage}
           />
           <Input
-            label="Mindestauszahlung (€)"
+            label="Минимальная выплата (€)"
             name="mindestauszahlung_eur"
             type="number"
             step="1"
@@ -95,12 +95,12 @@ export function EinstellungenFormular({ settings }: { settings: AffiliateEinstel
             defaultValue={settings.mindestauszahlung_cent / 100}
           />
           <Input
-            label="Widerrufsfrist (Tage)"
+            label="Срок отказа (дни)"
             name="widerrufs_frist_tage"
             type="number"
             min="0" max="60"
             defaultValue={settings.widerrufs_frist_tage}
-            hint="Vor Bestätigung"
+            hint="До подтверждения"
           />
         </div>
       </section>
@@ -108,7 +108,7 @@ export function EinstellungenFormular({ settings }: { settings: AffiliateEinstel
       {/* Registrierung */}
       <section className="bg-vintage-white border border-vintage-sand p-6 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
         <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
-          Registrierung
+          Регистрация
         </h2>
         <label className="flex items-start gap-3 cursor-pointer">
           <input
@@ -118,16 +118,16 @@ export function EinstellungenFormular({ settings }: { settings: AffiliateEinstel
             className="mt-0.5 w-4 h-4 accent-vintage-gold"
           />
           <div>
-            <span className="text-sm font-sans text-vintage-ink">Neue Registrierungen erlauben</span>
+            <span className="text-sm font-sans text-vintage-ink">Разрешить новые регистрации</span>
             <p className="text-xs text-vintage-dust font-sans mt-0.5">
-              Wenn deaktiviert, sehen Besucher einen Hinweis statt des Registrierungs-Formulars
+              Если отключено, посетители увидят уведомление вместо формы регистрации
             </p>
           </div>
         </label>
       </section>
 
       <div className="flex justify-end">
-        <Button type="submit" loading={isPending}>Einstellungen speichern</Button>
+        <Button type="submit" loading={isPending}>Сохранить настройки</Button>
       </div>
     </form>
   );

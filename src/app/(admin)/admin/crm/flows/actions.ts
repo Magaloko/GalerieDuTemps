@@ -11,10 +11,10 @@ export async function flowCreateAction(
 ): Promise<{ ok?: boolean; fehler?: string }> {
   const session = await auth();
   if (!session || (session.user.role !== "admin" && session.user.role !== "superadmin")) {
-    return { fehler: "Nicht berechtigt" };
+    return { fehler: "Нет прав" };
   }
   const name = String(formData.get("name") ?? "").trim();
-  if (name.length < 2) return { fehler: "Name erforderlich" };
+  if (name.length < 2) return { fehler: "Укажите название" };
 
   await dripFlowErstellen({
     name,

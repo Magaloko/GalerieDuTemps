@@ -63,7 +63,7 @@ function StageColumn({ stage, kunden }: { stage: PipelineStage; kunden: Kunde[] 
 
       <div className="space-y-2">
         {kunden.length === 0 ? (
-          <p className="text-xs text-vintage-dust font-sans text-center py-8 italic">leer</p>
+          <p className="text-xs text-vintage-dust font-sans text-center py-8 italic">пусто</p>
         ) : kunden.map(k => <DraggableKundenKarte key={k.customer_id} kunde={k} />)}
       </div>
     </div>
@@ -95,7 +95,7 @@ function DraggableKundenKarte({ kunde }: { kunde: Kunde }) {
           </p>
           {istB2B && (
             <p className="text-xs text-vintage-gold font-sans flex items-center gap-1 mt-1">
-              <Briefcase className="w-2.5 h-2.5" /> {kunde.customer_type === "b2b_verified" ? "B2B ✓" : "B2B Pending"}
+              <Briefcase className="w-2.5 h-2.5" /> {kunde.customer_type === "b2b_verified" ? "B2B ✓" : "B2B ожидает"}
             </p>
           )}
         </div>
@@ -103,7 +103,7 @@ function DraggableKundenKarte({ kunde }: { kunde: Kunde }) {
           href={`/admin/kunden/${kunde.customer_id}`}
           onClick={e => e.stopPropagation()}
           className="text-vintage-dust hover:text-vintage-brown flex-shrink-0"
-          aria-label="Detail"
+          aria-label="Подробнее"
         >
           <ExternalLink className="w-3 h-3" />
         </Link>

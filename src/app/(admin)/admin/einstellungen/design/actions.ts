@@ -26,16 +26,16 @@ export async function saveThemeAction(
   }
 
   const raw = formData.get("patch");
-  if (typeof raw !== "string") return { ok: false, error: "Patch-Daten fehlen" };
+  if (typeof raw !== "string") return { ok: false, error: "Данные patch отсутствуют" };
 
   let patch: Record<string, string>;
   try {
     patch = JSON.parse(raw);
   } catch {
-    return { ok: false, error: "Patch-JSON ungültig" };
+    return { ok: false, error: "Некорректный JSON patch" };
   }
   if (typeof patch !== "object" || patch === null) {
-    return { ok: false, error: "Patch muss ein Objekt sein" };
+    return { ok: false, error: "Patch должен быть объектом" };
   }
 
   // Whitelist: nur color.*, brand.* keys erlaubt — sonst könnte Admin
@@ -43,11 +43,11 @@ export async function saveThemeAction(
   const allowedPrefixes = ["color.", "brand."];
   for (const key of Object.keys(patch)) {
     if (!allowedPrefixes.some(p => key.startsWith(p))) {
-      return { ok: false, error: `Schlüssel '${key}' nicht erlaubt` };
+      return { ok: false, error: `Ключ '${key}' не разрешён` };
     }
     // Farb-Werte: HEX-Format validieren
     if (key.startsWith("color.") && !/^#[0-9a-fA-F]{6}$/.test(patch[key])) {
-      return { ok: false, error: `Ungültiger Farbwert für '${key}': '${patch[key]}'` };
+      return { ok: false, error: `Некорректное значение цвета для '${key}': '${patch[key]}'` };
     }
   }
 
@@ -55,7 +55,7 @@ export async function saveThemeAction(
     await setManyThemeSettings(patch);
   } catch (err) {
     console.error("[saveTheme]", err);
-    return { ok: false, error: err instanceof Error ? err.message : "DB-Fehler" };
+    return { ok: false, error: err instanceof Error ? err.message : "Ошибка БД" };
   }
 
   // Layout-Cache invalidieren damit Iframe-Reload sofort die neuen Farben hat
