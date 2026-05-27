@@ -16,10 +16,40 @@ interface FeaturedCollectionProps {
     id: string;
     name: string;
     price: string;
-    image: string;
+    /** URL des Hauptbilds — null wenn das Produkt noch keins hat (Placeholder wird gerendert) */
+    image: string | null;
     slug: string;
     category?: string;
   }[];
+}
+
+/**
+ * CSS-only Placeholder wenn ein Produkt kein Hauptbild hat.
+ * Verhindert dass willkürliche Hero-Stack-Bilder als „Cover" verwendet werden.
+ */
+function ProductImagePlaceholder({ name }: { name: string }) {
+  return (
+    <div
+      className="absolute inset-0 flex items-center justify-center"
+      style={{
+        background:
+          "linear-gradient(135deg, var(--color-paper-warm, #E8DFD0) 0%, var(--color-paper-cool, #D6CFC0) 100%)",
+      }}
+    >
+      <span
+        className="text-[10px] uppercase font-medium px-3 py-1.5"
+        style={{
+          letterSpacing: "0.22em",
+          color:         "var(--color-ink-mute, #9B9B9B)",
+          background:    "rgba(255,255,255,0.85)",
+          border:        "1px solid var(--color-line)",
+        }}
+        title={`Без фото: ${name}`}
+      >
+        Без фото
+      </span>
+    </div>
+  );
 }
 
 export function FeaturedCollection({ products }: FeaturedCollectionProps) {
@@ -76,13 +106,17 @@ export function FeaturedCollection({ products }: FeaturedCollectionProps) {
           <div data-animate-hero className="relative mb-10 group cursor-pointer">
             <Link href={`/katalog/${heroProduct.slug}`}>
               <div className="relative aspect-[16/9] overflow-hidden rounded-lg">
-                <Image
-                  src={heroProduct.image}
-                  alt={heroProduct.name}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-                  sizes="100vw"
-                />
+                {heroProduct.image ? (
+                  <Image
+                    src={heroProduct.image}
+                    alt={heroProduct.name}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                    sizes="100vw"
+                  />
+                ) : (
+                  <ProductImagePlaceholder name={heroProduct.name} />
+                )}
                 <div
                   className="absolute inset-0"
                   style={{ background: 'linear-gradient(to top, rgba(15,20,48,0.6), transparent)' }}
@@ -113,13 +147,17 @@ export function FeaturedCollection({ products }: FeaturedCollectionProps) {
               data-animate-card
             >
               <div className="relative aspect-[3/4] overflow-hidden rounded-md mb-4">
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                />
+                {product.image ? (
+                  <Image
+                    src={product.image}
+                    alt={product.name}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
+                ) : (
+                  <ProductImagePlaceholder name={product.name} />
+                )}
               </div>
               <p className="text-[15px] mb-1" style={{ color: 'var(--color-ink)' }}>
                 {product.name}

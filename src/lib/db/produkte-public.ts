@@ -26,15 +26,26 @@ const BASE_FILTER = `
 
 /** Featured-Produkte für die Startseite */
 async function featuredProdukteUncached(limit = 8): Promise<ProduktListItem[]> {
+  // Bild-Resolution-Reihenfolge (COALESCE):
+  //  1. Legacy: p.hauptbild_url (alte Form-Field-Uploads)
+  //  2. Neu: ist_hauptbild=true aus produktbilder (mit url_medium für Perf)
+  //  3. Fallback: irgendein Bild des Produkts (sortiert nach sortierung)
+  // Wenn kein Bild existiert → NULL (Frontend zeigt Placeholder, KEIN
+  // willkürliches Hero-Stack-Bild).
   const result = await query<ProduktListItem>(
     `SELECT
        p.id, p.name, p.slug, p.preis, p.originalpreis, p.waehrung,
        k.name AS kategorie_name,
        p.zustand, p.lagerbestand, p.verkauft, p.featured, p.b2c_mode,
        p.erstellt_am,
-       (SELECT pb.url FROM sebo.produktbilder pb
-        WHERE pb.produkt_id = p.id AND pb.ist_hauptbild = true LIMIT 1)
-        AS hauptbild_url
+       COALESCE(
+         p.hauptbild_url,
+         (SELECT COALESCE(pb.url_medium, pb.url)
+            FROM sebo.produktbilder pb
+           WHERE pb.produkt_id = p.id
+           ORDER BY pb.ist_hauptbild DESC, pb.sortierung, pb.erstellt_am
+           LIMIT 1)
+       ) AS hauptbild_url
      FROM sebo.produkte p
      LEFT JOIN sebo.kategorien k ON k.id = p.kategorie_id
      WHERE ${BASE_FILTER} AND p.featured = true
@@ -138,8 +149,11 @@ async function katalogProdukteUncached(params: {
          p.erstellt_am,
          COALESCE(
            p.hauptbild_url,
-           (SELECT pb.url FROM sebo.produktbilder pb
-            WHERE pb.produkt_id = p.id AND pb.ist_hauptbild = true LIMIT 1)
+           (SELECT COALESCE(pb.url_medium, pb.url)
+              FROM sebo.produktbilder pb
+             WHERE pb.produkt_id = p.id
+             ORDER BY pb.ist_hauptbild DESC, pb.sortierung, pb.erstellt_am
+             LIMIT 1)
          ) AS hauptbild_url
        FROM sebo.produkte p
        LEFT JOIN sebo.kategorien k ON k.id = p.kategorie_id
@@ -208,9 +222,14 @@ async function aehnlicheProdukteUncached(
        p.id, p.name, p.slug, p.preis, p.originalpreis, p.waehrung,
        k.name AS kategorie_name, p.zustand, p.lagerbestand,
        p.verkauft, p.featured, p.erstellt_am,
-       (SELECT pb.url FROM sebo.produktbilder pb
-        WHERE pb.produkt_id = p.id AND pb.ist_hauptbild = true LIMIT 1)
-        AS hauptbild_url
+       COALESCE(
+         p.hauptbild_url,
+         (SELECT COALESCE(pb.url_medium, pb.url)
+            FROM sebo.produktbilder pb
+           WHERE pb.produkt_id = p.id
+           ORDER BY pb.ist_hauptbild DESC, pb.sortierung, pb.erstellt_am
+           LIMIT 1)
+       ) AS hauptbild_url
      FROM sebo.produkte p
      LEFT JOIN sebo.kategorien k ON k.id = p.kategorie_id
      WHERE ${BASE_FILTER}

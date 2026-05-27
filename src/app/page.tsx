@@ -53,14 +53,16 @@ export default async function HomePage() {
   ]);
   const { t } = dict;
 
-  // Mapping DB-Produkt → FeaturedCollection-Props. Falls Produkt kein
-  // Hauptbild hat, nehmen wir ein Hero-Stack-Bild als Fallback damit das
-  // Grid nicht mit broken images aussieht.
-  const featuredProducts = produkte.map((p, i) => ({
+  // Mapping DB-Produkt → FeaturedCollection-Props.
+  // Wichtig: KEIN Fallback auf zufällige Hero-Stack-Bilder mehr — sonst zeigt
+  // Featured-Section ein irreführendes Cover wenn der Admin ein Produkt
+  // promotet bevor ein Bild hochgeladen wurde. FeaturedCollection rendert
+  // einen sauberen "Без фото" Placeholder wenn image === null.
+  const featuredProducts = produkte.map((p) => ({
     id:       String(p.id),
     name:     p.name,
     price:    formatPreis(p.preis, (p.waehrung as "KZT" | "EUR" | "USD" | "RUB" | undefined) ?? "KZT"),
-    image:    p.hauptbild_url ?? heroImages[i % heroImages.length],
+    image:    p.hauptbild_url ?? null,
     slug:     p.slug,
     category: p.kategorie_name ?? undefined,
   }));
