@@ -80,6 +80,9 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
   const handleCheckout = async () => {
     setCheckoutLoading(true);
     try {
+      // Picker-Modus: Order anlegen, danach Method-Picker auf /checkout/zahlung.
+      // Der eigentliche Zahlungs-Provider wird DORT gewählt — Karte, PayPal,
+      // Crypto, Bank-Überweisung, Vor-Ort (mit/ohne Anzahlung).
       const res = await fetch("/api/checkout", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
@@ -89,11 +92,13 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
             menge:      i.menge,
           })),
           coupon_code: coupon_code,
+          picker:      true,
         }),
       });
       const data = await res.json();
-      if (data.checkout_url) {
-        window.location.href = data.checkout_url;
+      const target = data.redirect_to ?? data.checkout_url;
+      if (target) {
+        window.location.href = target;
       } else {
         alert(data.error ?? labels.checkout_fehler);
         setCheckoutLoading(false);

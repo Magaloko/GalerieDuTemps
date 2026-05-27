@@ -21,6 +21,10 @@ const CheckoutSchema = z.object({
     menge:      z.number().int().positive().max(99),
   })).min(1).max(50),
   coupon_code: z.string().optional(),
+  // Wenn true: Order anlegen, ABER kein Stripe-Session — Client landet im
+  // Method-Picker (/checkout/zahlung) und wählt dort. Für Cart-Submit von der
+  // Public-Site. Default false (Backwards-Compat für Telegram-Bot etc.).
+  picker:      z.boolean().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -29,12 +33,6 @@ export async function POST(req: NextRequest) {
   const rl = rateLimitPruefen(`checkout:${ip}`, 10, 10 * 60 * 1000);
   if (!rl.erlaubt) return tooManyRequestsResponse(rl) as unknown as NextResponse;
 
-  if (!stripeKonfiguriert()) {
-    return NextResponse.json({
-      error: "Stripe ist nicht konfiguriert. Bitte STRIPE_SECRET_KEY in .env.local setzen.",
-    }, { status: 503 });
-  }
-
   let body: unknown;
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: "Ungültiger JSON-Body" }, { status: 400 }); }
@@ -42,6 +40,14 @@ export async function POST(req: NextRequest) {
   const parsed = CheckoutSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "Validierungsfehler", details: parsed.error.flatten() }, { status: 422 });
+  }
+
+  // Stripe ist nur für den Legacy-Direct-Flow zwingend. Im Picker-Modus
+  // wird der Provider erst später im Method-Picker entschieden.
+  if (!parsed.data.picker && !stripeKonfiguriert()) {
+    return NextResponse.json({
+      error: "Stripe ist nicht konfiguriert. Bitte STRIPE_SECRET_KEY in .env.local setzen.",
+    }, { status: 503 });
   }
 
   try {
@@ -222,7 +228,16 @@ export async function POST(req: NextRequest) {
       coupon_code,
     });
 
-    // 6. Stripe-Checkout-Session erstellen
+    // 5b. Picker-Modus: Order ist angelegt, Provider-Wahl im Method-Picker.
+    if (parsed.data.picker) {
+      return NextResponse.json({
+        ok:          true,
+        order_id:    order.id,
+        redirect_to: `/checkout/zahlung?order=${order.id}`,
+      });
+    }
+
+    // 6. Stripe-Checkout-Session erstellen (Legacy-Direct-Flow für Telegram-Bot etc.)
     const stripe = getStripeServer();
     const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
 
