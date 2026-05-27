@@ -73,3 +73,44 @@ export async function redisPing(): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Verbose-Health-Check für Admin-Diagnose. Returns Status + Fehlertext.
+ * Verwendet nur in /api/health/infra (Admin-only).
+ */
+export async function redisPingVerbose(): Promise<{
+  ok:        boolean;
+  pong?:     boolean;
+  error?:    string;
+  hostname?: string;
+  tls?:      boolean;
+}> {
+  const url = process.env.REDIS_URL;
+  if (!url) return { ok: false, error: "REDIS_URL not set" };
+
+  // Hostname aus URL extrahieren für Diagnose
+  let hostname: string | undefined;
+  let tls = false;
+  try {
+    const u = new URL(url);
+    hostname = u.hostname;
+    tls      = u.protocol === "rediss:";
+  } catch {
+    return { ok: false, error: "REDIS_URL is malformed (cannot parse)" };
+  }
+
+  const r = getRedis();
+  if (!r) return { ok: false, error: "ioredis client creation failed", hostname, tls };
+
+  try {
+    const result = await r.ping();
+    return { ok: result === "PONG", pong: result === "PONG", hostname, tls };
+  } catch (err) {
+    return {
+      ok:    false,
+      error: err instanceof Error ? `${err.name}: ${err.message}` : String(err),
+      hostname,
+      tls,
+    };
+  }
+}

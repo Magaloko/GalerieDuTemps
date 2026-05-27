@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { redisPing } from "@/lib/redis";
+import { redisPing, redisPingVerbose } from "@/lib/redis";
 import { query } from "@/lib/db";
 import { requireAdminSession } from "@/lib/auth/config";
 
@@ -26,9 +26,13 @@ export async function GET(_req: NextRequest) {
   const session = await requireAdminSession();
   const isAdmin = Boolean(session);
 
-  const [pg, redis] = await Promise.all([
+  const [pg, redis, redisDetail] = await Promise.all([
     pgPing(),
     redisPing().catch(() => false),
+    // Verbose nur für Admin (Recon-Schutz: error-Texte können Hostname leaken)
+    isAdmin
+      ? redisPingVerbose().catch(err => ({ ok: false, error: String(err) }))
+      : Promise.resolve(null),
   ]);
 
   const emailProvider = (process.env.EMAIL_PROVIDER ?? "brevo").toLowerCase();
@@ -56,6 +60,8 @@ export async function GET(_req: NextRequest) {
         redis:    {
           configured: Boolean(process.env.REDIS_URL),
           connected:  redis,
+          // Verbose-Detail (Admin only): error, hostname, TLS
+          ...(redisDetail ?? {}),
         },
         email: {
           provider:   emailProvider,
