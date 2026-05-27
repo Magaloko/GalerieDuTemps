@@ -1,6 +1,7 @@
 import { query } from "./index";
 import { generateSlug, uniqueSlug } from "@/lib/utils/slug";
 import { dateienFuerProdukt, zertifikateFuerProdukt } from "./produkt-medien";
+import { revalidatePublicCatalogCache } from "@/lib/cache/public-catalog";
 import type {
   Produkt,
   ProduktListItem,
@@ -234,6 +235,7 @@ export async function produktErstellen(
   );
 
   void benutzer_id; // für spätere Audit-Logs
+  revalidatePublicCatalogCache();
   return produktById(result.rows[0].id) as Promise<Produkt>;
 }
 
@@ -313,6 +315,7 @@ export async function produktAktualisieren(
     werte
   );
 
+  revalidatePublicCatalogCache();
   return produktById(id);
 }
 
@@ -324,5 +327,6 @@ export async function produktLoeschen(id: string): Promise<boolean> {
     `DELETE FROM sebo.produkte WHERE id = $1`,
     [id]
   );
+  if ((result.rowCount ?? 0) > 0) revalidatePublicCatalogCache();
   return (result.rowCount ?? 0) > 0;
 }

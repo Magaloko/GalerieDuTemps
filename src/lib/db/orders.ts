@@ -1,4 +1,5 @@
 import { query, withTransaction } from "./index";
+import { revalidatePublicCatalogCache } from "@/lib/cache/public-catalog";
 import type { Order, OrderItem, OrderStatus, Address } from "@/types/commerce";
 
 // ---------------------------------------------------------------------------
@@ -36,7 +37,7 @@ export async function orderErstellen(data: {
   kunden_notiz?:    string;
   stripe_session_id?: string;
 }): Promise<Order> {
-  return withTransaction(async (client) => {
+  const order = await withTransaction(async (client) => {
     // Order erstellen
     const orderRes = await client.query<Order>(
       `INSERT INTO sebo.orders
@@ -126,6 +127,8 @@ export async function orderErstellen(data: {
 
     return order;
   });
+  revalidatePublicCatalogCache();
+  return order;
 }
 
 /** Order per ID (inkl. items) */
