@@ -5,7 +5,7 @@ import { CouponNeuFormular } from "./coupon-neu-formular";
 import { CouponZeile } from "./coupon-zeile";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Coupons" };
+export const metadata: Metadata = { title: "Промокоды" };
 export const dynamic = "force-dynamic";
 
 export default async function CouponsPage() {
@@ -17,18 +17,18 @@ export default async function CouponsPage() {
         <Tag className="w-5 h-5 text-vintage-gold" />
         <div>
           <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-          <h1 className="font-serif text-2xl text-vintage-espresso">Gutscheine</h1>
-          <p className="text-vintage-dust text-xs font-sans mt-0.5">{coupons.length} aktive Codes</p>
+          <h1 className="font-serif text-2xl text-vintage-espresso">Промокоды</h1>
+          <p className="text-vintage-dust text-xs font-sans mt-0.5">{coupons.length} активных кодов</p>
         </div>
       </div>
 
       <CouponNeuFormular />
 
       <section>
-        <h2 className="font-serif text-lg text-vintage-espresso mb-3">Alle Coupons</h2>
+        <h2 className="font-serif text-lg text-vintage-espresso mb-3">Все промокоды</h2>
         {coupons.length === 0 ? (
           <p className="text-vintage-dust text-sm font-sans text-center py-12 bg-vintage-white border border-vintage-sand" style={{ borderRadius: "var(--radius-card)" }}>
-            Noch keine Coupons. Erstelle deinen ersten oben.
+            Промокодов пока нет. Создайте первый выше.
           </p>
         ) : (
           <div className="space-y-2">
