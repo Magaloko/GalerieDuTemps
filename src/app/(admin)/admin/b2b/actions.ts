@@ -13,7 +13,7 @@ export async function b2bFreischaltenAction(
 ): Promise<{ ok?: boolean; fehler?: string }> {
   const session = await auth();
   if (!session || (session.user.role !== "admin" && session.user.role !== "superadmin")) {
-    return { fehler: "Nicht berechtigt" };
+    return { fehler: "Нет прав" };
   }
 
   await b2bFreischalten(customerId);
@@ -38,10 +38,10 @@ export async function b2bAblehnenAction(
 ): Promise<{ ok?: boolean; fehler?: string }> {
   const session = await auth();
   if (!session || (session.user.role !== "admin" && session.user.role !== "superadmin")) {
-    return { fehler: "Nicht berechtigt" };
+    return { fehler: "Нет прав" };
   }
   if (!grund.trim() || grund.length < 5) {
-    return { fehler: "Grund mit mindestens 5 Zeichen erforderlich" };
+    return { fehler: "Укажите причину минимум из 5 символов" };
   }
 
   await b2bAblehnen(customerId, grund);

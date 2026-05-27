@@ -13,7 +13,7 @@ import type { TaskStatus, TaskPrioritaet } from "@/types/crm";
 async function adminCheck() {
   const session = await auth();
   if (!session || (session.user.role !== "admin" && session.user.role !== "superadmin")) {
-    throw new Error("Nicht berechtigt");
+    throw new Error("Нет прав");
   }
   return session.user.id;
 }
@@ -33,13 +33,13 @@ export async function tagRemoveAction(customerId: string, tagId: number): Promis
 
 export async function tagCreateAction(name: string, farbe: string): Promise<{ ok?: boolean; fehler?: string }> {
   await adminCheck();
-  if (!name.trim()) return { fehler: "Name erforderlich" };
+  if (!name.trim()) return { fehler: "Укажите название" };
   try {
     await tagErstellen({ name, farbe });
     revalidatePath(`/admin/kunden`, "layout");
     return { ok: true };
   } catch {
-    return { fehler: "Tag existiert bereits oder Fehler" };
+    return { fehler: "Тег уже существует или произошла ошибка" };
   }
 }
 
@@ -72,7 +72,7 @@ export async function taskCreateAction(data: {
   faellig_am?:  string;
 }): Promise<{ ok?: boolean; fehler?: string }> {
   const adminId = await adminCheck();
-  if (!data.titel.trim()) return { fehler: "Titel erforderlich" };
+  if (!data.titel.trim()) return { fehler: "Укажите название задачи" };
   await taskErstellen({
     titel:         data.titel,
     beschreibung:  data.beschreibung,

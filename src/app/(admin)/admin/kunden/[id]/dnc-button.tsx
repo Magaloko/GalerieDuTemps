@@ -10,7 +10,7 @@ export function DncButton({ customerId, istDnc }: { customerId: string; istDnc: 
   if (istDnc) return null;
 
   const handle = () => {
-    const grund = prompt("Grund für DNC (Do Not Contact)?\nDer Kund:in erhält dann keine Marketing-E-Mails mehr.");
+    const grund = prompt("Причина DNC (Do Not Contact)?\nКлиент больше не будет получать маркетинговые письма.");
     if (!grund) return;
     startTransition(() => dncAction(customerId, grund));
   };
