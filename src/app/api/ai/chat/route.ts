@@ -4,6 +4,7 @@ import { getDeepseekClient, DEEPSEEK_MODEL } from "@/lib/ai/deepseek-client";
 import { vintageMarketTools, SYSTEM_PROMPT } from "@/lib/ai/tools";
 import { executeTool } from "@/lib/ai/tool-handler";
 import { rateLimitPruefen, getClientIp, tooManyRequestsResponse } from "@/lib/utils/rate-limit";
+import { isFeatureEnabled } from "@/lib/db/feature-flags";
 import type { ProduktListItem } from "@/types/produkt";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +16,11 @@ const MAX_ITERATIONS = 5;
 // POST /api/ai/chat
 // ---------------------------------------------------------------------------
 export async function POST(req: NextRequest) {
+  // Module-Toggle: wenn KI-Assistent aus → 503
+  if (!(await isFeatureEnabled("ki_assistent"))) {
+    return NextResponse.json({ error: "ИИ-ассистент временно отключён" }, { status: 503 });
+  }
+
   // Rate-Limit: 20 Nachrichten / Minute / IP (verhindert API-Cost-Explosion)
   const ip = getClientIp(req);
   const rl = rateLimitPruefen(`ai-chat:${ip}`, 20, 60 * 1000);

@@ -3,6 +3,7 @@ import { SiteFooter }   from "@/components/layout/site-footer";
 import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
 import { ChatWidget }   from "@/components/ai/chat-widget";
 import { CookieBanner } from "@/components/cookie-banner";
+import { FeatureGate }  from "@/components/feature-gate";
 import { getDictionary } from "@/i18n";
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
@@ -15,7 +16,10 @@ export default async function PublicLayout({ children }: { children: React.React
       </main>
       <SiteFooter />
       <MobileTabBar t={t} />
-      <ChatWidget />
+      {/* ChatWidget nur wenn KI-Assistent aktiv (Admin-Toggle) */}
+      <FeatureGate feature="ki_assistent">
+        <ChatWidget />
+      </FeatureGate>
       <CookieBanner />
     </div>
   );

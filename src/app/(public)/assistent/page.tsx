@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AssistentClient } from "./assistent-client";
+import { requireFeature } from "@/lib/db/feature-flags";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * /assistent — Ассистент (KI-Beratung-Zentrale)
@@ -28,6 +29,7 @@ export const metadata: Metadata = {
 // Client und der API-Endpoint POSTet pro Nachricht.
 export const dynamic = "force-dynamic";
 
-export default function AssistentPage() {
+export default async function AssistentPage() {
+  await requireFeature("ki_assistent");
   return <AssistentClient />;
 }

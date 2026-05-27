@@ -6,6 +6,7 @@ import { getAffiliateCookie, clearAffiliateCookie, hashWithSalt } from "@/lib/af
 import { affiliateByReferralCode } from "@/lib/db/affiliates";
 import { attributionAnlegen } from "@/lib/db/affiliate-tracking";
 import { notifyNewLead } from "@/lib/notifications/lead-notify";
+import { isFeatureEnabled } from "@/lib/db/feature-flags";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +20,11 @@ const KontaktSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  // Module-Toggle: wenn Kontaktformular aus → 503 (Admin hat absichtlich deaktiviert)
+  if (!(await isFeatureEnabled("kontaktformular"))) {
+    return NextResponse.json({ error: "Контактная форма временно отключена" }, { status: 503 });
+  }
+
   // Rate-Limit: 3 Kontakt-Anfragen / 10 Minuten / IP
   const clientIp = getClientIp(req);
   const rl = rateLimitPruefen(`kontakt:${clientIp}`, 3, 10 * 60 * 1000);

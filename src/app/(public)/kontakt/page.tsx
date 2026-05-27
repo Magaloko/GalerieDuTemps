@@ -2,6 +2,7 @@ import { KontaktFormular } from "./kontakt-formular";
 import type { Metadata } from "next";
 import { getDictionary } from "@/i18n";
 import { kontaktKanaeleLaden, whatsappUrl, telegramUrl } from "@/lib/db/kontakt-kanaele";
+import { requireFeature } from "@/lib/db/feature-flags";
 
 export const metadata: Metadata = {
   title:       "Контакты",
@@ -26,6 +27,7 @@ function formatPhoneDisplay(digits: string): string {
  *    Coral-Submit + Map-Mock am Boden.
  * ────────────────────────────────────────────────────────────────────────── */
 export default async function KontaktPage() {
+  await requireFeature("kontaktformular");
   const [{ t }, kontakt] = await Promise.all([
     getDictionary(),
     kontaktKanaeleLaden(),
