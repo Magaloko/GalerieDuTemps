@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { produktById } from "@/lib/db/produkte";
 import { alleKategorien } from "@/lib/db/kategorien";
+import { bilderFuerProdukt } from "@/lib/db/bilder";
 import { ProduktFormular } from "@/components/produkte/produkt-formular";
 import { QrWidget } from "@/components/produkte/qr-widget";
 import {
@@ -24,9 +25,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProduktBearbeitenPage({ params }: Props) {
   const { id } = await params;
-  const [produkt, kategorien] = await Promise.all([
+  const [produkt, kategorien, bilder] = await Promise.all([
     produktById(id),
     alleKategorien(),
+    bilderFuerProdukt(id),
   ]);
 
   if (!produkt) notFound();
@@ -105,6 +107,7 @@ export default async function ProduktBearbeitenPage({ params }: Props) {
         <ProduktFormular
           produkt={produkt}
           kategorien={kategorien}
+          initialBilder={bilder}
           action={updateAction}
           loeschenAction={deleteAction}
         />

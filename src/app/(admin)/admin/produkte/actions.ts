@@ -113,6 +113,8 @@ export async function produktErstellenAction(
   }
 
   const produkt = await produktErstellen(parsed.data, session.user.id);
+  // Direkt zur Edit-Page weiterleiten — dort ist die Bilder-Galerie inline
+  // sichtbar, sodass der Admin nahtlos weitermachen kann (Bilder hochladen).
   redirect(`/admin/produkte/${produkt.id}`);
 }
 

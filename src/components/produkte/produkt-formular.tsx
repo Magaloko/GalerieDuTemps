@@ -9,14 +9,17 @@ import { MarkdownEditor } from "@/components/ui/markdown-editor";
 import { PreisMultiCurrency } from "./preis-multi-currency";
 import { MultilingualInput } from "@/components/ui/multilingual-input";
 import { SingleMediaUpload } from "@/components/ui/single-media-upload";
-import { Save, Trash2, AlertCircle, CheckCircle2 } from "lucide-react";
-import type { Produkt } from "@/types/produkt";
+import { BildManager } from "./bild-manager";
+import { Save, Trash2, AlertCircle, CheckCircle2, ImagePlus, Info } from "lucide-react";
+import type { Produkt, Produktbild } from "@/types/produkt";
 import type { Kategorie } from "@/types/produkt";
 import type { FormState } from "@/app/(admin)/admin/produkte/actions";
 
 interface ProduktFormularProps {
   produkt?:    Produkt;
   kategorien:  Kategorie[];
+  /** Bestehende Bilder aus produktbilder-Tabelle (nur bei Edit relevant) */
+  initialBilder?: Produktbild[];
   action:      (prev: FormState, formData: FormData) => Promise<FormState>;
   loeschenAction?: () => Promise<void>;
 }
@@ -31,6 +34,7 @@ const ZUSTAND_OPTIONS = [
 export function ProduktFormular({
   produkt,
   kategorien,
+  initialBilder = [],
   action,
   loeschenAction,
 }: ProduktFormularProps) {
@@ -364,44 +368,69 @@ export function ProduktFormular({
         </div>
       </section>
 
-      {/* ─── Bilder & Medien ─────────────────────────────────────── */}
+      {/* ─── Bilder (Galerie inline bei Edit, Hinweis bei Neu) ──── */}
       <section
         className="bg-vintage-white border border-vintage-sand p-6 space-y-5"
         style={{ borderRadius: "var(--radius-card)" }}
       >
         <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
-          <h2 className="font-serif text-lg text-vintage-espresso">Изображения и медиа</h2>
-          <p className="text-xs font-sans text-vintage-dust">
-            Дополнительная галерея — после сохранения
-          </p>
+          <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2">
+            <ImagePlus className="w-4 h-4 text-vintage-gold" />
+            Фотографии
+          </h2>
+          {produkt && (
+            <p className="text-xs font-sans text-vintage-dust">
+              {initialBilder.length} {initialBilder.length === 1 ? "фото" : "фото"}
+            </p>
+          )}
+        </div>
+
+        {produkt ? (
+          // EDIT: Galerie direkt inline — alle Bilder + Hauptbild-Flag + Sortierung
+          <BildManager produktId={produkt.id} initialBilder={initialBilder} />
+        ) : (
+          // NEU: Hinweis dass Bilder nach dem Speichern hinzugefügt werden
+          <div
+            className="flex items-start gap-3 p-4"
+            style={{
+              background:   "rgba(201,168,76,0.08)",
+              border:       "1px solid rgba(201,168,76,0.30)",
+              borderLeft:   "4px solid var(--color-gold, #C9A84C)",
+              borderRadius: "var(--radius-card)",
+            }}
+          >
+            <Info className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "var(--color-gold, #C9A84C)" }} />
+            <div className="text-sm text-vintage-ink font-sans flex-1">
+              <p>
+                <strong>Сначала сохрани товар</strong> — после этого откроется галерея с
+                функциями: drag-sort, главное фото, alt-тексты, массовое удаление, paste из буфера.
+              </p>
+              <p className="text-xs text-vintage-dust mt-1">
+                Все фото обрабатываются автоматически: WebP-варианты, EXIF-strip, сжатие.
+              </p>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* ─── Видео (опционально) ─────────────────────────────────── */}
+      <section
+        className="bg-vintage-white border border-vintage-sand p-6 space-y-3"
+        style={{ borderRadius: "var(--radius-card)" }}
+      >
+        <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
+          <h2 className="font-serif text-lg text-vintage-espresso">Видео</h2>
+          <p className="text-xs font-sans text-vintage-dust">Опционально · 1 видео на товар</p>
         </div>
 
         <SingleMediaUpload
-          label="Главное изображение"
-          name="hauptbild_url"
-          accept="image/*"
-          variant="image"
-          defaultValue={produkt?.hauptbild_url ?? ""}
-          hint="JPEG, PNG, WebP, AVIF · макс. 10 МБ"
-        />
-
-        <SingleMediaUpload
-          label="Обратная сторона / деталь (опционально)"
-          name="rueckbild_url"
-          accept="image/*"
-          variant="image"
-          defaultValue={produkt?.rueckbild_url ?? ""}
-          hint="Второе изображение для детальной страницы"
-        />
-
-        <SingleMediaUpload
-          label="Видео (опционально)"
+          label="Видео-обзор товара"
           name="video_url"
           accept="video/mp4,video/webm,video/quicktime"
           variant="video"
           defaultValue={produkt?.video_url ?? ""}
           placeholder="https://… .mp4  или  https://youtu.be/…"
-          hint="MP4 (макс. 100 МБ) или вставьте URL YouTube/Vimeo"
+          hint="MP4 (макс. 100 МБ) или URL YouTube/Vimeo"
         />
       </section>
 
