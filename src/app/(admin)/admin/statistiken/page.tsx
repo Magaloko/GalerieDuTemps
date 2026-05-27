@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Statistiken" };
+export const metadata: Metadata = { title: "Статистика" };
 export const dynamic = "force-dynamic";
 
 function MiniStat({
@@ -50,9 +50,9 @@ export default async function StatistikenPage() {
     <div className="space-y-8 max-w-7xl">
       <div>
         <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-        <h1 className="font-serif text-3xl text-vintage-espresso">Statistiken</h1>
+        <h1 className="font-serif text-3xl text-vintage-espresso">Статистика</h1>
         <p className="text-vintage-dust text-sm font-sans mt-1">
-          Übersicht über Inventar und Performance
+          Обзор инвентаря и эффективности
         </p>
       </div>
 
@@ -61,7 +61,7 @@ export default async function StatistikenPage() {
           <MiniStat label="Всего"        wert={stats.produkte_gesamt}     icon={Package}     />
           <MiniStat label="Активны"      wert={stats.produkte_verfuegbar} icon={ShoppingBag} />
           <MiniStat label="Продано"      wert={stats.produkte_verkauft}   icon={ShoppingBag} />
-          <MiniStat label="Featured"     wert={stats.produkte_featured}   icon={Sparkles}    />
+          <MiniStat label="Избранные"    wert={stats.produkte_featured}   icon={Sparkles}    />
           <MiniStat label="Контакты"     wert={stats.kontakt_gesamt}      icon={Mail}        />
           <MiniStat label="Избранное"    wert={stats.wunschliste_user}    icon={Heart}       />
         </div>
