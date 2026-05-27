@@ -1,4 +1,11 @@
-import { Pool, type PoolClient, type QueryResult } from "pg";
+import { Pool, types, type PoolClient, type QueryResult } from "pg";
+
+// node-pg gibt BIGINT (OID 20) by default als STRING zurück — Safety gegen
+// JS-Number-Overflow > 2^53. Für uns relevant: telegram_chat_id (BIGINT).
+// Telegram-Chat-IDs liegen weit unter Number.MAX_SAFE_INTEGER (2^53 ≈ 9e15),
+// also parsen wir sie ohne Risiko als Number. Falls jemals eine BIGINT-Spalte
+// echte > 2^53 Werte braucht, müsste sie als TEXT modelliert werden.
+types.setTypeParser(20, (val) => (val === null ? null : Number(val)));
 
 // ---------------------------------------------------------------------------
 // PostgreSQL Pool – Singleton mit Lazy Initialization
