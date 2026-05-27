@@ -14,8 +14,6 @@ export const metadata: Metadata = {
   alternates:  { canonical: "/katalog" },
 };
 
-export const dynamic = "force-dynamic";
-
 interface Props {
   searchParams: Promise<Record<string, string>>;
 }

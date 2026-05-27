@@ -1,5 +1,6 @@
 import { query } from "@/lib/db";
 import { orderErstellen, orderStatusUpdate } from "@/lib/db/orders";
+import { orderSetPaymentMethod, orderSetPaymentStatus } from "@/lib/db/order-payment";
 import { sendMessage } from "@/lib/telegram/client";
 import type { TelegramSuccessfulPayment } from "@/lib/telegram/client";
 import type { Address } from "@/types/commerce";
@@ -59,6 +60,23 @@ export async function handleSuccessfulPayment(
   const customer = custRes.rows[0];
   if (!customer) {
     console.error("[payment-handler] customer not found:", payload.cid);
+    return;
+  }
+
+  const existingPaid = await query<{ id: string; order_number: number }>(
+    `SELECT id, order_number
+     FROM sebo.orders
+     WHERE stripe_payment_intent = $1
+     LIMIT 1`,
+    [payment.provider_payment_charge_id],
+  );
+  const existing = existingPaid.rows[0];
+  if (existing) {
+    const bestellnr = `GDT-${String(existing.order_number).padStart(4, "0")}`;
+    await sendMessage(botToken, chatId,
+      `✓ Платёж уже обработан. Заказ ${bestellnr}.\n\n` +
+      `Детали: ${BASE_URL}/kunde/bestellungen/${existing.id}`,
+    ).catch(() => {});
     return;
   }
 
@@ -126,6 +144,20 @@ export async function handleSuccessfulPayment(
     await orderStatusUpdate(order.id, "paid", {
       bezahlt:                 true,
       stripe_payment_intent:   payment.provider_payment_charge_id,
+    });
+    await orderSetPaymentMethod(order.id, {
+      method: "telegram_payments",
+      status: "paid",
+      meta: {
+        telegram_payment_charge_id: payment.telegram_payment_charge_id,
+        provider_payment_charge_id: payment.provider_payment_charge_id,
+        currency:                   payment.currency,
+        paid_at:                    new Date().toISOString(),
+      },
+    });
+    await orderSetPaymentStatus(order.id, "paid", {
+      telegram_payment_charge_id: payment.telegram_payment_charge_id,
+      provider_payment_charge_id: payment.provider_payment_charge_id,
     });
 
     const bestellnr = `GDT-${String(order.order_number).padStart(4, "0")}`;

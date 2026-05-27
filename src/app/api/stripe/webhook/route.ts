@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripeServer, getStripeWebhookSecret } from "@/lib/stripe-server";
 import { orderByStripeSession, orderStatusUpdate, orderById } from "@/lib/db/orders";
+import { orderSetPaymentStatus } from "@/lib/db/order-payment";
 import { couponNutzungVerbuchen } from "@/lib/db/coupons";
 import { sendEmail } from "@/lib/email/brevo";
 import { formatPreis } from "@/lib/utils/preis";
@@ -34,12 +35,22 @@ export async function POST(req: NextRequest) {
           console.warn("[Webhook] Order nicht gefunden für Session:", session.id);
           break;
         }
+        if (order.status === "paid" && order.payment_status === "paid") {
+          break;
+        }
 
         await orderStatusUpdate(order.id, "paid", {
           bezahlt:               true,
           stripe_payment_intent: typeof session.payment_intent === "string"
             ? session.payment_intent
             : session.payment_intent?.id,
+        });
+        await orderSetPaymentStatus(order.id, "paid", {
+          stripe_session_id:     session.id,
+          stripe_payment_intent: typeof session.payment_intent === "string"
+            ? session.payment_intent
+            : session.payment_intent?.id,
+          paid_at: new Date().toISOString(),
         });
 
         // Coupon-Nutzung verbuchen
@@ -72,6 +83,11 @@ export async function POST(req: NextRequest) {
         const order   = await orderByStripeSession(session.id);
         if (order && order.status === "pending") {
           const { orderCanceln } = await import("@/lib/db/orders");
+          await orderSetPaymentStatus(order.id, "failed", {
+            stripe_session_id: session.id,
+            failed_event:      event.type,
+            failed_at:         new Date().toISOString(),
+          });
           await orderCanceln(order.id, `Stripe: ${event.type}`);
         }
         break;
@@ -82,10 +98,19 @@ export async function POST(req: NextRequest) {
         const pi = typeof charge.payment_intent === "string" ? charge.payment_intent : null;
         if (pi) {
           const { query } = await import("@/lib/db");
-          await query(
-            `UPDATE sebo.orders SET status = 'refunded' WHERE stripe_payment_intent = $1`,
+          const r = await query<{ id: string }>(
+            `UPDATE sebo.orders
+             SET status = 'refunded', payment_status = 'refunded'
+             WHERE stripe_payment_intent = $1
+             RETURNING id`,
             [pi]
           );
+          for (const row of r.rows) {
+            await orderSetPaymentStatus(row.id, "refunded", {
+              stripe_payment_intent: pi,
+              refunded_at:           new Date().toISOString(),
+            });
+          }
         }
         break;
       }

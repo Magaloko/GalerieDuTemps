@@ -1,5 +1,10 @@
+import { unstable_cache } from "next/cache";
 import { query } from "./index";
 import { dateienFuerProdukt, zertifikateFuerProdukt } from "./produkt-medien";
+import {
+  PUBLIC_CATALOG_REVALIDATE_SECONDS,
+  PUBLIC_PRODUCTS_TAG,
+} from "@/lib/cache/public-catalog";
 import type { Produkt, ProduktListItem, PaginierteProdukte } from "@/types/produkt";
 
 // ---------------------------------------------------------------------------
@@ -20,7 +25,7 @@ const BASE_FILTER = `
 `;
 
 /** Featured-Produkte für die Startseite */
-export async function featuredProdukte(limit = 8): Promise<ProduktListItem[]> {
+async function featuredProdukteUncached(limit = 8): Promise<ProduktListItem[]> {
   const result = await query<ProduktListItem>(
     `SELECT
        p.id, p.name, p.slug, p.preis, p.originalpreis, p.waehrung,
@@ -40,8 +45,14 @@ export async function featuredProdukte(limit = 8): Promise<ProduktListItem[]> {
   return result.rows;
 }
 
+export const featuredProdukte = unstable_cache(
+  featuredProdukteUncached,
+  ["public-featured-produkte"],
+  { tags: [PUBLIC_PRODUCTS_TAG], revalidate: PUBLIC_CATALOG_REVALIDATE_SECONDS },
+);
+
 /** Öffentlicher Katalog mit Filtern + Paginierung */
-export async function katalogProdukte(params: {
+async function katalogProdukteUncached(params: {
   seite?:       number;
   limit?:       number;
   suche?:       string;
@@ -143,8 +154,14 @@ export async function katalogProdukte(params: {
   return { items: dataRes.rows, gesamt, seite, limit, seiten: Math.ceil(gesamt / limit) };
 }
 
+export const katalogProdukte = unstable_cache(
+  katalogProdukteUncached,
+  ["public-katalog-produkte"],
+  { tags: [PUBLIC_PRODUCTS_TAG], revalidate: PUBLIC_CATALOG_REVALIDATE_SECONDS },
+);
+
 /** Einzelnes Produkt per Slug (öffentlich) */
-export async function oeffentlichesProduktBySlug(slug: string): Promise<Produkt | null> {
+async function oeffentlichesProduktBySlugUncached(slug: string): Promise<Produkt | null> {
   const result = await query<Produkt>(
     `SELECT
        p.*,
@@ -173,8 +190,14 @@ export async function oeffentlichesProduktBySlug(slug: string): Promise<Produkt 
   return { ...produkt, dateien, zertifikate };
 }
 
+export const oeffentlichesProduktBySlug = unstable_cache(
+  oeffentlichesProduktBySlugUncached,
+  ["public-produkt-by-slug"],
+  { tags: [PUBLIC_PRODUCTS_TAG], revalidate: PUBLIC_CATALOG_REVALIDATE_SECONDS },
+);
+
 /** Ähnliche Produkte (gleiche Kategorie, ähnlicher Preis) */
-export async function aehnlicheProdukte(
+async function aehnlicheProdukteUncached(
   produktId: string,
   kategorieId: number | null,
   preis: number,
@@ -201,8 +224,14 @@ export async function aehnlicheProdukte(
   return result.rows;
 }
 
+export const aehnlicheProdukte = unstable_cache(
+  aehnlicheProdukteUncached,
+  ["public-aehnliche-produkte"],
+  { tags: [PUBLIC_PRODUCTS_TAG], revalidate: PUBLIC_CATALOG_REVALIDATE_SECONDS },
+);
+
 /** Preisrange für Filter-UI */
-export async function preisRange(): Promise<{ min: number; max: number }> {
+async function preisRangeUncached(): Promise<{ min: number; max: number }> {
   const result = await query<{ min: number; max: number }>(
     `SELECT MIN(preis)::float AS min, MAX(preis)::float AS max
      FROM sebo.produkte
@@ -210,3 +239,9 @@ export async function preisRange(): Promise<{ min: number; max: number }> {
   );
   return result.rows[0] ?? { min: 0, max: 10000 };
 }
+
+export const preisRange = unstable_cache(
+  preisRangeUncached,
+  ["public-preis-range"],
+  { tags: [PUBLIC_PRODUCTS_TAG], revalidate: PUBLIC_CATALOG_REVALIDATE_SECONDS },
+);

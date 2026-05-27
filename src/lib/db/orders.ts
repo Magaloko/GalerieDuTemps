@@ -1,4 +1,5 @@
 import { query, withTransaction } from "./index";
+import { revalidatePublicCatalogCache } from "@/lib/cache/public-catalog";
 import type { Order, OrderItem, OrderStatus, Address } from "@/types/commerce";
 
 // ---------------------------------------------------------------------------
@@ -36,7 +37,7 @@ export async function orderErstellen(data: {
   kunden_notiz?:    string;
   stripe_session_id?: string;
 }): Promise<Order> {
-  return withTransaction(async (client) => {
+  const order = await withTransaction(async (client) => {
     // Order erstellen
     const orderRes = await client.query<Order>(
       `INSERT INTO sebo.orders
@@ -96,12 +97,17 @@ export async function orderErstellen(data: {
 
       // Lager reservieren
       if (item.produkt_id) {
-        await client.query(
+        const reserveRes = await client.query(
           `UPDATE sebo.produkte
-           SET lagerbestand = GREATEST(0, lagerbestand - $1)
-           WHERE id = $2`,
+           SET lagerbestand = lagerbestand - $1
+           WHERE id = $2
+             AND lagerbestand >= $1
+             AND verkauft = false`,
           [item.menge, item.produkt_id]
         );
+        if ((reserveRes.rowCount ?? 0) === 0) {
+          throw new Error(`Nicht genug Lagerbestand für "${item.produkt_name}"`);
+        }
         await client.query(
           `INSERT INTO sebo.stock_movements (produkt_id, typ, menge_delta, order_id)
            VALUES ($1, 'order_reserve', $2, $3)`,
@@ -121,6 +127,8 @@ export async function orderErstellen(data: {
 
     return order;
   });
+  revalidatePublicCatalogCache();
+  return order;
 }
 
 /** Order per ID (inkl. items) */

@@ -1,5 +1,11 @@
+import { unstable_cache } from "next/cache";
 import { query } from "./index";
 import { generateSlug, uniqueSlug } from "@/lib/utils/slug";
+import {
+  PUBLIC_CATEGORIES_TAG,
+  PUBLIC_CATALOG_REVALIDATE_SECONDS,
+  revalidatePublicCatalogCache,
+} from "@/lib/cache/public-catalog";
 import type { Kategorie } from "@/types/produkt";
 
 export interface KategorieInput {
@@ -16,7 +22,7 @@ export interface KategorieInput {
 /** Alle aktiven Kategorien (mit Produktanzahl) — für Public-Seiten + Filter
  *  Counts spiegeln die exakten Filter aus produkte-public BASE_FILTER wieder.
  */
-export async function alleKategorien(): Promise<Kategorie[]> {
+async function alleKategorienUncached(): Promise<Kategorie[]> {
   const result = await query<Kategorie>(`
     SELECT
       k.id, k.code, k.name, k.slug, k.beschreibung,
@@ -36,6 +42,12 @@ export async function alleKategorien(): Promise<Kategorie[]> {
   `);
   return result.rows;
 }
+
+export const alleKategorien = unstable_cache(
+  alleKategorienUncached,
+  ["public-kategorien"],
+  { tags: [PUBLIC_CATEGORIES_TAG], revalidate: PUBLIC_CATALOG_REVALIDATE_SECONDS },
+);
 
 /** Alle Kategorien inkl. inaktiv — für Admin */
 export async function alleKategorienAdmin(): Promise<Kategorie[]> {
@@ -90,6 +102,7 @@ export async function kategorieErstellen(input: KategorieInput): Promise<Kategor
       input.aktiv        ?? true,
     ]
   );
+  revalidatePublicCatalogCache();
   return kategorieById(result.rows[0].id) as Promise<Kategorie>;
 }
 
@@ -127,6 +140,7 @@ export async function kategorieAktualisieren(
     `UPDATE sebo.kategorien SET ${felder.join(", ")} WHERE id = $${idx}`,
     werte
   );
+  revalidatePublicCatalogCache();
   return kategorieById(id);
 }
 
@@ -145,9 +159,11 @@ export async function kategorieLoeschen(id: number): Promise<{ mode: "soft" | "h
 
   if (verlinkt) {
     await query(`UPDATE sebo.kategorien SET aktiv = false WHERE id = $1`, [id]);
+    revalidatePublicCatalogCache();
     return { mode: "soft" };
   }
 
   const del = await query(`DELETE FROM sebo.kategorien WHERE id = $1`, [id]);
+  if ((del.rowCount ?? 0) > 0) revalidatePublicCatalogCache();
   return (del.rowCount ?? 0) > 0 ? { mode: "hard" } : null;
 }

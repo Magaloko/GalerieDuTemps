@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth/config";
+import { requireAdminSession } from "@/lib/auth/config";
 import { bildSpeichern } from "@/lib/storage/upload";
 
 export const dynamic = "force-dynamic";
@@ -10,9 +10,9 @@ export const dynamic = "force-dynamic";
  * Der Caller setzt die URL dann in ein hidden field oder die Spalte ein.
  */
 export async function POST(req: NextRequest) {
-  const session = await auth();
+  const session = await requireAdminSession();
   if (!session) {
-    return NextResponse.json({ error: "Не авторизовано" }, { status: 401 });
+    return NextResponse.json({ error: "Нет прав" }, { status: 403 });
   }
 
   try {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { orderStatusUpdate, orderById } from "@/lib/db/orders";
+import { orderSetPaymentStatus } from "@/lib/db/order-payment";
 import { verifyKaspiWebhook } from "@/lib/payment/kaspi";
 import { sendEmail } from "@/lib/email/brevo";
 import { formatPreis } from "@/lib/utils/preis";
@@ -46,7 +47,16 @@ export async function POST(req: NextRequest) {
   switch (event.type) {
     case "payment.paid":
     case "payment.completed": {
+      const existing = await orderById(orderId);
+      if (existing?.status === "paid" && existing.payment_status === "paid") {
+        break;
+      }
       await orderStatusUpdate(orderId, "paid", { bezahlt: true });
+      await orderSetPaymentStatus(orderId, "paid", {
+        kaspi_payment_id: paymentId,
+        kaspi_status:     event.data.status,
+        paid_at:          event.data.paid_at ?? new Date().toISOString(),
+      });
 
       // Bestätigungs-Mail (analog zu Stripe-Webhook)
       const full = await orderById(orderId);
@@ -72,6 +82,12 @@ export async function POST(req: NextRequest) {
     case "payment.cancelled":
     case "payment.expired": {
       const { orderCanceln } = await import("@/lib/db/orders");
+      await orderSetPaymentStatus(orderId, "failed", {
+        kaspi_payment_id: paymentId,
+        kaspi_status:     event.data.status,
+        failed_event:     event.type,
+        failed_at:        new Date().toISOString(),
+      });
       await orderCanceln(orderId, `Kaspi: ${event.type}`);
       break;
     }
