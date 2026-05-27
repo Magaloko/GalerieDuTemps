@@ -75,15 +75,65 @@ afterEach(() => vi.unstubAllEnvs());
 - ❌ Server-Actions mit Side-Effects (revalidatePath etc.)
 - ❌ E2E (Playwright wäre separater Aufbau)
 
+## DB-Layer-Tests (Welle 2 · live)
+
+Eigene Test-Klasse die nur läuft wenn `TEST_DATABASE_URL` gesetzt ist
+(NICHT `DATABASE_URL` — das ist Production/Dev). Tests legen das Schema
+frisch an und nutzen Rollback-Transactions für Isolation.
+
+### Lokal mit Docker
+
+```bash
+docker run --name pg-test -e POSTGRES_PASSWORD=test -p 5433:5432 -d postgres:16
+
+# Windows PowerShell:
+$env:TEST_DATABASE_URL="postgresql://postgres:test@localhost:5433/postgres"
+# bash/zsh:
+export TEST_DATABASE_URL="postgresql://postgres:test@localhost:5433/postgres"
+
+npm test   # 100 pure + 24 DB Tests laufen
+```
+
+### Lokal mit Supabase-Test-Projekt
+
+1. supabase.com → neues Projekt (NUR für Tests, NICHT Production)
+2. Settings → Database → Connection String
+3. `export TEST_DATABASE_URL="postgresql://..."`
+4. `npm test` — Schema wird gedroppt + neu aufgesetzt
+
+### Was getestet wird (24 DB-Tests)
+
+| Modul | Tests | Bereich |
+|---|---|---|
+| `db/produkte.ts` | 9 | Slug-Collision-Handling, auto-`artikel_code`, i18n-JSONB, tags-ARRAY, Cyrillic-Transliteration end-to-end |
+| `db/orders.ts` | 4 | **Atomare Stock-Reservation** (Codex' a602bad Fix), concurrent UPDATE-Races, Transaction-Rollback bei Multi-Item-Cart |
+| `db/customer-telegram.ts` | 11 | Token-Generation, einmalige Einlösung (race-safe), Cross-Customer-Schutz, UNIQUE chat_id, Notifications-Toggle |
+
+### Ohne `TEST_DATABASE_URL`
+
+```
+$ npm test
+ ✓ pure-function tests   (100 passed)
+ ↓ db tests              (26 skipped)
+```
+
+Skip ist by-design — verhindert dass jemand versehentlich gegen die
+Production-DB testet.
+
+### Sicherheits-Guards
+
+- `test-db.ts` wirft Error wenn URL `supabase.co` enthält ohne `test`
+- Wirft Error wenn `TEST_DATABASE_URL === DATABASE_URL` (Dev-DB-Schutz)
+- Schema-Reset macht `DROP SCHEMA sebo CASCADE` — alle sebo-Daten weg
+- `__setPoolForTesting()` in `src/lib/db/index.ts` wirft `Error` wenn
+  `NODE_ENV === "production"`
+
 ## Roadmap für weitere Test-Wellen
 
-1. **DB-Layer mit Test-DB**: Postgres-Testcontainer (Docker), separate
-   Test-Schema, Transactional-Rollback nach jedem Test
-2. **API-Routes**: Request/Response-Mock, Auth-Helper-Mock,
-   `vi.mock("@/lib/auth/config")` für `auth()`-Stub
-3. **React-Components**: `@testing-library/react` + jsdom-Environment für
-   Mobile-Drawer, Cart-Client, Method-Picker
-4. **E2E** mit Playwright: Cart → Order → Method-Picker → Bank-Confirm
+1. **API-Routes-Tests** mit Auth-Mock + Request-Helper
+2. **React-Component-Tests** mit jsdom + @testing-library
+3. **E2E** mit Playwright (Cart→Order→Payment durchspielen)
+4. **CI-Integration** mit Test-Postgres im GitHub-Actions-Service-Container
 
 ## Coverage-Schwellen
 
