@@ -15,14 +15,14 @@ import { z } from "zod";
 
 export async function statusAendernAction(id: string, neuerStatus: KontaktStatus): Promise<void> {
   const session = await auth();
-  if (!session) throw new Error("Nicht angemeldet");
+  if (!session) throw new Error("Не выполнен вход");
   await kontaktStatusUpdate(id, neuerStatus);
   revalidatePath("/admin/kontakt");
 }
 
 export async function anfrageLoeschenAction(id: string): Promise<void> {
   const session = await auth();
-  if (!session) throw new Error("Nicht angemeldet");
+  if (!session) throw new Error("Не выполнен вход");
   await kontaktLoeschen(id);
   revalidatePath("/admin/kontakt");
 }
@@ -31,7 +31,7 @@ export async function anfrageLoeschenAction(id: string): Promise<void> {
 // Als verkauft markieren – zentraler Provisions-Trigger
 // ---------------------------------------------------------------------------
 const VerkauftSchema = z.object({
-  preis_eur: z.coerce.number().positive("Preis muss positiv sein"),
+  preis_eur: z.coerce.number().positive("Цена должна быть положительной"),
 });
 
 export type VerkauftState = {
@@ -48,14 +48,14 @@ export async function alsVerkauftMarkierenAction(
 ): Promise<VerkauftState> {
   const session = await auth();
   if (!session || (session.user.role !== "admin" && session.user.role !== "superadmin")) {
-    return { fehler: "Nicht berechtigt" };
+    return { fehler: "Нет прав" };
   }
 
   const parsed = VerkauftSchema.safeParse({
     preis_eur: formData.get("preis_eur"),
   });
   if (!parsed.success) {
-    return { fehler: parsed.error.issues[0]?.message ?? "Ungültiger Preis" };
+    return { fehler: parsed.error.issues[0]?.message ?? "Некорректная цена" };
   }
 
   const preisCent = Math.round(parsed.data.preis_eur * 100);
@@ -66,10 +66,10 @@ export async function alsVerkauftMarkierenAction(
     [kontaktanfrageId]
   );
   if (kontaktRes.rows.length === 0) {
-    return { fehler: "Anfrage nicht gefunden" };
+    return { fehler: "Заявка не найдена" };
   }
   if (kontaktRes.rows[0].status === "verkauft") {
-    return { fehler: "Bereits als verkauft markiert" };
+    return { fehler: "Уже отмечена как проданная" };
   }
 
   const produktId = kontaktRes.rows[0].produkt_id;

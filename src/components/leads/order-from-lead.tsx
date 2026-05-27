@@ -32,7 +32,7 @@ export function OrderFromLead({ leadId, hatEmail }: Props) {
   };
 
   const submit = () => {
-    if (!selected) { setError("Kein Produkt gewählt"); return; }
+    if (!selected) { setError("Товар не выбран"); return; }
     setError(null);
     startCreate(async () => {
       const r: ActionResult = await leadZuBestellungAction(leadId, selected.id, menge);
@@ -47,10 +47,10 @@ export function OrderFromLead({ leadId, hatEmail }: Props) {
       <section className="bg-vintage-parchment border border-vintage-sand p-5"
                style={{ borderRadius: "var(--radius-card)" }}>
         <h3 className="font-serif text-base text-vintage-espresso mb-2 flex items-center gap-2">
-          <ShoppingBag className="w-4 h-4 text-vintage-gold" /> Bestellung erstellen
+          <ShoppingBag className="w-4 h-4 text-vintage-gold" /> Создать заказ
         </h3>
         <p className="text-xs text-vintage-dust">
-          Lead hat keine E-Mail — erst über &quot;Als Customer anlegen&quot; oben einen Kontakt setzen.
+          У лида нет e-mail — сначала создайте и привяжите клиента выше.
         </p>
       </section>
     );
@@ -61,12 +61,12 @@ export function OrderFromLead({ leadId, hatEmail }: Props) {
              style={{ borderRadius: "var(--radius-card)" }}>
       <div className="flex items-center justify-between">
         <h3 className="font-serif text-base text-vintage-espresso flex items-center gap-2">
-          <ShoppingBag className="w-4 h-4 text-vintage-gold" /> Bestellung aus Lead erstellen
+          <ShoppingBag className="w-4 h-4 text-vintage-gold" /> Создать заказ из лида
         </h3>
         {!open && (
           <Button size="sm" onClick={() => setOpen(true)}
                   icon={<ShoppingBag className="w-3.5 h-3.5" />}>
-            Anfangen
+            Начать
           </Button>
         )}
       </div>
@@ -77,14 +77,14 @@ export function OrderFromLead({ leadId, hatEmail }: Props) {
           {!selected && (
             <div className="space-y-2">
               <Input
-                label="Produkt suchen"
+                label="Найти товар"
                 value={q}
                 onChange={(e) => search(e.target.value)}
-                placeholder="Name, Slug oder Artikel-Code …"
+                placeholder="Название, slug или артикул …"
               />
               {searchPending && (
                 <div className="flex items-center gap-2 text-xs text-vintage-dust">
-                  <Loader2 className="w-3 h-3 animate-spin" /> Suche …
+                  <Loader2 className="w-3 h-3 animate-spin" /> Поиск …
                 </div>
               )}
               {results.length > 0 && (
@@ -107,7 +107,7 @@ export function OrderFromLead({ leadId, hatEmail }: Props) {
                         <p className="text-sm text-vintage-ink truncate">{p.name}</p>
                         <p className="text-xs text-vintage-dust">
                           {p.artikel_code && `${p.artikel_code} · `}
-                          Lager: {p.lagerbestand}
+                          На складе: {p.lagerbestand}
                         </p>
                       </div>
                       <p className="font-serif text-sm text-vintage-espresso flex-shrink-0">
@@ -118,7 +118,7 @@ export function OrderFromLead({ leadId, hatEmail }: Props) {
                 </div>
               )}
               {q.length > 0 && results.length === 0 && !searchPending && (
-                <p className="text-xs text-vintage-dust">Keine Treffer</p>
+                <p className="text-xs text-vintage-dust">Ничего не найдено</p>
               )}
             </div>
           )}
@@ -137,25 +137,25 @@ export function OrderFromLead({ leadId, hatEmail }: Props) {
                   <div className="min-w-0">
                     <p className="text-sm text-vintage-ink truncate">{selected.name}</p>
                     <p className="text-xs text-vintage-dust">
-                      {formatPreis(selected.preis)} · {selected.lagerbestand} auf Lager
+                      {formatPreis(selected.preis)} · на складе {selected.lagerbestand}
                     </p>
                   </div>
                 </div>
                 <button onClick={() => setSelected(null)}
                         className="text-xs text-vintage-burgundy hover:underline">
-                  Ändern
+                  Изменить
                 </button>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <Input
-                  label="Menge"
+                  label="Количество"
                   type="number" min={1} max={selected.lagerbestand}
                   value={menge}
                   onChange={(e) => setMenge(Math.max(1, Math.min(selected.lagerbestand, parseInt(e.target.value) || 1)))}
                 />
                 <div className="flex flex-col gap-1.5">
-                  <span className="text-xs font-sans uppercase tracking-widest text-vintage-gold/80">Gesamt</span>
+                  <span className="text-xs font-sans uppercase tracking-widest text-vintage-gold/80">Итого</span>
                   <span className="font-serif text-lg text-vintage-espresso py-2">
                     {formatPreis(selected.preis * menge)}
                   </span>
@@ -175,14 +175,14 @@ export function OrderFromLead({ leadId, hatEmail }: Props) {
               <div className="flex gap-2">
                 <Button onClick={submit} loading={createPending}
                         icon={<ShoppingBag className="w-3.5 h-3.5" />}>
-                  Bestellung anlegen (pending)
+                  Создать заказ (ожидает)
                 </Button>
                 <Button variant="ghost" onClick={() => { setSelected(null); setOpen(false); }}>
-                  Abbrechen
+                  Отмена
                 </Button>
               </div>
               <p className="text-xs text-vintage-dust">
-                Order startet im Status &quot;pending&quot;. Du kannst sie danach im /admin/bestellungen weiter bearbeiten.
+                Заказ будет создан в статусе &quot;Ожидает&quot;. Затем его можно доработать в /admin/bestellungen.
               </p>
             </div>
           )}

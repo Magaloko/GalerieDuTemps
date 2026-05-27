@@ -19,20 +19,20 @@ import { OrderFromLead } from "@/components/leads/order-from-lead";
 import type { Lead, LeadMessage, AdminBenutzer, LeadStatus, LeadPrioritaet } from "@/lib/db/leads";
 
 const STATUS_OPTIONS: { value: LeadStatus; label: string }[] = [
-  { value: "neu",          label: "Neu"          },
-  { value: "gelesen",      label: "Gelesen"      },
-  { value: "in_arbeit",    label: "In Arbeit"    },
-  { value: "beantwortet",  label: "Beantwortet"  },
-  { value: "qualifiziert", label: "Qualifiziert" },
-  { value: "verloren",     label: "Verloren"     },
-  { value: "archiviert",   label: "Archiviert"   },
+  { value: "neu",          label: "Новый"          },
+  { value: "gelesen",      label: "Прочитан"       },
+  { value: "in_arbeit",    label: "В работе"       },
+  { value: "beantwortet",  label: "Отвечен"        },
+  { value: "qualifiziert", label: "Квалифицирован" },
+  { value: "verloren",     label: "Потерян"        },
+  { value: "archiviert",   label: "В архиве"       },
 ];
 
 const PRIO_OPTIONS: { value: LeadPrioritaet; label: string }[] = [
-  { value: "niedrig",  label: "Niedrig"  },
-  { value: "normal",   label: "Normal"   },
-  { value: "hoch",     label: "Hoch"     },
-  { value: "dringend", label: "Dringend" },
+  { value: "niedrig",  label: "Низкий"    },
+  { value: "normal",   label: "Обычный"   },
+  { value: "hoch",     label: "Высокий"   },
+  { value: "dringend", label: "Срочный"   },
 ];
 
 interface Props {
@@ -58,7 +58,7 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
     optimistic?.();
     start(async () => {
       const r = await fn();
-      if (!r.ok) setError(r.error ?? "Fehler");
+      if (!r.ok) setError(r.error ?? "Ошибка");
       router.refresh();
     });
   };
@@ -86,7 +86,7 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
   };
 
   const customerAnlegen = () => {
-    if (!custEmail || !custName) { setError("Name + E-Mail erforderlich"); return; }
+    if (!custEmail || !custName) { setError("Требуются имя и e-mail"); return; }
     runAction(() => leadAlsCustomerAnlegenAction(lead.id, custEmail, custName));
     setShowCustomerForm(false);
   };
@@ -111,7 +111,7 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
               <p className="text-xs uppercase tracking-widest text-vintage-dust">{lead.quelle.replace("_"," ")}</p>
               <h1 className="font-serif text-xl text-vintage-espresso flex items-center gap-2 mt-1">
                 <User className="w-4 h-4 text-vintage-gold" />
-                {lead.kontakt_name ?? lead.kontakt_handle ?? lead.kontakt_email ?? "Unbekannt"}
+                {lead.kontakt_name ?? lead.kontakt_handle ?? lead.kontakt_email ?? "Неизвестно"}
               </h1>
               <div className="flex flex-wrap gap-3 mt-2 text-sm text-vintage-dust">
                 {lead.kontakt_email && (
@@ -128,7 +128,7 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
               <p>{new Date(lead.erstellt_am).toLocaleString("ru-RU")}</p>
               {lead.beantwortet_am && (
                 <p className="text-vintage-sage mt-1">
-                  Beantwortet: {new Date(lead.beantwortet_am).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit"})}
+                  Отвечено: {new Date(lead.beantwortet_am).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit"})}
                 </p>
               )}
             </div>
@@ -153,7 +153,7 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
 
           {lead.customer_id ? (
             <div className="border-t border-vintage-sand/40 pt-3">
-              <p className="text-xs uppercase tracking-widest text-vintage-dust mb-1">Customer</p>
+              <p className="text-xs uppercase tracking-widest text-vintage-dust mb-1">Клиент</p>
               <Link href={`/admin/kunden/${lead.customer_id}`}
                     className="text-vintage-gold hover:underline">{lead.customer_email}</Link>
             </div>
@@ -161,18 +161,18 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
             <div className="border-t border-vintage-sand/40 pt-3">
               {showCustomerForm ? (
                 <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-widest text-vintage-dust">Customer anlegen</p>
-                  <Input label="Name" value={custName} onChange={(e)=>setCustName(e.target.value)} />
+                  <p className="text-xs uppercase tracking-widest text-vintage-dust">Создать клиента</p>
+                  <Input label="Имя" value={custName} onChange={(e)=>setCustName(e.target.value)} />
                   <Input label="E-Mail" value={custEmail} onChange={(e)=>setCustEmail(e.target.value)} />
                   <div className="flex gap-2">
-                    <Button size="sm" loading={pending} onClick={customerAnlegen}>Anlegen + Verlinken</Button>
-                    <Button size="sm" variant="ghost" onClick={()=>setShowCustomerForm(false)}>Abbrechen</Button>
+                    <Button size="sm" loading={pending} onClick={customerAnlegen}>Создать и привязать</Button>
+                    <Button size="sm" variant="ghost" onClick={()=>setShowCustomerForm(false)}>Отмена</Button>
                   </div>
                 </div>
               ) : (
                 <button onClick={()=>setShowCustomerForm(true)}
                         className="flex items-center gap-2 text-xs font-sans uppercase tracking-widest text-vintage-gold hover:text-vintage-amber">
-                  <UserPlus className="w-3.5 h-3.5" /> Als Customer anlegen + verlinken
+                  <UserPlus className="w-3.5 h-3.5" /> Создать клиента и привязать
                 </button>
               )}
             </div>
@@ -187,7 +187,7 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
           <section className="bg-vintage-white border border-vintage-sand p-6 space-y-3"
                    style={{ borderRadius: "var(--radius-card)" }}>
             <h2 className="font-serif text-base text-vintage-espresso flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-vintage-gold" /> Original-Nachricht
+              <MessageSquare className="w-4 h-4 text-vintage-gold" /> Исходное сообщение
             </h2>
             <div className="text-sm text-vintage-ink whitespace-pre-line border-l-2 border-vintage-gold/40 pl-4 py-2">
               {originalText}
@@ -199,7 +199,7 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
         {messages.length > 0 && (
           <section className="bg-vintage-white border border-vintage-sand p-6 space-y-4"
                    style={{ borderRadius: "var(--radius-card)" }}>
-            <h2 className="font-serif text-base text-vintage-espresso">Konversation</h2>
+            <h2 className="font-serif text-base text-vintage-espresso">Переписка</h2>
             <div className="space-y-3">
               {messages.map(m => (
                 <div key={m.id} className={`p-3 border ${
@@ -209,8 +209,8 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
                 }`} style={{ borderRadius: "var(--radius-vintage)" }}>
                   <div className="flex items-center justify-between text-xs text-vintage-dust mb-1">
                     <span className="uppercase tracking-widest">
-                      {m.richtung === "outbound" ? "Admin → Kunde" :
-                       m.richtung === "interne_notiz" ? "Interne Notiz" : "Kunde → Admin"}
+                      {m.richtung === "outbound" ? "Админ → клиент" :
+                       m.richtung === "interne_notiz" ? "Внутренняя заметка" : "Клиент → админ"}
                       {m.autor_name && ` · ${m.autor_name}`}
                     </span>
                     <span>{new Date(m.gesendet_am).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</span>
@@ -226,31 +226,31 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
         <section className="bg-vintage-white border border-vintage-sand p-6 space-y-3"
                  style={{ borderRadius: "var(--radius-card)" }}>
           <div className="flex items-center justify-between">
-            <h2 className="font-serif text-base text-vintage-espresso">Antwort / Notiz</h2>
+            <h2 className="font-serif text-base text-vintage-espresso">Ответ / заметка</h2>
             <div className="flex gap-1 text-xs">
               <button onClick={()=>setNotizRichtung("interne_notiz")}
                       className={`px-3 py-1 border transition-colors ${
                         notizRichtung==="interne_notiz" ? "bg-vintage-espresso text-vintage-cream border-vintage-espresso" : "border-vintage-sand text-vintage-brown"
                       }`} style={{ borderRadius: "var(--radius-vintage)" }}>
-                Interne Notiz
+                Внутренняя заметка
               </button>
               <button onClick={()=>setNotizRichtung("outbound")}
                       className={`px-3 py-1 border transition-colors ${
                         notizRichtung==="outbound" ? "bg-vintage-gold text-vintage-espresso border-vintage-gold" : "border-vintage-sand text-vintage-brown"
                       }`} style={{ borderRadius: "var(--radius-vintage)" }}>
-                Versendete Antwort
+                Отправленный ответ
               </button>
             </div>
           </div>
           <Textarea value={notiz} onChange={(e)=>setNotiz(e.target.value)}
                     rows={4}
-                    placeholder={notizRichtung==="outbound" ? "Was hast du dem Kunden geantwortet? (Notiz im System — Versand bleibt manuell)" : "Interne Notiz — nur Admin-sichtbar"} />
+                    placeholder={notizRichtung==="outbound" ? "Что Вы ответили клиенту? (заметка в системе — отправка остаётся вручную)" : "Внутренняя заметка — видна только админам"} />
           <p className="text-xs text-vintage-dust">
-            Hinweis: Diese Nachricht wird NUR im System gespeichert. Tatsächlicher Versand erfolgt manuell über deinen Kanal (E-Mail, IG, …).
+            Примечание: это сообщение сохраняется только в системе. Фактическая отправка выполняется вручную через Ваш канал (e-mail, IG, …).
           </p>
           <Button size="sm" onClick={sendNotiz} loading={pending}
                   icon={<Send className="w-3.5 h-3.5" />}>
-            {notizRichtung === "outbound" ? "Antwort dokumentieren" : "Notiz speichern"}
+            {notizRichtung === "outbound" ? "Зафиксировать ответ" : "Сохранить заметку"}
           </Button>
         </section>
       </div>
@@ -259,7 +259,7 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
       <aside className="space-y-4 lg:sticky lg:top-20 self-start">
         <section className="bg-vintage-white border border-vintage-sand p-5 space-y-4"
                  style={{ borderRadius: "var(--radius-card)" }}>
-          <h3 className="font-serif text-base text-vintage-espresso">Aktionen</h3>
+          <h3 className="font-serif text-base text-vintage-espresso">Действия</h3>
 
           <Select label="Статус" value={lead.status}
                   options={STATUS_OPTIONS}
@@ -277,12 +277,12 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
             <Button size="sm" variant={lead.status==="beantwortet"?"secondary":"primary"}
                     onClick={()=>changeStatus(lead.status==="beantwortet" ? "in_arbeit" : "beantwortet")}
                     icon={pending ? <Loader2 className="w-3.5 h-3.5 animate-spin"/> : <CheckCircle2 className="w-3.5 h-3.5" />}>
-              {lead.status==="beantwortet" ? "Wieder öffnen" : "Als beantwortet markieren"}
+              {lead.status==="beantwortet" ? "Открыть снова" : "Отметить как отвеченный"}
             </Button>
             {lead.status !== "archiviert" && (
               <Button size="sm" variant="ghost" onClick={()=>changeStatus("archiviert")}
                       icon={<EyeOff className="w-3.5 h-3.5" />}>
-                Archivieren
+                Архивировать
               </Button>
             )}
           </div>
@@ -310,8 +310,8 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
         <section className="bg-vintage-parchment border border-vintage-sand p-4 text-xs text-vintage-dust space-y-1 font-mono"
                  style={{ borderRadius: "var(--radius-card)" }}>
           <p>ID: {lead.id.slice(0, 8)}…</p>
-          {lead.externe_id && <p>Externe: {lead.externe_id.slice(0, 20)}{lead.externe_id.length>20?"…":""}</p>}
-          <p>Letzte Änderung: {new Date(lead.aktualisiert_am).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</p>
+          {lead.externe_id && <p>Внешний ID: {lead.externe_id.slice(0, 20)}{lead.externe_id.length>20?"…":""}</p>}
+          <p>Последнее изменение: {new Date(lead.aktualisiert_am).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</p>
         </section>
       </aside>
     </div>

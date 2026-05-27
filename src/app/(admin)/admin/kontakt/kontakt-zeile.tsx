@@ -18,11 +18,11 @@ import { VerkauftDialog } from "./verkauft-dialog";
 import type { Kontaktanfrage, KontaktStatus } from "@/lib/db/kontakt";
 
 const STATUS_CONFIG: Record<string, { label: string; variant: "gold" | "sage" | "dust" | "espresso" | "burgundy" }> = {
-  neu:         { label: "Neu",         variant: "gold"     },
-  gelesen:     { label: "Gelesen",     variant: "espresso" },
-  beantwortet: { label: "Beantwortet", variant: "sage"     },
-  verkauft:    { label: "Verkauft",    variant: "burgundy" },
-  archiviert:  { label: "Archiviert",  variant: "dust"     },
+  neu:         { label: "Новая",      variant: "gold"     },
+  gelesen:     { label: "Прочитана",  variant: "espresso" },
+  beantwortet: { label: "Отвечена",   variant: "sage"     },
+  verkauft:    { label: "Продана",    variant: "burgundy" },
+  archiviert:  { label: "В архиве",   variant: "dust"     },
 };
 
 export function KontaktZeile({ anfrage }: { anfrage: Kontaktanfrage }) {
@@ -35,7 +35,7 @@ export function KontaktZeile({ anfrage }: { anfrage: Kontaktanfrage }) {
   };
 
   const handleDelete = () => {
-    if (!confirm(`Anfrage von ${anfrage.name} wirklich löschen?`)) return;
+    if (!confirm(`Удалить заявку от ${anfrage.name}?`)) return;
     startTransition(() => anfrageLoeschenAction(anfrage.id));
   };
 
@@ -68,7 +68,7 @@ export function KontaktZeile({ anfrage }: { anfrage: Kontaktanfrage }) {
             <p className="text-sm text-vintage-brown font-sans mt-0.5 truncate">{anfrage.betreff}</p>
           )}
           <p className="text-xs text-vintage-dust font-sans mt-0.5">
-            {new Date(anfrage.erstellt_am).toLocaleString("de-DE", { dateStyle: "medium", timeStyle: "short" })}
+            {new Date(anfrage.erstellt_am).toLocaleString("ru-RU", { dateStyle: "medium", timeStyle: "short" })}
           </p>
         </div>
         {offen ? <ChevronUp className="w-4 h-4 text-vintage-dust" /> : <ChevronDown className="w-4 h-4 text-vintage-dust" />}
@@ -84,7 +84,7 @@ export function KontaktZeile({ anfrage }: { anfrage: Kontaktanfrage }) {
               className="flex items-center gap-2 text-xs text-vintage-brown hover:text-vintage-espresso transition-colors"
             >
               <ExternalLink className="w-3 h-3" />
-              Produkt: {anfrage.produkt_name ?? "Unbekannt"}
+              Товар: {anfrage.produkt_name ?? "Неизвестно"}
             </Link>
           )}
 
@@ -100,11 +100,11 @@ export function KontaktZeile({ anfrage }: { anfrage: Kontaktanfrage }) {
           <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
             <div className="flex flex-wrap gap-2">
               <a
-                href={`mailto:${anfrage.email}?subject=Re: ${encodeURIComponent(anfrage.betreff ?? "Ihre Anfrage")}`}
+                href={`mailto:${anfrage.email}?subject=Re: ${encodeURIComponent(anfrage.betreff ?? "Ваш запрос")}`}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-vintage-espresso text-vintage-cream text-xs font-sans tracking-widest uppercase hover:bg-vintage-brown transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}
               >
-                <Mail className="w-3 h-3" /> Antworten
+                <Mail className="w-3 h-3" /> Ответить
               </a>
 
               {anfrage.status !== "beantwortet" && anfrage.status !== "verkauft" && (
@@ -114,7 +114,7 @@ export function KontaktZeile({ anfrage }: { anfrage: Kontaktanfrage }) {
                   className="flex items-center gap-1.5 px-3 py-1.5 border border-vintage-sage text-vintage-forest text-xs font-sans tracking-widest uppercase hover:bg-vintage-sage/10 transition-colors disabled:opacity-50"
                   style={{ borderRadius: "var(--radius-button)" }}
                 >
-                  <CheckCircle2 className="w-3 h-3" /> Erledigt
+                  <CheckCircle2 className="w-3 h-3" /> Завершить
                 </button>
               )}
 
@@ -125,7 +125,7 @@ export function KontaktZeile({ anfrage }: { anfrage: Kontaktanfrage }) {
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-vintage-gold text-vintage-espresso text-xs font-sans tracking-widest uppercase hover:bg-vintage-copper transition-colors disabled:opacity-50"
                   style={{ borderRadius: "var(--radius-button)" }}
                 >
-                  <Coins className="w-3 h-3" /> Als verkauft markieren
+                  <Coins className="w-3 h-3" /> Отметить как проданную
                 </button>
               )}
 
@@ -136,7 +136,7 @@ export function KontaktZeile({ anfrage }: { anfrage: Kontaktanfrage }) {
                   className="flex items-center gap-1.5 px-3 py-1.5 border border-vintage-sand text-vintage-dust text-xs font-sans tracking-widest uppercase hover:bg-vintage-parchment transition-colors disabled:opacity-50"
                   style={{ borderRadius: "var(--radius-button)" }}
                 >
-                  <Archive className="w-3 h-3" /> Archivieren
+                  <Archive className="w-3 h-3" /> В архив
                 </button>
               )}
 
@@ -147,7 +147,7 @@ export function KontaktZeile({ anfrage }: { anfrage: Kontaktanfrage }) {
                   className="flex items-center gap-1.5 px-3 py-1.5 text-vintage-dust text-xs font-sans tracking-widest uppercase hover:bg-vintage-parchment transition-colors disabled:opacity-50"
                   style={{ borderRadius: "var(--radius-button)" }}
                 >
-                  Als gelesen markieren
+                  Отметить как прочитанную
                 </button>
               )}
             </div>
@@ -157,8 +157,8 @@ export function KontaktZeile({ anfrage }: { anfrage: Kontaktanfrage }) {
               disabled={pending}
               className="p-2 text-vintage-dust hover:text-vintage-burgundy transition-colors disabled:opacity-50"
               style={{ borderRadius: "var(--radius-vintage)" }}
-              aria-label="Löschen"
-              title="Löschen"
+              aria-label="Удалить"
+              title="Удалить"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>

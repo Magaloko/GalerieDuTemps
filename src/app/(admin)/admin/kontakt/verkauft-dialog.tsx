@@ -46,7 +46,7 @@ export function VerkauftDialog({ kontaktanfrageId, kontaktName, onClose }: Props
           onClick={onClose}
           className="absolute top-3 right-3 p-1.5 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-parchment transition-colors"
           style={{ borderRadius: "var(--radius-vintage)" }}
-          aria-label="Schließen"
+          aria-label="Закрыть"
         >
           <X className="w-4 h-4" />
         </button>
@@ -56,9 +56,9 @@ export function VerkauftDialog({ kontaktanfrageId, kontaktName, onClose }: Props
           <div className="inline-flex p-2 bg-vintage-gold/10 border border-vintage-gold/30 mb-3" style={{ borderRadius: "var(--radius-card)" }}>
             <Coins className="w-5 h-5 text-vintage-gold" />
           </div>
-          <h2 className="font-serif text-xl text-vintage-espresso">Als verkauft markieren</h2>
+          <h2 className="font-serif text-xl text-vintage-espresso">Отметить как проданную</h2>
           <p className="text-vintage-dust text-xs font-sans mt-1">
-            Anfrage von <strong className="text-vintage-brown">{kontaktName}</strong>
+            Заявка от <strong className="text-vintage-brown">{kontaktName}</strong>
           </p>
         </div>
 
@@ -68,14 +68,14 @@ export function VerkauftDialog({ kontaktanfrageId, kontaktName, onClose }: Props
             <div className="flex items-start gap-3 p-4 bg-vintage-sage/10 border border-vintage-sage/30" style={{ borderRadius: "var(--radius-card)" }}>
               <CheckCircle2 className="w-5 h-5 text-vintage-sage flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-serif text-vintage-forest">Verkauf markiert!</p>
+                <p className="font-serif text-vintage-forest">Продажа отмечена!</p>
                 <p className="text-xs text-vintage-forest font-sans mt-1">
                   {state.provisionen_erstellt && state.provisionen_erstellt > 0
                     ? <>
-                        <strong>{state.provisionen_erstellt}</strong> {state.provisionen_erstellt === 1 ? "Provision" : "Provisionen"} im Wert von{" "}
-                        <strong>{state.provisionen_summe_eur?.toFixed(2).replace(".", ",")} €</strong> wurden erstellt und betroffene Partner benachrichtigt.
+                        Создано комиссий: <strong>{state.provisionen_erstellt}</strong>, сумма{" "}
+                        <strong>{state.provisionen_summe_eur?.toFixed(2).replace(".", ",")} €</strong>. Затронутые партнёры уведомлены.
                       </>
-                    : "Keine Affiliate-Attribution für diese Anfrage — keine Provisionen erstellt."
+                    : "Для этой заявки нет партнёрской атрибуции — комиссии не созданы."
                   }
                 </p>
               </div>
@@ -83,7 +83,7 @@ export function VerkauftDialog({ kontaktanfrageId, kontaktName, onClose }: Props
             {(state.provisionen_erstellt ?? 0) > 0 && (
               <div className="flex items-center gap-2 text-xs text-vintage-dust font-sans">
                 <Sparkles className="w-3 h-3 text-vintage-gold" />
-                Schließt sich automatisch …
+                Закроется автоматически …
               </div>
             )}
           </div>
@@ -91,7 +91,7 @@ export function VerkauftDialog({ kontaktanfrageId, kontaktName, onClose }: Props
           /* Formular */
           <form action={formAction} className="space-y-4">
             <Input
-              label="Verkaufspreis (EUR)"
+              label="Цена продажи (EUR)"
               name="preis_eur"
               type="number"
               step="0.01"
@@ -99,7 +99,7 @@ export function VerkauftDialog({ kontaktanfrageId, kontaktName, onClose }: Props
               required
               autoFocus
               placeholder="0.00"
-              hint="Basis für die Provisionsberechnung"
+              hint="Основа для расчёта комиссий"
             />
 
             {state?.fehler && (
@@ -109,9 +109,9 @@ export function VerkauftDialog({ kontaktanfrageId, kontaktName, onClose }: Props
             )}
 
             <div className="text-xs text-vintage-dust font-sans bg-vintage-parchment p-3" style={{ borderRadius: "var(--radius-vintage)" }}>
-              <p><strong>Hinweis:</strong> Falls die Anfrage über einen Affiliate-Link kam,
-              werden automatisch Provisionen für bis zu 3 Ebenen berechnet und die
-              Partner per E-Mail benachrichtigt.</p>
+              <p><strong>Примечание:</strong> Если заявка пришла по партнёрской ссылке,
+              комиссии будут автоматически рассчитаны до 3 уровней, а партнёры
+              получат уведомление по e-mail.</p>
             </div>
 
             <div className="flex gap-3 justify-end">
@@ -122,10 +122,10 @@ export function VerkauftDialog({ kontaktanfrageId, kontaktName, onClose }: Props
                 className="px-4 py-2 text-xs font-sans uppercase tracking-widest text-vintage-dust hover:bg-vintage-parchment transition-colors disabled:opacity-50"
                 style={{ borderRadius: "var(--radius-button)" }}
               >
-                Abbrechen
+                Отмена
               </button>
               <Button type="submit" loading={isPending} icon={<Coins className="w-3.5 h-3.5" />}>
-                Verkauf bestätigen
+                Подтвердить продажу
               </Button>
             </div>
           </form>

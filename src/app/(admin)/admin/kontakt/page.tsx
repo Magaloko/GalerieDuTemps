@@ -4,15 +4,15 @@ import { KontaktZeile } from "./kontakt-zeile";
 import { Mail, Inbox, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Kontaktanfragen" };
+export const metadata: Metadata = { title: "Контактные заявки" };
 export const dynamic = "force-dynamic";
 
 const STATUS_FILTER: Array<{ value: KontaktStatus | ""; label: string }> = [
-  { value: "",            label: "Alle"         },
-  { value: "neu",         label: "Neu"          },
-  { value: "gelesen",     label: "Gelesen"      },
-  { value: "beantwortet", label: "Beantwortet"  },
-  { value: "archiviert",  label: "Archiviert"   },
+  { value: "",            label: "Все"        },
+  { value: "neu",         label: "Новая"      },
+  { value: "gelesen",     label: "Прочитана"  },
+  { value: "beantwortet", label: "Отвечена"   },
+  { value: "archiviert",  label: "В архиве"   },
 ];
 
 interface Props {
@@ -33,10 +33,10 @@ export default async function KontaktAdminPage({ searchParams }: Props) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-          <h1 className="font-serif text-2xl text-vintage-espresso">Kontaktanfragen</h1>
+          <h1 className="font-serif text-2xl text-vintage-espresso">Контактные заявки</h1>
           <p className="text-vintage-dust text-xs font-sans mt-0.5">
-            {daten.gesamt} {daten.gesamt === 1 ? "Anfrage" : "Anfragen"}
-            {status && ` · Filter: ${STATUS_FILTER.find(s => s.value === status)?.label}`}
+            {daten.gesamt} {daten.gesamt === 1 ? "заявка" : "заявок"}
+            {status && ` · Фильтр: ${STATUS_FILTER.find(s => s.value === status)?.label}`}
           </p>
         </div>
         <Mail className="w-5 h-5 text-vintage-gold" />
@@ -70,10 +70,10 @@ export default async function KontaktAdminPage({ searchParams }: Props) {
         >
           <Inbox className="w-12 h-12 text-vintage-sand mb-4" />
           <p className="font-serif text-vintage-brown text-lg">
-            Keine Anfragen{status && ` mit Status "${STATUS_FILTER.find(s => s.value === status)?.label}"`}
+            Нет заявок{status && ` со статусом «${STATUS_FILTER.find(s => s.value === status)?.label}»`}
           </p>
           <p className="text-vintage-dust text-sm font-sans mt-1">
-            Anfragen werden hier erscheinen, sobald sie über das Kontaktformular eingehen.
+            Заявки появятся здесь, когда поступят через контактную форму.
           </p>
         </div>
       ) : (
@@ -88,7 +88,7 @@ export default async function KontaktAdminPage({ searchParams }: Props) {
       {daten.seiten > 1 && (
         <div className="flex items-center justify-between pt-4">
           <p className="text-xs text-vintage-dust font-sans">
-            Seite {daten.seite} von {daten.seiten}
+            Страница {daten.seite} из {daten.seiten}
           </p>
           <div className="flex gap-2">
             {daten.seite > 1 && (
@@ -97,7 +97,7 @@ export default async function KontaktAdminPage({ searchParams }: Props) {
                 className="flex items-center gap-1 px-3 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans hover:bg-vintage-parchment transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}
               >
-                <ChevronLeft className="w-3.5 h-3.5" /> Zurück
+                <ChevronLeft className="w-3.5 h-3.5" /> Назад
               </Link>
             )}
             {daten.seite < daten.seiten && (
@@ -106,7 +106,7 @@ export default async function KontaktAdminPage({ searchParams }: Props) {
                 className="flex items-center gap-1 px-3 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans hover:bg-vintage-parchment transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}
               >
-                Weiter <ChevronRight className="w-3.5 h-3.5" />
+                Вперёд <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             )}
           </div>

@@ -7,30 +7,30 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Inbox" };
+export const metadata: Metadata = { title: "Входящие" };
 export const dynamic = "force-dynamic";
 
 interface Props { searchParams: Promise<Record<string, string>> }
 
 const QUELLE_META: Record<LeadQuelle, { label: string; icon: React.ElementType; klasse: string }> = {
-  kontaktanfrage:     { label: "Kontakt",      icon: Mail,          klasse: "text-vintage-brown" },
+  kontaktanfrage:     { label: "Контакт",      icon: Mail,          klasse: "text-vintage-brown" },
   instagram_dm:       { label: "IG · DM",      icon: Camera,        klasse: "text-vintage-burgundy" },
-  instagram_comment:  { label: "IG · Comment", icon: Camera,        klasse: "text-vintage-burgundy" },
-  instagram_mention:  { label: "IG · Mention", icon: Camera,        klasse: "text-vintage-burgundy" },
+  instagram_comment:  { label: "IG · комментарий", icon: Camera,    klasse: "text-vintage-burgundy" },
+  instagram_mention:  { label: "IG · упоминание",  icon: Camera,    klasse: "text-vintage-burgundy" },
   telegram:           { label: "Telegram",     icon: Send,          klasse: "text-vintage-sage" },
   whatsapp:           { label: "WhatsApp",     icon: MessageCircle, klasse: "text-vintage-sage" },
-  mail:               { label: "Mail",         icon: Mail,          klasse: "text-vintage-brown" },
-  manuell:            { label: "Manuell",      icon: UserIcon,      klasse: "text-vintage-dust" },
+  mail:               { label: "Почта",        icon: Mail,          klasse: "text-vintage-brown" },
+  manuell:            { label: "Вручную",      icon: UserIcon,      klasse: "text-vintage-dust" },
 };
 
 const STATUS_META: Record<LeadStatus, { label: string; klasse: string }> = {
-  neu:           { label: "Neu",           klasse: "bg-vintage-gold/10 text-vintage-gold border-vintage-gold/40" },
-  gelesen:       { label: "Gelesen",       klasse: "bg-vintage-parchment text-vintage-brown border-vintage-sand" },
-  in_arbeit:     { label: "In Arbeit",     klasse: "bg-vintage-copper/10 text-vintage-copper border-vintage-copper/40" },
-  beantwortet:   { label: "Beantwortet",   klasse: "bg-vintage-sage/10 text-vintage-forest border-vintage-sage/40" },
-  qualifiziert:  { label: "Qualifiziert",  klasse: "bg-vintage-sage/10 text-vintage-forest border-vintage-sage/40" },
-  verloren:      { label: "Verloren",      klasse: "bg-vintage-burgundy/10 text-vintage-burgundy border-vintage-burgundy/40" },
-  archiviert:    { label: "Archiviert",    klasse: "bg-vintage-dust/10 text-vintage-dust border-vintage-dust/40" },
+  neu:           { label: "Новый",          klasse: "bg-vintage-gold/10 text-vintage-gold border-vintage-gold/40" },
+  gelesen:       { label: "Прочитан",       klasse: "bg-vintage-parchment text-vintage-brown border-vintage-sand" },
+  in_arbeit:     { label: "В работе",       klasse: "bg-vintage-copper/10 text-vintage-copper border-vintage-copper/40" },
+  beantwortet:   { label: "Отвечен",        klasse: "bg-vintage-sage/10 text-vintage-forest border-vintage-sage/40" },
+  qualifiziert:  { label: "Квалифицирован", klasse: "bg-vintage-sage/10 text-vintage-forest border-vintage-sage/40" },
+  verloren:      { label: "Потерян",        klasse: "bg-vintage-burgundy/10 text-vintage-burgundy border-vintage-burgundy/40" },
+  archiviert:    { label: "В архиве",       klasse: "bg-vintage-dust/10 text-vintage-dust border-vintage-dust/40" },
 };
 
 export default async function InboxPage({ searchParams }: Props) {
@@ -67,7 +67,7 @@ export default async function InboxPage({ searchParams }: Props) {
         <div>
           <p className="text-vintage-gold text-xs tracking-widest">✦</p>
           <h1 className="font-serif text-2xl text-vintage-espresso flex items-center gap-2">
-            <Inbox className="w-5 h-5 text-vintage-gold" /> Inbox
+            <Inbox className="w-5 h-5 text-vintage-gold" /> Входящие
           </h1>
           <p className="text-vintage-dust text-xs font-sans mt-0.5">
             Все входящие сообщения · форма, Instagram, Telegram
@@ -80,7 +80,7 @@ export default async function InboxPage({ searchParams }: Props) {
           }`}
           style={{ borderRadius: "var(--radius-button)" }}
         >
-          {nurMeine ? "Все Leads" : "Только мои"}
+          {nurMeine ? "Все лиды" : "Только мои"}
         </Link>
       </div>
 
@@ -154,9 +154,9 @@ export default async function InboxPage({ searchParams }: Props) {
         {daten.items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <Inbox className="w-12 h-12 text-vintage-sand mb-3" />
-            <p className="font-serif text-vintage-brown text-lg">Inbox leer</p>
+            <p className="font-serif text-vintage-brown text-lg">Входящие пусты</p>
             <p className="text-xs text-vintage-dust mt-1">
-              {suche ? `Keine Treffer für "${suche}"` : "Noch keine Anfragen"}
+              {suche ? `Нет результатов для «${suche}»` : "Пока нет обращений"}
             </p>
           </div>
         ) : (
@@ -240,7 +240,7 @@ export default async function InboxPage({ searchParams }: Props) {
 
       <p className="text-xs text-vintage-dust">
         <CheckCircle2 className="w-3 h-3 inline mr-1" />
-        Instagram & Telegram werden in Session 2/3 angeschlossen — Inbox-UI ist schon bereit.
+        Instagram и Telegram будут подключены во 2/3 сессии — интерфейс входящих уже готов.
       </p>
     </div>
   );

@@ -64,7 +64,7 @@ export async function leadNotizAction(
   const session = await requireAdminSession();
   if (!session) return { ok: false, error: "Нет прав" };
   const trimmed = text.trim();
-  if (trimmed.length < 1) return { ok: false, error: "Leere Nachricht" };
+  if (trimmed.length < 1) return { ok: false, error: "Пустое сообщение" };
   await leadKommentarHinzufuegen(leadId, trimmed.slice(0, 5000), session.user.id, richtung);
   revalidatePath(`/admin/leads/${leadId}`);
   return { ok: true };
@@ -80,7 +80,7 @@ export async function leadAlsCustomerAnlegenAction(
 
   const lcEmail = email.toLowerCase().trim();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lcEmail)) {
-    return { ok: false, error: "Ungültige E-Mail" };
+    return { ok: false, error: "Некорректный e-mail" };
   }
 
   let custId: string;
@@ -98,7 +98,7 @@ export async function leadAlsCustomerAnlegenAction(
   }
   await leadKonvertierenZuCustomer(leadId, custId);
   revalidatePath(`/admin/leads/${leadId}`);
-  return { ok: true, message: "Customer verlinkt" };
+  return { ok: true, message: "Клиент привязан" };
 }
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -140,14 +140,14 @@ export async function leadZuBestellungAction(
 ): Promise<ActionResult> {
   const session = await requireAdminSession();
   if (!session) return { ok: false, error: "Нет прав" };
-  if (menge < 1 || menge > 100) return { ok: false, error: "Menge muss 1-100 sein" };
+  if (menge < 1 || menge > 100) return { ok: false, error: "Количество должно быть от 1 до 100" };
 
   const lead    = await leadById(leadId);
-  if (!lead) return { ok: false, error: "Lead nicht gefunden" };
+  if (!lead) return { ok: false, error: "Лид не найден" };
   const produkt = await produktById(produktId);
-  if (!produkt) return { ok: false, error: "Produkt nicht gefunden" };
+  if (!produkt) return { ok: false, error: "Товар не найден" };
   if (produkt.lagerbestand < menge) {
-    return { ok: false, error: `Nur ${produkt.lagerbestand} auf Lager` };
+    return { ok: false, error: `На складе только ${produkt.lagerbestand}` };
   }
 
   // Customer aufbauen — verlinkt oder per E-Mail anlegen (best-effort)
@@ -169,7 +169,7 @@ export async function leadZuBestellungAction(
       await leadKonvertierenZuCustomer(leadId, neu.id);
     }
   }
-  if (!email) return { ok: false, error: "Lead hat keine E-Mail — bitte Customer manuell anlegen" };
+  if (!email) return { ok: false, error: "У лида нет e-mail — создайте клиента вручную" };
 
   // Preis-Berechnung mit 12 % NDS
   const TAX_RATE        = 12;
@@ -206,14 +206,14 @@ export async function leadZuBestellungAction(
       billing_address:  emptyAddress,
       shipping_address: emptyAddress,
       customer_type:    "b2c",
-      kunden_notiz:     `Aus Lead erstellt: ${leadId}`,
+      kunden_notiz:     `Создано из лида: ${leadId}`,
     });
 
     // Lead aktualisieren: status=qualifiziert + Notiz mit Bestell-Ref
     await leadStatusAendern(leadId, "qualifiziert", session.user.id);
     await leadKommentarHinzufuegen(
       leadId,
-      `Bestellung GDT-${String(order.order_number).padStart(4, "0")} erstellt (${menge}× ${produkt.name})`,
+      `Создан заказ GDT-${String(order.order_number).padStart(4, "0")} (${menge}× ${produkt.name})`,
       session.user.id,
       "interne_notiz"
     );
@@ -223,6 +223,6 @@ export async function leadZuBestellungAction(
   } catch (err) {
     if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) throw err;
     console.error("[lead-to-order]", err);
-    return { ok: false, error: err instanceof Error ? err.message : "Bestell-Erstellung fehlgeschlagen" };
+    return { ok: false, error: err instanceof Error ? err.message : "Не удалось создать заказ" };
   }
 }
