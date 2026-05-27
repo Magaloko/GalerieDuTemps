@@ -219,8 +219,12 @@ export async function POST(req: NextRequest) {
       rabatt_cents:    berechnung.rabatt_cents,
       tax_total_cents: berechnung.tax_total_cents,
       total_cents:     berechnung.total_cents,
-      billing_address: { strasse: "", plz: "", ort: "", land: "DE" },
-      shipping_address: { strasse: "", plz: "", ort: "", land: "DE" },
+      // Default-Lieferland kommt aus System-Einstellungen (firma_land). KZ-Shop
+      // → 'KZ' → Vor-Ort/Vor-Ort-Anzahlung erscheinen im Method-Picker.
+      // Bei Stripe-Checkout wird das Lieferland später überschrieben durch
+      // shipping_address_collection.
+      billing_address:  { strasse: "", plz: "", ort: "", land: eigenLand },
+      shipping_address: { strasse: "", plz: "", ort: "", land: eigenLand },
       customer_type,
       reverse_charge,
       ust_id,
