@@ -7,7 +7,7 @@ import {
   affiliateSperren,
   affiliateById,
 } from "@/lib/db/affiliates";
-import { sendEmail } from "@/lib/email/brevo";
+import { sendEmail } from "@/lib/email";
 
 /** Affiliate freischalten + Mail senden */
 export async function freischaltenAction(id: string): Promise<void> {

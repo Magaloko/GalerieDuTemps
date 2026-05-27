@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { customerErstellen, customerByEmail } from "@/lib/db/customers";
 import { emailConfirmationTokenSetzen } from "@/lib/db/customer-auth";
-import { sendEmail } from "@/lib/email/brevo";
+import { sendEmail } from "@/lib/email";
 import { emailBestaetigungMail, b2bWelcomeMail } from "@/lib/email/customer-templates";
 
 const BaseSchema = z.object({

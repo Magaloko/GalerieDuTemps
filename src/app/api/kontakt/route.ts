@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
-import { sendEmail, kontaktBestaetigung } from "@/lib/email/brevo";
+import { sendEmail, kontaktBestaetigung } from "@/lib/email";
 import { rateLimitPruefen, getClientIp, tooManyRequestsResponse } from "@/lib/utils/rate-limit";
 import { getAffiliateCookie, clearAffiliateCookie, hashWithSalt } from "@/lib/affiliate/cookie";
 import { affiliateByReferralCode } from "@/lib/db/affiliates";

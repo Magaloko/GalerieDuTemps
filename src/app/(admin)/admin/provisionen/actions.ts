@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth/config";
 import { query } from "@/lib/db";
 import { provisionenStornieren } from "@/lib/db/provisionen";
-import { sendEmail } from "@/lib/email/brevo";
+import { sendEmail } from "@/lib/email";
 import { provisionStorniertMail } from "@/lib/email/affiliate-templates";
 
 /**

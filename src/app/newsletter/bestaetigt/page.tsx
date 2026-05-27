@@ -2,7 +2,7 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
 import { subscribeConfirm } from "@/lib/db/newsletter";
-import { sendEmail } from "@/lib/email/brevo";
+import { sendEmail } from "@/lib/email";
 import Link from "next/link";
 import type { Metadata } from "next";
 

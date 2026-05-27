@@ -1,5 +1,5 @@
 import { query } from "@/lib/db";
-import { sendEmail } from "@/lib/email/brevo";
+import { sendEmail } from "@/lib/email";
 import type { Lead } from "@/lib/db/leads";
 
 const THROTTLE_MIN = 15;   // max 1 Mail/15min/Admin/Event

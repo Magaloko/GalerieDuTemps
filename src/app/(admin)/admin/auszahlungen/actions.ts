@@ -7,7 +7,7 @@ import {
   auszahlungAlsBezahltMarkieren,
 } from "@/lib/db/auszahlungen";
 import { affiliateById } from "@/lib/db/affiliates";
-import { sendEmail } from "@/lib/email/brevo";
+import { sendEmail } from "@/lib/email";
 import { formatPreis } from "@/lib/utils/preis";
 
 /**

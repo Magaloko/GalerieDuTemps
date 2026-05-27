@@ -3,7 +3,7 @@ import { query } from "@/lib/db";
 import { orderStatusUpdate, orderById } from "@/lib/db/orders";
 import { orderSetPaymentStatus } from "@/lib/db/order-payment";
 import { verifyKaspiWebhook } from "@/lib/payment/kaspi";
-import { sendEmail } from "@/lib/email/brevo";
+import { sendEmail } from "@/lib/email";
 import { formatPreis } from "@/lib/utils/preis";
 
 export const dynamic = "force-dynamic";

@@ -10,7 +10,7 @@ import {
 } from "@/lib/db/affiliates";
 import { generateUniqueReferralCode } from "@/lib/affiliate/referral-code";
 import { affiliateEinstellungenLaden } from "@/lib/db/affiliate-settings";
-import { sendEmail } from "@/lib/email/brevo";
+import { sendEmail } from "@/lib/email";
 
 const RegistrierungsSchema = z.object({
   vorname:           z.string().min(2).max(100),

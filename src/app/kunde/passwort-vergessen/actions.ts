@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { passwortResetTokenSetzen, passwortResetEinloesen } from "@/lib/db/customer-auth";
 import { customerByEmail } from "@/lib/db/customers";
-import { sendEmail } from "@/lib/email/brevo";
+import { sendEmail } from "@/lib/email";
 import { passwortResetMail } from "@/lib/email/customer-templates";
 import bcrypt from "bcryptjs";
 

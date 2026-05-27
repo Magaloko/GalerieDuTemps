@@ -8,7 +8,7 @@ import {
   newsletterEmpfaengerSammeln, newsletterSendBuchen, newsletterAlsVersendetMarkieren,
   newsletterById, subscriberLoeschen,
 } from "@/lib/db/newsletter";
-import { sendEmail } from "@/lib/email/brevo";
+import { sendEmail } from "@/lib/email";
 import { renderNewsletter } from "@/lib/newsletter/render";
 import type { NewsletterBlock } from "@/types/newsletter";
 

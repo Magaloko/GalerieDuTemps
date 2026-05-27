@@ -1,4 +1,5 @@
 import { query } from "./index";
+import { cached } from "@/lib/redis/cache";
 
 export type Waehrung = "KZT" | "EUR" | "USD" | "RUB";
 export const WAEHRUNGEN: Waehrung[] = ["KZT", "EUR", "USD", "RUB"];
@@ -18,18 +19,23 @@ export interface Wechselkurs {
  * Standard-4 Währungen. So crasht das UI nie.
  */
 export async function alleWechselkurse(): Promise<Wechselkurs[]> {
-  try {
-    const r = await query<Wechselkurs>(
-      `SELECT waehrung, name, symbol, rate_to_kzt::float AS rate_to_kzt,
-              quelle, aktualisiert_am
-       FROM sebo.wechselkurse
-       ORDER BY CASE waehrung WHEN 'KZT' THEN 0 ELSE 1 END, waehrung`
-    );
-    if (r.rows.length > 0) return r.rows;
-  } catch {
-    /* fall through to fallback */
-  }
-  return FALLBACK_KURSE;
+  // 1h Cache — Wechselkurse ändern sich höchstens ein paar Mal am Tag
+  // und der DB-Query ist sehr klein (4 rows). Cache spart trotzdem ~50ms
+  // pro Page-Load bei Kalt-Connections zu Supabase.
+  return cached("wechselkurse:all", 3600, async () => {
+    try {
+      const r = await query<Wechselkurs>(
+        `SELECT waehrung, name, symbol, rate_to_kzt::float AS rate_to_kzt,
+                quelle, aktualisiert_am
+         FROM sebo.wechselkurse
+         ORDER BY CASE waehrung WHEN 'KZT' THEN 0 ELSE 1 END, waehrung`
+      );
+      if (r.rows.length > 0) return r.rows;
+    } catch {
+      /* fall through to fallback */
+    }
+    return FALLBACK_KURSE;
+  });
 }
 
 const FALLBACK_KURSE: Wechselkurs[] = [

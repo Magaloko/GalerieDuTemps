@@ -6,7 +6,7 @@ import {
   benutzerErstellen, benutzerAktualisieren, benutzerLoeschen,
   type BenutzerRolle,
 } from "@/lib/db/benutzer";
-import { sendEmail } from "@/lib/email/brevo";
+import { sendEmail } from "@/lib/email";
 
 async function sendeBenutzerEinladung(email: string, name: string, passwort: string) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://galerie.apps.dadakaev.tech";

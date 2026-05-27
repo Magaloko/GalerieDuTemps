@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth/config";
 import { b2bFreischalten, b2bAblehnen } from "@/lib/db/customer-b2b";
 import { customerById } from "@/lib/db/customers";
-import { sendEmail } from "@/lib/email/brevo";
+import { sendEmail } from "@/lib/email";
 import { b2bApprovedMail, b2bRejectMail } from "@/lib/email/customer-templates";
 
 export async function b2bFreischaltenAction(

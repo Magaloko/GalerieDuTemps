@@ -9,7 +9,7 @@ import {
 } from "@/lib/db/kontakt";
 import { query } from "@/lib/db";
 import { provisionenBerechnen } from "@/lib/affiliate/provisionsberechnung";
-import { sendEmail } from "@/lib/email/brevo";
+import { sendEmail } from "@/lib/email";
 import { neueProvisionMail } from "@/lib/email/affiliate-templates";
 import { z } from "zod";
 

@@ -4,7 +4,7 @@ import { getStripeServer, getStripeWebhookSecret } from "@/lib/stripe-server";
 import { orderByStripeSession, orderStatusUpdate, orderById } from "@/lib/db/orders";
 import { orderSetPaymentStatus } from "@/lib/db/order-payment";
 import { couponNutzungVerbuchen } from "@/lib/db/coupons";
-import { sendEmail } from "@/lib/email/brevo";
+import { sendEmail } from "@/lib/email";
 import { formatPreis } from "@/lib/utils/preis";
 
 export const dynamic = "force-dynamic";
