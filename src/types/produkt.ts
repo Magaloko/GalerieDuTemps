@@ -7,7 +7,16 @@ export type Zustand = "sehr_gut" | "gut" | "akzeptabel" | "restauriert";
 export interface Produktbild {
   id:            string;
   produkt_id:    string;
+  /** Original-URL (komprimiert). Immer gesetzt. */
   url:           string;
+  /** 400px WebP für Galerie-Grid. NULL für Legacy-Bilder (vor sql/030). */
+  url_thumb:     string | null;
+  /** 800px WebP für Produkt-Detail. NULL für Legacy-Bilder. */
+  url_medium:    string | null;
+  /** 1600px WebP für Zoom/Lightbox. NULL für Legacy-Bilder. */
+  url_large:     string | null;
+  /** Original-Format: jpeg/png/webp/avif/heif. NULL für Legacy. */
+  format:        string | null;
   alt_text:      string | null;
   sortierung:    number;
   ist_hauptbild: boolean;

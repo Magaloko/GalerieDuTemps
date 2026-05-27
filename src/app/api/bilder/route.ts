@@ -1,13 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminSession } from "@/lib/auth/config";
-import { bildSpeichern } from "@/lib/storage/upload";
+import { bildVerarbeiten } from "@/lib/storage/upload";
 import { bildEinfuegen, bilderFuerProdukt } from "@/lib/db/bilder";
 import { rateLimitPruefen, getClientIp, tooManyRequestsResponse } from "@/lib/utils/rate-limit";
 
-export const dynamic = "force-dynamic";
+export const dynamic    = "force-dynamic";
+export const maxDuration = 60;   // Sharp-Processing kann bei großen iPhone-Fotos 10-20s brauchen
 
 // ---------------------------------------------------------------------------
 // POST /api/bilder  – Bild hochladen (nur Admin)
+//
+// Pipeline:
+//   1. Validierung (Mime + Größe)
+//   2. sharp: EXIF-rotate, EXIF-strip, Compress Original
+//   3. sharp: 3 WebP-Varianten generieren (thumb 400, medium 800, large 1600)
+//   4. Alle 4 Dateien → UPLOAD_DIR
+//   5. DB-Insert mit allen URLs + Dimensionen + Format
+//
+// Response: vollständiges Produktbild-Objekt mit url + url_thumb/medium/large
 // ---------------------------------------------------------------------------
 export async function POST(req: NextRequest) {
   const session = await requireAdminSession();
@@ -27,24 +37,30 @@ export async function POST(req: NextRequest) {
     if (!file || !produktId) {
       return NextResponse.json(
         { error: "datei und produkt_id sind erforderlich" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Prüfen ob das erste Bild (→ wird Hauptbild)
-    const vorhandene = await bilderFuerProdukt(produktId);
+    const vorhandene   = await bilderFuerProdukt(produktId);
     const istHauptbild = vorhandene.length === 0;
 
-    // Datei speichern
-    const upload = await bildSpeichern(file);
+    // Volle Pipeline: Original komprimieren + 3 WebP-Varianten
+    const upload = await bildVerarbeiten(file);
 
     // In DB eintragen
     const bild = await bildEinfuegen({
       produkt_id:    produktId,
       url:           upload.url,
+      url_thumb:     upload.url_thumb,
+      url_medium:    upload.url_medium,
+      url_large:     upload.url_large,
+      format:        upload.format,
       alt_text:      altText ?? undefined,
       ist_hauptbild: istHauptbild,
       dateigroesse:  upload.dateigroesse,
+      breite:        upload.breite,
+      hoehe:         upload.hoehe,
     });
 
     return NextResponse.json(bild, { status: 201 });

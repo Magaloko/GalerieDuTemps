@@ -4,6 +4,7 @@ import {
   bildLoeschen,
   bilderSortierungAktualisieren,
   hauptbildSetzen,
+  bildAltTextUpdate,
 } from "@/lib/db/bilder";
 import { bildLoeschenVonDisk } from "@/lib/storage/upload";
 
@@ -54,6 +55,11 @@ export async function PATCH(
     // Sortierung aktualisieren (Array mit {id, sortierung})
     if (Array.isArray(body.sortierungen)) {
       await bilderSortierungAktualisieren(body.sortierungen);
+    }
+
+    // Alt-Text Inline-Edit
+    if (typeof body.alt_text === "string") {
+      await bildAltTextUpdate(id, body.alt_text);
     }
 
     return NextResponse.json({ ok: true });

@@ -13,26 +13,14 @@ interface Props {
 export function BildManager({ produktId, initialBilder }: Props) {
   const [bilder, setBilder] = useState<Produktbild[]>(initialBilder);
 
-  const handleUpload = useCallback(
-    (neu: { id: string; url: string; ist_hauptbild: boolean }) => {
-      setBilder(prev => [
-        ...prev,
-        {
-          id:            neu.id,
-          produkt_id:    produktId,
-          url:           neu.url,
-          ist_hauptbild: neu.ist_hauptbild,
-          alt_text:      null,
-          sortierung:    prev.length,
-          breite:        null,
-          hoehe:         null,
-          dateigroesse:  null,
-          erstellt_am:   new Date().toISOString(),
-        },
-      ]);
-    },
-    []
-  );
+  // Server liefert vollständiges Produktbild zurück (inkl. url_thumb/medium/large)
+  const handleUpload = useCallback((neu: Produktbild) => {
+    setBilder(prev => [
+      // Wenn neu das Hauptbild ist, alle anderen zurücksetzen
+      ...prev.map(b => neu.ist_hauptbild ? { ...b, ist_hauptbild: false } : b),
+      neu,
+    ]);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -50,10 +38,12 @@ export function BildManager({ produktId, initialBilder }: Props) {
         className="bg-vintage-white border border-vintage-sand p-6 space-y-4"
         style={{ borderRadius: "var(--radius-card)" }}
       >
-        <div className="flex items-center justify-between">
-          <h2 className="font-serif text-base text-vintage-espresso">Галерея</h2>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <h2 className="font-serif text-base text-vintage-espresso">
+            Галерея <span className="text-vintage-dust text-sm">· {bilder.length}</span>
+          </h2>
           <p className="text-xs text-vintage-dust font-sans">
-            Перетащите для сортировки · Звезда = главное изображение
+            Перетащите для сортировки · Звезда = главное · Клик по описанию для редактирования
           </p>
         </div>
         <BildGalerie initialBilder={bilder} produktId={produktId} />

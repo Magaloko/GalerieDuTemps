@@ -12,10 +12,14 @@ export async function bilderFuerProdukt(produktId: string): Promise<Produktbild[
   return result.rows;
 }
 
-/** Bild einfügen */
+/** Bild einfügen (inkl. WebP-Varianten aus der Upload-Pipeline) */
 export async function bildEinfuegen(data: {
   produkt_id:    string;
   url:           string;
+  url_thumb?:    string;
+  url_medium?:   string;
+  url_large?:    string;
+  format?:       string;
   alt_text?:     string;
   ist_hauptbild: boolean;
   dateigroesse?: number;
@@ -32,21 +36,34 @@ export async function bildEinfuegen(data: {
 
   const result = await query<Produktbild>(
     `INSERT INTO sebo.produktbilder
-       (produkt_id, url, alt_text, sortierung, ist_hauptbild, dateigroesse, breite, hoehe)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+       (produkt_id, url, url_thumb, url_medium, url_large, format,
+        alt_text, sortierung, ist_hauptbild, dateigroesse, breite, hoehe)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
      RETURNING *`,
     [
       data.produkt_id,
       data.url,
-      data.alt_text ?? null,
+      data.url_thumb  ?? null,
+      data.url_medium ?? null,
+      data.url_large  ?? null,
+      data.format     ?? null,
+      data.alt_text   ?? null,
       sortierung,
       data.ist_hauptbild,
       data.dateigroesse ?? null,
-      data.breite ?? null,
-      data.hoehe ?? null,
+      data.breite       ?? null,
+      data.hoehe        ?? null,
     ]
   );
   return result.rows[0];
+}
+
+/** Alt-Text eines Bildes aktualisieren (Inline-Edit in der Galerie) */
+export async function bildAltTextUpdate(id: string, altText: string): Promise<void> {
+  await query(
+    `UPDATE sebo.produktbilder SET alt_text = $1 WHERE id = $2`,
+    [altText.slice(0, 200), id],
+  );
 }
 
 /** Bild löschen */

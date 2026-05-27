@@ -77,6 +77,7 @@ export default async function ProduktDetailPage({ params }: Props) {
   if (produkt.hauptbild_url) {
     extraBilder.push({
       id: "haupt", produkt_id: produkt.id, url: produkt.hauptbild_url,
+      url_thumb: null, url_medium: null, url_large: null, format: null,
       alt_text: name, sortierung: -2, ist_hauptbild: true,
       breite: null, hoehe: null, dateigroesse: null, erstellt_am: produkt.erstellt_am,
     });
@@ -84,6 +85,7 @@ export default async function ProduktDetailPage({ params }: Props) {
   if (produkt.rueckbild_url) {
     extraBilder.push({
       id: "rueck", produkt_id: produkt.id, url: produkt.rueckbild_url,
+      url_thumb: null, url_medium: null, url_large: null, format: null,
       alt_text: `${name} — обратная сторона`, sortierung: -1, ist_hauptbild: false,
       breite: null, hoehe: null, dateigroesse: null, erstellt_am: produkt.erstellt_am,
     });
