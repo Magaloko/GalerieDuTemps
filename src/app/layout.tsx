@@ -157,14 +157,12 @@ export default async function RootLayout({
       lang={locale}
       className={`${playfair.variable} ${inter.variable} ${italiana.variable} ${cormorant.variable} ${jetbrains.variable} ${sourceSans.variable} h-full`}
     >
-      <head>
-        {/* Theme-Override aus DB (editierbar in /admin/einstellungen/design).
-            Wird VOR globals.css-Werten gerendert — sind aber gleicher Selector
-            (:root) und Cascade-Reihenfolge → unsere Tokens gewinnen weil
-            später deklariert. */}
-        {themeCss && <style dangerouslySetInnerHTML={{ __html: themeCss }} />}
-      </head>
       <body className="min-h-full flex flex-col antialiased">
+        {/* Theme-Override aus DB (editierbar in /admin/einstellungen/design).
+            Body-Injection statt <head>: vermeidet React-19-Hydration-Mismatch
+            in <head> (whitespace-text-node + conditional). :root-Selector
+            funktioniert von überall, Cascade-Sieg über globals.css bleibt. */}
+        {themeCss ? <style dangerouslySetInnerHTML={{ __html: themeCss }} /> : null}
         <JsonLd id="org-site" data={[orgJsonLd, siteJsonLd]} />
         <LenisProvider>{children}</LenisProvider>
       </body>
