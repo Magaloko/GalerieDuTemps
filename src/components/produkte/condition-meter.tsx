@@ -50,7 +50,23 @@ const SEGMENT_COLORS = ["#8B6F47", "#C9956B", "#B08D57", "#7A8B6F"];
 
 export function ConditionMeter({ zustand }: { zustand: Zustand }) {
   const info = ZUSTAND_INFO[zustand];
-  if (!info) return null;
+
+  // Fallback wenn DB-Wert nicht in Enum ist (DB-Typ-Drift, manueller SQL)
+  if (!info) {
+    return (
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <Award size={14} style={{ color: "var(--color-ink-mute, rgba(44,36,32,0.4))" }} />
+          <span className="font-body text-sm" style={{ color: "var(--color-ink-mute, rgba(44,36,32,0.5))" }}>
+            Состояние: {String(zustand)}
+          </span>
+        </div>
+        <p className="font-body text-[11px]" style={{ color: "var(--color-ink-mute, rgba(44,36,32,0.4))" }}>
+          Подробности уточняйте у продавца
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div>

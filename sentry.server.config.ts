@@ -26,21 +26,66 @@ Sentry.init({
 
   environment: process.env.NODE_ENV,
 
-  // PII-Scrubbing: bevor Events an Sentry gehen, sensible Daten entfernen
+  // PII-Scrubbing: bevor Events an Sentry gehen, sensible Daten entfernen.
+  // Liste basiert auf Codex-Audit + Folge-Audit (Welle-Detail-Page).
   beforeSend(event) {
-    // Request-Body kann IBAN/Email/Passwort enthalten — pauschal scrubben
-    if (event.request?.data) {
-      const data = event.request.data as Record<string, unknown>;
-      for (const key of ["password", "passwort", "iban", "kartennummer", "cvc", "telegram_chat_id"]) {
-        if (key in data) data[key] = "[Filtered]";
+    const SENSITIVE_KEYS = [
+      // Auth & Payment
+      "password", "passwort", "iban", "bic", "kartennummer", "cvc", "stripe_secret_key",
+      // PII (DSGVO + CCPA)
+      "email", "e_mail", "kontakt_email", "customer_email", "firma_email",
+      "phone", "telefon", "whatsapp_nummer", "kontakt_telefon",
+      "telegram_chat_id", "telegram_username", "instagram_handle",
+      // KZ-spezifisch
+      "iin", "bin", "kbe", "iin_snapshot", "bin_snapshot",
+      // Tokens
+      "auth_token", "session_token", "telegram_link_token", "email_confirmation_token",
+      "passwort_reset_token", "dnc_token",
+    ];
+
+    function scrubObject(obj: Record<string, unknown>): void {
+      for (const key of Object.keys(obj)) {
+        // Direct match (case-insensitive)
+        if (SENSITIVE_KEYS.includes(key.toLowerCase())) {
+          obj[key] = "[Filtered]";
+          continue;
+        }
+        // Substring match: alles was "email"/"phone"/"token" im Namen hat
+        const k = key.toLowerCase();
+        if (/(email|phone|telefon|token|password|passwort|iban|kartennummer|cvc|secret)/.test(k)) {
+          obj[key] = "[Filtered]";
+          continue;
+        }
+        // Recurse into nested objects (1 Level tief — keine Endlos-Tiefen)
+        const v = obj[key];
+        if (v && typeof v === "object" && !Array.isArray(v)) {
+          scrubObject(v as Record<string, unknown>);
+        }
       }
     }
-    // Stripe-Secret-Keys versehentlich in Logs? → strippen
+
+    // Request-Body scrubben
+    if (event.request?.data && typeof event.request.data === "object") {
+      scrubObject(event.request.data as Record<string, unknown>);
+    }
+    // Request-Headers scrubben (Cookies, Authorization)
+    if (event.request?.headers) {
+      for (const key of Object.keys(event.request.headers)) {
+        if (/(cookie|authorization|api-key|x-api|auth)/i.test(key)) {
+          event.request.headers[key] = "[Filtered]";
+        }
+      }
+    }
+    // Extra-Felder scrubben (Stripe-Keys + alles String das wie Secret aussieht)
     if (event.extra) {
       for (const k of Object.keys(event.extra)) {
         const v = event.extra[k];
-        if (typeof v === "string" && /sk_(live|test)_/.test(v)) {
-          event.extra[k] = "[Filtered Stripe Key]";
+        if (typeof v === "string") {
+          if (/sk_(live|test)_|whsec_|re_[A-Za-z0-9_-]{20,}/.test(v)) {
+            event.extra[k] = "[Filtered Secret]";
+          }
+        } else if (v && typeof v === "object" && !Array.isArray(v)) {
+          scrubObject(v as Record<string, unknown>);
         }
       }
     }

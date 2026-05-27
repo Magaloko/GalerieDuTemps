@@ -77,8 +77,12 @@ export function ImageGallery({ bilder, produktName }: Props) {
 
   return (
     <div>
-      {/* Main Slider */}
-      <div className="relative group">
+      {/* Main Slider — Aspect-Ratio Container reservierts Layout-Space
+          (verhindert CLS beim Bild-Load). Inner-Slider hat absolute Höhe. */}
+      <div
+        className="relative group w-full"
+        style={{ minHeight: "clamp(260px, 45vw, 540px)" }}
+      >
         <div
           ref={sliderRef}
           className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"

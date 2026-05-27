@@ -381,9 +381,12 @@ function IconButton({
 }
 
 function QRModal({ onClose }: { onClose: () => void }) {
-  // Client-Side QR-Code-Generation via google-chart API (kein extra dep)
-  // Alternative: 'qrcode'-Lib die wir schon haben — aber für eine inline-Anzeige reicht das simple data-URL
-  const url = typeof window !== "undefined" ? window.location.href : "";
+  // URL OHNE Query-String + Hash bauen — sonst landen utm_source, auth_token
+  // oder Affiliate-Refs (vm_ref-Cookie kann nachträglich URL-Param werden)
+  // im geteilten QR-Code (Privacy-Leak via Sharing).
+  const url = typeof window !== "undefined"
+    ? window.location.origin + window.location.pathname
+    : "";
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(url)}&color=2C2420&bgcolor=FAFAF8`;
 
   return (
