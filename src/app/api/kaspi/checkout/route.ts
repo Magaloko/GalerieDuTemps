@@ -23,7 +23,7 @@ const CheckoutSchema = z.object({
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
   const rl = rateLimitPruefen(`kaspi-checkout:${ip}`, 10, 10 * 60 * 1000);
-  if (!rl.erlaubt) return tooManyRequestsResponse(rl) as unknown as NextResponse;
+  if (!rl.erlaubt) return tooManyRequestsResponse(rl);
 
   const cfg = await getKaspiConfig();
   if (!kaspiKonfiguriert(cfg)) {

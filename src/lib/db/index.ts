@@ -52,9 +52,6 @@ function createPool(): Pool {
 
 // Lazy getter – Pool wird erst beim ersten echten Zugriff erstellt
 function getPool(): Pool {
-  if (process.env.NODE_ENV === "development") {
-    return (globalThis._pgPool ??= createPool());
-  }
   return (globalThis._pgPool ??= createPool());
 }
 

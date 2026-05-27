@@ -4,6 +4,19 @@ const nextConfig: NextConfig = {
   // Standalone-Output für Docker (minimales Production-Image)
   output: "standalone",
 
+  // Turbopack: NFT-Warnung für /api/uploads unterdrücken.
+  // Die Route nutzt process.cwd() als Dev-Fallback — in Production ist
+  // UPLOAD_DIR immer gesetzt, sodass cwd() nie erreicht wird.
+  turbopack: {
+    ignoreIssue: [
+      {
+        // Unterdrückt "Encountered unexpected file in NFT list" für den
+        // Upload-Route-Handler (filesystem-reads sind hier gewollt)
+        path: "**/api/uploads/**",
+      },
+    ],
+  },
+
   // Bilder-Domains
   images: {
     remotePatterns: [

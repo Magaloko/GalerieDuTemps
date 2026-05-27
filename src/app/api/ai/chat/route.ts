@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   // Rate-Limit: 20 Nachrichten / Minute / IP (verhindert API-Cost-Explosion)
   const ip = getClientIp(req);
   const rl = rateLimitPruefen(`ai-chat:${ip}`, 20, 60 * 1000);
-  if (!rl.erlaubt) return tooManyRequestsResponse(rl) as unknown as NextResponse;
+  if (!rl.erlaubt) return tooManyRequestsResponse(rl);
 
   let body: { verlauf?: OpenAI.Chat.Completions.ChatCompletionMessageParam[]; nachricht?: string };
 

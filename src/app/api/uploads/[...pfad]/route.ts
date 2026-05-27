@@ -26,7 +26,7 @@ export async function GET(
     return new NextResponse("Not found", { status: 404 });
   }
 
-  const uploadDir = process.env.UPLOAD_DIR ?? join(process.cwd(), "public", "uploads");
+  const uploadDir = process.env.UPLOAD_DIR ?? join(/* turbopackIgnore: true */ process.cwd(), "public", "uploads");
   const relPath   = pfad.join("/");
   const absPath   = normalize(join(uploadDir, relPath));
 
@@ -37,10 +37,10 @@ export async function GET(
   }
 
   try {
-    const info = await stat(absPath);
+    const info = await stat(/* turbopackIgnore: true */ absPath);
     if (!info.isFile()) return new NextResponse("Not found", { status: 404 });
 
-    const buffer = await readFile(absPath);
+    const buffer = await readFile(/* turbopackIgnore: true */ absPath);
     const ext    = extname(absPath).toLowerCase();
     const type   = CONTENT_TYPES[ext] ?? "application/octet-stream";
 

@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   // Rate-Limit: 100 Events / Min / IP (Spam-Schutz)
   const ip = getClientIp(req);
   const rl = rateLimitPruefen(`crm-track:${ip}`, 100, 60 * 1000);
-  if (!rl.erlaubt) return tooManyRequestsResponse(rl) as unknown as NextResponse;
+  if (!rl.erlaubt) return tooManyRequestsResponse(rl);
 
   try {
     const body   = await req.json();

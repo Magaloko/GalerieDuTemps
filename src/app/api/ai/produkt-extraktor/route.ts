@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
   // Rate-Limit: 30 Extraktionen / Stunde / Admin
   const ip = getClientIp(req);
   const rl = rateLimitPruefen(`ai-extract:${session.user.id}:${ip}`, 30, 60 * 60 * 1000);
-  if (!rl.erlaubt) return tooManyRequestsResponse(rl) as unknown as NextResponse;
+  if (!rl.erlaubt) return tooManyRequestsResponse(rl);
 
   let notizen: string;
   let preisHint: string | undefined;

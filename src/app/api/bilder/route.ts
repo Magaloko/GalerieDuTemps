@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   // Rate-Limit: 60 Uploads/Stunde/Admin
   const ip = getClientIp(req);
   const rl = rateLimitPruefen(`upload:${session.user.id}:${ip}`, 60, 60 * 60 * 1000);
-  if (!rl.erlaubt) return tooManyRequestsResponse(rl) as unknown as NextResponse;
+  if (!rl.erlaubt) return tooManyRequestsResponse(rl);
 
   try {
     const formData  = await req.formData();

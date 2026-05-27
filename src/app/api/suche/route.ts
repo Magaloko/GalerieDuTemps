@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   // Rate-Limit: 60 Suchanfragen / Minute / IP
   const ip = getClientIp(req);
   const rl = rateLimitPruefen(`suche:${ip}`, 60, 60 * 1000);
-  if (!rl.erlaubt) return tooManyRequestsResponse(rl) as unknown as NextResponse;
+  if (!rl.erlaubt) return tooManyRequestsResponse(rl);
 
   const q = req.nextUrl.searchParams.get("q")?.trim();
 

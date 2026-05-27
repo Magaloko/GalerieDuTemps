@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
   // Rate-Limit: 10 Checkouts / 10 Min / IP
   const ip = getClientIp(req);
   const rl = rateLimitPruefen(`checkout:${ip}`, 10, 10 * 60 * 1000);
-  if (!rl.erlaubt) return tooManyRequestsResponse(rl) as unknown as NextResponse;
+  if (!rl.erlaubt) return tooManyRequestsResponse(rl);
 
   let body: unknown;
   try { body = await req.json(); }

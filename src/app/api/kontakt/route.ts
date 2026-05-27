@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
   // Rate-Limit: 3 Kontakt-Anfragen / 10 Minuten / IP
   const clientIp = getClientIp(req);
   const rl = rateLimitPruefen(`kontakt:${clientIp}`, 3, 10 * 60 * 1000);
-  if (!rl.erlaubt) return tooManyRequestsResponse(rl) as unknown as NextResponse;
+  if (!rl.erlaubt) return tooManyRequestsResponse(rl);
 
   try {
     const body   = await req.json();

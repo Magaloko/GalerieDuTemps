@@ -185,5 +185,5 @@ function bestellungBestaetigungMail(order: Awaited<ReturnType<typeof orderById>>
   `.trim();
 }
 
-// Stripe verlangt rohen Request-Body — Next.js bodyParser muss aus sein
-export const config = { api: { bodyParser: false } };
+// In App Router liest req.text() / req.arrayBuffer() immer den rohen Body —
+// kein bodyParser-Flag mehr nötig (das war Pages-Router-Syntax).

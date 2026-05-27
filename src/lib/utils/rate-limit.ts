@@ -14,6 +14,7 @@
  * Empfehlung: für neue Endpoints `rateLimitAsync` nutzen.
  */
 
+import { NextResponse } from "next/server";
 import { rateLimit as redisRateLimit } from "@/lib/redis/rate-limit";
 
 // ─── In-Memory-Fallback ────────────────────────────────────────────────────
@@ -109,17 +110,14 @@ export function getClientIp(req: Request): string {
   return "unknown";
 }
 
-/** HTTP 429 Response-Helper */
-export function tooManyRequestsResponse(info: RateLimitErgebnis): Response {
+/** HTTP 429 Response-Helper — gibt NextResponse zurück, kein cast nötig */
+export function tooManyRequestsResponse(info: RateLimitErgebnis): NextResponse {
   const retryAfterSekunden = Math.ceil((info.reset - Date.now()) / 1000);
-  return new Response(
-    JSON.stringify({
-      error: `Zu viele Anfragen. Bitte in ${retryAfterSekunden}s erneut versuchen.`,
-    }),
+  return NextResponse.json(
+    { error: `Zu viele Anfragen. Bitte in ${retryAfterSekunden}s erneut versuchen.` },
     {
       status:  429,
       headers: {
-        "Content-Type":          "application/json",
         "Retry-After":           String(retryAfterSekunden),
         "X-RateLimit-Limit":     String(info.limit),
         "X-RateLimit-Remaining": "0",

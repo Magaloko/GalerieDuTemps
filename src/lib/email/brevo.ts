@@ -1,18 +1,6 @@
+import type { EmailEmpfaenger, SendEmailOptions } from "./types";
+
 const BREVO_API_URL = "https://api.brevo.com/v3";
-
-export interface EmailEmpfaenger {
-  email: string;
-  name?: string;
-}
-
-export interface SendEmailOptions {
-  to:           EmailEmpfaenger[];
-  subject:      string;
-  htmlContent:  string;
-  textContent?: string;
-  replyTo?:     EmailEmpfaenger;
-  tags?:        string[];
-}
 
 /** Sendet eine transaktionale E-Mail via Brevo HTTP API */
 export async function sendEmail(opts: SendEmailOptions): Promise<void> {
