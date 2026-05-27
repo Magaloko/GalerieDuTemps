@@ -53,19 +53,13 @@ export async function GET(
       },
     });
   } catch (err) {
-    // Detaillierte 404-Antwort hilft bei Volume-Mount-Debugging in Coolify-Logs.
-    // Code (z.B. ENOENT vs EACCES) zeigt ob Datei fehlt oder Berechtigung.
+    // Server-Log: vollständige Details für Coolify-Volume-Mount-Debugging.
+    // Public-Response: minimal — kein Pfad-/Dateiname-Leak (Recon-Schutz).
     const code = err && typeof err === "object" && "code" in err ? String((err as { code: unknown }).code) : "unknown";
     console.warn("[/api/uploads]", relPath, "→", code, "(uploadDir:", uploadDir, ")");
-    return NextResponse.json(
-      {
-        error:     "Datei nicht gefunden",
-        path:      relPath,
-        uploadDir,
-        code,
-        hint:      "Health-Check: /api/health/uploads",
-      },
-      { status: 404 },
-    );
+    return new NextResponse("Not found", {
+      status:  404,
+      headers: { "Cache-Control": "no-store" },
+    });
   }
 }

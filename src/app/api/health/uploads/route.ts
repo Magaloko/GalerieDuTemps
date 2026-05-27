@@ -1,28 +1,26 @@
 import { NextResponse } from "next/server";
 import { stat, readdir } from "fs/promises";
 import { join } from "path";
+import { requireAdminSession } from "@/lib/auth/config";
 
 export const dynamic = "force-dynamic";
 
 /* ──────────────────────────────────────────────────────────────────────────
- * /api/health/uploads
+ * /api/health/uploads — Admin-only Diagnose-Endpoint
  *
- * (NICHT unter /api/uploads/ — sonst greift der [...pfad]-Catch-all-Handler.
- *  Folder mit _-Prefix werden in Next.js zudem als private behandelt.)
+ * Zeigt: aufgelösten UPLOAD_DIR, Existenz-Check, File-Count, Sample-Files.
+ * Hauptanwendungsfall: nach Coolify-Deploy prüfen ob Persistent-Volume
+ * gemountet ist.
  *
- * Diagnose-Endpoint für Bild-Serving. Zeigt:
- *  - welcher Pfad als UPLOAD_DIR aufgelöst wird (env vs default),
- *  - ob das Verzeichnis existiert und beschreibbar ist,
- *  - wie viele Dateien drin liegen (max 5 Beispiele).
- *
- * Liest keine Datei-Inhalte. Sicher öffentlich erreichbar weil nur
- * Strukturinformation — kein Filename/Pfad-Leak von User-Daten:
- * Beispiel-Filenames sind nur die ersten 5 sortiert.
- *
- * Hauptanwendungsfall: nach einem Coolify-Deploy prüfen ob das Persistent-
- * Volume korrekt gemountet ist und Bilder noch da sind.
+ * Security: Path + Filenames sind Recon-relevant — Admin-Auth required.
+ * (Vorher public — Codex-Audit MED-1 verlangte Schutz.)
  * ────────────────────────────────────────────────────────────────────────── */
 export async function GET() {
+  const session = await requireAdminSession();
+  if (!session) {
+    return NextResponse.json({ error: "Нет прав" }, { status: 403 });
+  }
+
   const uploadDir =
     process.env.UPLOAD_DIR ??
     join(process.cwd(), "public", "uploads");

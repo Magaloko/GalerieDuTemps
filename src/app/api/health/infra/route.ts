@@ -1,22 +1,31 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { redisPing } from "@/lib/redis";
 import { query } from "@/lib/db";
+import { requireAdminSession } from "@/lib/auth/config";
 
 /**
  * GET /api/health/infra
  *
- * Diagnostic-Endpoint — testet:
- *  - Postgres-Connection (sebo.* erreichbar?)
- *  - Redis-Connection (PING)
- *  - Email-Provider-Konfiguration (welcher aktiv?)
+ * Zwei Modi:
  *
- * Nicht authentifiziert — gibt keine sensiblen Daten zurück.
- * Für Coolify-Healthchecks und Debug.
+ *   1. **Public-Healthcheck** (default, Coolify nutzt das):
+ *      Antwort: nur `{ ok: true/false }` + HTTP-Status 200/503
+ *      Keine Provider-Namen, keine Configured-Flags — kein Recon-Leak.
+ *
+ *   2. **Admin-Detailed** (mit Admin-Session-Cookie):
+ *      Antwort: voller Report mit Postgres + Redis + Email-Provider-Details
+ *      Wird von /admin/einstellungen/system konsumiert.
+ *
+ * Codex-Audit LOW-1: vorher zeigte der Public-Endpoint alle Provider-
+ * Konfigurations-Flags — nützliche Recon-Information für Angreifer.
  */
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(_req: NextRequest) {
+  const session = await requireAdminSession();
+  const isAdmin = Boolean(session);
+
   const [pg, redis] = await Promise.all([
     pgPing(),
     redisPing().catch(() => false),
@@ -30,6 +39,15 @@ export async function GET() {
 
   const allOk = pg && (redis || !process.env.REDIS_URL);
 
+  // Public-Mode: nur ok + HTTP-Status (Coolify-Healthcheck-tauglich)
+  if (!isAdmin) {
+    return NextResponse.json(
+      { ok: allOk },
+      { status: allOk ? 200 : 503 },
+    );
+  }
+
+  // Admin-Mode: voller Report (für /admin/einstellungen/system)
   return NextResponse.json(
     {
       ok: allOk,
