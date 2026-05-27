@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Input }    from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select }   from "@/components/ui/select";
@@ -42,13 +43,36 @@ export function ProduktFormular({
 }: ProduktFormularProps) {
   const [state, formAction, isPending] = useActionState(action, null);
   const [deletePending, startDelete] = useTransition();
-  const successRef = useRef<HTMLDivElement>(null);
+  const router       = useRouter();
+  const pathname     = usePathname();
+  const searchParams = useSearchParams();
 
+  // Created-Toast: nach Redirect von /produkte/neu → /produkte/[id]?created=1
+  const [createdToast, setCreatedToast] = useState(searchParams.get("created") === "1");
+
+  // ?created=1 nach 4s aus URL strippen damit Reload nicht wieder triggered
   useEffect(() => {
-    if (state?.message) {
-      successRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (!createdToast) return;
+    const t = window.setTimeout(() => {
+      setCreatedToast(false);
+      const params = new URLSearchParams(Array.from(searchParams.entries()));
+      params.delete("created");
+      const q = params.toString();
+      router.replace(q ? `${pathname}?${q}` : pathname);
+    }, 4000);
+    return () => window.clearTimeout(t);
+  }, [createdToast, pathname, router, searchParams]);
+
+  // Save-Animation: kurzer „✓ Сохранено" Flash nach erfolgreichem Save
+  // (Pulsate für 2.5s, dann zurück zum neutral state)
+  const [justSaved, setJustSaved] = useState(false);
+  useEffect(() => {
+    if (state?.message && state?.savedAt) {
+      setJustSaved(true);
+      const t = window.setTimeout(() => setJustSaved(false), 2500);
+      return () => window.clearTimeout(t);
     }
-  }, [state]);
+  }, [state?.message, state?.savedAt]);
 
   const e = (field: string) => state?.errors?.[field]?.[0];
 
@@ -60,15 +84,23 @@ export function ProduktFormular({
   return (
     <form action={formAction} className="space-y-8">
 
-      {/* ─── Feedback ─────────────────────────────────────────────── */}
-      {state?.message && (
+      {/* ─── Created-Toast (nach Erstellen) ──────────────────────── */}
+      {createdToast && (
         <div
-          ref={successRef}
-          className="flex items-center gap-3 px-5 py-4 bg-vintage-sage/10 border border-vintage-sage/30"
-          style={{ borderRadius: "var(--radius-card)" }}
+          className="flex items-center gap-3 px-5 py-4 transition-all"
+          style={{
+            background:   "rgba(127,140,90,0.12)",
+            border:       "1px solid rgba(127,140,90,0.45)",
+            borderLeft:   "4px solid #7F8C5A",
+            borderRadius: "var(--radius-card)",
+            color:        "#52663F",
+          }}
         >
-          <CheckCircle2 className="w-4 h-4 text-vintage-sage flex-shrink-0" />
-          <p className="text-sm font-sans text-vintage-forest">{state.message}</p>
+          <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+          <p className="text-sm font-sans">
+            <strong>Товар создан.</strong>{" "}
+            Загрузите фото ниже — после сохранения они станут доступны на сайте.
+          </p>
         </div>
       )}
 
@@ -484,34 +516,114 @@ export function ProduktFormular({
         />
       </section>
 
-      {/* ─── Aktionen ─────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between pt-2">
-        <div className="flex gap-3">
-          <Button
-            type="submit"
-            loading={isPending}
-            icon={<Save className="w-3.5 h-3.5" />}
-          >
-            {produkt ? "Сохранить" : "Создать товар"}
-          </Button>
-        </div>
+      {/* ─── Sticky Save-Bar ─────────────────────────────────────────
+          Bleibt am unteren Rand sichtbar während des Scrollens — Admin sieht
+          immer Save-Button + Status. Auto-Flash bei erfolgreichem Save. */}
+      <div
+        className="sticky bottom-0 z-30 -mx-6 sm:-mx-0 mt-8 px-6 sm:px-6 py-4"
+        style={{
+          background:   "rgba(253,250,245,0.96)",
+          backdropFilter: "blur(8px)",
+          borderTop:    "1px solid var(--color-line, #C9B89A)",
+          borderRadius: "var(--radius-card) var(--radius-card) 0 0",
+          boxShadow:    justSaved
+            ? "0 -2px 12px rgba(127,140,90,0.40), 0 -1px 24px rgba(127,140,90,0.20)"
+            : "0 -2px 12px rgba(15,20,48,0.08)",
+          transition:   "box-shadow 0.4s ease",
+        }}
+      >
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          {/* Status-Anzeige links */}
+          <div className="flex items-center gap-2 min-h-[28px]">
+            {justSaved ? (
+              <div
+                className="flex items-center gap-1.5 px-3 py-1 text-xs font-sans transition-all"
+                style={{
+                  background:    "#7F8C5A",
+                  color:         "#FFFFFF",
+                  borderRadius:  "var(--radius-vintage)",
+                  letterSpacing: "0.12em",
+                  animation:     "savedPulse 0.4s ease-out",
+                }}
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Сохранено
+              </div>
+            ) : isPending ? (
+              <span className="text-xs font-sans text-vintage-dust flex items-center gap-1.5">
+                <span
+                  className="w-1.5 h-1.5 rounded-full animate-pulse"
+                  style={{ background: "var(--color-coral)" }}
+                />
+                Сохраняется…
+              </span>
+            ) : state?.savedAt ? (
+              <span className="text-xs font-sans text-vintage-dust">
+                Сохранено {new Date(state.savedAt).toLocaleTimeString("ru", { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            ) : produkt ? (
+              <span className="text-xs font-sans text-vintage-dust italic">
+                Изменения не сохранены автоматически
+              </span>
+            ) : (
+              <span className="text-xs font-sans text-vintage-dust italic">
+                Заполните форму и нажмите «Создать»
+              </span>
+            )}
+          </div>
 
-        {produkt && loeschenAction && (
-          <Button
-            type="button"
-            variant="danger"
-            size="sm"
-            loading={deletePending}
-            icon={<Trash2 className="w-3 h-3" />}
-            onClick={() => {
-              if (!confirm(`Удалить "${produkt.name}"? Это действие необратимо.`)) return;
-              startDelete(async () => { await loeschenAction(); });
-            }}
-          >
-            Удалить
-          </Button>
-        )}
+          {/* Buttons rechts */}
+          <div className="flex items-center gap-3">
+            {produkt && loeschenAction && (
+              <Button
+                type="button"
+                variant="danger"
+                size="sm"
+                loading={deletePending}
+                icon={<Trash2 className="w-3 h-3" />}
+                onClick={() => {
+                  if (!confirm(`Удалить "${produkt.name}"? Это действие необратимо.`)) return;
+                  startDelete(async () => { await loeschenAction(); });
+                }}
+              >
+                Удалить
+              </Button>
+            )}
+
+            {/* Save-Button — coral statt gold für besseren Kontrast */}
+            <button
+              type="submit"
+              disabled={isPending}
+              className="inline-flex items-center justify-center gap-2 font-sans uppercase transition-all hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
+              style={{
+                background:    "var(--color-coral)",
+                color:         "#FFFFFF",
+                padding:       "10px 22px",
+                fontSize:      13,
+                letterSpacing: "0.18em",
+                fontWeight:    500,
+                borderRadius:  "var(--radius-button)",
+                boxShadow:     "0 1px 3px rgba(232,112,58,0.40)",
+              }}
+            >
+              {isPending ? (
+                <span className="inline-block w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Save className="w-3.5 h-3.5" />
+              )}
+              {produkt ? "Сохранить" : "Создать товар"}
+            </button>
+          </div>
+        </div>
       </div>
+
+      <style jsx>{`
+        @keyframes savedPulse {
+          0%   { transform: scale(0.92); opacity: 0; }
+          60%  { transform: scale(1.04); opacity: 1; }
+          100% { transform: scale(1);    opacity: 1; }
+        }
+      `}</style>
     </form>
   );
 }

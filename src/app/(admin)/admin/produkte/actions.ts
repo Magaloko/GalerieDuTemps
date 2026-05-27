@@ -7,8 +7,10 @@ import { produktErstellen, produktAktualisieren, produktLoeschen, produktById } 
 import { ProduktCreateSchema } from "@/lib/utils/validierung";
 
 export type FormState = {
-  errors?: Record<string, string[]>;
+  errors?:  Record<string, string[]>;
   message?: string;
+  /** ISO-Zeitstempel der erfolgreichen Speicherung (für Sticky-Save-Bar) */
+  savedAt?: string;
 } | null;
 
 // ---------------------------------------------------------------------------
@@ -121,7 +123,8 @@ export async function produktErstellenAction(
   const produkt = await produktErstellen(parsed.data, session.user.id);
   // Direkt zur Edit-Page weiterleiten — dort ist die Bilder-Galerie inline
   // sichtbar, sodass der Admin nahtlos weitermachen kann (Bilder hochladen).
-  redirect(`/admin/produkte/${produkt.id}`);
+  // ?created=1 → Edit-Page zeigt 1x „Создано"-Toast.
+  redirect(`/admin/produkte/${produkt.id}?created=1`);
 }
 
 // ---------------------------------------------------------------------------
@@ -141,7 +144,7 @@ export async function produktAktualisierenAction(
   }
 
   await produktAktualisieren(id, parsed.data);
-  return { message: "Produkt erfolgreich gespeichert." };
+  return { message: "Сохранено", savedAt: new Date().toISOString() };
 }
 
 // ---------------------------------------------------------------------------
