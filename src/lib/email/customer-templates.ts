@@ -1,5 +1,7 @@
 /** E-Mail-Шаблоны для Customer-Auth (Russian — Hauptzielgruppe KZ) */
 
+import { siteUrl } from "@/lib/site-url";
+
 function vintageEmailFrame(content: string, titel: string): string {
   return `
     <!DOCTYPE html><html lang="ru"><body style="font-family: Georgia, serif; background: #F5F0E8; margin: 0; padding: 40px 20px;">
@@ -89,7 +91,7 @@ export function b2bApprovedMail(vorname: string, couponCode?: string): string {
       <p style="margin: 8px 0 0; color: #4A2C1A; font-family: monospace; font-size: 20px; letter-spacing: 3px;">${couponCode}</p>
     </div>
     ` : ""}
-    ${ctaButton("В каталог", (process.env.NEXTAUTH_URL ?? "") + "/katalog")}
+    ${ctaButton("В каталог", siteUrl("/katalog"))}
   `, "Добро пожаловать в B2B");
 }
 

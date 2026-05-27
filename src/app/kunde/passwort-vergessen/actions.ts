@@ -5,6 +5,7 @@ import { passwortResetTokenSetzen, passwortResetEinloesen } from "@/lib/db/custo
 import { customerByEmail } from "@/lib/db/customers";
 import { sendEmail } from "@/lib/email";
 import { passwortResetMail } from "@/lib/email/customer-templates";
+import { siteUrl } from "@/lib/site-url";
 import bcrypt from "bcryptjs";
 
 export async function passwortVergessenAction(
@@ -21,7 +22,7 @@ export async function passwortVergessenAction(
   if (customer) {
     const token = await passwortResetTokenSetzen(email);
     if (token) {
-      const url = `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/kunde/passwort-neu?token=${token}`;
+      const url = siteUrl(`/kunde/passwort-neu?token=${token}`);
       sendEmail({
         to: [{ email, name: customer.vorname ?? email }],
         subject: "Passwort zurücksetzen – Galerie du Temps",

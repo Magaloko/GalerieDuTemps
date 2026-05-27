@@ -10,6 +10,7 @@ import {
 } from "@/lib/db/newsletter";
 import { sendEmail } from "@/lib/email";
 import { renderNewsletter } from "@/lib/newsletter/render";
+import { getSiteUrl } from "@/lib/site-url";
 import type { NewsletterBlock } from "@/types/newsletter";
 
 async function adminCheck() {
@@ -58,7 +59,7 @@ export async function newsletterTestAction(id: string, email: string): Promise<{
   const n = await newsletterById(id);
   if (!n) return { fehler: "Рассылка не найдена" };
 
-  const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+  const baseUrl = getSiteUrl();
   const html = renderNewsletter(n.blocks ?? [], {
     unsubscribe_url: `${baseUrl}/api/newsletter/unsubscribe?token=test`,
     basis_url:       baseUrl,
@@ -87,7 +88,7 @@ export async function newsletterVersendenAction(id: string): Promise<{ ok?: bool
   const empfaenger = await newsletterEmpfaengerSammeln(n.segment_id ?? undefined);
   if (empfaenger.length === 0) return { fehler: "Нет получателей" };
 
-  const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+  const baseUrl = getSiteUrl();
 
   // Pro Empfänger: rendern (mit individuellem Unsubscribe-Link) + senden + buchen
   let erfolgreich = 0;

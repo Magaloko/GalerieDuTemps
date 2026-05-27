@@ -4,6 +4,7 @@ import { query } from "@/lib/db";
 import { orderById } from "@/lib/db/orders";
 import { orderSetPaymentMethod } from "@/lib/db/order-payment";
 import { getStripeServer, stripeKonfiguriert } from "@/lib/stripe-server";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +67,7 @@ export async function POST(req: NextRequest) {
   }
 
   const stripe = getStripeServer();
-  const baseUrl = process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const baseUrl = getSiteUrl();
 
   try {
     const stripeSession = await stripe.checkout.sessions.create({

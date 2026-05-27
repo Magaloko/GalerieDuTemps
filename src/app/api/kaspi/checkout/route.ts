@@ -7,6 +7,7 @@ import { customerById } from "@/lib/db/customers";
 import { erstellePaymentLink, kaspiKonfiguriert, getKaspiConfig } from "@/lib/payment/kaspi";
 import { berechneCart } from "@/lib/cart";
 import { rateLimitPruefen, getClientIp, tooManyRequestsResponse } from "@/lib/utils/rate-limit";
+import { getSiteUrl } from "@/lib/site-url";
 import type { CartItem } from "@/types/commerce";
 
 export const dynamic = "force-dynamic";
@@ -126,7 +127,7 @@ export async function POST(req: NextRequest) {
       [order.id]
     );
 
-    const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+    const baseUrl = getSiteUrl();
 
     // Kaspi-Payment erstellen (KZT, ganze Tenge)
     const result = await erstellePaymentLink({

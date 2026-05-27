@@ -1,3 +1,5 @@
+import { siteUrl } from "@/lib/site-url";
+
 /**
  * Stripe-Connect Wrapper (Stub – Phase 9f Vorbereitung)
  *
@@ -57,7 +59,7 @@ export function generateConnectUrl(affiliateId: string): string | null {
   const cfg = getStripeConfig();
   if (!cfg.ready) return null;
 
-  const redirectUri = `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/api/affiliate/stripe/callback`;
+  const redirectUri = siteUrl("/api/affiliate/stripe/callback");
   const params = new URLSearchParams({
     response_type: "code",
     client_id:     cfg.connectClientId!,

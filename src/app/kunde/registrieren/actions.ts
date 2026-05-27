@@ -7,6 +7,7 @@ import { customerErstellen, customerByEmail } from "@/lib/db/customers";
 import { emailConfirmationTokenSetzen } from "@/lib/db/customer-auth";
 import { sendEmail } from "@/lib/email";
 import { emailBestaetigungMail, b2bWelcomeMail } from "@/lib/email/customer-templates";
+import { siteUrl } from "@/lib/site-url";
 
 const BaseSchema = z.object({
   vorname:  z.string().min(2).max(100),
@@ -86,7 +87,7 @@ export async function customerRegistrierenAction(
 
   // E-Mail-Bestätigungs-Mail
   const token = await emailConfirmationTokenSetzen(customer.id);
-  const url   = `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/kunde/bestaetigt?token=${token}`;
+  const url   = siteUrl(`/kunde/bestaetigt?token=${token}`);
   sendEmail({
     to: [{ email: customer.email, name: `${customer.vorname} ${customer.nachname}` }],
     subject: "Подтвердите ваш e-mail · Galerie du Temps",

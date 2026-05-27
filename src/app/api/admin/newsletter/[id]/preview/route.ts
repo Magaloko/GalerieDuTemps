@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { newsletterById } from "@/lib/db/newsletter";
 import { renderNewsletter } from "@/lib/newsletter/render";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export async function GET(
   const n = await newsletterById(id);
   if (!n) return new NextResponse("Not found", { status: 404 });
 
-  const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+  const baseUrl = getSiteUrl();
   const html = renderNewsletter(n.blocks ?? [], {
     unsubscribe_url: `${baseUrl}/api/newsletter/unsubscribe?token=preview`,
     basis_url:       baseUrl,

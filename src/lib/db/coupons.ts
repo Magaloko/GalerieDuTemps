@@ -1,4 +1,4 @@
-import { query } from "./index";
+import { query, withTransaction } from "./index";
 import type { Coupon, CouponValidierungsErgebnis, CustomerType } from "@/types/commerce";
 
 /** Coupon per Code */
@@ -78,7 +78,17 @@ export async function couponValidieren(opts: {
   return { ok: true, coupon, rabatt_cents };
 }
 
-/** Coupon-Nutzung verbuchen (nach erfolgreichem Checkout) */
+/**
+ * Coupon-Nutzung verbuchen (nach erfolgreichem Checkout).
+ *
+ * Race-safe: Counter-Increment + Insert laufen in EINER Transaction, und das
+ * Counter-UPDATE prüft das Limit atomar via WHERE-Clause. Wenn zwei Checkouts
+ * parallel den Coupon einlösen wollen und nur 1 Nutzung übrig ist, gewinnt
+ * exakt einer — der andere wirft einen Error (caller muss das fangen +
+ * Order in einen Manual-Review-State setzen statt blind committen).
+ *
+ * Throws: Error wenn Coupon bereits maximal genutzt (`nutzungen_max` erreicht).
+ */
 export async function couponNutzungVerbuchen(opts: {
   coupon_id:     string;
   order_id:      string;
@@ -86,17 +96,39 @@ export async function couponNutzungVerbuchen(opts: {
   customer_email: string;
   rabatt_cents:  number;
 }): Promise<void> {
-  await query(
-    `INSERT INTO sebo.coupon_nutzungen
-       (coupon_id, order_id, customer_id, customer_email, rabatt_cents)
-     VALUES ($1, $2, $3, $4, $5)`,
-    [opts.coupon_id, opts.order_id, opts.customer_id ?? null, opts.customer_email.toLowerCase(), opts.rabatt_cents]
-  );
+  await withTransaction(async (client) => {
+    // 1. Atomar incrementieren — nur wenn unter Limit. RETURNING signalisiert
+    //    Erfolg: rowCount === 1 wenn unter Limit, 0 wenn ausgeschöpft.
+    const updateRes = await client.query<{ id: string }>(
+      `UPDATE sebo.coupons
+          SET nutzungen_aktuell = nutzungen_aktuell + 1
+        WHERE id = $1
+          AND (nutzungen_max IS NULL OR nutzungen_aktuell < nutzungen_max)
+       RETURNING id`,
+      [opts.coupon_id],
+    );
 
-  await query(
-    `UPDATE sebo.coupons SET nutzungen_aktuell = nutzungen_aktuell + 1 WHERE id = $1`,
-    [opts.coupon_id]
-  );
+    if (updateRes.rowCount === 0) {
+      throw new Error(
+        `Coupon ${opts.coupon_id} bereits maximal genutzt — Race lost. ` +
+        `Order ${opts.order_id} sollte als coupon_race_lost markiert werden.`,
+      );
+    }
+
+    // 2. Nutzungs-Record schreiben (in derselben Transaction → roll-back-bar)
+    await client.query(
+      `INSERT INTO sebo.coupon_nutzungen
+         (coupon_id, order_id, customer_id, customer_email, rabatt_cents)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [
+        opts.coupon_id,
+        opts.order_id,
+        opts.customer_id ?? null,
+        opts.customer_email.toLowerCase(),
+        opts.rabatt_cents,
+      ],
+    );
+  });
 }
 
 // ---------------------------------------------------------------------------

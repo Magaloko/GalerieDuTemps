@@ -11,6 +11,7 @@ import { findeRabattTier } from "@/lib/db/customer-b2b";
 import { istReverseCharge } from "@/lib/vat";
 import { systemEinstellungenLaden } from "@/lib/db/system-einstellungen";
 import { rateLimitPruefen, getClientIp, tooManyRequestsResponse } from "@/lib/utils/rate-limit";
+import { getSiteUrl } from "@/lib/site-url";
 import type { CartItem } from "@/types/commerce";
 
 export const dynamic = "force-dynamic";
@@ -243,7 +244,7 @@ export async function POST(req: NextRequest) {
 
     // 6. Stripe-Checkout-Session erstellen (Legacy-Direct-Flow für Telegram-Bot etc.)
     const stripe = getStripeServer();
-    const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+    const baseUrl = getSiteUrl();
 
     const stripeSession = await stripe.checkout.sessions.create({
       mode:               "payment",

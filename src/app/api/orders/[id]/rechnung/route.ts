@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { orderById } from "@/lib/db/orders";
 import { rechnungZuOrder } from "@/lib/db/invoices";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,7 @@ export async function GET(
   const { id } = await params;
   const session = await auth();
   if (!session) {
-    return NextResponse.redirect(new URL("/kunde/anmelden", process.env.NEXTAUTH_URL ?? "http://localhost:3000"));
+    return NextResponse.redirect(new URL("/kunde/anmelden", getSiteUrl()));
   }
 
   const order = await orderById(id);
@@ -40,5 +41,5 @@ export async function GET(
   }
 
   // Redirect auf druckbare HTML-Seite
-  return NextResponse.redirect(new URL(`/rechnung/${id}`, process.env.NEXTAUTH_URL ?? "http://localhost:3000"));
+  return NextResponse.redirect(new URL(`/rechnung/${id}`, getSiteUrl()));
 }

@@ -53,15 +53,28 @@ export async function POST(req: NextRequest) {
           paid_at: new Date().toISOString(),
         });
 
-        // Coupon-Nutzung verbuchen
+        // Coupon-Nutzung verbuchen — kann race-lost throwen wenn parallel
+        // ein anderer Checkout den Coupon ausgereizt hat. In dem Fall: loggen,
+        // Order ist trotzdem bezahlt → Customer bekommt Bestellung wie üblich,
+        // nur der Coupon-Rabatt war "zu viel" → manueller Review im Admin.
         if (order.coupon_id) {
-          await couponNutzungVerbuchen({
-            coupon_id:      order.coupon_id,
-            order_id:       order.id,
-            customer_id:    order.customer_id ?? undefined,
-            customer_email: order.customer_email,
-            rabatt_cents:   order.rabatt_cents,
-          });
+          try {
+            await couponNutzungVerbuchen({
+              coupon_id:      order.coupon_id,
+              order_id:       order.id,
+              customer_id:    order.customer_id ?? undefined,
+              customer_email: order.customer_email,
+              rabatt_cents:   order.rabatt_cents,
+            });
+          } catch (err) {
+            console.error(
+              "[Stripe-Webhook] Coupon-Verbuchung fehlgeschlagen — Order bleibt paid, Coupon-Counter könnte abweichen:",
+              err,
+              `order_id=${order.id}, coupon_id=${order.coupon_id}`,
+            );
+            // NICHT re-throw — sonst retriggert Stripe den Webhook und die Bestätigungs-Mail
+            // wird mehrfach gesendet. Order ist legitim bezahlt, also durchwinken.
+          }
         }
 
         // Bestätigungs-Mail an Kunde
