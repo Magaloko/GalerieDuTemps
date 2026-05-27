@@ -9,6 +9,7 @@ import {
 import { sendMessage, answerPreCheckoutQuery } from "@/lib/telegram/client";
 import { handleCustomerCommand } from "@/lib/telegram/customer-commands";
 import { handleSuccessfulPayment } from "@/lib/telegram/payment-handler";
+import { webhookEventReserve } from "@/lib/db/webhook-events";
 import type { TelegramUpdate } from "@/lib/telegram/client";
 
 export const dynamic     = "force-dynamic";

@@ -1,6 +1,6 @@
 -- ═══════════════════════════════════════════════════════════════════════════
 -- _APPLY_FULL_BACKFILL.sql
--- Generiert: 2026-05-27T20:40:52.805Z
+-- Generiert: 2026-05-27T21:15:51.793Z
 --
 -- EINMALIG in Supabase SQL Editor ausführen (paste → Run).
 --
@@ -167,6 +167,56 @@ COMMENT ON COLUMN sebo.produkte.instagram_urls IS
   'Liste der Instagram-Permalink-URLs für dieses Produkt (Posts, Reels, TV). Reihenfolge = Anzeige-Reihenfolge.';
 
 
+-- ─── 033_webhook_events.sql ─────────────────────────────────────────────────────────
+-- ────────────────────────────────────────────────────────────────────────────
+-- 033_webhook_events.sql — Idempotenz-Ledger für externe Webhooks
+--
+-- Problem (siehe Codex-Audit HIGH-2):
+-- Stripe/Kaspi/Telegram können dasselbe Event mehrfach zustellen (Retries
+-- bei Network-Timeout, Multi-Worker-Race). Bisher basierte Idempotenz auf
+-- order.status-Checks — das ist racy: zwei parallele Handler sehen den
+-- alten Status, beide schreiben Status+Effects, doppelte E-Mails entstehen.
+--
+-- Lösung: Pro Provider + Event-ID einen Eintrag in dieser Tabelle.
+-- UNIQUE-Constraint auf (provider, event_id) verhindert Doppel-Processing
+-- atomar — INSERT ... ON CONFLICT DO NOTHING.
+--
+-- Wenn rowCount === 0 → war schon da → einfach 200 OK zurück, Effects nicht
+-- erneut auslösen.
+--
+-- Event-ID-Konvention pro Provider:
+--   stripe   → event.id (z.B. "evt_3PqRsTuVwXyZ")
+--   kaspi    → ${event.type}:${event.data.payment_id} (Kaspi schickt keinen
+--              eindeutigen event-Wrapper, Kombination payment_id+type ist
+--              die natürliche Idempotenz-Achse)
+--   telegram → "payment:${successful_payment.telegram_payment_charge_id}"
+--              für payment-Updates. Andere Bot-Updates (Lead-Messages etc.)
+--              brauchen keine Idempotenz weil sie nur logging machen.
+-- ────────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS sebo.webhook_events (
+  provider      VARCHAR(40) NOT NULL,
+  event_id      VARCHAR(200) NOT NULL,
+  event_type    VARCHAR(80),
+  order_id      UUID NULL REFERENCES sebo.orders(id) ON DELETE SET NULL,
+  payload       JSONB NOT NULL DEFAULT '{}'::jsonb,
+  processed_am  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (provider, event_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_webhook_events_zeit
+  ON sebo.webhook_events(processed_am DESC);
+
+CREATE INDEX IF NOT EXISTS idx_webhook_events_order
+  ON sebo.webhook_events(order_id)
+  WHERE order_id IS NOT NULL;
+
+COMMENT ON TABLE sebo.webhook_events IS
+  'Idempotenz-Ledger für externe Webhooks. Composite-PK (provider, event_id) verhindert Doppel-Processing atomar.';
+COMMENT ON COLUMN sebo.webhook_events.event_id IS
+  'Provider-spezifische Event-ID. Stripe: evt_*. Kaspi: type:payment_id. Telegram: payment:charge_id.';
+
+
 -- ═══ Tracking-Backfill ═══════════════════════════════════════════════════
 -- Marker für ALLE Migrations-Files mit echtem SHA256 der aktuellen Datei.
 -- ON CONFLICT DO NOTHING → bestehende Einträge bleiben unverändert.
@@ -204,14 +254,15 @@ INSERT INTO sebo.schema_migrations (filename, sha256, dauer_ms) VALUES
   ('029_feature_flags.sql', 'dbd4b96c7b73fe084c37fc9430ebb9245a370195133a3b7945353ed280288f11', 0),
   ('030_bilder_varianten.sql', '31e055c96331b5ef6dc22863e8efb929abb73c8c5398fed04abb913b30b5c215', 0),
   ('031_hero_background.sql', 'dd91f59912b1fdc07fe387384f5a1be6a8fb81b23a88a5a66f09e5843cf5e9b9', 0),
-  ('032_produkt_instagram.sql', '3331199b1f30ad3b76e029f9617fd8c6cbfcba4593eca618bdc2d15444655707', 0)
+  ('032_produkt_instagram.sql', '3331199b1f30ad3b76e029f9617fd8c6cbfcba4593eca618bdc2d15444655707', 0),
+  ('033_webhook_events.sql', '4765769ba60d495bee377efc87992bdd629f57dc1153df74cc3b5382046052be', 0)
 ON CONFLICT (filename) DO NOTHING;
 
 COMMIT;
 
 -- Verifikation:
 -- SELECT COUNT(*) AS migrationen FROM sebo.schema_migrations;
---   → Sollte 33 sein.
+--   → Sollte 34 sein.
 -- SELECT * FROM sebo.feature_flags;
 -- SELECT column_name FROM information_schema.columns
 --  WHERE table_schema='sebo' AND table_name='produktbilder' ORDER BY ordinal_position;

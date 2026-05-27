@@ -10,7 +10,7 @@ import { berechneCart } from "@/lib/cart-berechnung";
 import { findeRabattTier } from "@/lib/db/customer-b2b";
 import { istReverseCharge } from "@/lib/vat";
 import { systemEinstellungenLaden } from "@/lib/db/system-einstellungen";
-import { rateLimitPruefen, getClientIp, tooManyRequestsResponse } from "@/lib/utils/rate-limit";
+import { rateLimitAsync, getClientIp, tooManyRequestsResponse } from "@/lib/utils/rate-limit";
 import { getSiteUrl } from "@/lib/site-url";
 import type { CartItem } from "@/types/commerce";
 
@@ -31,7 +31,7 @@ const CheckoutSchema = z.object({
 export async function POST(req: NextRequest) {
   // Rate-Limit: 10 Checkouts / 10 Min / IP
   const ip = getClientIp(req);
-  const rl = rateLimitPruefen(`checkout:${ip}`, 10, 10 * 60 * 1000);
+  const rl = await rateLimitAsync(`checkout:${ip}`, 10, 10 * 60 * 1000);
   if (!rl.erlaubt) return tooManyRequestsResponse(rl);
 
   let body: unknown;

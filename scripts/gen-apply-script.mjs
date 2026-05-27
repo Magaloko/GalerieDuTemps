@@ -30,6 +30,7 @@ const PENDING_APPLY = [
   "030_bilder_varianten.sql",
   "031_hero_background.sql",
   "032_produkt_instagram.sql",
+  "033_webhook_events.sql",
 ];
 
 // SHA256 pro File computen

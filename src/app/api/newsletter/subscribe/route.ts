@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { subscribePrepare } from "@/lib/db/newsletter";
 import { sendEmail } from "@/lib/email";
-import { rateLimitPruefen, getClientIp, tooManyRequestsResponse } from "@/lib/utils/rate-limit";
+import { rateLimitAsync, getClientIp, tooManyRequestsResponse } from "@/lib/utils/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,7 @@ const SubscribeSchema = z.object({
 export async function POST(req: NextRequest) {
   // Rate-Limit: 5 Anmeldungen / Stunde / IP
   const ip = getClientIp(req);
-  const rl = rateLimitPruefen(`newsletter:${ip}`, 5, 60 * 60 * 1000);
+  const rl = await rateLimitAsync(`newsletter:${ip}`, 5, 60 * 60 * 1000);
   if (!rl.erlaubt) return tooManyRequestsResponse(rl);
 
   try {

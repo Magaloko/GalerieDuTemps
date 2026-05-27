@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { sendEmail, kontaktBestaetigung } from "@/lib/email";
-import { rateLimitPruefen, getClientIp, tooManyRequestsResponse } from "@/lib/utils/rate-limit";
+import { rateLimitAsync, getClientIp, tooManyRequestsResponse } from "@/lib/utils/rate-limit";
 import { getAffiliateCookie, clearAffiliateCookie, hashWithSalt } from "@/lib/affiliate/cookie";
 import { affiliateByReferralCode } from "@/lib/db/affiliates";
 import { attributionAnlegen } from "@/lib/db/affiliate-tracking";
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
   // Rate-Limit: 3 Kontakt-Anfragen / 10 Minuten / IP
   const clientIp = getClientIp(req);
-  const rl = rateLimitPruefen(`kontakt:${clientIp}`, 3, 10 * 60 * 1000);
+  const rl = await rateLimitAsync(`kontakt:${clientIp}`, 3, 10 * 60 * 1000);
   if (!rl.erlaubt) return tooManyRequestsResponse(rl);
 
   try {

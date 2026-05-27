@@ -3,6 +3,7 @@ import { query } from "@/lib/db";
 import { orderStatusUpdate, orderById } from "@/lib/db/orders";
 import { orderSetPaymentStatus } from "@/lib/db/order-payment";
 import { verifyKaspiWebhook } from "@/lib/payment/kaspi";
+import { webhookEventReserve, webhookEventLinkOrder } from "@/lib/db/webhook-events";
 import { sendEmail } from "@/lib/email";
 import { formatPreis } from "@/lib/utils/preis";
 
@@ -31,6 +32,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
+  // Idempotenz: Kaspi schickt keinen eindeutigen event-Wrapper,
+  // (type + payment_id) ist die natürliche Achse.
+  const kaspiEventId = `${event.type}:${event.data.payment_id}`;
+  const isFresh = await webhookEventReserve("kaspi", kaspiEventId, event.type, event);
+  if (!isFresh) {
+    console.log("[Kaspi Webhook] Duplicate-Event übersprungen:", kaspiEventId);
+    return NextResponse.json({ received: true, duplicate: true });
+  }
+
   // Order via payment_id oder order_id finden.
   // WICHTIG: DB-Lookup-Fehler dürfen NICHT als „Order nicht gefunden"
   // maskiert werden — sonst antwortet die Route mit 200 OK, Kaspi retryt nie,
@@ -54,6 +64,8 @@ export async function POST(req: NextRequest) {
     console.warn("[Kaspi Webhook] Order nicht gefunden:", paymentId);
     return NextResponse.json({ ok: true });
   }
+  // Backfill order_id im Idempotenz-Ledger
+  await webhookEventLinkOrder("kaspi", kaspiEventId, orderId);
 
   switch (event.type) {
     case "payment.paid":

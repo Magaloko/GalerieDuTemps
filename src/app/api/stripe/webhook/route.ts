@@ -4,6 +4,7 @@ import { getStripeServer, getStripeWebhookSecret } from "@/lib/stripe-server";
 import { orderByStripeSession, orderStatusUpdate, orderById } from "@/lib/db/orders";
 import { orderSetPaymentStatus } from "@/lib/db/order-payment";
 import { couponNutzungVerbuchen } from "@/lib/db/coupons";
+import { webhookEventReserve, webhookEventLinkOrder } from "@/lib/db/webhook-events";
 import { sendEmail } from "@/lib/email";
 import { formatPreis } from "@/lib/utils/preis";
 
@@ -26,6 +27,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Ungültige Signatur" }, { status: 400 });
   }
 
+  // Idempotenz: doppelte Stripe-Events (z.B. via Retry) ignorieren —
+  // event.id ist global eindeutig pro Stripe-Account.
+  const isFresh = await webhookEventReserve("stripe", event.id, event.type, event);
+  if (!isFresh) {
+    console.log("[Stripe Webhook] Duplicate-Event übersprungen:", event.id);
+    return NextResponse.json({ received: true, duplicate: true });
+  }
+
   try {
     switch (event.type) {
       case "checkout.session.completed": {
@@ -35,6 +44,8 @@ export async function POST(req: NextRequest) {
           console.warn("[Webhook] Order nicht gefunden für Session:", session.id);
           break;
         }
+        // Backfill order_id im Ledger (für Audits)
+        await webhookEventLinkOrder("stripe", event.id, order.id);
         if (order.status === "paid" && order.payment_status === "paid") {
           break;
         }
