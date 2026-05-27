@@ -54,22 +54,26 @@ export function HeroReveal({
     entryTl.to(stackContainer, { opacity: 1, duration: 0.8, ease: 'power2.out' });
     entryTl.to(textOverlay, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '-=0.4');
 
-    // Scroll-driven timeline
+    // Scroll-driven timeline.
+    // Pin-Distanz von 150% → 70% reduziert: vorher war ein gutes Viertel des
+    // Pins "Tot-Zone" (Animation seit 70%-Mark fertig, User scrollt ins Leere).
+    // Bei 70% endet der Pin sobald die Animation visuell durch ist.
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: hero,
         start: 'top top',
-        end: '+=150%',
+        end: '+=70%',
         pin: true,
-        scrub: true,
+        scrub: 0.6,           // Etwas Smoothing — wirkt weniger ruckelig auf Mobile
       },
     });
 
-    // PHASE 1: Layer spread (0% - 70%)
+    // PHASE 1: Layer spread (0 - 0.6) — Bilder spreizen sich auf
     tl.from(
       stackItems,
       {
         ease: 'power1.inOut',
+        duration: 0.6,
         stagger: { each: staggerAmount / 100, from: 'end' },
         y: (i: number) => (i < stackItems.length / 2 ? staggerAmount * 1.5 : -staggerAmount),
         rotation: 0,
@@ -78,11 +82,11 @@ export function HeroReveal({
       0
     );
 
-    // Text overlay fade during spread
+    // Text overlay fade während des Spreads
     tl.from(
       textOverlay,
       {
-        duration: 1,
+        duration: 0.6,
         ease: 'power3',
         yPercent: -5,
         opacity: 1,
@@ -90,15 +94,25 @@ export function HeroReveal({
       0
     );
 
-    // PHASE 3: Fade out (85% - 100%)
-    tl.from(
+    // PHASE 2: Fade-Out direkt anschließend (0.6 - 1.0) — nahtlos in die nächste Sektion
+    tl.to(
       stackContainer,
       {
-        duration: 1,
+        duration: 0.4,
         ease: 'power3.inOut',
-        opacity: 1,
+        opacity: 0,
+        scale: 0.95,
       },
-      0.7
+      0.6
+    );
+    tl.to(
+      textOverlay,
+      {
+        duration: 0.4,
+        ease: 'power3.inOut',
+        opacity: 0,
+      },
+      0.6
     );
 
     // Hover effect
