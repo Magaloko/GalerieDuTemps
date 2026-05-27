@@ -4,6 +4,19 @@
 
 export type CustomerType  = "b2c" | "b2b_pending" | "b2b_verified" | "b2b_rejected";
 export type OrderStatus   = "pending" | "paid" | "fulfilled" | "completed" | "cancelled" | "refunded";
+
+export type PaymentMethod =
+  | "stripe_card"
+  | "stripe_sepa"
+  | "paypal"
+  | "crypto_nowpayments"
+  | "bank_transfer"
+  | "vor_ort"
+  | "vor_ort_anzahlung"
+  | "telegram_payments"
+  | "kaspi";
+
+export type PaymentStatus = "unpaid" | "pending" | "partial" | "paid" | "refunded" | "failed";
 export type CouponTyp     = "prozent" | "fest";
 export type B2cMode       = "visible" | "teaser" | "hidden";
 
@@ -106,7 +119,14 @@ export interface Order {
   // KZ-Snapshots (sql/009)
   iin_snapshot?:       string | null;
   bin_snapshot?:       string | null;
-  payment_method?:     "stripe" | "kaspi" | "sepa" | "manual" | null;
+  // Multi-Provider Payment (sql/025)
+  payment_method?:     PaymentMethod | null;
+  payment_status?:     PaymentStatus;
+  payment_meta?:       Record<string, unknown>;
+  payment_reference?:  string | null;
+  anzahlung_cents?:    number | null;
+  anzahlung_bezahlt_am?: string | null;
+  // Provider-spezifisch
   kaspi_payment_id?:   string | null;
   kaspi_qr_url?:       string | null;
   stripe_session_id:   string | null;
