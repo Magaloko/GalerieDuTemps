@@ -17,7 +17,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          # Node 22 = gleiche Version wie Dockerfile-Runner (node:22-alpine).
+          # Lokal + CI + Production dann konsistent.
+          node-version: "22"
           cache: "npm"
 
       - name: Install dependencies

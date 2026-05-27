@@ -1,0 +1,71 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Vitest (Unit + DB-Integration)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # Postgres als Service-Container — startet automatisch, port-forwarded
+    # zu localhost:5432, wartet auf pg_isready bevor steps anlaufen.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: test
+          POSTGRES_USER:     postgres
+          POSTGRES_DB:       galerie_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      TEST_DATABASE_URL: postgresql://postgres:test@localhost:5432/galerie_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify Postgres ready
+        run: |
+          for i in 1 2 3 4 5; do
+            pg_isready -h localhost -p 5432 -U postgres && break
+            echo "Postgres not ready yet (attempt $i), waiting 2s ..."
+            sleep 2
+          done
+
+      - name: Run tests (Unit + DB-Integration)
+        run: npm test
+        # TEST_DATABASE_URL kommt aus env oben → DB-Tests laufen automatisch.
+        # Wenn Postgres-Container nicht hochkommt: Tests skippen mit
+        # Connection-Error sichtbar im Log (nicht silent skip).
+
+      - name: Generate coverage report
+        run: npm run test:coverage
+        if: always()  # Coverage auch bei Test-Fail erzeugen (Diagnose)
+
+      - name: Upload coverage as artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name:           coverage-report
+          path:           coverage/
+          retention-days: 14

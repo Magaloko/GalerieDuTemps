@@ -1,5 +1,8 @@
 # Tests · Galerie du Temps
 
+[![Test](https://github.com/Magaloko/GalerieDuTemps/actions/workflows/test.yml/badge.svg)](https://github.com/Magaloko/GalerieDuTemps/actions/workflows/test.yml)
+[![Build](https://github.com/Magaloko/GalerieDuTemps/actions/workflows/build.yml/badge.svg)](https://github.com/Magaloko/GalerieDuTemps/actions/workflows/build.yml)
+
 Setup: **Vitest 4** + V8-Coverage. Pure Node-Runner (kein jsdom), nur
 Pure-Functions in `src/lib/` werden getestet.
 
@@ -128,12 +131,46 @@ Production-DB testet.
 - `__setPoolForTesting()` in `src/lib/db/index.ts` wirft `Error` wenn
   `NODE_ENV === "production"`
 
+## CI · GitHub Actions
+
+Zwei Workflows triggern automatisch bei Push zu `main` und bei Pull-Requests:
+
+| Workflow | Datei | Was läuft |
+|---|---|---|
+| **Test** | `.github/workflows/test.yml` | Vitest gegen Postgres-16-Service-Container, **alle 124 Tests** (100 pure + 24 DB-Integration). Coverage-Report als Artifact (14 Tage Retention). |
+| **Build** | `.github/workflows/build.yml` | TypeScript `tsc --noEmit` + `next build`. Verifiziert dass Production-Bundle kompiliert. |
+
+### Postgres-Service im Test-Workflow
+
+```yaml
+services:
+  postgres:
+    image: postgres:16-alpine
+    env:
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB:       galerie_test
+    ports: ["5432:5432"]
+    options: --health-cmd pg_isready --health-interval 5s
+```
+
+`TEST_DATABASE_URL=postgresql://postgres:test@localhost:5432/galerie_test`
+ist als Job-ENV gesetzt → DB-Integration-Tests greifen automatisch.
+
+### Coverage-Artifact herunterladen
+
+GitHub → Actions → Test-Workflow-Run → unten **Artifacts** → `coverage-report`
+→ `index.html` lokal öffnen.
+
+### Status-Badge
+
+Badges oben in TESTS.md zeigen den letzten Test/Build-Status auf `main`.
+Bei rotem Badge → CI hat Test-Failure oder Build-Error.
+
 ## Roadmap für weitere Test-Wellen
 
 1. **API-Routes-Tests** mit Auth-Mock + Request-Helper
 2. **React-Component-Tests** mit jsdom + @testing-library
 3. **E2E** mit Playwright (Cart→Order→Payment durchspielen)
-4. **CI-Integration** mit Test-Postgres im GitHub-Actions-Service-Container
 
 ## Coverage-Schwellen
 
