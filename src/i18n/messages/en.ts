@@ -4,6 +4,7 @@ export const en = {
     katalog: "Catalog", kategorien: "Categories", about: "About", journal: "Journal",
     kontakt: "Contact", konto: "My Account", warenkorb: "Cart", wunschliste: "Wishlist",
     suche: "Search", suche_placeholder: "Search vintage pieces …",
+    assistent: "Assistant",
     anmelden: "Sign in", registrieren: "Sign up", abmelden: "Sign out",
     menu: "Menu", sprache: "Change language",
   },

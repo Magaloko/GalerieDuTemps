@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import {
   MessageCircle,
   X,
@@ -25,6 +26,11 @@ export function ChatWidget() {
   const { nachrichten, isLoading, fehler, senden, zuruecksetzen } = useChat();
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLInputElement>(null);
+  const pathname  = usePathname();
+
+  // Auf der dedizierten Assistant-Page nicht rendern — sonst Doppel-UI.
+  // (Page mountet eigenen useChat-State und Vollbild-Layout.)
+  if (pathname.startsWith("/assistent")) return null;
 
   // Auto-scroll bei neuen Nachrichten
   useEffect(() => {

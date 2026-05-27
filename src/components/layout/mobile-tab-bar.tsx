@@ -16,7 +16,10 @@ type Item = {
 /* ──────────────────────────────────────────────────────────────────────────
  * MobileTabBar — Handoff H2.
  * Persistent fixed bottom auf allen Mobile-Views. Cobalt-BG.
- * 5 Items: Главная · Каталог · Квиз · Wishlist · Аккаунт.
+ * 5 Items: Главная · Каталог · Ассистент · Wishlist · Аккаунт.
+ *   ↑ "Ассистент" ist die KI-Beratung (Hub für AI-Chat / Suche / Vintage-
+ *     Empfehlungen). Ersetzt das ehemalige Quiz an der Center-Position —
+ *     bewusst die prominenteste Stelle (Daumen-Reichweite Mittelfinger).
  * Active: coral Icon + Label + 2px Coral-Indicator über dem Icon.
  *
  * Im (public)/layout.tsx montiert. Versteckt auf md+ (lg).
@@ -27,11 +30,11 @@ export function MobileTabBar({ t }: { t: Dictionary }) {
   const { ids }     = useWunschliste();
   const wunschCount = ids.length;
 
-  // TODO i18n: nav.home, nav.quiz, nav.kunde_account in messages/* ergänzen.
+  // TODO i18n: nav.home, nav.kunde_account in messages/* ergänzen.
   const items: Item[] = [
     { href: "/",            label: "Главная",         icon: Home,     isActive: p => p === "/" },
     { href: "/katalog",     label: t.nav.katalog,     icon: Search,   isActive: p => p.startsWith("/katalog") || p.startsWith("/kategorien") },
-    { href: "/quiz",        label: "Квиз",            icon: Sparkles, isActive: p => p.startsWith("/quiz") },
+    { href: "/assistent",   label: t.nav.assistent,   icon: Sparkles, isActive: p => p.startsWith("/assistent") },
     { href: "/wunschliste", label: t.nav.wunschliste, icon: Heart,    isActive: p => p.startsWith("/wunschliste") },
     { href: "/kunde",       label: "Аккаунт",         icon: User,     isActive: p => p.startsWith("/kunde") },
   ];

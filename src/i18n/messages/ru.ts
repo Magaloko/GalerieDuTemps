@@ -12,6 +12,7 @@ export const ru = {
     wunschliste:  "Избранное",
     suche:        "Поиск",
     suche_placeholder: "Искать винтажные вещи …",
+    assistent:    "Ассистент",
     anmelden:     "Войти",
     registrieren: "Регистрация",
     abmelden:     "Выйти",

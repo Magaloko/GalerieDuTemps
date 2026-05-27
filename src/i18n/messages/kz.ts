@@ -11,6 +11,7 @@ export const kz = {
     wunschliste:  "Таңдаулылар",
     suche:        "Іздеу",
     suche_placeholder: "Винтаж заттарды іздеу …",
+    assistent:    "Ассистент",
     anmelden:     "Кіру",
     registrieren: "Тіркелу",
     abmelden:     "Шығу",
