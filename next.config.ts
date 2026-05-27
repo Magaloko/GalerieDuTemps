@@ -20,10 +20,14 @@ const nextConfig: NextConfig = {
     ],
     // Bildformate optimieren
     formats: ["image/avif", "image/webp"],
-    // Lokale Uploads direkt servieren
+    // Lokale Uploads + statische Brand-Bilder unter /images/* (Hero-Stack, Journal)
     localPatterns: [
       {
         pathname: "/uploads/**",
+        search:   "",
+      },
+      {
+        pathname: "/images/**",
         search:   "",
       },
     ],

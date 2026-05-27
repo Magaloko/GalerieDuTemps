@@ -5,6 +5,7 @@ import {
   Italiana,
   Cormorant_Garamond,
   JetBrains_Mono,
+  Source_Sans_3,
 } from "next/font/google";
 import "./globals.css";
 import { getLocale } from "@/i18n";
@@ -13,6 +14,7 @@ import { storeSchema, websiteSchema } from "@/lib/seo/schemas";
 import { systemEinstellungenLaden } from "@/lib/db/system-einstellungen";
 import { kontaktKanaeleLaden, whatsappUrl, telegramUrl, instagramUrl } from "@/lib/db/kontakt-kanaele";
 import { renderThemeCssVars, getThemeBranding } from "@/lib/db/theme";
+import { LenisProvider } from "@/components/providers/lenis-provider";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -50,6 +52,15 @@ const jetbrains = JetBrains_Mono({
   subsets:  ["latin", "cyrillic"],
   display:  "swap",
   weight:   ["400", "500"],
+});
+
+// Source Sans 3 — Body-Font für die neue Startseite-Komponenten
+// (var(--font-body) in globals.css). Cyrillic-Subset weil RU-Primärsprache.
+const sourceSans = Source_Sans_3({
+  variable: "--font-source-sans",
+  subsets:  ["latin", "cyrillic"],
+  display:  "swap",
+  weight:   ["400", "500", "600"],
 });
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXTAUTH_URL ?? "https://galeriedutemps.kz";
@@ -144,7 +155,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${playfair.variable} ${inter.variable} ${italiana.variable} ${cormorant.variable} ${jetbrains.variable} h-full`}
+      className={`${playfair.variable} ${inter.variable} ${italiana.variable} ${cormorant.variable} ${jetbrains.variable} ${sourceSans.variable} h-full`}
     >
       <head>
         {/* Theme-Override aus DB (editierbar in /admin/einstellungen/design).
@@ -155,7 +166,7 @@ export default async function RootLayout({
       </head>
       <body className="min-h-full flex flex-col antialiased">
         <JsonLd id="org-site" data={[orgJsonLd, siteJsonLd]} />
-        {children}
+        <LenisProvider>{children}</LenisProvider>
       </body>
     </html>
   );

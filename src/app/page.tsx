@@ -1,363 +1,93 @@
-import Link from "next/link";
-import Image from "next/image";
-import { featuredProdukte } from "@/lib/db/produkte-public";
-import { alleKategorien } from "@/lib/db/kategorien";
-import { ProduktGrid } from "@/components/produkte/produkt-grid";
+import type { Metadata } from "next";
+
+import { HeroReveal } from "@/components/home/hero-reveal";
+import { ManifestoSection } from "@/components/home/manifesto-section";
+import { FeaturedCollection } from "@/components/home/featured-collection";
+import { CuratedEditions } from "@/components/home/curated-editions";
+import { TestimonialSection } from "@/components/home/testimonial-section";
+import { CTABanner } from "@/components/home/cta-banner";
+
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
-import { ChatWidget } from "@/components/ai/chat-widget";
 import { CookieBanner } from "@/components/cookie-banner";
-import { ProductPlaceholder } from "@/components/brand/product-placeholder";
-import { ArrowRight, Sparkles } from "lucide-react";
-import type { Metadata } from "next";
+import { ChatWidget } from "@/components/ai/chat-widget";
+
+import { featuredProdukte } from "@/lib/db/produkte-public";
 import { getDictionary } from "@/i18n";
 import { formatPreis } from "@/lib/utils/preis";
-import { getMarketingStrings } from "@/lib/db/marketing-strings";
 
 export const metadata: Metadata = {
   title:       "Galerie du Temps — Винтажные сокровища с историей",
-  description: "Эксклюзивная коллекция винтажных вещей. Алматы, Казахстан.",
+  description: "Кураторская подборка винтажных вещей. Алматы, Казахстан.",
 };
 
 export const revalidate = 3600;
 
+const heroImages = [
+  "/images/hero-stack-1.jpg",
+  "/images/hero-stack-2.jpg",
+  "/images/hero-stack-3.jpg",
+  "/images/hero-stack-4.jpg",
+  "/images/hero-stack-5.jpg",
+];
+
 /* ──────────────────────────────────────────────────────────────────────────
- * Home — Handoff A1 Editorial Hero (Cobalt).
+ * Home — Editorial v2 (Lenis-Smooth + GSAP-ScrollTrigger).
  *
- * Aufbau:
- *  1. Hero: 2-col grid (1fr 1fr), links Display-XL H1 + 2 CTAs, rechts
- *     full-bleed Product-Image mit Floating Spec-Card.
- *  2. Ticker: 3-up status line in uppercase 11/0.2em.
- *  3. Featured (paper): Highlights-Grid.
- *  4. Story-Teaser (cobalt): tagline + CTA.
+ *   HeroReveal       → pinned, scroll-driven image-stack
+ *   Manifesto        → 2-col, scroll-fade-in
+ *   FeaturedCollection → hero + 3-up grid (live DB-Produkte)
+ *   CuratedEditions  → cobalt block, journal teasers
+ *   TestimonialSection
+ *   CTABanner
+ *
+ * SiteHeader/Footer/MobileTabBar bleiben wie überall im Projekt.
+ * Wenn featuredProdukte() leer/fehler liefert, fallen Hero-Stack-Bilder als
+ * Platzhalter im FeaturedCollection ein — kein Crash.
  * ────────────────────────────────────────────────────────────────────────── */
 export default async function HomePage() {
-  const [produkte, kategorien, dict] = await Promise.all([
+  const [produkte, dict] = await Promise.all([
     featuredProdukte(8).catch(() => []),
-    alleKategorien().catch(() => []),
     getDictionary(),
   ]);
-  const { t, locale } = dict;
+  const { t } = dict;
 
-  // Editierbare Marketing-Strings (siehe Admin → Einstellungen → Marketing-Texte).
-  // Bei DB-Ausfall greifen leere Strings → die `||`-Fallbacks unten bringen
-  // die Original-Hardcoded-Werte zurück, damit die Page nie kaputt aussieht.
-  const ms = await getMarketingStrings([
-    "home.hero.eyebrow",
-    "home.hero.h1_oben",
-    "home.hero.h1_unten",
-    "home.hero.subhead",
-    "home.hero.cta_primary",
-    "home.hero.cta_secondary",
-    "home.ticker.links",
-    "home.ticker.mitte",
-    "home.ticker.rechts",
-  ], locale).catch(() => ({} as Record<string, string>));
-
-  const heroLot = produkte[0];
-  const heroLotName = heroLot?.name;
-  const heroLotPreis = heroLot
-    ? formatPreis(heroLot.preis, (heroLot.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT")
-    : "";
+  // Mapping DB-Produkt → FeaturedCollection-Props. Falls Produkt kein
+  // Hauptbild hat, nehmen wir ein Hero-Stack-Bild als Fallback damit das
+  // Grid nicht mit broken images aussieht.
+  const featuredProducts = produkte.map((p, i) => ({
+    id:       String(p.id),
+    name:     p.name,
+    price:    formatPreis(p.preis, (p.waehrung as "KZT" | "EUR" | "USD" | "RUB" | undefined) ?? "KZT"),
+    image:    p.hauptbild_url ?? heroImages[i % heroImages.length],
+    slug:     p.slug,
+    category: p.kategorie_name ?? undefined,
+  }));
 
   return (
     <div className="flex flex-col min-h-screen" style={{ background: "var(--color-paper)" }}>
       <SiteHeader />
       <main className="flex-1 pb-24 md:pb-0">
+        <HeroReveal
+          images={heroImages}
+          kicker="Кураторский винтаж с 2015"
+          title="Редкие вещи"
+          titleAccent="с историей."
+          subtitle="Кураторская подборка винтажа — мебель, керамика, графика, текстиль. Каждый предмет проходит атрибуцию и реставрацию."
+        />
 
-        {/* ─── HERO A1 (Cobalt) ──────────────────────────────────────── */}
-        <section
-          className="relative overflow-hidden"
-          style={{ background: "var(--color-cobalt)", color: "var(--color-vintage-white)" }}
-        >
-          <div className="max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-2 min-h-[600px] md:min-h-[640px]">
+        <ManifestoSection />
 
-            {/* Left column */}
-            <div className="px-6 sm:px-10 md:px-14 py-12 md:py-16 flex flex-col justify-center">
-              {/* Eyebrow / tagline */}
-              <p
-                className="text-[11px] uppercase font-medium mb-8 md:mb-10"
-                style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}
-              >
-                {ms["home.hero.eyebrow"] || "Rare pieces with history, elegance, and timeless charm."}
-              </p>
-
-              {/* H1 — Display-XL, italic+coral last word */}
-              <h1
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize:   "clamp(3.5rem, 10vw, 6rem)",
-                  lineHeight: 0.94,
-                  letterSpacing: "-0.01em",
-                  color: "var(--color-vintage-white)",
-                }}
-              >
-                {ms["home.hero.h1_oben"] || "Редкие вещи"}<br />
-                <em
-                  className="font-italic"
-                  style={{ color: "var(--color-coral)", fontStyle: "italic" }}
-                >
-                  {ms["home.hero.h1_unten"] || "с историей."}
-                </em>
-              </h1>
-
-              {/* Subhead */}
-              <p
-                className="mt-8 md:mt-10 max-w-md"
-                style={{
-                  fontFamily: "var(--font-italic)",
-                  fontStyle:  "italic",
-                  fontSize:   15,
-                  lineHeight: 1.7,
-                  color:      "rgba(255,255,255,0.78)",
-                }}
-              >
-                {ms["home.hero.subhead"] || "Кураторская подборка винтажа из Алматы — мебель, керамика, графика, текстиль. Каждый предмет проходит атрибуцию и реставрацию."}
-              </p>
-
-              {/* CTAs */}
-              <div className="mt-10 md:mt-12 flex flex-wrap items-center gap-4">
-                <Link href="/katalog" className="btn-coral btn-coral-lg">
-                  {ms["home.hero.cta_primary"] || "Открыть каталог"} <ArrowRight className="w-4 h-4" />
-                </Link>
-                <Link href="/quiz" className="btn-coral btn-coral-ghost-light btn-coral-lg">
-                  <Sparkles className="w-4 h-4" /> {ms["home.hero.cta_secondary"] || "Пройти квиз"}
-                </Link>
-              </div>
-            </div>
-
-            {/* Right column — Product-Bild + Floating Spec-Card */}
-            <div className="relative">
-              {heroLot?.hauptbild_url ? (
-                <Image
-                  src={heroLot.hauptbild_url}
-                  alt={heroLotName ?? "Featured Lot"}
-                  fill
-                  priority
-                  sizes="(max-width:768px) 100vw, 50vw"
-                  className="object-cover"
-                />
-              ) : (
-                <ProductPlaceholder
-                  tone="velvet"
-                  label="LOT 042"
-                  sub="VELVET CHAIR"
-                  ratio="3/4"
-                  className="absolute inset-0"
-                />
-              )}
-
-              {/* Floating Spec-Card — bottom: 60, left: -40, size 260 */}
-              {heroLot && (
-                <Link
-                  href={`/katalog/${heroLot.slug}`}
-                  className="hidden md:block absolute"
-                  style={{
-                    bottom: 60,
-                    left:   -40,
-                    width:  260,
-                    background: "var(--color-paper)",
-                    padding:    "20px 22px",
-                    boxShadow:  "var(--shadow-lift)",
-                  }}
-                >
-                  <p
-                    className="text-[10px] uppercase font-medium mb-2"
-                    style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}
-                  >
-                    Лот {String(heroLot.id).padStart(3, "0")}
-                  </p>
-                  <h3
-                    className="line-clamp-2"
-                    style={{
-                      fontFamily: "var(--font-italic)",
-                      fontStyle:  "italic",
-                      fontSize:   24,
-                      lineHeight: 1.1,
-                      color:      "var(--color-ink)",
-                    }}
-                  >
-                    {heroLotName}
-                  </h3>
-                  <p
-                    className="mt-3 text-right"
-                    style={{
-                      fontFamily: "var(--font-display)",
-                      fontSize:   22,
-                      color:      "var(--color-coral)",
-                      lineHeight: 1,
-                    }}
-                  >
-                    {heroLotPreis}
-                  </p>
-                </Link>
-              )}
-            </div>
-          </div>
-
-          {/* Ticker bar */}
-          <div
-            className="border-t"
-            style={{ borderColor: "rgba(232,112,58,0.2)" }}
-          >
-            <div className="max-w-[1440px] mx-auto px-6 md:px-14 py-5 grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 text-center md:text-left">
-              <p className="text-[11px] uppercase font-medium" style={{ letterSpacing: "0.22em", color: "rgba(255,255,255,0.75)" }}>
-                {/* {n}-Platzhalter → tatsächliche Produktanzahl */}
-                {(ms["home.ticker.links"] || "◆ На складе · {n} предметов").replace("{n}", String(produkte.length > 0 ? produkte.length * 40 : 342))}
-              </p>
-              <p className="text-[11px] uppercase font-medium md:text-center" style={{ letterSpacing: "0.22em", color: "var(--color-coral)" }}>
-                {ms["home.ticker.mitte"] || "Новые поступления каждую среду"}
-              </p>
-              <p className="text-[11px] uppercase font-medium md:text-right" style={{ letterSpacing: "0.22em", color: "rgba(255,255,255,0.75)" }}>
-                {ms["home.ticker.rechts"] || "Доставка по СНГ ↗"}
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* ─── Featured (Paper) ───────────────────────────────────────── */}
-        {produkte.length > 0 && (
-          <section
-            className="px-5 md:px-14 py-16 md:py-24"
-            style={{ background: "var(--color-paper)" }}
-          >
-            <div className="max-w-[1440px] mx-auto">
-              <header className="flex flex-wrap items-end justify-between gap-4 mb-10 md:mb-14 pb-6" style={{ borderBottom: "1px solid var(--color-line)" }}>
-                <div>
-                  <p
-                    className="text-[11px] uppercase font-medium mb-2"
-                    style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}
-                  >
-                    {t.home.highlights_eyebrow}
-                  </p>
-                  <h2
-                    style={{
-                      fontFamily: "var(--font-display)",
-                      fontSize:   "clamp(2rem, 5vw, 3rem)",
-                      lineHeight: 1,
-                      color:      "var(--color-ink)",
-                    }}
-                  >
-                    {t.home.highlights_titel}
-                  </h2>
-                </div>
-                <Link
-                  href="/katalog"
-                  className="text-[11px] uppercase font-medium inline-flex items-center gap-2 hover:opacity-80 transition-opacity"
-                  style={{ letterSpacing: "0.22em", color: "var(--color-coral)" }}
-                >
-                  {t.home.alle_ansehen} <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </header>
-              <ProduktGrid
-                produkte={produkte}
-                leerText={t.home.leer_titel}
-                leerUntertext={t.home.leer_text}
-                prioCount={4}
-              />
-            </div>
-          </section>
+        {featuredProducts.length > 0 && (
+          <FeaturedCollection products={featuredProducts} />
         )}
 
-        {/* ─── Kategorien (Bone) ──────────────────────────────────────── */}
-        {kategorien.length > 0 && (
-          <section
-            className="px-5 md:px-14 py-16 md:py-20"
-            style={{ background: "var(--color-bone)" }}
-          >
-            <div className="max-w-[1440px] mx-auto">
-              <div className="text-center mb-10">
-                <p
-                  className="text-[11px] uppercase font-medium mb-2"
-                  style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}
-                >
-                  {t.home.sortiment_eyebrow}
-                </p>
-                <h2
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    fontSize:   "clamp(2rem, 5vw, 3rem)",
-                    color:      "var(--color-ink)",
-                  }}
-                >
-                  {t.home.sortiment_titel}
-                </h2>
-              </div>
-              <div className="flex flex-wrap justify-center gap-3 max-w-4xl mx-auto">
-                {kategorien.map(k => (
-                  <Link
-                    key={k.id}
-                    href={`/kategorien/${k.slug}`}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 hover:opacity-80 transition-opacity"
-                    style={{
-                      border:     "1px solid var(--color-line)",
-                      background: "var(--color-paper)",
-                      color:      "var(--color-ink-soft)",
-                      fontFamily: "var(--font-italic)",
-                      fontStyle:  "italic",
-                      fontSize:   14,
-                    }}
-                  >
-                    {k.name}
-                    {k.anzahl !== undefined && k.anzahl > 0 && (
-                      <span style={{ color: "var(--color-ink-mute)", fontFamily: "var(--font-mono)", fontSize: 11 }}>
-                        {k.anzahl}
-                      </span>
-                    )}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
+        <CuratedEditions />
 
-        {/* ─── Story-Teaser (Cobalt) ──────────────────────────────────── */}
-        <section
-          className="px-6 md:px-14 py-16 md:py-24 text-center"
-          style={{ background: "var(--color-cobalt)", color: "var(--color-vintage-white)" }}
-        >
-          <div className="max-w-3xl mx-auto">
-            <p
-              className="text-[11px] uppercase font-medium mb-4"
-              style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}
-            >
-              {t.home.story_eyebrow}
-            </p>
-            <h2
-              style={{
-                fontFamily: "var(--font-italic)",
-                fontStyle:  "italic",
-                fontSize:   "clamp(2rem, 5vw, 3rem)",
-                color:      "var(--color-coral)",
-                lineHeight: 1.1,
-              }}
-            >
-              {t.home.story_titel}
-            </h2>
-            <p
-              className="mt-6 leading-relaxed max-w-2xl mx-auto"
-              style={{ color: "rgba(255,255,255,0.78)" }}
-            >
-              {t.home.story_text}
-            </p>
-            <Link
-              href="/about"
-              className="mt-10 inline-flex items-center gap-2 text-[11px] uppercase font-medium hover:opacity-80 transition-opacity"
-              style={{ letterSpacing: "0.22em", color: "var(--color-coral)" }}
-            >
-              {t.home.story_more} <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+        <TestimonialSection />
 
-            <p
-              className="mt-14 text-[10px] uppercase font-medium"
-              style={{ letterSpacing: "0.3em", color: "rgba(255,255,255,0.4)" }}
-            >
-              Galerie du Temps · Алматы
-            </p>
-          </div>
-        </section>
-
+        <CTABanner />
       </main>
       <SiteFooter />
       <MobileTabBar t={t} />
