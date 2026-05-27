@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   // Standalone-Output für Docker (minimales Production-Image)
@@ -85,4 +86,35 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+/* ──────────────────────────────────────────────────────────────────────────
+ * Sentry-Wrapping
+ *
+ * withSentryConfig() macht 2 Dinge:
+ *  1. Source-Maps werden bei jedem `next build` zu Sentry hochgeladen
+ *     → readable Stack-Traces im Dashboard (sonst nur minified)
+ *  2. Tunnel-Route /monitoring für Ad-Blocker-Resistenz
+ *     → Events gehen über deine Domain, nicht direkt zu sentry.io
+ *     → werden nicht von uBlock/AdGuard etc. blockiert
+ *
+ * ENV (in Coolify setzen):
+ *   NEXT_PUBLIC_SENTRY_DSN   (Build-Time + Client + Server)
+ *   SENTRY_ORG               (Build-Time, für Source-Map-Upload)
+ *   SENTRY_PROJECT           (Build-Time)
+ *   SENTRY_AUTH_TOKEN        (Build-Time, Secret — Scope: project:releases)
+ *
+ * Wenn SENTRY_AUTH_TOKEN fehlt: Sentry läuft ohne Source-Map-Upload weiter,
+ * du kriegst minified Stack-Traces.
+ * ────────────────────────────────────────────────────────────────────────── */
+export default withSentryConfig(nextConfig, {
+  org:                  process.env.SENTRY_ORG,
+  project:              process.env.SENTRY_PROJECT,
+  authToken:            process.env.SENTRY_AUTH_TOKEN,
+  // Source-Maps auch für Client-Side-Bundles
+  widenClientFileUpload: true,
+  // Tunnel-Route umgeht Ad-Blocker
+  tunnelRoute:          "/monitoring",
+  // Build-Output sauberhalten — nur in CI verbose loggen
+  silent:               !process.env.CI,
+  // Telemetrie an Sentry über Plugin-Usage selbst — kann man ausstellen
+  telemetry:            false,
+});
