@@ -131,6 +131,15 @@ export interface ProduktListItem {
   featured:        boolean;
   hauptbild_url:   string | null;
   erstellt_am:     string;
+  // Optional fields für ProduktKarte-Polish (Welle 1):
+  // - era       → KeyDetail-Tag (e.g. "1970-е")
+  // - material  → Hover-Specs (e.g. "Шёлк")
+  // - herkunft  → Hover-Specs (e.g. "Франция")
+  // - bilder_count → Image-Count-Indicator (Dots wenn > 1)
+  era?:           string | null;
+  material?:      string | null;
+  herkunft?:      string | null;
+  bilder_count?:  number | null;
 }
 
 export interface PaginierteProdukte {

@@ -38,6 +38,8 @@ async function featuredProdukteUncached(limit = 8): Promise<ProduktListItem[]> {
        k.name AS kategorie_name,
        p.zustand, p.lagerbestand, p.verkauft, p.featured, p.b2c_mode,
        p.erstellt_am,
+       p.era, p.material, p.herkunft,
+       (SELECT COUNT(*)::int FROM sebo.produktbilder pb WHERE pb.produkt_id = p.id) AS bilder_count,
        COALESCE(
          p.hauptbild_url,
          (SELECT COALESCE(pb.url_medium, pb.url)
@@ -147,6 +149,8 @@ async function katalogProdukteUncached(params: {
          k.name AS kategorie_name,
          p.zustand, p.lagerbestand, p.verkauft, p.featured, p.era, p.b2c_mode,
          p.erstellt_am,
+         p.material, p.herkunft,
+         (SELECT COUNT(*)::int FROM sebo.produktbilder pb WHERE pb.produkt_id = p.id) AS bilder_count,
          COALESCE(
            p.hauptbild_url,
            (SELECT COALESCE(pb.url_medium, pb.url)
@@ -222,6 +226,8 @@ async function aehnlicheProdukteUncached(
        p.id, p.name, p.slug, p.preis, p.originalpreis, p.waehrung,
        k.name AS kategorie_name, p.zustand, p.lagerbestand,
        p.verkauft, p.featured, p.erstellt_am,
+       p.era, p.material, p.herkunft,
+       (SELECT COUNT(*)::int FROM sebo.produktbilder pb WHERE pb.produkt_id = p.id) AS bilder_count,
        COALESCE(
          p.hauptbild_url,
          (SELECT COALESCE(pb.url_medium, pb.url)
