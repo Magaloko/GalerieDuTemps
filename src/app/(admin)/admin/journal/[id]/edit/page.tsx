@@ -5,7 +5,7 @@ import { JournalEditor } from "./journal-editor";
 import { ChevronLeft, ExternalLink } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Journal-Beitrag bearbeiten" };
+export const metadata: Metadata = { title: "Редактировать публикацию" };
 export const dynamic = "force-dynamic";
 
 export default async function JournalEditPage({
@@ -28,7 +28,7 @@ export default async function JournalEditPage({
         {post.veroeffentlicht && (
           <a href={`/journal/${post.slug}`} target="_blank"
             className="flex items-center gap-1 text-xs font-sans text-vintage-brown hover:text-vintage-espresso transition-colors">
-            Live ansehen <ExternalLink className="w-3 h-3" />
+            Открыть на сайте <ExternalLink className="w-3 h-3" />
           </a>
         )}
       </div>

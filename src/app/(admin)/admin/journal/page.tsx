@@ -17,7 +17,7 @@ export default async function JournalAdminPage() {
         <div>
           <p className="text-vintage-gold text-xs tracking-widest">✦</p>
           <h1 className="font-serif text-2xl text-vintage-espresso">Journal</h1>
-          <p className="text-vintage-dust text-xs font-sans mt-0.5">{posts.length} Beiträge</p>
+          <p className="text-vintage-dust text-xs font-sans mt-0.5">{posts.length} публикаций</p>
         </div>
       </div>
 
@@ -26,7 +26,7 @@ export default async function JournalAdminPage() {
       {posts.length === 0 ? (
         <div className="text-center py-12 bg-vintage-white border border-vintage-sand" style={{ borderRadius: "var(--radius-card)" }}>
           <BookOpen className="w-10 h-10 text-vintage-sand mx-auto mb-3" />
-          <p className="font-serif text-vintage-brown">Noch keine Beiträge</p>
+          <p className="font-serif text-vintage-brown">Публикаций пока нет</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -46,7 +46,7 @@ export default async function JournalAdminPage() {
                       <CheckCircle2 className="w-3 h-3" /> Live
                     </span>
                   ) : (
-                    <span className="px-2 py-0.5 text-xs bg-vintage-dust/10 text-vintage-dust" style={{ borderRadius: "var(--radius-vintage)" }}>Entwurf</span>
+                    <span className="px-2 py-0.5 text-xs bg-vintage-dust/10 text-vintage-dust" style={{ borderRadius: "var(--radius-vintage)" }}>Черновик</span>
                   )}
                 </div>
                 <p className="text-xs text-vintage-dust font-sans mt-0.5 font-mono">/{p.slug}</p>

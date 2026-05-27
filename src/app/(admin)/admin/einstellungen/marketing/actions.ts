@@ -20,12 +20,12 @@ export async function saveMarketingStringAction(
   const session = await auth();
   const role    = session?.user?.role;
   if (role !== "admin" && role !== "superadmin") {
-    return { ok: false, error: "Nicht autorisiert." };
+    return { ok: false, error: "Нет прав." };
   }
 
   const schluessel = (formData.get("schluessel") as string | null)?.trim();
   if (!schluessel) {
-    return { ok: false, error: "Schlüssel fehlt." };
+    return { ok: false, error: "Ключ отсутствует." };
   }
 
   const patch: MarketingI18n = {};
@@ -40,7 +40,7 @@ export async function saveMarketingStringAction(
     await upsertMarketingString(schluessel, patch);
   } catch (err) {
     console.error("[saveMarketingString]", err);
-    return { ok: false, error: err instanceof Error ? err.message : "Speichern fehlgeschlagen" };
+    return { ok: false, error: err instanceof Error ? err.message : "Не удалось сохранить" };
   }
 
   // Pages mit Marketing-Strings revalidieren — kein Warten auf 60s-Cache.

@@ -13,7 +13,7 @@ export async function einstellungenSpeichernAction(
 ): Promise<EinstellungenState> {
   const session = await auth();
   if (!session || (session.user.role !== "admin" && session.user.role !== "superadmin")) {
-    return { fehler: "Nicht berechtigt" };
+    return { fehler: "Нет прав" };
   }
 
   const patches: Partial<SystemEinstellungen> = {
@@ -47,6 +47,6 @@ export async function einstellungenSpeichernAction(
     return { ok: true };
   } catch (err) {
     console.error("[Einstellungen]", err);
-    return { fehler: "Speichern fehlgeschlagen" };
+    return { fehler: "Не удалось сохранить" };
   }
 }

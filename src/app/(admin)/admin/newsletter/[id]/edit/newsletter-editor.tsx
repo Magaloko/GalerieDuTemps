@@ -11,12 +11,12 @@ import type { Newsletter, NewsletterBlock, NewsletterBlockType } from "@/types/n
 import type { Segment } from "@/types/crm";
 
 const NEUE_BLOCKS: Record<NewsletterBlockType, NewsletterBlock> = {
-  hero:         { type: "hero",     titel: "Überschrift", subtitel: "Untertitel", cta_label: "Mehr ansehen", cta_url: "/katalog" },
-  text:         { type: "text",     html: "<p>Dein Text…</p>" },
-  produkt:      { type: "produkt",  titel: "Produkt", subtitel: "Beschreibung", produkt_slug: "" },
-  button:       { type: "button",   label: "CTA-Button", url: "/katalog" },
+  hero:         { type: "hero",     titel: "Заголовок", subtitel: "Подзаголовок", cta_label: "Смотреть подробнее", cta_url: "/katalog" },
+  text:         { type: "text",     html: "<p>Ваш текст…</p>" },
+  produkt:      { type: "produkt",  titel: "Товар", subtitel: "Описание", produkt_slug: "" },
+  button:       { type: "button",   label: "CTA-кнопка", url: "/katalog" },
   divider:      { type: "divider" },
-  two_columns:  { type: "two_columns", links_html: "<p>Links</p>", rechts_html: "<p>Rechts</p>" },
+  two_columns:  { type: "two_columns", links_html: "<p>Слева</p>", rechts_html: "<p>Справа</p>" },
   image:        { type: "image",    bild_url: "" },
 };
 
@@ -49,38 +49,38 @@ export function NewsletterEditor({
   };
 
   const handleSpeichern = () => {
-    setMeldung("Speichere…");
+    setMeldung("Сохранение…");
     startTransition(async () => {
       await newsletterUpdateAction(newsletter.id, {
         titel, betreff, preheader, blocks, segment_id: segmentId || null,
       });
-      setMeldung("Gespeichert ✓");
+      setMeldung("Сохранено ✓");
       setTimeout(() => setMeldung(""), 2000);
     });
   };
 
   const handleTest = () => {
-    if (!testEmail || !testEmail.includes("@")) { alert("E-Mail eingeben"); return; }
+    if (!testEmail || !testEmail.includes("@")) { alert("Введите e-mail"); return; }
     startTransition(async () => {
       // Erst speichern
       await newsletterUpdateAction(newsletter.id, { titel, betreff, preheader, blocks, segment_id: segmentId || null });
       const r = await newsletterTestAction(newsletter.id, testEmail);
-      alert(r.ok ? `Test-Mail an ${testEmail} gesendet` : `Fehler: ${r.fehler}`);
+      alert(r.ok ? `Тестовое письмо отправлено на ${testEmail}` : `Ошибка: ${r.fehler}`);
     });
   };
 
   const handleVersand = () => {
-    if (!confirm("Newsletter jetzt an alle Empfänger versenden? Dies kann nicht rückgängig gemacht werden.")) return;
+    if (!confirm("Отправить рассылку всем получателям сейчас? Это действие нельзя отменить.")) return;
     startTransition(async () => {
       await newsletterUpdateAction(newsletter.id, { titel, betreff, preheader, blocks, segment_id: segmentId || null });
       const r = await newsletterVersendenAction(newsletter.id);
-      if (r.ok) alert(`✓ Newsletter an ${r.anzahl} Empfänger versendet`);
-      else      alert(`Fehler: ${r.fehler}`);
+      if (r.ok) alert(`✓ Рассылка отправлена получателям: ${r.anzahl}`);
+      else      alert(`Ошибка: ${r.fehler}`);
     });
   };
 
   const handleLoeschen = () => {
-    if (!confirm("Newsletter unwiderruflich löschen?")) return;
+    if (!confirm("Удалить рассылку безвозвратно?")) return;
     startTransition(() => newsletterDeleteAction(newsletter.id));
   };
 
@@ -89,19 +89,19 @@ export function NewsletterEditor({
       {/* Linke 2/3: Editor */}
       <div className="lg:col-span-2 space-y-4">
         <section className="bg-vintage-white border border-vintage-sand p-5 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
-          <h2 className="font-serif text-lg text-vintage-espresso">Metadaten</h2>
-          <Input label="Interner Titel" value={titel} onChange={(e) => setTitel(e.target.value)} required />
-          <Input label="Betreff (E-Mail)" value={betreff} onChange={(e) => setBetreff(e.target.value)} required />
-          <Input label="Preheader (Vorschau-Text)" value={preheader} onChange={(e) => setPreheader(e.target.value)} hint="Wird in der Inbox-Vorschau angezeigt" />
+          <h2 className="font-serif text-lg text-vintage-espresso">Метаданные</h2>
+          <Input label="Внутреннее название" value={titel} onChange={(e) => setTitel(e.target.value)} required />
+          <Input label="Тема письма" value={betreff} onChange={(e) => setBetreff(e.target.value)} required />
+          <Input label="Preheader (текст предпросмотра)" value={preheader} onChange={(e) => setPreheader(e.target.value)} hint="Показывается в предпросмотре входящих" />
         </section>
 
         {/* Blocks */}
         <section className="bg-vintage-white border border-vintage-sand p-5 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
-          <h2 className="font-serif text-lg text-vintage-espresso">Inhalte ({blocks.length} Blöcke)</h2>
+          <h2 className="font-serif text-lg text-vintage-espresso">Контент ({blocks.length} блоков)</h2>
 
           {blocks.length === 0 ? (
             <p className="text-vintage-dust text-sm font-sans text-center py-6 italic">
-              Noch keine Blöcke. Füge unten welche hinzu.
+              Блоков пока нет. Добавьте блок ниже.
             </p>
           ) : blocks.map((block, i) => (
             <div key={i} className="border border-vintage-sand p-3 bg-vintage-parchment/40" style={{ borderRadius: "var(--radius-vintage)" }}>
@@ -133,10 +133,10 @@ export function NewsletterEditor({
       {/* Rechte 1/3: Aktionen */}
       <div className="space-y-4">
         <section className="bg-vintage-white border border-vintage-sand p-5 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
-          <h2 className="font-serif text-base text-vintage-espresso">Aktionen</h2>
+          <h2 className="font-serif text-base text-vintage-espresso">Действия</h2>
 
           <Button onClick={handleSpeichern} loading={pending} icon={<Save className="w-3.5 h-3.5" />} className="w-full justify-center">
-            Speichern
+            Сохранить
           </Button>
 
           {meldung && (
@@ -148,33 +148,33 @@ export function NewsletterEditor({
           <a href={`/api/admin/newsletter/${newsletter.id}/preview`} target="_blank"
             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-vintage-sand text-vintage-brown font-sans text-xs tracking-widest uppercase hover:bg-vintage-parchment transition-colors"
             style={{ borderRadius: "var(--radius-button)" }}>
-            <Eye className="w-3.5 h-3.5" /> Vorschau
+            <Eye className="w-3.5 h-3.5" /> Предпросмотр
           </a>
         </section>
 
         <section className="bg-vintage-white border border-vintage-sand p-5 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
-          <h2 className="font-serif text-base text-vintage-espresso">Test-Versand</h2>
-          <Input label="E-Mail" value={testEmail} onChange={(e) => setTestEmail(e.target.value)} placeholder="test@beispiel.de" />
+          <h2 className="font-serif text-base text-vintage-espresso">Тестовая отправка</h2>
+          <Input label="E-mail" value={testEmail} onChange={(e) => setTestEmail(e.target.value)} placeholder="test@example.com" />
           <Button onClick={handleTest} variant="secondary" loading={pending} className="w-full justify-center">
-            Test senden
+            Отправить тест
           </Button>
         </section>
 
         <section className="bg-vintage-white border border-vintage-sand p-5 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
-          <h2 className="font-serif text-base text-vintage-espresso">Vollversand</h2>
-          <Select label="Segment (optional)" value={segmentId}
+          <h2 className="font-serif text-base text-vintage-espresso">Полная отправка</h2>
+          <Select label="Сегмент (опционально)" value={segmentId}
             onChange={(e) => setSegmentId(e.target.value)}
-            options={[{ value: "", label: "Alle aktiven Subscriber" }, ...segments.map(s => ({ value: s.id, label: s.name }))]}
+            options={[{ value: "", label: "Все активные подписчики" }, ...segments.map(s => ({ value: s.id, label: s.name }))]}
           />
           <Button onClick={handleVersand} loading={pending} disabled={istVersendet} icon={<Send className="w-3.5 h-3.5" />} className="w-full justify-center">
-            {istVersendet ? "Bereits versendet" : "Jetzt versenden"}
+            {istVersendet ? "Уже отправлено" : "Отправить сейчас"}
           </Button>
         </section>
 
         <button onClick={handleLoeschen} disabled={pending}
           className="w-full flex items-center justify-center gap-1 px-4 py-2 border border-vintage-burgundy text-vintage-burgundy text-xs font-sans tracking-widest uppercase hover:bg-vintage-burgundy/10 transition-colors disabled:opacity-50"
           style={{ borderRadius: "var(--radius-button)" }}>
-          <Trash2 className="w-3 h-3" /> Newsletter löschen
+          <Trash2 className="w-3 h-3" /> Удалить рассылку
         </button>
       </div>
     </div>
@@ -186,43 +186,43 @@ function BlockEditor({ block, onChange }: { block: NewsletterBlock; onChange: (p
     case "hero":
       return (
         <div className="space-y-2">
-          <Input label="Titel" value={block.titel ?? ""} onChange={(e) => onChange({ titel: e.target.value })} />
-          <Input label="Untertitel" value={block.subtitel ?? ""} onChange={(e) => onChange({ subtitel: e.target.value })} />
-          <Input label="Bild-URL" value={block.bild_url ?? ""} onChange={(e) => onChange({ bild_url: e.target.value })} />
+          <Input label="Заголовок" value={block.titel ?? ""} onChange={(e) => onChange({ titel: e.target.value })} />
+          <Input label="Подзаголовок" value={block.subtitel ?? ""} onChange={(e) => onChange({ subtitel: e.target.value })} />
+          <Input label="URL изображения" value={block.bild_url ?? ""} onChange={(e) => onChange({ bild_url: e.target.value })} />
           <div className="grid grid-cols-2 gap-2">
-            <Input label="Button-Text" value={block.cta_label ?? ""} onChange={(e) => onChange({ cta_label: e.target.value })} />
-            <Input label="Button-URL" value={block.cta_url ?? ""} onChange={(e) => onChange({ cta_url: e.target.value })} />
+            <Input label="Текст кнопки" value={block.cta_label ?? ""} onChange={(e) => onChange({ cta_label: e.target.value })} />
+            <Input label="URL кнопки" value={block.cta_url ?? ""} onChange={(e) => onChange({ cta_url: e.target.value })} />
           </div>
         </div>
       );
     case "text":
-      return <Textarea label="HTML" value={block.html ?? ""} onChange={(e) => onChange({ html: e.target.value })} rows={5} hint="HTML erlaubt: <p>, <strong>, <em>, <a>, <br>" />;
+      return <Textarea label="HTML" value={block.html ?? ""} onChange={(e) => onChange({ html: e.target.value })} rows={5} hint="Разрешён HTML: <p>, <strong>, <em>, <a>, <br>" />;
     case "produkt":
       return (
         <div className="space-y-2">
-          <Input label="Produkt-Slug" value={block.produkt_slug ?? ""} onChange={(e) => onChange({ produkt_slug: e.target.value })} />
-          <Input label="Titel-Override" value={block.titel ?? ""} onChange={(e) => onChange({ titel: e.target.value })} />
-          <Input label="Untertitel" value={block.subtitel ?? ""} onChange={(e) => onChange({ subtitel: e.target.value })} />
+          <Input label="Slug товара" value={block.produkt_slug ?? ""} onChange={(e) => onChange({ produkt_slug: e.target.value })} />
+          <Input label="Переопределить заголовок" value={block.titel ?? ""} onChange={(e) => onChange({ titel: e.target.value })} />
+          <Input label="Подзаголовок" value={block.subtitel ?? ""} onChange={(e) => onChange({ subtitel: e.target.value })} />
         </div>
       );
     case "button":
       return (
         <div className="grid grid-cols-2 gap-2">
-          <Input label="Text" value={block.label ?? ""} onChange={(e) => onChange({ label: e.target.value })} />
+          <Input label="Текст" value={block.label ?? ""} onChange={(e) => onChange({ label: e.target.value })} />
           <Input label="URL" value={block.url ?? ""} onChange={(e) => onChange({ url: e.target.value })} />
         </div>
       );
     case "image":
-      return <Input label="Bild-URL" value={block.bild_url ?? ""} onChange={(e) => onChange({ bild_url: e.target.value })} />;
+      return <Input label="URL изображения" value={block.bild_url ?? ""} onChange={(e) => onChange({ bild_url: e.target.value })} />;
     case "two_columns":
       return (
         <div className="grid grid-cols-2 gap-2">
-          <Textarea label="Links HTML" value={block.links_html ?? ""} onChange={(e) => onChange({ links_html: e.target.value })} rows={4} />
-          <Textarea label="Rechts HTML" value={block.rechts_html ?? ""} onChange={(e) => onChange({ rechts_html: e.target.value })} rows={4} />
+          <Textarea label="Левая колонка HTML" value={block.links_html ?? ""} onChange={(e) => onChange({ links_html: e.target.value })} rows={4} />
+          <Textarea label="Правая колонка HTML" value={block.rechts_html ?? ""} onChange={(e) => onChange({ rechts_html: e.target.value })} rows={4} />
         </div>
       );
     case "divider":
-      return <p className="text-xs text-vintage-dust font-sans italic">Trennlinie (keine Optionen)</p>;
+      return <p className="text-xs text-vintage-dust font-sans italic">Разделитель (без настроек)</p>;
     default:
       return null;
   }

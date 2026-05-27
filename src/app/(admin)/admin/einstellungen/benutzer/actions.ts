@@ -53,13 +53,13 @@ export async function benutzerAnlegenAction(
   const passwort = String(formData.get("passwort") ?? "").trim();
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-    return { ok: false, error: "Ungültige E-Mail" };
+    return { ok: false, error: "Некорректный e-mail" };
   if (!name || name.length < 2)
-    return { ok: false, error: "Name fehlt" };
+    return { ok: false, error: "Укажите имя" };
   if (!passwort || passwort.length < 10)
-    return { ok: false, error: "Passwort muss mindestens 10 Zeichen haben" };
+    return { ok: false, error: "Пароль должен содержать минимум 10 символов" };
   if (rolle !== "admin" && rolle !== "superadmin")
-    return { ok: false, error: "Ungültige Rolle" };
+    return { ok: false, error: "Некорректная роль" };
 
   try {
     const neu = await benutzerErstellen({ email, name, passwort, rolle });
@@ -68,13 +68,13 @@ export async function benutzerAnlegenAction(
       console.error("[Benutzer-Mail]", err)
     );
     revalidatePath("/admin/einstellungen/benutzer");
-    return { ok: true, message: `User "${neu.name}" angelegt. Einladungs-Mail wurde versendet.` };
+    return { ok: true, message: `Пользователь "${neu.name}" создан. Письмо-приглашение отправлено.` };
   } catch (err: unknown) {
     if (err instanceof Error && /duplicate/i.test(err.message)) {
-      return { ok: false, error: "E-Mail bereits vergeben" };
+      return { ok: false, error: "E-mail уже используется" };
     }
     console.error("[benutzerAnlegen]", err);
-    return { ok: false, error: "Fehler beim Anlegen" };
+    return { ok: false, error: "Не удалось создать пользователя" };
   }
 }
 
@@ -85,7 +85,7 @@ export async function benutzerStatusAction(
   const session = await requireSuperadmin();
   if (!session) return { ok: false, error: "Только superadmin" };
   if (session.user.id === id && !aktiv)
-    return { ok: false, error: "Eigenes Konto kann nicht deaktiviert werden" };
+    return { ok: false, error: "Собственный аккаунт нельзя деактивировать" };
   await benutzerAktualisieren(id, { aktiv });
   revalidatePath("/admin/einstellungen/benutzer");
   return { ok: true };
@@ -98,9 +98,9 @@ export async function benutzerPasswortResetAction(
   const session = await requireSuperadmin();
   if (!session) return { ok: false, error: "Только superadmin" };
   if (!neuesPasswort || neuesPasswort.length < 10)
-    return { ok: false, error: "Passwort min. 10 Zeichen" };
+    return { ok: false, error: "Пароль: минимум 10 символов" };
   await benutzerAktualisieren(id, { passwort: neuesPasswort });
-  return { ok: true, message: "Passwort zurückgesetzt" };
+  return { ok: true, message: "Пароль сброшен" };
 }
 
 export async function benutzerRolleAction(
@@ -110,7 +110,7 @@ export async function benutzerRolleAction(
   const session = await requireSuperadmin();
   if (!session) return { ok: false, error: "Только superadmin" };
   if (session.user.id === id && rolle !== "superadmin")
-    return { ok: false, error: "Eigene Superadmin-Rolle kann nicht entfernt werden" };
+    return { ok: false, error: "Нельзя снять собственную роль superadmin" };
   await benutzerAktualisieren(id, { rolle });
   revalidatePath("/admin/einstellungen/benutzer");
   return { ok: true };
@@ -120,8 +120,8 @@ export async function benutzerDeaktivierenAction(id: string): Promise<ActionResu
   const session = await requireSuperadmin();
   if (!session) return { ok: false, error: "Только superadmin" };
   if (session.user.id === id)
-    return { ok: false, error: "Eigenes Konto nicht entfernbar" };
+    return { ok: false, error: "Собственный аккаунт нельзя удалить" };
   await benutzerLoeschen(id);
   revalidatePath("/admin/einstellungen/benutzer");
-  return { ok: true, message: "User deaktiviert" };
+  return { ok: true, message: "Пользователь деактивирован" };
 }

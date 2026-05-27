@@ -4,7 +4,7 @@ import { TelegramSetupClient } from "./client";
 import { ChevronLeft, Send } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Telegram-Bot" };
+export const metadata: Metadata = { title: "Telegram-бот" };
 export const dynamic = "force-dynamic";
 
 interface KontoData {
@@ -33,7 +33,7 @@ export default async function TelegramSetupPage() {
     <div className="max-w-3xl space-y-6">
       <div className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
         <Link href="/admin/einstellungen" className="hover:text-vintage-brown transition-colors flex items-center gap-1">
-          <ChevronLeft className="w-3 h-3" /> Einstellungen
+          <ChevronLeft className="w-3 h-3" /> Настройки
         </Link>
         <span>/</span>
         <span className="text-vintage-ink">Telegram</span>
@@ -42,23 +42,23 @@ export default async function TelegramSetupPage() {
       <div>
         <p className="text-vintage-gold text-xs tracking-widest">✦</p>
         <h1 className="font-serif text-2xl text-vintage-espresso flex items-center gap-2">
-          <Send className="w-5 h-5 text-vintage-gold" /> Telegram-Bot
+          <Send className="w-5 h-5 text-vintage-gold" /> Telegram-бот
         </h1>
         <p className="text-vintage-dust text-xs font-sans mt-0.5">
-          Eingehende Nachrichten an deinen Telegram-Bot landen automatisch als Leads in der Inbox.
+          Входящие сообщения Telegram-боту автоматически попадают во входящие как лиды.
         </p>
       </div>
 
       {/* Setup-Anleitung */}
       <section className="bg-vintage-parchment border border-vintage-sand p-6 space-y-3"
                style={{ borderRadius: "var(--radius-card)" }}>
-        <h2 className="font-serif text-base text-vintage-espresso">Setup in 5 Minuten</h2>
+        <h2 className="font-serif text-base text-vintage-espresso">Настройка за 5 минут</h2>
         <ol className="text-sm text-vintage-ink space-y-2 list-decimal pl-5">
-          <li>Telegram öffnen → <code className="bg-vintage-white px-1.5 py-0.5 text-xs">@BotFather</code> suchen → Chat starten</li>
-          <li>Befehl <code className="bg-vintage-white px-1.5 py-0.5 text-xs">/newbot</code> senden, Anweisungen folgen (Bot-Name, Username)</li>
-          <li>BotFather gibt einen <strong>HTTP API Token</strong> aus (Format: <code className="bg-vintage-white px-1.5 py-0.5 text-xs">123456:ABC...</code>)</li>
-          <li>Token unten einfügen → „Verbinden" → wir validieren + setzen den Webhook automatisch</li>
-          <li>Fertig — schicke dem Bot eine Test-Nachricht, sie sollte in <Link href="/admin/leads?quelle=telegram" className="text-vintage-gold underline">/admin/leads</Link> erscheinen</li>
+          <li>Откройте Telegram → найдите <code className="bg-vintage-white px-1.5 py-0.5 text-xs">@BotFather</code> → начните чат</li>
+          <li>Отправьте команду <code className="bg-vintage-white px-1.5 py-0.5 text-xs">/newbot</code> и следуйте инструкциям (название бота, username)</li>
+          <li>BotFather выдаст <strong>HTTP API Token</strong> (формат: <code className="bg-vintage-white px-1.5 py-0.5 text-xs">123456:ABC...</code>)</li>
+          <li>Вставьте токен ниже → «Подключить» → мы проверим его и автоматически установим webhook</li>
+          <li>Готово — отправьте боту тестовое сообщение, оно должно появиться в <Link href="/admin/leads?quelle=telegram" className="text-vintage-gold underline">/admin/leads</Link></li>
         </ol>
       </section>
 

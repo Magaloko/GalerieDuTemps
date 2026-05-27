@@ -8,7 +8,7 @@ import { postErstellen, postAktualisieren, postLoeschen } from "@/lib/db/journal
 async function adminCheck() {
   const session = await auth();
   if (!session || (session.user.role !== "admin" && session.user.role !== "superadmin")) {
-    throw new Error("Nicht berechtigt");
+    throw new Error("Нет прав");
   }
   return session.user;
 }
@@ -19,7 +19,7 @@ export async function postCreateAction(
 ): Promise<{ ok?: boolean; fehler?: string }> {
   const user = await adminCheck();
   const titel = String(formData.get("titel") ?? "").trim();
-  if (titel.length < 2) return { fehler: "Titel erforderlich" };
+  if (titel.length < 2) return { fehler: "Укажите заголовок" };
 
   const p = await postErstellen({
     titel,

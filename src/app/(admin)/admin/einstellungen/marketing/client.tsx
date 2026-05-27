@@ -107,7 +107,7 @@ function StringCard({ data }: { data: MarketingString }) {
           {pending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
           {!pending && result === "ok"    && <Check className="w-3.5 h-3.5" />}
           {!pending && result === "error" && <AlertCircle className="w-3.5 h-3.5" />}
-          {pending ? "Speichert…" : result === "ok" ? "Gespeichert" : "Speichern"}
+          {pending ? "Сохранение…" : result === "ok" ? "Сохранено" : "Сохранить"}
         </button>
       </header>
 

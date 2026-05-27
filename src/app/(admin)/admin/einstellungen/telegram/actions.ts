@@ -34,7 +34,7 @@ export async function telegramVerbindenAction(
 
   const token = String(formData.get("token") ?? "").trim();
   if (!/^\d{6,12}:[A-Za-z0-9_-]{30,}$/.test(token)) {
-    return { ok: false, error: "Ungültiges Token-Format (erwartet: 1234567890:ABC...)" };
+    return { ok: false, error: "Некорректный формат токена (ожидается: 1234567890:ABC...)" };
   }
 
   // Token gegen Telegram validieren (mit getMe)
@@ -42,7 +42,7 @@ export async function telegramVerbindenAction(
   try {
     bot = await getBotInfo(token);
   } catch (err) {
-    return { ok: false, error: `Token-Check fehlgeschlagen: ${err instanceof Error ? err.message : "unbekannt"}` };
+    return { ok: false, error: `Проверка токена не удалась: ${err instanceof Error ? err.message : "неизвестно"}` };
   }
 
   // Webhook-Secret generieren (Path-Component → Random-Hex)
@@ -74,11 +74,11 @@ export async function telegramVerbindenAction(
   try {
     await setWebhook(token, webhookUrl, webhookSecret);
   } catch (err) {
-    return { ok: false, error: `Webhook-Registrierung fehlgeschlagen: ${err instanceof Error ? err.message : "unbekannt"}` };
+    return { ok: false, error: `Регистрация webhook не удалась: ${err instanceof Error ? err.message : "неизвестно"}` };
   }
 
   revalidatePath("/admin/einstellungen/telegram");
-  return { ok: true, message: `Bot @${bot.username} verbunden + Webhook aktiv.` };
+  return { ok: true, message: `Бот @${bot.username} подключён, webhook активен.` };
 }
 
 export async function telegramTrennenAction(): Promise<ActionResult> {
@@ -86,7 +86,7 @@ export async function telegramTrennenAction(): Promise<ActionResult> {
   if (!session) return { ok: false, error: "Нет прав" };
 
   const konto = await findeTelegramKonto();
-  if (!konto) return { ok: false, error: "Kein Konto verbunden" };
+  if (!konto) return { ok: false, error: "Аккаунт не подключён" };
 
   // Token aus DB holen für deleteWebhook-Call
   const tokRes = await query<{ access_token: string }>(
@@ -100,7 +100,7 @@ export async function telegramTrennenAction(): Promise<ActionResult> {
 
   await query(`UPDATE sebo.kanal_konten SET aktiv = false WHERE id = $1`, [konto.id]);
   revalidatePath("/admin/einstellungen/telegram");
-  return { ok: true, message: "Bot getrennt." };
+  return { ok: true, message: "Бот отключён." };
 }
 
 export async function telegramWebhookCheckAction(): Promise<ActionResult> {
@@ -108,26 +108,26 @@ export async function telegramWebhookCheckAction(): Promise<ActionResult> {
   if (!session) return { ok: false, error: "Нет прав" };
 
   const konto = await findeTelegramKonto();
-  if (!konto) return { ok: false, error: "Kein Konto verbunden" };
+  if (!konto) return { ok: false, error: "Аккаунт не подключён" };
 
   const tokRes = await query<{ access_token: string }>(
     `SELECT access_token FROM sebo.kanal_konten WHERE id = $1`,
     [konto.id]
   );
   const token = tokRes.rows[0]?.access_token;
-  if (!token) return { ok: false, error: "Token fehlt" };
+  if (!token) return { ok: false, error: "Токен отсутствует" };
 
   try {
     const info = await getWebhookInfo(token);
     const lines = [
-      `URL: ${info.url || "(nicht gesetzt)"}`,
+      `URL: ${info.url || "(не задан)"}`,
       `Pending Updates: ${info.pending_update_count}`,
     ];
     if (info.last_error_message) {
-      lines.push(`⚠ Letzter Fehler: ${info.last_error_message}${info.last_error_date ? ` (${new Date(info.last_error_date * 1000).toLocaleString("de-DE")})` : ""}`);
+      lines.push(`⚠ Последняя ошибка: ${info.last_error_message}${info.last_error_date ? ` (${new Date(info.last_error_date * 1000).toLocaleString("ru-RU")})` : ""}`);
     }
     return { ok: true, message: lines.join("\n") };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Check fehlgeschlagen" };
+    return { ok: false, error: err instanceof Error ? err.message : "Проверка не удалась" };
   }
 }
