@@ -57,27 +57,34 @@ FROM node:22-alpine AS runner
 
 WORKDIR /app
 
-# wget ist in Alpine schon drin (BusyBox), aber sicherheitshalber:
-RUN apk add --no-cache wget
+# wget ist in Alpine schon drin (BusyBox), aber sicherheitshalber.
+# su-exec ist die Alpine-Variante von gosu — signal-safer User-Switch im Entrypoint.
+RUN apk add --no-cache wget su-exec
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-# Sicherheit: Non-Root-User
+# Sicherheit: Non-Root-User (Drop passiert im Entrypoint via su-exec)
 RUN addgroup --system --gid 1001 nodejs && \
     adduser  --system --uid 1001 nextjs
 
-# Upload-Verzeichnis mit Rechten
-RUN mkdir -p /app/uploads && chown nextjs:nodejs /app/uploads
+# Upload-Verzeichnis vorbereiten — Coolify-Volume mounted darüber, der
+# Entrypoint fixt Permissions nach dem Mount nochmal nach. Default-Pfad
+# (ohne Volume) funktioniert dadurch auch.
+RUN mkdir -p /app/public/uploads && chown -R nextjs:nodejs /app/public/uploads
 
 # Standalone-Build-Output
 COPY --from=builder /app/public                                    ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone    ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static        ./.next/static
 
-USER nextjs
+# Entrypoint-Script (chownt Volume als root, dropt zu nextjs:nodejs).
+COPY --chmod=0755 docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+
+# WICHTIG: KEIN `USER nextjs` hier — Entrypoint braucht root um Volume zu
+# chownen. Drop zu nextjs:nodejs passiert per su-exec am Ende des Entrypoint.
 
 EXPOSE 3000
 
@@ -86,6 +93,7 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
     CMD wget --quiet --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1
 
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 # server.js wird von next.config.ts "output: standalone" erzeugt
-# und respektiert PORT + HOSTNAME ENV-Variablen
+# und respektiert PORT + HOSTNAME ENV-Variablen.
 CMD ["node", "server.js"]
