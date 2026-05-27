@@ -3,7 +3,7 @@ import { systemEinstellungenLaden } from "@/lib/db/system-einstellungen";
 import { getStripeConfig } from "@/lib/affiliate/stripe";
 import { EinstellungenFormular } from "./einstellungen-formular";
 import { EmailHealthBanner } from "@/components/produkte/email-health-banner";
-import { Settings, MessageSquareText, Send, Bell, Palette, ArrowRight } from "lucide-react";
+import { Settings, MessageSquareText, Send, Bell, Palette, Activity, ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Глобальные настройки" };
@@ -65,6 +65,12 @@ export default async function GlobaleEinstellungenPage() {
           icon={Bell}
           title="Администраторы"
           desc="Управление доступом"
+        />
+        <SettingsLink
+          href="/admin/einstellungen/system"
+          icon={Activity}
+          title="Системное состояние"
+          desc="БД, Redis, e-mail, uploads · live-диагностика"
         />
       </div>
 
