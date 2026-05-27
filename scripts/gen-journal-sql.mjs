@@ -14,6 +14,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const dir       = join(__dirname, "..", "content", "journal");
 const outFile   = join(__dirname, "_journal-seed.sql");
 
+// --publish-Flag: erzeugt SQL die Artikel direkt veröffentlicht (statt Entwurf)
+const PUBLISH = process.argv.includes("--publish");
+
 function parseFrontmatter(text) {
   const m = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
   if (!m) throw new Error("no frontmatter");
@@ -53,8 +56,12 @@ const lines = [
   "-- Oder via psql:",
   "--   psql $DATABASE_URL -f scripts/_journal-seed.sql",
   "--",
-  "-- Artikel werden als ENTWURF importiert (veroeffentlicht=false).",
-  "-- Veröffentlichen: im Admin (/admin/journal) oder UPDATE-Statement am Ende.",
+  PUBLISH
+    ? "-- 🔴 ARTIKEL WERDEN SOFORT VERÖFFENTLICHT (veroeffentlicht=true, _am=now())"
+    : "-- Artikel werden als ENTWURF importiert (veroeffentlicht=false).",
+  PUBLISH
+    ? "-- Nach Run sind alle 6 Artikel live auf /journal."
+    : "-- Veröffentlichen: im Admin (/admin/journal) oder UPDATE-Statement am Ende.",
   "-- ============================================================================",
   "",
   "BEGIN;",
@@ -67,7 +74,7 @@ for (const f of files) {
 
   lines.push(`-- ── ${meta.slug} ──────────────────────────────────────`);
   lines.push(`INSERT INTO sebo.journal_posts`);
-  lines.push(`  (titel, slug, excerpt, markdown, tags, seo_titel, seo_beschreibung, autor_name, veroeffentlicht)`);
+  lines.push(`  (titel, slug, excerpt, markdown, tags, seo_titel, seo_beschreibung, autor_name, veroeffentlicht, veroeffentlicht_am)`);
   lines.push(`VALUES (`);
   lines.push(`  ${q(meta.titel)},`);
   lines.push(`  ${q(meta.slug)},`);
@@ -77,16 +84,20 @@ for (const f of files) {
   lines.push(`  ${q(meta.seo_titel)},`);
   lines.push(`  ${q(meta.seo_beschreibung)},`);
   lines.push(`  ${q(meta.autor_name || "Galerie du Temps")},`);
-  lines.push(`  false`);
+  lines.push(`  ${PUBLISH ? "true" : "false"},`);
+  lines.push(`  ${PUBLISH ? "now()" : "NULL"}`);
   lines.push(`)`);
   lines.push(`ON CONFLICT (slug) DO UPDATE SET`);
-  lines.push(`  titel            = EXCLUDED.titel,`);
-  lines.push(`  excerpt          = EXCLUDED.excerpt,`);
-  lines.push(`  markdown         = EXCLUDED.markdown,`);
-  lines.push(`  tags             = EXCLUDED.tags,`);
-  lines.push(`  seo_titel        = EXCLUDED.seo_titel,`);
-  lines.push(`  seo_beschreibung = EXCLUDED.seo_beschreibung,`);
-  lines.push(`  autor_name       = EXCLUDED.autor_name;`);
+  lines.push(`  titel              = EXCLUDED.titel,`);
+  lines.push(`  excerpt            = EXCLUDED.excerpt,`);
+  lines.push(`  markdown           = EXCLUDED.markdown,`);
+  lines.push(`  tags               = EXCLUDED.tags,`);
+  lines.push(`  seo_titel          = EXCLUDED.seo_titel,`);
+  lines.push(`  seo_beschreibung   = EXCLUDED.seo_beschreibung,`);
+  lines.push(`  autor_name         = EXCLUDED.autor_name,`);
+  lines.push(`  veroeffentlicht    = EXCLUDED.veroeffentlicht,`);
+  // Wenn schon veröffentlicht: bestehendes Datum behalten; sonst neues setzen
+  lines.push(`  veroeffentlicht_am = COALESCE(sebo.journal_posts.veroeffentlicht_am, EXCLUDED.veroeffentlicht_am);`);
   lines.push("");
 }
 
