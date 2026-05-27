@@ -39,10 +39,14 @@ export function MobileTabBar({ t }: { t: Dictionary }) {
     <nav
       className="md:hidden fixed bottom-0 inset-x-0 z-40 flex items-stretch justify-around"
       style={{
-        background: "var(--color-cobalt)",
-        paddingTop: 12,
-        paddingBottom: "max(12px, env(safe-area-inset-bottom))",
-        borderTop:  "1px solid rgba(232,112,58,0.18)",
+        background:    "var(--color-cobalt)",
+        paddingTop:    12,
+        // Safe-Area-Inset für iPhone-Notch + extra Reserve damit der letzte
+        // Tab (rechts) nicht in der Browser-Edge-Touch-Zone landet (Android
+        // Chrome bzw. Mobile-Safari haben dort oft System-Gesten die
+        // Custom-Touch-Events abfangen).
+        paddingBottom: "calc(max(20px, env(safe-area-inset-bottom)) + 8px)",
+        borderTop:     "1px solid rgba(232,112,58,0.18)",
       }}
       aria-label="Mobile navigation"
     >
@@ -53,8 +57,17 @@ export function MobileTabBar({ t }: { t: Dictionary }) {
           <Link
             key={href}
             href={href}
-            className="relative flex-1 flex flex-col items-center justify-center gap-1 py-1"
+            className="relative flex-1 flex flex-col items-center justify-center gap-1 py-2"
+            style={{
+              // touch-action: manipulation entfernt 300ms-Click-Delay auf iOS
+              // und priorisiert unsere Tap-Events vor Browser-Gesten.
+              touchAction:             "manipulation",
+              WebkitTapHighlightColor: "rgba(232,112,58,0.25)",
+              minHeight:               48,  // Apple-HIG / Material min-tap-target
+              userSelect:              "none",
+            }}
             aria-current={active ? "page" : undefined}
+            prefetch={false}
           >
             {/* Active indicator (2px coral bar above icon) */}
             {active && (
