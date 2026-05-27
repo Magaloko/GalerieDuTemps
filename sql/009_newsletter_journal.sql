@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS sebo.newsletters (
 
 CREATE INDEX IF NOT EXISTS idx_newsletters_status ON sebo.newsletters(status, versand_zeit);
 
+DROP TRIGGER IF EXISTS trg_newsletters_updated ON sebo.newsletters;
 CREATE TRIGGER trg_newsletters_updated
     BEFORE UPDATE ON sebo.newsletters
     FOR EACH ROW EXECUTE FUNCTION sebo.update_aktualisiert_am();
@@ -106,6 +107,7 @@ CREATE INDEX IF NOT EXISTS idx_journal_slug          ON sebo.journal_posts(slug)
 CREATE INDEX IF NOT EXISTS idx_journal_veroeff       ON sebo.journal_posts(veroeffentlicht_am DESC) WHERE veroeffentlicht = true;
 CREATE INDEX IF NOT EXISTS idx_journal_tags          ON sebo.journal_posts USING GIN(tags);
 
+DROP TRIGGER IF EXISTS trg_journal_updated ON sebo.journal_posts;
 CREATE TRIGGER trg_journal_updated
     BEFORE UPDATE ON sebo.journal_posts
     FOR EACH ROW EXECUTE FUNCTION sebo.update_aktualisiert_am();
