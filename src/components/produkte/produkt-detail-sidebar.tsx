@@ -257,6 +257,24 @@ export function ProduktDetailSidebar({ produkt, kontakt, versandHinweis, kaspi, 
               </a>
             )}
 
+            {/* Reservierungs-Anfrage — wenn verfügbar & nicht reserviert.
+                Erzeugt einen Lead mit Bron-Intent; der Kurator reserviert dann. */}
+            {!istReserviert && produkt.lagerbestand > 0 && (
+              <Link
+                href={`/kontakt?produkt=${produkt.id}&name=${encodeURIComponent(produkt.name)}&intent=reserve`}
+                className="flex items-center justify-center gap-2 w-full py-2.5 font-body text-sm transition-opacity hover:opacity-90"
+                style={{
+                  background: "transparent",
+                  border:     "1px solid var(--color-gold, #C9A84C)",
+                  color:      "var(--color-gold, #9A7B1F)",
+                  letterSpacing: "0.04em",
+                }}
+              >
+                <Clock size={14} />
+                Зарезервировать
+              </Link>
+            )}
+
             {/* Cart-Button — NUR im Shop-Modus (kaufenAktiv) und wenn lager > 0.
                 Im Schaufenster-Modus bleiben oben die WhatsApp/Telegram/Mail-
                 Anfrage-Buttons als „Запросить" der einzige Weg. */}

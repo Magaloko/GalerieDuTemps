@@ -185,6 +185,23 @@ export default async function TelegramProduktPage({
             <MessageCircle className="w-3.5 h-3.5" style={{ color: "var(--color-coral)" }} />
             Спросить куратора
           </Link>
+
+          {/* „Зарезервировать" — Bron-Anfrage, nur wenn verfügbar & nicht reserviert */}
+          {!reserviert && !produkt.verkauft && produkt.lagerbestand > 0 && (
+            <Link
+              href={`/tg/kontakt?produkt=${produkt.id}&name=${encodeURIComponent(name)}&intent=reserve`}
+              className="mt-2 flex items-center justify-center gap-2 py-3 text-[11px] uppercase font-medium"
+              style={{
+                letterSpacing: "0.22em",
+                background:    "transparent",
+                border:        "1px solid rgba(201,168,76,0.55)",
+                color:         "#9A7B1F",
+                touchAction:   "manipulation",
+              }}
+            >
+              ⏳ Зарезервировать
+            </Link>
+          )}
         </div>
 
         {/* Keyframes für Pulse-Badge (server-render-time CSS) */}

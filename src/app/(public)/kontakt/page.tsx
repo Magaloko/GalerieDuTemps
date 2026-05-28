@@ -26,12 +26,32 @@ function formatPhoneDisplay(digits: string): string {
  *  - Rechts (bone, border-left): eyebrow + display-xs H2 + Inline-Edit-Form +
  *    Coral-Submit + Map-Mock am Boden.
  * ────────────────────────────────────────────────────────────────────────── */
-export default async function KontaktPage() {
+export default async function KontaktPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ produkt?: string; name?: string; intent?: string }>;
+}) {
   await requireFeature("kontaktformular");
-  const [{ t }, kontakt] = await Promise.all([
+  const [{ t }, kontakt, sp] = await Promise.all([
     getDictionary(),
     kontaktKanaeleLaden(),
+    searchParams,
   ]);
+
+  // Vorbelegung bei Produkt-/Reservierungs-Anfrage (Deep-Link von Produktseite).
+  const prodName = sp.name?.trim();
+  const prefill =
+    sp.intent === "reserve"
+      ? {
+          betreff:   prodName ? `Запрос на бронь: ${prodName}` : "Запрос на бронь",
+          nachricht: `Здравствуйте! Хочу зарезервировать${prodName ? `: ${prodName}` : " этот предмет"}${sp.produkt ? ` (#${sp.produkt})` : ""}. Подскажите, пожалуйста, по наличию и условиям.`,
+        }
+      : sp.produkt
+        ? {
+            betreff:   prodName ? `Вопрос о товаре: ${prodName}` : "Вопрос о товаре",
+            nachricht: `Здравствуйте! Интересует${prodName ? `: ${prodName}` : " этот предмет"}${sp.produkt ? ` (#${sp.produkt})` : ""}. `,
+          }
+        : undefined;
 
   const wa = whatsappUrl(kontakt.whatsapp_nummer);
   const tg = telegramUrl(kontakt.telegram_channel);
@@ -166,6 +186,7 @@ export default async function KontaktPage() {
               gesendet:              t.kontakt_seite.nachricht_gesendet,
               danke:                 t.kontakt_seite.danke_text,
             }}
+            prefill={prefill}
           />
 
           {/* Map-Mock */}

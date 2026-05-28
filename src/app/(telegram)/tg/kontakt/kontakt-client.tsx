@@ -9,6 +9,8 @@ import {
 interface Props {
   produktId:   string | null;
   produktName: string | null;
+  /** "reserve" → Reservierungs-Anfrage (anderer Titel + vorbelegte Nachricht). */
+  intent?:     string | null;
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -23,8 +25,11 @@ interface Props {
  *
  * Charakter-Counter zeigt verbleibende Zeichen, wird coral bei <100.
  * ────────────────────────────────────────────────────────────────────────── */
-export function KontaktClient({ produktId, produktName }: Props) {
-  const [text,   setText]   = useState("");
+export function KontaktClient({ produktId, produktName, intent }: Props) {
+  const istReserve = intent === "reserve";
+  const [text,   setText]   = useState(
+    istReserve && produktName ? `Хочу зарезервировать: ${produktName}. ` : "",
+  );
   const [busy,   setBusy]   = useState(false);
   const [status, setStatus] = useState<"idle" | "sent" | "error">("idle");
   const [error,  setError]  = useState<string | null>(null);
@@ -57,7 +62,9 @@ export function KontaktClient({ produktId, produktName }: Props) {
           initData:   tg.initData,
           text:       text.trim(),
           produkt_id: produktId ?? undefined,
-          betreff:    produktName ? `Вопрос: ${produktName}` : undefined,
+          betreff:    istReserve
+            ? (produktName ? `Запрос на бронь: ${produktName}` : "Запрос на бронь")
+            : (produktName ? `Вопрос: ${produktName}` : undefined),
         }),
         credentials: "include",
       });
@@ -189,7 +196,7 @@ export function KontaktClient({ produktId, produktName }: Props) {
             lineHeight: 1.15,
           }}
         >
-          {produktName ? "Спросить о товаре" : "Связаться с куратором"}
+          {istReserve ? "Зарезервировать" : produktName ? "Спросить о товаре" : "Связаться с куратором"}
         </h1>
         <p
           className="mt-1 text-xs"
@@ -219,7 +226,7 @@ export function KontaktClient({ produktId, produktName }: Props) {
               className="text-[10px] uppercase font-medium"
               style={{ letterSpacing: "0.22em", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}
             >
-              О товаре
+              {istReserve ? "Бронь товара" : "О товаре"}
             </p>
             <p
               className="text-sm truncate"

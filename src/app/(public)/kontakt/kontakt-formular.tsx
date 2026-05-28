@@ -21,7 +21,14 @@ export interface KontaktLabels {
   danke:                 string;
 }
 
-export function KontaktFormular({ labels }: { labels: KontaktLabels }) {
+export function KontaktFormular({
+  labels,
+  prefill,
+}: {
+  labels: KontaktLabels;
+  /** Vorbelegung z.B. aus Reservierungs-/Produkt-Anfrage (Betreff + Nachricht). */
+  prefill?: { betreff?: string; nachricht?: string };
+}) {
   const [state, formAction, isPending] = useActionState(kontaktSendenAction, null);
 
   if (state?.ok) {
@@ -65,8 +72,8 @@ export function KontaktFormular({ labels }: { labels: KontaktLabels }) {
         <Input label={labels.name}  name="name"  required placeholder={labels.name_placeholder} />
         <Input label={labels.email} name="email" type="email" required placeholder={labels.email_placeholder} />
       </div>
-      <Input label={labels.betreff} name="betreff" placeholder={labels.betreff_placeholder} />
-      <Textarea label={labels.nachricht} name="nachricht" required rows={6} placeholder={labels.nachricht_placeholder} />
+      <Input label={labels.betreff} name="betreff" placeholder={labels.betreff_placeholder} defaultValue={prefill?.betreff} />
+      <Textarea label={labels.nachricht} name="nachricht" required rows={6} placeholder={labels.nachricht_placeholder} defaultValue={prefill?.nachricht} />
 
       {state?.error && (
         <p className="text-xs" style={{ color: "var(--color-coral-deep)" }}>{state.error}</p>
