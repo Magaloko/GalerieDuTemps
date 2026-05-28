@@ -41,9 +41,10 @@ export default async function TelegramProduktPage({
   if (!produkt) notFound();
   const igPosts = await instagramPostsFuerProdukt(produkt.id).catch(() => []);
 
-  const name = i18nOr(produkt.name_i18n,             locale, produkt.name);
-  const kurz = i18nOr(produkt.kurzbeschreibung_i18n, locale, produkt.kurzbeschreibung);
+  const name      = i18nOr(produkt.name_i18n,             locale, produkt.name);
+  const kurz      = i18nOr(produkt.kurzbeschreibung_i18n, locale, produkt.kurzbeschreibung);
   const reserviert = !!produkt.reserviert_bis && new Date(produkt.reserviert_bis) > new Date() && !produkt.verkauft;
+  const waehrung  = (produkt.waehrung as "KZT"|"EUR"|"USD"|"RUB") ?? "KZT";
 
   // Galerie: alle Bilder (sortiert), Fallback auf Hauptbild.
   const galerie = (() => {
@@ -133,9 +134,30 @@ export default async function TelegramProduktPage({
             {/* Heart-Toggle inline neben dem Titel */}
             <HeartToggle produktId={produkt.id} size={20} />
           </div>
+          {/* Preis — immer sichtbar, durchgestrichen wenn verkauft */}
+          <div className="flex items-baseline gap-3 mt-3">
+            <p style={{
+              fontFamily:    "var(--font-display)",
+              fontSize:      26,
+              lineHeight:    1,
+              color:         produkt.verkauft
+                               ? "var(--tg-theme-hint-color, var(--color-ink-mute))"
+                               : "var(--tg-theme-text-color, var(--color-ink))",
+              textDecoration: produkt.verkauft ? "line-through" : undefined,
+            }}>
+              {formatPreis(produkt.preis, waehrung, true)}
+            </p>
+            {produkt.originalpreis && !produkt.verkauft && (
+              <p className="text-sm line-through"
+                style={{ color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
+                {formatPreis(produkt.originalpreis, waehrung, true)}
+              </p>
+            )}
+          </div>
+
           {produkt.era && (
             <p
-              className="mt-2 text-sm"
+              className="mt-1.5 text-sm"
               style={{
                 fontFamily: "var(--font-italic)",
                 fontStyle:  "italic",
@@ -373,14 +395,6 @@ export default async function TelegramProduktPage({
             </div>
           </section>
         )}
-
-        {/* Keyframes für Pulse-Badge (server-render-time CSS) */}
-        <style>{`
-          @keyframes tg-pulse-coral {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(232,112,58,0.5); }
-            50%      { box-shadow: 0 0 0 6px rgba(232,112,58,0); }
-          }
-        `}</style>
 
         {/* MainButton-Mount-Punkt (kein visuelles Markup, nur side-effect) */}
         <ProductMiniClient
