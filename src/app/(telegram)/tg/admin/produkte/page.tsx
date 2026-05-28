@@ -4,6 +4,7 @@ import { TelegramAuthGate } from "../../auth-gate";
 import { AdminBack, AdminHeader, AdminEmpty, AdminNotAllowed } from "../_ui";
 import { produkteListe } from "@/lib/db/produkte";
 import { ProduktRow } from "./produkt-row";
+import { ProduktNeuButton } from "./produkt-neu-button";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Товары · Mini-App", robots: { index: false, follow: false } };
@@ -48,6 +49,9 @@ export default async function TgAdminProdukte({
       <main className="p-4 pb-8">
         <AdminBack />
         <AdminHeader eyebrow="✦ Каталог" titel="Товары" sub={`${items.length} показано`} />
+
+        {/* Neuen Entwurf anlegen → Editor */}
+        <ProduktNeuButton />
 
         {/* Suche (Status bleibt via hidden erhalten) */}
         <form action="/tg/admin/produkte" method="get" className="mb-3">

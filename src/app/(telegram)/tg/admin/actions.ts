@@ -6,7 +6,7 @@ import { query } from "@/lib/db";
 import { b2bFreischalten, b2bAblehnen } from "@/lib/db/customer-b2b";
 import { couponToggleAktiv } from "@/lib/db/coupons";
 import { auszahlungAlsBezahltMarkieren } from "@/lib/db/auszahlungen";
-import { produktAktualisieren, produktReservieren, produktReservierungAufheben, produktReservierungVerlaengern } from "@/lib/db/produkte";
+import { produktAktualisieren, produktReservieren, produktReservierungAufheben, produktReservierungVerlaengern, produktErstellen } from "@/lib/db/produkte";
 import { orderStatusUpdate } from "@/lib/db/orders";
 import { kategorieErstellen } from "@/lib/db/kategorien";
 import {
@@ -463,5 +463,44 @@ export async function instagramPostInKanalTgAction(postId: string): Promise<Acti
   } catch (err) {
     console.error("[instagramPostInKanal]", err);
     return { ok: false, error: "Ошибка отправки" };
+  }
+}
+
+/* ── Produkt: leeren Entwurf anlegen (Mini-App „+ Neый товар") ─────────────────
+ * Erstellt ein minimales Draft-Produkt (Platzhalter-Name, Preis=1, aktiv=false,
+ * b2c_mode=hidden ⇒ nirgends sichtbar) und gibt die ID zurück. Der Client
+ * leitet danach in den bestehenden Editor (/tg/admin/produkte/[id]) weiter, wo
+ * Foto-Upload, Preis, Beschreibung etc. gepflegt + via Publish veröffentlicht
+ * werden. Spiegelt den Bot-Foto-Flow, nur ohne Foto. */
+export async function produktNeuAnlegenTgAction(): Promise<
+  { ok: true; id: string } | { ok: false; error: string }
+> {
+  const admin = await requireTgAdmin();
+  if (!admin) return { ok: false, error: "Нет прав" };
+  try {
+    const platzhalter = `Черновик · ${new Date().toLocaleDateString("ru-RU", {
+      day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+    })}`;
+    const produkt = await produktErstellen(
+      {
+        name:         platzhalter,
+        preis:        1,            // positiv (DB-CHECK) — Admin überschreibt
+        zustand:      "gut",
+        lagerbestand: 1,
+        aktiv:        false,
+        b2c_mode:     "hidden",
+        waehrung:     "KZT",
+        featured:     false,
+        verkauft:     false,
+        tags:         [],
+      } as Parameters<typeof produktErstellen>[0],
+      admin.id,
+    );
+    await auditLog({ action: "produkt_entwurf_erstellt", actorEmail: null, entity: produkt.id, neuWert: { via: "tg-admin" } });
+    revalidatePath("/tg/admin/produkte");
+    return { ok: true, id: produkt.id };
+  } catch (err) {
+    console.error("[produktNeuAnlegen]", err);
+    return { ok: false, error: "Не удалось создать черновик" };
   }
 }
