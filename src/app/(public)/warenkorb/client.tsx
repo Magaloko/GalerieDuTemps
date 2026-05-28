@@ -2,10 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, Tag, X, Loader2, CheckCircle2 } from "lucide-react";
+import {
+  Trash2, Minus, Plus, ShoppingBag, ArrowRight, Tag, X, Loader2,
+  CheckCircle2, Heart, AlertTriangle, Truck,
+} from "lucide-react";
 import { useCart, berechneCart } from "@/lib/cart";
+import { useWunschliste } from "@/hooks/use-wunschliste";
 import { formatPreis } from "@/lib/utils/preis";
 
 export interface CartLabels {
@@ -17,13 +19,32 @@ export interface CartLabels {
   coupon_fehler: string; checkout_fehler: string; entfernen: string;
 }
 
+// Kostenlose Versand ab dieser Schwelle (in Cents — entspricht ₸50 000).
+// TODO: aus System-Einstellungen laden statt hardcoded.
+const FREE_SHIPPING_THRESHOLD_CENTS = 50_000_00;
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * WarenkorbClient — Galerie-Design (paper-BG, coral-accents).
+ *
+ * Layout:
+ *   ┌──────────────────────────────┬──────────────────┐
+ *   │ Items (cards mit lines)      │ Sticky-Summary   │
+ *   │  + "Сохранить на потом"      │  • Coupon        │
+ *   │  + Stock-Warning             │  • Free-Ship-Bar │
+ *   │                              │  • Totals        │
+ *   │                              │  • Coral-CTA     │
+ *   └──────────────────────────────┴──────────────────┘
+ *   ┌────────────── TrustStrip ───────────────────────┐
+ *
+ * Mobile: 1-Col, Summary unter Items, Sticky-Bottom-Bar mit Total + CTA.
+ * ────────────────────────────────────────────────────────────────────────── */
 export function WarenkorbClient({ labels }: { labels: CartLabels }) {
   const items         = useCart(s => s.items);
   const coupon_code   = useCart(s => s.coupon_code);
   const mengeAendern  = useCart(s => s.mengeAendern);
   const entfernen     = useCart(s => s.entfernen);
   const setCouponCode = useCart(s => s.setCouponCode);
-  const router        = useRouter();
+  const { toggle: toggleWish, istGemerkt } = useWunschliste();
 
   const [hydrated, setHydrated] = useState(false);
   const [couponInput, setCouponInput] = useState(coupon_code ?? "");
@@ -34,14 +55,18 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
 
   useEffect(() => { setHydrated(true); }, []);
 
-  // Live-Berechnung
   const berechnung = useMemo(() => berechneCart({
     items,
     rabatt_cents:  rabattCents,
     versand_cents: 0,
   }), [items, rabattCents]);
 
-  // Coupon einlösen
+  // Free-Shipping-Progress
+  const subtotal = berechnung.subtotal_cents - berechnung.rabatt_cents;
+  const freeShipReached = subtotal >= FREE_SHIPPING_THRESHOLD_CENTS;
+  const freeShipMissing = Math.max(0, FREE_SHIPPING_THRESHOLD_CENTS - subtotal);
+  const freeShipPct     = Math.min(100, (subtotal / FREE_SHIPPING_THRESHOLD_CENTS) * 100);
+
   const handleCouponEinloesen = async () => {
     setCouponFehler(null);
     setCouponPending(true);
@@ -80,9 +105,6 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
   const handleCheckout = async () => {
     setCheckoutLoading(true);
     try {
-      // Picker-Modus: Order anlegen, danach Method-Picker auf /checkout/zahlung.
-      // Der eigentliche Zahlungs-Provider wird DORT gewählt — Karte, PayPal,
-      // Crypto, Bank-Überweisung, Vor-Ort (mit/ohne Anzahlung).
       const res = await fetch("/api/checkout", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
@@ -109,198 +131,547 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
     }
   };
 
-  if (!hydrated) {
-    return <div className="text-center py-16 text-vintage-dust font-sans text-sm">{labels.laedt}</div>;
-  }
+  const handleSaveForLater = async (produktId: string) => {
+    if (!istGemerkt(produktId)) {
+      await toggleWish(produktId);
+    }
+    entfernen(produktId);
+  };
 
-  if (items.length === 0) {
+  if (!hydrated) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <ShoppingBag className="w-14 h-14 text-vintage-sand mb-4" />
-        <p className="font-serif text-xl text-vintage-cream/80 mb-2">{labels.leer}</p>
-        <p className="text-vintage-dust text-sm font-sans mb-6">{labels.leer_text}</p>
-        <Link
-          href="/katalog"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-vintage-espresso text-vintage-cream font-sans text-xs tracking-widest uppercase hover:bg-vintage-brown transition-colors"
-          style={{ borderRadius: "var(--radius-button)" }}
-        >
-          {labels.zum_katalog} <ArrowRight className="w-4 h-4" />
-        </Link>
+      <div className="text-center py-16">
+        <Loader2 className="w-6 h-6 animate-spin mx-auto" style={{ color: "var(--color-ink-mute)" }} />
       </div>
     );
   }
 
+  if (items.length === 0) {
+    return <EmptyCart labels={labels} />;
+  }
+
   return (
-    <div className="grid lg:grid-cols-3 gap-6">
+    <>
+      <div className="grid lg:grid-cols-[1fr_360px] gap-8">
+        {/* ─── Items-Liste ─── */}
+        <div className="space-y-3">
+          {items.map(item => (
+            <CartItemCard
+              key={item.produkt_id}
+              item={item}
+              onMengeChange={mengeAendern}
+              onEntfernen={entfernen}
+              onSaveForLater={handleSaveForLater}
+              labels={labels}
+            />
+          ))}
 
-      {/* Items-Liste */}
-      <div className="lg:col-span-2 space-y-3">
-        {items.map(item => (
-          <div
-            key={item.produkt_id}
-            className="flex gap-4 p-4 bg-vintage-brown border border-vintage-sand/40"
-            style={{ borderRadius: "var(--radius-card)" }}
+          {/* Continue-Shopping-Link */}
+          <Link
+            href="/katalog"
+            className="inline-flex items-center gap-2 text-[11px] uppercase font-medium mt-2 transition-colors hover:text-[var(--color-coral)]"
+            style={{
+              letterSpacing: "0.22em",
+              color:         "var(--color-ink-mute)",
+            }}
           >
-            {/* Bild */}
-            <Link
-              href={`/katalog/${item.slug}`}
-              className="w-20 h-20 flex-shrink-0 bg-vintage-brown/40 overflow-hidden"
-              style={{ borderRadius: "var(--radius-vintage)" }}
+            ← {labels.zum_katalog}
+          </Link>
+        </div>
+
+        {/* ─── Summary (Sticky auf Desktop) ─── */}
+        <aside className="lg:sticky lg:top-24 h-fit">
+          <div
+            className="p-6 space-y-5"
+            style={{
+              background: "#fff",
+              border:     "1px solid var(--color-line)",
+            }}
+          >
+            <h2
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize:   20,
+                color:      "var(--color-ink)",
+                lineHeight: 1.1,
+              }}
             >
-              {item.bild_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={item.bild_url} alt={item.name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-vintage-sand">✦</div>
-              )}
-            </Link>
+              {labels.zusammenfassung}
+            </h2>
 
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <Link href={`/katalog/${item.slug}`} className="font-serif text-vintage-cream hover:text-vintage-cream/80 transition-colors line-clamp-2">
-                {item.name}
-              </Link>
-              <p className="font-serif text-vintage-gold mt-1">{formatPreis(item.einzelpreis_cents / 100)}</p>
+            {/* Free-Shipping-Nudge */}
+            <FreeShippingBar
+              reached={freeShipReached}
+              missing={freeShipMissing}
+              pct={freeShipPct}
+            />
 
-              {/* Mengen-Stepper */}
-              <div className="flex items-center justify-between mt-3">
-                <div className="flex items-center gap-2 border border-vintage-sand/40 bg-vintage-espresso" style={{ borderRadius: "var(--radius-vintage)" }}>
-                  <button
-                    onClick={() => mengeAendern(item.produkt_id, item.menge - 1)}
-                    className="p-2 text-vintage-cream/80 hover:bg-vintage-brown/40 transition-colors disabled:opacity-30"
-                    disabled={item.menge <= 1}
-                  >
-                    <Minus className="w-3 h-3" />
-                  </button>
-                  <span className="px-3 text-sm font-sans text-vintage-cream min-w-8 text-center">{item.menge}</span>
-                  <button
-                    onClick={() => mengeAendern(item.produkt_id, item.menge + 1)}
-                    disabled={!!item.max_menge && item.menge >= item.max_menge}
-                    className="p-2 text-vintage-cream/80 hover:bg-vintage-brown/40 transition-colors disabled:opacity-30"
-                  >
-                    <Plus className="w-3 h-3" />
-                  </button>
-                </div>
-
-                <button
-                  onClick={() => entfernen(item.produkt_id)}
-                  className="p-2 text-vintage-dust hover:text-vintage-burgundy transition-colors"
-                  style={{ borderRadius: "var(--radius-vintage)" }}
-                  aria-label={labels.entfernen}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Zeilen-Total */}
-            <div className="text-right">
-              <p className="font-serif text-vintage-cream">
-                {formatPreis(item.einzelpreis_cents * item.menge / 100)}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Zusammenfassung */}
-      <div className="lg:col-span-1">
-        <div
-          className="sticky top-20 bg-vintage-brown border border-vintage-sand/40 p-6 space-y-4"
-          style={{ borderRadius: "var(--radius-card)" }}
-        >
-          <h2 className="font-serif text-lg text-vintage-cream border-b border-vintage-sand/30 pb-3">
-            {labels.zusammenfassung}
-          </h2>
-
-          {/* Coupon */}
-          <div>
+            {/* Coupon */}
             {rabattCents > 0 ? (
-              <div className="flex items-center justify-between p-3 bg-vintage-sage/10 border border-vintage-sage/30" style={{ borderRadius: "var(--radius-vintage)" }}>
-                <span className="flex items-center gap-2 text-xs font-sans text-vintage-forest">
+              <div
+                className="flex items-center justify-between p-3"
+                style={{
+                  background: "rgba(127,140,90,0.10)",
+                  border:     "1px solid rgba(127,140,90,0.35)",
+                }}
+              >
+                <span
+                  className="flex items-center gap-2 text-xs"
+                  style={{ color: "#52663F" }}
+                >
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  {labels.code_aktiv}: <strong>{coupon_code}</strong>
+                  <span>{labels.code_aktiv}: <strong className="font-mono">{coupon_code}</strong></span>
                 </span>
-                <button onClick={handleCouponEntfernen} className="text-vintage-dust hover:text-vintage-burgundy">
+                <button
+                  onClick={handleCouponEntfernen}
+                  aria-label="Удалить промокод"
+                  className="transition-colors hover:opacity-70"
+                  style={{ color: "#52663F" }}
+                >
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             ) : (
-              <>
-                <label className="text-xs font-sans uppercase tracking-widest text-vintage-cream/80 mb-1.5 block">
+              <div>
+                <label
+                  className="block mb-1.5 text-[10px] uppercase font-medium"
+                  style={{ letterSpacing: "0.22em", color: "var(--color-ink-soft)" }}
+                >
                   {labels.coupon}
                 </label>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
-                    <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-vintage-dust" />
+                    <Tag
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5"
+                      style={{ color: "var(--color-ink-mute)" }}
+                    />
                     <input
                       type="text"
                       value={couponInput}
                       onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
                       placeholder={labels.code_eingeben}
-                      className="w-full pl-9 pr-3 py-2 bg-vintage-espresso border border-vintage-sand/40 text-sm font-mono text-vintage-cream focus:outline-none focus:border-vintage-brown transition-colors"
-                      style={{ borderRadius: "var(--radius-vintage)" }}
+                      className="w-full pl-9 pr-3 py-2 text-sm font-mono focus:outline-none transition-colors"
+                      style={{
+                        background: "var(--color-bone)",
+                        border:     "1px solid var(--color-line)",
+                        color:      "var(--color-ink)",
+                        minHeight:  40,
+                      }}
                     />
                   </div>
                   <button
                     onClick={handleCouponEinloesen}
                     disabled={!couponInput || couponPending}
-                    className="px-4 py-2 bg-vintage-espresso text-vintage-cream text-xs font-sans uppercase tracking-widest hover:bg-vintage-brown transition-colors disabled:opacity-50"
-                    style={{ borderRadius: "var(--radius-button)" }}
+                    className="px-4 text-xs uppercase font-medium transition-colors disabled:opacity-50"
+                    style={{
+                      letterSpacing: "0.18em",
+                      background:    "var(--color-ink)",
+                      color:         "#fff",
+                      minHeight:     40,
+                    }}
                   >
                     {couponPending ? "..." : "OK"}
                   </button>
                 </div>
                 {couponFehler && (
-                  <p className="text-xs text-vintage-burgundy font-sans mt-1">{couponFehler}</p>
+                  <p
+                    className="text-xs mt-1.5"
+                    style={{ color: "var(--color-coral-deep, #A53E26)" }}
+                  >
+                    {couponFehler}
+                  </p>
                 )}
-              </>
-            )}
-          </div>
-
-          {/* Summe */}
-          <div className="space-y-2 text-sm font-sans border-t border-vintage-sand/30 pt-4">
-            <div className="flex justify-between text-vintage-dust">
-              <span>{labels.zwischensumme}</span>
-              <span>{formatPreis(berechnung.subtotal_cents / 100)}</span>
-            </div>
-            {berechnung.rabatt_cents > 0 && (
-              <div className="flex justify-between text-vintage-gold">
-                <span>{labels.rabatt}</span>
-                <span>− {formatPreis(berechnung.rabatt_cents / 100)}</span>
               </div>
             )}
-            <div className="flex justify-between text-vintage-dust">
-              <span>{labels.versand}</span>
-              <span>{labels.versand_calc}</span>
-            </div>
-            <div className="flex justify-between text-vintage-dust text-xs">
-              <span>{labels.inkl_ust}</span>
-              <span>{formatPreis(berechnung.tax_total_cents / 100)}</span>
-            </div>
-            <div className="flex justify-between text-vintage-cream font-serif text-xl pt-3 border-t border-vintage-sand/40">
-              <span>{labels.summe}</span>
-              <span>{formatPreis(berechnung.total_cents / 100)}</span>
-            </div>
-          </div>
 
-          {/* Checkout */}
+            {/* Totals */}
+            <div
+              className="space-y-1.5 text-sm pt-4"
+              style={{ borderTop: "1px solid var(--color-line)" }}
+            >
+              <Row label={labels.zwischensumme} value={formatPreis(berechnung.subtotal_cents / 100)} />
+              {berechnung.rabatt_cents > 0 && (
+                <Row
+                  label={labels.rabatt}
+                  value={`− ${formatPreis(berechnung.rabatt_cents / 100)}`}
+                  color="var(--color-coral)"
+                />
+              )}
+              <Row
+                label={labels.versand}
+                value={freeShipReached
+                  ? <span style={{ color: "#7A8B6F", fontFamily: "var(--font-italic)", fontStyle: "italic" }}>Бесплатно</span>
+                  : labels.versand_calc
+                }
+              />
+              <Row
+                label={labels.inkl_ust}
+                value={formatPreis(berechnung.tax_total_cents / 100)}
+                muted
+              />
+
+              <div
+                className="flex items-baseline justify-between pt-3 mt-2"
+                style={{ borderTop: "1px solid var(--color-line)" }}
+              >
+                <span
+                  className="text-[11px] uppercase font-medium"
+                  style={{ letterSpacing: "0.22em", color: "var(--color-ink-soft)" }}
+                >
+                  {labels.summe}
+                </span>
+                <span
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize:   28,
+                    color:      "var(--color-ink)",
+                    lineHeight: 1,
+                  }}
+                >
+                  {formatPreis(berechnung.total_cents / 100)}
+                </span>
+              </div>
+            </div>
+
+            {/* CTA */}
+            <button
+              type="button"
+              onClick={handleCheckout}
+              disabled={checkoutLoading}
+              className="btn-coral btn-coral-lg w-full"
+              style={{ minHeight: 52, touchAction: "manipulation" }}
+            >
+              {checkoutLoading ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> {labels.laedt}</>
+              ) : (
+                <>{labels.zur_kasse} <ArrowRight className="w-4 h-4" /></>
+              )}
+            </button>
+
+            <p
+              className="text-[11px] text-center"
+              style={{
+                fontFamily: "var(--font-italic)",
+                fontStyle:  "italic",
+                color:      "var(--color-ink-mute)",
+              }}
+            >
+              {labels.sichere_zahlung}
+            </p>
+          </div>
+        </aside>
+      </div>
+
+      {/* ─── Mobile Sticky-Bottom-Bar ─── */}
+      <div
+        className="lg:hidden fixed bottom-0 inset-x-0 z-30 px-4 py-3"
+        style={{
+          background:   "rgba(245, 241, 234, 0.96)",
+          borderTop:    "1px solid var(--color-line)",
+          backdropFilter: "blur(8px)",
+          paddingBottom: "calc(max(12px, env(safe-area-inset-bottom)) + 8px)",
+        }}
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex-1 min-w-0">
+            <p
+              className="text-[10px] uppercase font-medium"
+              style={{ letterSpacing: "0.22em", color: "var(--color-ink-mute)" }}
+            >
+              {labels.summe}
+            </p>
+            <p
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize:   22,
+                color:      "var(--color-ink)",
+                lineHeight: 1,
+              }}
+            >
+              {formatPreis(berechnung.total_cents / 100)}
+            </p>
+          </div>
           <button
+            type="button"
             onClick={handleCheckout}
             disabled={checkoutLoading}
-            className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-vintage-gold text-vintage-cream font-sans text-xs tracking-widest uppercase hover:bg-vintage-copper transition-colors disabled:opacity-60"
-            style={{ borderRadius: "var(--radius-button)" }}
+            className="btn-coral btn-coral-lg shrink-0"
+            style={{ minHeight: 48, touchAction: "manipulation" }}
           >
-            {checkoutLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> {labels.laedt}</>
-              : <>{labels.zur_kasse} <ArrowRight className="w-4 h-4" /></>
-            }
+            {checkoutLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : labels.zur_kasse}
+            {!checkoutLoading && <ArrowRight className="w-4 h-4" />}
           </button>
-
-          <p className="text-xs text-vintage-dust font-sans text-center">
-            {labels.sichere_zahlung}
-          </p>
         </div>
       </div>
+    </>
+  );
+}
+
+/* ── Sub-Components ───────────────────────────────────────────────────────── */
+
+function Row({
+  label, value, color, muted,
+}: {
+  label: string;
+  value: React.ReactNode;
+  color?: string;
+  muted?: boolean;
+}) {
+  return (
+    <div
+      className="flex justify-between"
+      style={{
+        color: color
+          ?? (muted ? "var(--color-ink-mute)" : "var(--color-ink-soft)"),
+        fontSize: muted ? 12 : 14,
+      }}
+    >
+      <span>{label}</span>
+      <span>{value}</span>
+    </div>
+  );
+}
+
+function FreeShippingBar({
+  reached, missing, pct,
+}: {
+  reached: boolean;
+  missing: number;
+  pct:     number;
+}) {
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-2 mb-1.5">
+        <span
+          className="flex items-center gap-1.5 text-[11px]"
+          style={{
+            color: reached ? "#52663F" : "var(--color-ink-soft)",
+          }}
+        >
+          <Truck className="w-3.5 h-3.5" />
+          {reached
+            ? <span style={{ fontFamily: "var(--font-italic)", fontStyle: "italic" }}>Бесплатная доставка!</span>
+            : <>До бесплатной доставки <strong>{formatPreis(missing / 100)}</strong></>
+          }
+        </span>
+      </div>
+      <div
+        className="w-full h-1.5 overflow-hidden"
+        style={{
+          background:   "var(--color-line)",
+          borderRadius: 999,
+        }}
+      >
+        <div
+          className="h-full transition-all duration-500"
+          style={{
+            width:      `${pct}%`,
+            background: reached ? "#7A8B6F" : "var(--color-coral)",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function CartItemCard({
+  item, onMengeChange, onEntfernen, onSaveForLater, labels,
+}: {
+  item: ReturnType<typeof useCart.getState>["items"][number];
+  onMengeChange: (id: string, menge: number) => void;
+  onEntfernen:   (id: string) => void;
+  onSaveForLater: (id: string) => void;
+  labels: CartLabels;
+}) {
+  const totalCents = item.einzelpreis_cents * item.menge;
+  const istLetztes = !!item.max_menge && item.max_menge === 1;
+
+  return (
+    <div
+      className="flex gap-4 p-4"
+      style={{
+        background: "#fff",
+        border:     "1px solid var(--color-line)",
+      }}
+    >
+      {/* Bild */}
+      <Link
+        href={`/katalog/${item.slug}`}
+        className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 overflow-hidden"
+        style={{ background: "var(--color-bone)" }}
+      >
+        {item.bild_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={item.bild_url} alt={item.name} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center" style={{ color: "var(--color-ink-mute)" }}>✦</div>
+        )}
+      </Link>
+
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <Link
+          href={`/katalog/${item.slug}`}
+          className="block transition-colors hover:text-[var(--color-coral)]"
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize:   16,
+            color:      "var(--color-ink)",
+            lineHeight: 1.25,
+          }}
+        >
+          <span className="line-clamp-2">{item.name}</span>
+        </Link>
+
+        {/* Stock-Warning */}
+        {istLetztes && (
+          <p
+            className="flex items-center gap-1 text-[11px] mt-1.5"
+            style={{ color: "var(--color-coral-deep, #A53E26)" }}
+          >
+            <AlertTriangle className="w-3 h-3" />
+            Последний экземпляр
+          </p>
+        )}
+
+        <p
+          className="text-[13px] mt-1"
+          style={{
+            fontFamily: "var(--font-italic)",
+            fontStyle:  "italic",
+            color:      "var(--color-ink-mute)",
+          }}
+        >
+          {formatPreis(item.einzelpreis_cents / 100)} × {item.menge}
+        </p>
+
+        {/* Steppermenu + Actions */}
+        <div className="flex items-center justify-between gap-2 mt-3 flex-wrap">
+          <div
+            className="flex items-center"
+            style={{ border: "1px solid var(--color-line)" }}
+          >
+            <button
+              onClick={() => onMengeChange(item.produkt_id, item.menge - 1)}
+              disabled={item.menge <= 1}
+              className="p-2 transition-colors disabled:opacity-30 hover:bg-[var(--color-bone)]"
+              aria-label="Уменьшить"
+              style={{ color: "var(--color-ink)", minWidth: 32, minHeight: 32 }}
+            >
+              <Minus className="w-3 h-3" />
+            </button>
+            <span
+              className="px-2 text-sm tabular-nums min-w-7 text-center"
+              style={{ color: "var(--color-ink)" }}
+            >
+              {item.menge}
+            </span>
+            <button
+              onClick={() => onMengeChange(item.produkt_id, item.menge + 1)}
+              disabled={!!item.max_menge && item.menge >= item.max_menge}
+              className="p-2 transition-colors disabled:opacity-30 hover:bg-[var(--color-bone)]"
+              aria-label="Увеличить"
+              style={{ color: "var(--color-ink)", minWidth: 32, minHeight: 32 }}
+            >
+              <Plus className="w-3 h-3" />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => onSaveForLater(item.produkt_id)}
+              className="p-2 transition-colors hover:text-[var(--color-coral)]"
+              style={{ color: "var(--color-ink-mute)" }}
+              title="Сохранить на потом"
+              aria-label="Сохранить на потом"
+            >
+              <Heart className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => onEntfernen(item.produkt_id)}
+              className="p-2 transition-colors hover:text-[var(--color-coral-deep,#A53E26)]"
+              style={{ color: "var(--color-ink-mute)" }}
+              aria-label={labels.entfernen}
+              title={labels.entfernen}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Zeilen-Total */}
+      <div className="text-right">
+        <p
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize:   18,
+            color:      "var(--color-ink)",
+          }}
+        >
+          {formatPreis(totalCents / 100)}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function EmptyCart({ labels }: { labels: CartLabels }) {
+  return (
+    <div
+      className="flex flex-col items-center justify-center py-20 px-6 text-center"
+      style={{
+        background: "#fff",
+        border:     "1px solid var(--color-line)",
+      }}
+    >
+      <div
+        className="inline-flex items-center justify-center mb-5"
+        style={{
+          width:        72,
+          height:       72,
+          background:   "var(--color-bone)",
+          borderRadius: "50%",
+        }}
+      >
+        <ShoppingBag className="w-7 h-7" style={{ color: "var(--color-ink-mute)" }} />
+      </div>
+
+      <p
+        className="text-[11px] uppercase font-medium mb-2"
+        style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}
+      >
+        ✦
+      </p>
+      <h2
+        className="mb-2"
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize:   "clamp(1.5rem, 3vw, 2rem)",
+          color:      "var(--color-ink)",
+          lineHeight: 1.1,
+        }}
+      >
+        {labels.leer}
+      </h2>
+      <p
+        className="text-sm mb-7 max-w-sm"
+        style={{
+          fontFamily: "var(--font-italic)",
+          fontStyle:  "italic",
+          color:      "var(--color-ink-soft)",
+        }}
+      >
+        {labels.leer_text}
+      </p>
+
+      <Link
+        href="/katalog"
+        className="btn-coral btn-coral-lg inline-flex items-center gap-2"
+        style={{ minHeight: 48 }}
+      >
+        {labels.zum_katalog} <ArrowRight className="w-4 h-4" />
+      </Link>
     </div>
   );
 }

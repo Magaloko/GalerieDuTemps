@@ -3,6 +3,8 @@ import { orderById } from "@/lib/db/orders";
 import { getLocale } from "@/i18n";
 import { PAYMENT_METHODS, isMethodAvailable, providerEnvOk } from "@/lib/payment/methods";
 import { MethodPicker } from "./method-picker";
+import { StepIndicator } from "@/components/checkout/step-indicator";
+import { TrustStrip } from "@/components/checkout/trust-strip";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -48,14 +50,16 @@ export default async function ZahlungsmethodePage({
 
   return (
     <div style={{ background: "var(--color-paper)", color: "var(--color-ink)" }} className="min-h-[100dvh]">
-      <div className="max-w-3xl mx-auto px-5 md:px-14 py-14 md:py-20">
+      <div className="max-w-3xl mx-auto px-5 md:px-14 py-10 md:py-14">
 
-        <header className="mb-10">
+        <StepIndicator current="payment" />
+
+        <header className="mb-10 text-center">
           <p
             className="text-[11px] uppercase font-medium mb-3"
             style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}
           >
-            Шаг 3 · Оплата
+            ✦ Шаг 2 · Оплата
           </p>
           <h1
             style={{
@@ -92,6 +96,8 @@ export default async function ZahlungsmethodePage({
           }))}
           locale={locale}
         />
+
+        <TrustStrip />
 
       </div>
     </div>
