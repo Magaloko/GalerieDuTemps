@@ -77,6 +77,15 @@ async function loadAll(): Promise<Record<FeatureKey, boolean>> {
     }
   }
 
+  // ── Notfall-Kill-Switch ─────────────────────────────────────────────────
+  // ENV EMERGENCY_SHOP_DISABLE=true erzwingt SOFORT den Schaufenster-Modus
+  // (kaufen_aktiv=false), ohne Code-Deploy und ohne DB-Schreibzugriff. Greift
+  // hier zentral, weil sowohl isFeatureEnabled (Anzeige, via getAllFeatures)
+  // als auch kaufenGesperrt (fail-closed) über loadAll() laufen.
+  if (process.env.EMERGENCY_SHOP_DISABLE === "true") {
+    map.kaufen_aktiv = false;
+  }
+
   return map;
 }
 
@@ -127,12 +136,22 @@ export async function kaufenGesperrt(): Promise<boolean> {
   }
 }
 
-/** Flag setzen (Admin-Action). Cache wird invalidiert. */
+/** Flag setzen (Admin-Action). Cache wird invalidiert + Audit-Trail. */
 export async function setFeature(
   key: FeatureKey,
   aktiviert: boolean,
   adminEmail?: string,
 ): Promise<void> {
+  // Alten Wert für den Audit-Trail lesen (vor dem Upsert).
+  let altWert: boolean | null = null;
+  try {
+    const vorher = await query<{ aktiviert: boolean }>(
+      `SELECT aktiviert FROM sebo.feature_flags WHERE schluessel = $1`,
+      [key],
+    );
+    altWert = vorher.rows[0]?.aktiviert ?? null;
+  } catch {/* Audit ist best-effort — Lesefehler ignorieren */}
+
   await query(
     `INSERT INTO sebo.feature_flags (schluessel, aktiviert, beschreibung, aktualisiert_von)
      VALUES ($1, $2, $3, $4)
@@ -142,6 +161,18 @@ export async function setFeature(
     [key, aktiviert, FEATURE_FLAGS[key].desc, adminEmail ?? null],
   );
   clearCache();
+
+  // Audit-Trail nur bei echter Änderung (append-only, best-effort).
+  if (altWert !== aktiviert) {
+    const { auditLog } = await import("./audit-log");
+    await auditLog({
+      action:     "feature_flag_changed",
+      actorEmail: adminEmail ?? null,
+      entity:     key,
+      altWert:    { aktiviert: altWert },
+      neuWert:    { aktiviert },
+    });
+  }
 }
 
 /** Mehrere Flags auf einmal setzen (z.B. Bulk-Save aus Admin-Form). */

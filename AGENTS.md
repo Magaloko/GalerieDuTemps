@@ -37,4 +37,8 @@ NEXTAUTH_SECRET           # Auth-Session-Secret
 UPLOAD_DIR                # Optional, default /app/public/uploads
 STRIPE_SECRET_KEY         # Falls Stripe-Zahlung
 BREVO_API_KEY             # Falls Brevo für Newsletter/Transaktional
+EMERGENCY_SHOP_DISABLE    # Notfall: "true" → erzwingt sofort Schaufenster-Modus
+                          #   (kaufen_aktiv=false, fail-closed) ohne Deploy/DB-Write.
+                          #   Sperrt alle Kaufpfade serverseitig + kippt die UI in
+                          #   den Vitrinen-Zustand. Wieder entfernen = Normalbetrieb.
 ```
