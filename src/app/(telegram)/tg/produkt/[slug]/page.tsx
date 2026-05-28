@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, MessageCircle } from "lucide-react";
 import { oeffentlichesProduktBySlug } from "@/lib/db/produkte-public";
 import { TelegramAuthGate } from "../../auth-gate";
 import { ProductMiniClient } from "./product-client";
+import { HeartToggle } from "../../heart-toggle";
 import { i18nOr } from "@/lib/utils/i18n-text";
 import { getLocale } from "@/i18n";
 import type { Metadata } from "next";
@@ -83,16 +84,21 @@ export default async function TelegramProduktPage({
               {produkt.kategorie_name}
             </p>
           )}
-          <h1
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize:   28,
-              lineHeight: 1.1,
-              color:      "var(--tg-theme-text-color, var(--color-ink))",
-            }}
-          >
-            {name}
-          </h1>
+          <div className="flex items-start gap-3">
+            <h1
+              className="flex-1 min-w-0"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize:   28,
+                lineHeight: 1.1,
+                color:      "var(--tg-theme-text-color, var(--color-ink))",
+              }}
+            >
+              {name}
+            </h1>
+            {/* Heart-Toggle inline neben dem Titel */}
+            <HeartToggle produktId={produkt.id} size={20} />
+          </div>
           {produkt.era && (
             <p
               className="mt-2 text-sm"
@@ -113,6 +119,22 @@ export default async function TelegramProduktPage({
               {kurz}
             </p>
           )}
+
+          {/* „Спросить куратора" — Frage über dieses Produkt */}
+          <Link
+            href={`/tg/kontakt?produkt=${produkt.id}&name=${encodeURIComponent(name)}`}
+            className="mt-5 flex items-center justify-center gap-2 py-3 text-[11px] uppercase font-medium"
+            style={{
+              letterSpacing: "0.22em",
+              background:    "var(--tg-theme-section-bg-color, #fff)",
+              border:        "1px solid var(--color-line)",
+              color:         "var(--tg-theme-text-color, var(--color-ink))",
+              touchAction:   "manipulation",
+            }}
+          >
+            <MessageCircle className="w-3.5 h-3.5" style={{ color: "var(--color-coral)" }} />
+            Спросить куратора
+          </Link>
         </div>
 
         {/* MainButton-Mount-Punkt (kein visuelles Markup, nur side-effect) */}

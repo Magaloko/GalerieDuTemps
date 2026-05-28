@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { formatPreis } from "@/lib/utils/preis";
+import { HeartToggle } from "./heart-toggle";
 import type { ProduktListItem } from "@/types/produkt";
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -95,6 +96,7 @@ function MiniCard({ produkt }: { produkt: ProduktListItem & { era?: string | nul
             className="object-cover"
           />
         )}
+        <HeartToggle produktId={produkt.id} overlay size={16} />
       </div>
       <div className="pt-2">
         {produkt.kategorie_name && (

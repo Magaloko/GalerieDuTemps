@@ -4,7 +4,7 @@ import { getWebAppSession } from "@/lib/telegram/webapp-session";
 import { TelegramAuthGate } from "../auth-gate";
 import { ClaimInitForm } from "./claim-init-form";
 import {
-  User, Mail, Briefcase, Package, Heart, ExternalLink, ArrowRight,
+  User, Mail, Briefcase, Package, Heart, ExternalLink, ArrowRight, MessageCircle,
 } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -81,6 +81,29 @@ export default async function TgProfilPage() {
 
           {/* Claim-Form (Client-Component, läuft initData-Auth-POST) */}
           <ClaimInitForm />
+
+          {/* Kontakt-Link für Gäste — auch ohne Account erreichbar */}
+          <Link
+            href="/tg/kontakt"
+            className="flex items-center gap-3 p-4"
+            style={{
+              background:  "var(--tg-theme-section-bg-color, #fff)",
+              border:      "1px solid var(--color-line)",
+              touchAction: "manipulation",
+            }}
+          >
+            <MessageCircle className="w-4 h-4 shrink-0" style={{ color: "var(--color-coral)" }} />
+            <span
+              className="text-sm flex-1"
+              style={{
+                fontFamily: "var(--font-display)",
+                color:      "var(--tg-theme-text-color, var(--color-ink))",
+              }}
+            >
+              Связаться с куратором
+            </span>
+            <ArrowRight className="w-3.5 h-3.5 opacity-40 shrink-0" style={{ color: "var(--tg-theme-text-color, var(--color-ink))" }} />
+          </Link>
 
           {/* Wenn noch kein Account auf Web */}
           <div
@@ -186,8 +209,9 @@ export default async function TgProfilPage() {
 
         {/* ─ Quick-Links ─────────────────────────────────────── */}
         <section className="space-y-2 pt-2">
-          <NavRow href="/tg/orders"        icon={Package} label="Мои заказы" />
-          <NavRow href="/tg/wunschliste"   icon={Heart}   label="Избранное"   />
+          <NavRow href="/tg/orders"        icon={Package}         label="Мои заказы" />
+          <NavRow href="/tg/wunschliste"   icon={Heart}           label="Избранное"   />
+          <NavRow href="/tg/kontakt"       icon={MessageCircle}   label="Связаться с куратором" />
         </section>
 
         {/* ─ Externe Links zum Web-Profil ────────────────────── */}
