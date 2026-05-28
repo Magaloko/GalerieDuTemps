@@ -96,16 +96,25 @@ export async function customerAusTelegramErstellen(input: {
   const bestehend = await customerByTelegramChatId(input.chatId);
   if (bestehend) return bestehend;
 
+  // Race-sicher: paralleler Doppel-Tap kann zwischen SELECT und INSERT eine
+  // zweite Erstellung versuchen. ON CONFLICT auf dem partiellen Unique-Index
+  // (chat_id WHERE NOT NULL) → DO NOTHING; bei verlorenem Race laden wir die
+  // vom Gewinner erstellte Zeile (kein Throw, kein Duplikat).
   const r = await query<Customer>(
     `INSERT INTO sebo.customers
        (email, passwort_hash, vorname, customer_type,
         telegram_chat_id, telegram_username, telegram_verknuepft_am,
         telegram_notifications_aktiv, agb_akzeptiert_am)
      VALUES (NULL, NULL, $1, 'b2c', $2, $3, now(), true, now())
+     ON CONFLICT (telegram_chat_id) WHERE telegram_chat_id IS NOT NULL DO NOTHING
      RETURNING *`,
     [input.vorname, input.chatId, input.username],
   );
-  return r.rows[0];
+  if (r.rows[0]) return r.rows[0];
+
+  const gewinner = await customerByTelegramChatId(input.chatId);
+  if (gewinner) return gewinner;
+  throw new Error("customerAusTelegramErstellen: Konto konnte nicht erstellt/geladen werden");
 }
 
 /**
