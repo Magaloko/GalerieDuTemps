@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Trash2, Minus, Plus, ShoppingBag, ArrowRight, Tag, X, Loader2,
-  CheckCircle2, Heart, AlertTriangle, Truck,
+  CheckCircle2, Heart, AlertTriangle, Truck, AlertCircle,
 } from "lucide-react";
 import { useCart, berechneCart } from "@/lib/cart";
 import { useWunschliste } from "@/hooks/use-wunschliste";
@@ -52,6 +52,8 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
   const [couponFehler,  setCouponFehler]  = useState<string | null>(null);
   const [rabattCents,   setRabattCents]   = useState(0);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutError,   setCheckoutError]   = useState<string | null>(null);
+  const [checkoutRetryIn, setCheckoutRetryIn] = useState<number>(0);
 
   useEffect(() => { setHydrated(true); }, []);
 
@@ -104,6 +106,8 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
 
   const handleCheckout = async () => {
     setCheckoutLoading(true);
+    setCheckoutError(null);
+    setCheckoutRetryIn(0);
     try {
       const res = await fetch("/api/checkout", {
         method:  "POST",
@@ -120,13 +124,18 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
       const data = await res.json();
       const target = data.redirect_to ?? data.checkout_url;
       if (target) {
+        // Redirect — Loading-State bleibt aktiv damit der Button nicht wieder
+        // "klickbar" wirkt während der Browser navigiert.
         window.location.href = target;
-      } else {
-        alert(data.error ?? labels.checkout_fehler);
-        setCheckoutLoading(false);
+        return;
+      }
+      setCheckoutError(data.error ?? labels.checkout_fehler);
+      if (typeof data.retry_after === "number") {
+        setCheckoutRetryIn(data.retry_after);
       }
     } catch {
-      alert(labels.checkout_fehler);
+      setCheckoutError(labels.checkout_fehler);
+    } finally {
       setCheckoutLoading(false);
     }
   };
@@ -332,6 +341,31 @@ export function WarenkorbClient({ labels }: { labels: CartLabels }) {
                 </span>
               </div>
             </div>
+
+            {/* Inline-Error (statt alert) */}
+            {checkoutError && (
+              <div
+                role="alert"
+                className="flex items-start gap-2 p-3 text-xs"
+                style={{
+                  background: "rgba(232,112,58,0.08)",
+                  border:     "1px solid rgba(232,112,58,0.35)",
+                  color:      "var(--color-coral-deep, #A53E26)",
+                }}
+              >
+                <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p>{checkoutError}</p>
+                  {checkoutRetryIn > 0 && (
+                    <p className="mt-1 opacity-70">
+                      Повторить можно через {checkoutRetryIn > 60
+                        ? `${Math.ceil(checkoutRetryIn / 60)} мин`
+                        : `${checkoutRetryIn} сек`}.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* CTA */}
             <button

@@ -110,11 +110,24 @@ export function getClientIp(req: Request): string {
   return "unknown";
 }
 
-/** HTTP 429 Response-Helper — gibt NextResponse zurück, kein cast nötig */
-export function tooManyRequestsResponse(info: RateLimitErgebnis): NextResponse {
+/** HTTP 429 Response-Helper — gibt NextResponse zurück, kein cast nötig.
+ *  Optional `message`-Override für lokalisierte/kontextspezifische Texte
+ *  (sonst Default-Russian, weil Hauptpublikum RU-sprachig ist). */
+export function tooManyRequestsResponse(
+  info: RateLimitErgebnis,
+  message?: string,
+): NextResponse {
   const retryAfterSekunden = Math.ceil((info.reset - Date.now()) / 1000);
+  const min = Math.ceil(retryAfterSekunden / 60);
+  const defaultMsg = retryAfterSekunden < 60
+    ? `Слишком много запросов. Попробуйте через ${retryAfterSekunden} сек.`
+    : `Слишком много запросов. Попробуйте через ${min} мин.`;
   return NextResponse.json(
-    { error: `Zu viele Anfragen. Bitte in ${retryAfterSekunden}s erneut versuchen.` },
+    {
+      error:        message ?? defaultMsg,
+      retry_after:  retryAfterSekunden,
+      rate_limited: true,
+    },
     {
       status:  429,
       headers: {

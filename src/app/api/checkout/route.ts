@@ -29,10 +29,18 @@ const CheckoutSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  // Rate-Limit: 10 Checkouts / 10 Min / IP
+  // Rate-Limit: 30 Checkouts / 10 Min / IP.
+  // Hochgesetzt von 10 — bei mehreren Familienmitgliedern hinter NAT oder
+  // beim aktiven Testen wurde die alte Schwelle leicht erreicht. 30 erlaubt
+  // normales Browser-/Retry-Verhalten ohne den Spam-Schutz aufzugeben.
   const ip = getClientIp(req);
-  const rl = await rateLimitAsync(`checkout:${ip}`, 10, 10 * 60 * 1000);
-  if (!rl.erlaubt) return tooManyRequestsResponse(rl);
+  const rl = await rateLimitAsync(`checkout:${ip}`, 30, 10 * 60 * 1000);
+  if (!rl.erlaubt) {
+    return tooManyRequestsResponse(
+      rl,
+      "Слишком много попыток оформления. Подождите несколько минут и попробуйте снова.",
+    );
+  }
 
   let body: unknown;
   try { body = await req.json(); }
