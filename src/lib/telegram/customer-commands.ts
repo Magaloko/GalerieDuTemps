@@ -211,6 +211,7 @@ async function cmdWishlist(ctx: CommandCtx): Promise<void> {
 async function cmdHelp(ctx: CommandCtx): Promise<void> {
   const text =
     `<b>Galerie du Temps — команды бота</b>\n\n` +
+    `<code>/neu</code> — новые поступления\n` +
     `<code>/orders</code> — последние 5 заказов\n` +
     `<code>/status &lt;номер&gt;</code> — детали заказа (например: <code>/status GDT-0042</code>)\n` +
     `<code>/wishlist</code> — избранное\n` +

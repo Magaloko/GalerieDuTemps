@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CheckCircle2, XCircle, EyeOff, Star, Loader2, Clock } from "lucide-react";
+import { CheckCircle2, XCircle, EyeOff, Star, Loader2, Clock, Megaphone } from "lucide-react";
 import {
   produktQuickToggleAction,
   produktReservierenAction,
   produktReservierungAufhebenAction,
+  produktInKanalAction,
 } from "@/app/(admin)/admin/produkte/actions";
 
 interface Props {
@@ -52,6 +53,14 @@ export function QuickToggleRow({ id, aktiv, featured, verkauft, lagerbestand, re
         setReserviert(!willReserve);   // revert
         alert(r.error ?? "Ошибка");
       }
+    });
+  };
+
+  const broadcast = () => {
+    if (!confirm("Опубликовать этот товар в Telegram-канал как новинку?")) return;
+    start(async () => {
+      const r = await produktInKanalAction(id);
+      alert(r.ok ? "Опубликовано в канал ✓" : (r.error ?? "Ошибка"));
     });
   };
 
@@ -122,6 +131,21 @@ export function QuickToggleRow({ id, aktiv, featured, verkauft, lagerbestand, re
         >
           <Clock className="w-3 h-3" />
           {reserviertState ? "Зарезервировано ↺" : "Резерв 48ч"}
+        </button>
+      )}
+
+      {/* New-Arrivals-Broadcast in den Telegram-Kanal */}
+      {optimistic.aktiv && !optimistic.verkauft && (
+        <button
+          type="button"
+          onClick={broadcast}
+          disabled={pending}
+          title="Опубликовать в Telegram-канал как новинку"
+          className="flex items-center gap-1 px-2 py-1 border border-vintage-sand text-xs text-vintage-dust hover:bg-vintage-parchment transition-colors"
+          style={{ borderRadius: "var(--radius-vintage)" }}
+        >
+          <Megaphone className="w-3 h-3" />
+          В канал
         </button>
       )}
     </div>

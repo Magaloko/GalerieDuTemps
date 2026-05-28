@@ -225,6 +225,36 @@ export async function produktReservierungAufhebenAction(
 }
 
 // ---------------------------------------------------------------------------
+// New-Arrivals-Broadcast — Produkt in den Telegram-Kanal posten
+// ---------------------------------------------------------------------------
+export async function produktInKanalAction(
+  id: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const session = await requireAdminSession();
+  if (!session) return { ok: false, error: "Нет прав" };
+
+  const produkt = await produktById(id);
+  if (!produkt) return { ok: false, error: "Товар не найден" };
+
+  const { broadcastProduktInKanal } = await import("@/lib/telegram/neuheiten");
+  const res = await broadcastProduktInKanal({
+    slug:          produkt.slug,
+    name:          produkt.name,
+    preis:         produkt.preis,
+    waehrung:      produkt.waehrung,
+    hauptbild_url: produkt.hauptbild_url ?? produkt.bilder?.[0]?.url ?? null,
+  });
+  if (!res.ok) return { ok: false, error: res.error };
+
+  await auditLog({
+    action:     "produkt_broadcast_kanal",
+    actorEmail: session.user.email ?? null,
+    entity:     id,
+  });
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
 // Bulk-Aktionen — Liste von IDs gleichzeitig manipulieren
 // ---------------------------------------------------------------------------
 type BulkAction = "aktivieren" | "deaktivieren" | "featured_an" | "featured_aus" | "verkauft" | "loeschen";

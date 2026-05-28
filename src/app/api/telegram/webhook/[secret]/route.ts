@@ -385,6 +385,21 @@ export async function POST(
     return NextResponse.json({ ok: true });
   }
 
+  // ── /neu — neueste Stücke (mit web_app-Buttons direkt zum Produkt) ──────
+  if (text === "/neu" || text === "/новинки" || text === "/new") {
+    if (konto.access_token) {
+      const { neuheitenLaden, neuheitenNachricht } = await import("@/lib/telegram/neuheiten");
+      const items = await neuheitenLaden(6).catch(() => []);
+      const { text: neuText, keyboard } = neuheitenNachricht(items, siteBase, kaufenAktiv);
+      await sendMessage(konto.access_token, chat.id, neuText, {
+        parse_mode:   "HTML",
+        reply_markup: keyboard,
+        disable_web_page_preview: true,
+      }).catch(err => console.error("[tg send neu]", err));
+    }
+    return NextResponse.json({ ok: true });
+  }
+
   // ── /kontakt — public Kontaktdaten ──────────────────────────────────────
   if (text === "/kontakt" || text === "/contact" || text === "/контакт") {
     if (konto.access_token) {

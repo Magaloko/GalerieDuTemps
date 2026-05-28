@@ -82,6 +82,35 @@ export async function produktReservierungTgAction(
   }
 }
 
+/* ── Produkt: New-Arrivals-Broadcast in den Kanal ──────────────────────────── */
+export async function produktInKanalTgAction(produktId: string): Promise<ActionRes> {
+  if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
+  try {
+    const r = await query<{ slug: string; name: string; preis: number; waehrung: string | null; hauptbild_url: string | null }>(
+      `SELECT p.slug, p.name, p.preis, p.waehrung,
+              COALESCE(p.hauptbild_url,
+                (SELECT pb.url FROM sebo.produktbilder pb WHERE pb.produkt_id = p.id ORDER BY pb.ist_hauptbild DESC, pb.sortierung LIMIT 1)
+              ) AS hauptbild_url
+         FROM sebo.produkte p WHERE p.id = $1`,
+      [produktId],
+    );
+    const p = r.rows[0];
+    if (!p) return { ok: false, error: "Товар не найден" };
+
+    const { broadcastProduktInKanal } = await import("@/lib/telegram/neuheiten");
+    const res = await broadcastProduktInKanal({
+      slug: p.slug, name: p.name, preis: Number(p.preis), waehrung: p.waehrung, hauptbild_url: p.hauptbild_url,
+    });
+    if (!res.ok) return { ok: false, error: res.error };
+
+    await auditLog({ action: "produkt_broadcast_kanal", actorEmail: null, entity: produktId, neuWert: { via: "tg-admin" } });
+    return { ok: true, message: "Опубликовано в канал" };
+  } catch (err) {
+    console.error("[produktInKanalTg]", err);
+    return { ok: false, error: "Ошибка отправки" };
+  }
+}
+
 /* ── B2B: Freischalten / Ablehnen ──────────────────────────────────────────── */
 export async function b2bFreischaltenAction(customerId: string): Promise<ActionRes> {
   if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };

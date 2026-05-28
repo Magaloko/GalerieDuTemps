@@ -3,9 +3,9 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Check, Loader2, Eye, EyeOff, Tag, Pencil, Clock } from "lucide-react";
+import { Check, Loader2, Eye, EyeOff, Tag, Pencil, Clock, Megaphone } from "lucide-react";
 import { formatPreis } from "@/lib/utils/preis";
-import { produktSchnellEditAction, produktReservierungTgAction } from "../actions";
+import { produktSchnellEditAction, produktReservierungTgAction, produktInKanalTgAction } from "../actions";
 import { haptic } from "../../fx";
 
 interface Props {
@@ -43,6 +43,14 @@ export function ProduktRow(p: Props) {
       const r = await produktReservierungTgAction(p.id, reservieren);
       if (r.ok) { haptic("success"); setFlash("✓"); setTimeout(() => setFlash(null), 1500); router.refresh(); }
       else { haptic("error"); setFlash(r.error); setTimeout(() => setFlash(null), 2500); }
+    });
+  };
+
+  const runBroadcast = () => {
+    start(async () => {
+      const r = await produktInKanalTgAction(p.id);
+      if (r.ok) { haptic("success"); setFlash("✓"); setTimeout(() => setFlash(null), 2000); }
+      else { haptic("error"); setFlash(r.error); setTimeout(() => setFlash(null), 2800); }
     });
   };
 
@@ -152,6 +160,19 @@ export function ProduktRow(p: Props) {
                 <Clock className="w-3.5 h-3.5" /> Зарезервировать 48ч
               </button>
             )
+          )}
+
+          {/* New-Arrivals-Broadcast in den Kanal — nur wenn aktiv & nicht verkauft */}
+          {p.aktiv && !p.verkauft && (
+            <button
+              type="button"
+              disabled={pending}
+              onClick={runBroadcast}
+              className="w-full flex items-center justify-center gap-1.5 py-2 text-[11px] uppercase font-medium disabled:opacity-40"
+              style={{ letterSpacing: "0.16em", background: "rgba(38,163,238,0.12)", color: "#1E6FA8", border: "1px solid rgba(38,163,238,0.40)" }}
+            >
+              <Megaphone className="w-3.5 h-3.5" /> В канал (новинка)
+            </button>
           )}
 
           {/* Voll-Editor öffnen */}
