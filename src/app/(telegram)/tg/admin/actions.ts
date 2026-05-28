@@ -183,7 +183,12 @@ export async function produktBildUploadAction(formData: FormData): Promise<Actio
 export async function produktBildLoeschenAction(bildId: string, produktId: string): Promise<ActionRes> {
   if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
   try {
-    await bildLoeschen(bildId);
+    const geloescht = await bildLoeschen(bildId);
+    // Storage-Datei(en) mit aufräumen (Supabase oder Disk) — kein Müll
+    if (geloescht?.url) {
+      const { bildLoeschenVonDisk } = await import("@/lib/storage/upload");
+      await bildLoeschenVonDisk(geloescht.url).catch(() => {});
+    }
     revalidatePath(`/tg/admin/produkte/${produktId}`);
     return { ok: true, message: "Удалено" };
   } catch (err) {
