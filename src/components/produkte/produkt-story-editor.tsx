@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import {
   Heading2, Type, Image as ImageIcon, Lightbulb, Quote,
   ArrowUp, ArrowDown, Copy, Trash2, X, Upload, LayoutPanelTop, Loader2,
-  Minus, MousePointerClick, Columns2, LayoutGrid, Film,
+  Minus, MousePointerClick, Columns2, LayoutGrid, Film, GripVertical,
 } from "lucide-react";
 import { storyBildUploadAction } from "@/app/(admin)/admin/produkte/actions";
 import { STORY_BG, storyBgCss } from "./story-bg";
@@ -99,6 +99,20 @@ function StoryOverlay({
   onClose:   () => void;
 }) {
   const [sel, setSel] = useState<number | null>(blocks.length ? 0 : null);
+  const dragIndex = useRef<number | null>(null);
+  const [overIndex, setOverIndex] = useState<number | null>(null);
+
+  const reorder = (from: number, to: number) => {
+    if (from === to || from < 0 || to < 0) return;
+    setBlocks(b => {
+      if (from >= b.length || to >= b.length) return b;
+      const arr = [...b];
+      const [m] = arr.splice(from, 1);
+      arr.splice(to, 0, m);
+      return arr;
+    });
+    setSel(to);
+  };
 
   const add = (t: ProduktBlockTyp) => {
     setBlocks(b => { const next = [...b, { ...NEU[t] }]; setSel(next.length - 1); return next; });
@@ -164,13 +178,24 @@ function StoryOverlay({
             ) : blocks.map((b, i) => (
               <div
                 key={i}
+                draggable
                 onClick={() => setSel(i)}
-                className="relative cursor-pointer transition-all"
-                style={{ outline: sel === i ? "2px solid var(--color-coral)" : "1px dashed transparent", outlineOffset: 4, borderRadius: 4 }}
+                onDragStart={(e) => { dragIndex.current = i; e.dataTransfer.effectAllowed = "move"; }}
+                onDragOver={(e) => { if (dragIndex.current !== null) { e.preventDefault(); if (overIndex !== i) setOverIndex(i); } }}
+                onDrop={(e) => { e.preventDefault(); const from = dragIndex.current; if (from !== null) reorder(from, i); dragIndex.current = null; setOverIndex(null); }}
+                onDragEnd={() => { dragIndex.current = null; setOverIndex(null); }}
+                className="relative cursor-grab active:cursor-grabbing transition-all"
+                style={{
+                  outline:      overIndex === i ? "2px dashed var(--color-coral)" : sel === i ? "2px solid var(--color-coral)" : "1px dashed transparent",
+                  outlineOffset: 4,
+                  borderRadius:  4,
+                  opacity:      dragIndex.current === i ? 0.5 : 1,
+                }}
               >
                 {/* Floating Controls (gewählt) */}
                 {sel === i && (
                   <div className="absolute -top-3 right-0 z-10 flex items-center gap-0.5 bg-vintage-white border border-vintage-sand p-0.5" style={{ borderRadius: "var(--radius-vintage)" }}>
+                    <span title="Перетащите для сортировки" className="px-1 text-vintage-dust cursor-grab"><GripVertical className="w-3.5 h-3.5" /></span>
                     <Ctl title="Вверх"      onClick={(e) => { e.stopPropagation(); move(i, -1); }} disabled={i === 0}><ArrowUp className="w-3.5 h-3.5" /></Ctl>
                     <Ctl title="Вниз"       onClick={(e) => { e.stopPropagation(); move(i, 1); }}  disabled={i === blocks.length - 1}><ArrowDown className="w-3.5 h-3.5" /></Ctl>
                     <Ctl title="Дублировать" onClick={(e) => { e.stopPropagation(); dup(i); }}><Copy className="w-3.5 h-3.5" /></Ctl>
