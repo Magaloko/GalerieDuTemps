@@ -21,17 +21,24 @@ export const ProduktCreateSchema = z.object({
   rueckbild_url:   z.string().max(500).optional().nullable(),
   video_url:       z.string().max(500).optional().nullable(),
   instagram_urls:  z.array(z.string().url()).max(10).optional(),
-  inhalt_blocks:   z.array(z.object({
-    type:     z.enum(["heading", "text", "image", "highlight", "quote", "divider", "button", "columns", "gallery", "video"]),
-    bg:       z.string().max(20).optional(),
-    text:     z.string().max(5000).optional(),
-    text2:    z.string().max(5000).optional(),
-    bild_url: z.string().max(500).optional(),
-    bilder:   z.array(z.string().max(500)).max(12).optional(),
-    caption:  z.string().max(500).optional(),
-    label:    z.string().max(120).optional(),
-    url:      z.string().max(500).optional(),
-  })).max(50).optional(),
+  inhalt_blocks:   (() => {
+    // Mehrsprachiger Textwert; toleriert auch Legacy-String (sprachneutral).
+    const i18nText = z.union([
+      z.string().max(5000),
+      z.object({ ru: z.string().max(5000).optional(), en: z.string().max(5000).optional(), de: z.string().max(5000).optional() }),
+    ]).optional();
+    return z.array(z.object({
+      type:     z.enum(["heading", "text", "image", "highlight", "quote", "divider", "button", "columns", "gallery", "video"]),
+      bg:       z.string().max(20).optional(),
+      text:     i18nText,
+      text2:    i18nText,
+      bild_url: z.string().max(500).optional(),
+      bilder:   z.array(z.string().max(500)).max(12).optional(),
+      caption:  i18nText,
+      label:    i18nText,
+      url:      z.string().max(500).optional(),
+    })).max(50).optional();
+  })(),
   abmessungen:     z.object({
     breite:  z.coerce.number().nonnegative().optional(),
     hoehe:   z.coerce.number().nonnegative().optional(),

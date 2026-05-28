@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Quote } from "lucide-react";
 import type { ProduktBlock } from "@/types/produkt";
 import { storyBgCss } from "./story-bg";
+import { blockText } from "@/lib/utils/i18n-text";
+import type { Locale } from "@/i18n/types";
 
 /** Video-URL → Embed (YouTube/Vimeo iframe oder natives <video>). */
 function videoEmbed(url: string): { kind: "iframe" | "video"; src: string } | null {
@@ -20,12 +22,16 @@ function videoEmbed(url: string): { kind: "iframe" | "video"; src: string } | nu
  * Server-Component. React escaped Text automatisch (kein dangerouslySetInnerHTML).
  * Bewusst schlicht & markenkonform (Galerie-Optik), nicht generisch.
  * ────────────────────────────────────────────────────────────────────────── */
-export function ProduktStory({ blocks }: { blocks: ProduktBlock[] }) {
+export function ProduktStory({ blocks, locale }: { blocks: ProduktBlock[]; locale: Locale }) {
   if (!blocks || blocks.length === 0) return null;
 
   return (
     <div className="space-y-6">
       {blocks.map((b, i) => {
+        const t   = blockText(b.text,   locale);
+        const t2  = blockText(b.text2,  locale);
+        const cap = blockText(b.caption, locale);
+        const lbl = blockText(b.label,  locale);
         const inner = (() => {
         switch (b.type) {
           case "heading":
@@ -39,14 +45,14 @@ export function ProduktStory({ blocks }: { blocks: ProduktBlock[] }) {
                   lineHeight: 1.15,
                 }}
               >
-                {b.text}
+                {t}
               </h2>
             );
 
           case "text":
             return (
               <div key={i} className="space-y-3" style={{ color: "var(--color-ink-soft)", lineHeight: 1.7 }}>
-                {(b.text ?? "").split(/\n{2,}/).filter(Boolean).map((p, j) => (
+                {t.split(/\n{2,}/).filter(Boolean).map((p, j) => (
                   <p key={j} className="text-[15px]">{p}</p>
                 ))}
               </div>
@@ -56,11 +62,11 @@ export function ProduktStory({ blocks }: { blocks: ProduktBlock[] }) {
             return b.bild_url ? (
               <figure key={i} className="space-y-2">
                 <div className="relative w-full overflow-hidden" style={{ aspectRatio: "3/2", background: "var(--color-paper-warm, #E8DFD0)" }}>
-                  <Image src={b.bild_url} alt={b.caption ?? ""} fill sizes="(max-width:768px) 100vw, 700px" className="object-cover" />
+                  <Image src={b.bild_url} alt={cap} fill sizes="(max-width:768px) 100vw, 700px" className="object-cover" />
                 </div>
-                {b.caption && (
+                {cap && (
                   <figcaption className="text-xs" style={{ fontStyle: "italic", color: "var(--color-ink-mute)" }}>
-                    {b.caption}
+                    {cap}
                   </figcaption>
                 )}
               </figure>
@@ -78,7 +84,7 @@ export function ProduktStory({ blocks }: { blocks: ProduktBlock[] }) {
                   lineHeight: 1.6,
                 }}
               >
-                {b.text}
+                {t}
               </div>
             );
 
@@ -87,11 +93,11 @@ export function ProduktStory({ blocks }: { blocks: ProduktBlock[] }) {
               <blockquote key={i} className="pl-4 py-1" style={{ borderLeft: "2px solid var(--color-coral)" }}>
                 <Quote className="w-4 h-4 mb-1" style={{ color: "var(--color-coral)" }} />
                 <p style={{ fontFamily: "var(--font-italic)", fontStyle: "italic", fontSize: 18, color: "var(--color-ink)", lineHeight: 1.5 }}>
-                  {b.text}
+                  {t}
                 </p>
-                {b.caption && (
+                {cap && (
                   <cite className="block mt-2 text-xs not-italic" style={{ color: "var(--color-ink-mute)" }}>
-                    — {b.caption}
+                    — {cap}
                   </cite>
                 )}
               </blockquote>
@@ -110,10 +116,10 @@ export function ProduktStory({ blocks }: { blocks: ProduktBlock[] }) {
             return (
               <div key={i} className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-[15px]" style={{ color: "var(--color-ink-soft)", lineHeight: 1.7 }}>
                 <div className="space-y-3">
-                  {(b.text ?? "").split(/\n{2,}/).filter(Boolean).map((p, j) => <p key={j}>{p}</p>)}
+                  {t.split(/\n{2,}/).filter(Boolean).map((p, j) => <p key={j}>{p}</p>)}
                 </div>
                 <div className="space-y-3">
-                  {(b.text2 ?? "").split(/\n{2,}/).filter(Boolean).map((p, j) => <p key={j}>{p}</p>)}
+                  {t2.split(/\n{2,}/).filter(Boolean).map((p, j) => <p key={j}>{p}</p>)}
                 </div>
               </div>
             );
@@ -141,7 +147,7 @@ export function ProduktStory({ blocks }: { blocks: ProduktBlock[] }) {
                   className="btn-coral btn-coral-lg inline-flex items-center"
                   {...(b.url.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                 >
-                  {b.label || "Подробнее"}
+                  {lbl || "Подробнее"}
                 </Link>
               </div>
             ) : null;

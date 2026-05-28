@@ -453,7 +453,7 @@ export default async function ProduktDetailPage({ params }: Props) {
               </h2>
             </div>
             {hatStory ? (
-              <ProduktStory blocks={produkt.inhalt_blocks} />
+              <ProduktStory blocks={produkt.inhalt_blocks} locale={locale} />
             ) : (
               <div
                 className="prose-vintage text-[15px] leading-relaxed"

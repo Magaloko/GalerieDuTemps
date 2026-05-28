@@ -8,7 +8,8 @@ import {
 } from "lucide-react";
 import { storyBildUploadAction } from "@/app/(admin)/admin/produkte/actions";
 import { STORY_BG, storyBgCss } from "./story-bg";
-import type { ProduktBlock, ProduktBlockTyp, Produktbild } from "@/types/produkt";
+import { blockText } from "@/lib/utils/i18n-text";
+import type { ProduktBlock, ProduktBlockTyp, Produktbild, I18nText } from "@/types/produkt";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * ProduktStoryEditor — Voll-3-Pane Block-Editor für die Produkt-Story.
@@ -36,14 +37,14 @@ const PALETTE: { type: ProduktBlockTyp; label: string; icon: React.ElementType; 
 ];
 
 const NEU: Record<ProduktBlockTyp, ProduktBlock> = {
-  heading:   { type: "heading",   text: "" },
-  text:      { type: "text",      text: "" },
-  image:     { type: "image",     bild_url: "", caption: "" },
+  heading:   { type: "heading" },
+  text:      { type: "text" },
+  image:     { type: "image",     bild_url: "" },
   gallery:   { type: "gallery",   bilder: [] },
-  columns:   { type: "columns",   text: "", text2: "" },
-  highlight: { type: "highlight", text: "" },
-  quote:     { type: "quote",     text: "", caption: "" },
-  button:    { type: "button",    label: "Связаться с куратором", url: "/kontakt" },
+  columns:   { type: "columns" },
+  highlight: { type: "highlight" },
+  quote:     { type: "quote" },
+  button:    { type: "button",    label: { ru: "Связаться с куратором" }, url: "/kontakt" },
   video:     { type: "video",     url: "" },
   divider:   { type: "divider" },
 };
@@ -217,24 +218,28 @@ function Ctl({ children, onClick, title, disabled, danger }: {
   );
 }
 
-/* ── Block-Vorschau (markenkonform) ───────────────────────────────────────── */
+/* ── Block-Vorschau (markenkonform; zeigt RU als Primärsprache) ───────────── */
 function BlockPreview({ block: b }: { block: ProduktBlock }) {
-  if (b.type === "heading") return <h3 className="font-serif text-xl text-vintage-espresso">{b.text || <em className="text-vintage-dust">Подзаголовок…</em>}</h3>;
+  const t   = blockText(b.text,   "ru");
+  const t2  = blockText(b.text2,  "ru");
+  const cap = blockText(b.caption, "ru");
+  const lbl = blockText(b.label,  "ru");
+  if (b.type === "heading") return <h3 className="font-serif text-xl text-vintage-espresso">{t || <em className="text-vintage-dust">Подзаголовок…</em>}</h3>;
   if (b.type === "text") return (
     <div className="space-y-2 text-sm text-vintage-ink" style={{ lineHeight: 1.7 }}>
-      {(b.text ?? "").trim()
-        ? (b.text ?? "").split(/\n{2,}/).filter(Boolean).map((p, j) => <p key={j}>{p}</p>)
+      {t.trim()
+        ? t.split(/\n{2,}/).filter(Boolean).map((p, j) => <p key={j}>{p}</p>)
         : <p className="text-vintage-dust italic">Текст абзаца…</p>}
     </div>
   );
-  if (b.type === "highlight") return <div className="p-3 text-sm text-vintage-ink" style={{ background: "rgba(201,168,76,0.10)", borderLeft: "3px solid var(--color-gold,#C9A84C)" }}>{b.text || <span className="text-vintage-dust italic">Подсказка…</span>}</div>;
+  if (b.type === "highlight") return <div className="p-3 text-sm text-vintage-ink" style={{ background: "rgba(201,168,76,0.10)", borderLeft: "3px solid var(--color-gold,#C9A84C)" }}>{t || <span className="text-vintage-dust italic">Подсказка…</span>}</div>;
   if (b.type === "quote") return (
     <blockquote className="pl-3 italic text-vintage-ink" style={{ borderLeft: "2px solid var(--color-coral)" }}>
-      “{b.text || "Цитата…"}”{b.caption && <cite className="block mt-1 not-italic text-xs text-vintage-dust">— {b.caption}</cite>}
+      “{t || "Цитата…"}”{cap && <cite className="block mt-1 not-italic text-xs text-vintage-dust">— {cap}</cite>}
     </blockquote>
   );
   if (b.type === "image") return b.bild_url
-    ? (<figure>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={b.bild_url} alt={b.caption ?? ""} className="w-full object-cover" style={{ borderRadius: "var(--radius-vintage)" }} />{b.caption && <figcaption className="text-xs italic text-vintage-dust mt-1">{b.caption}</figcaption>}</figure>)
+    ? (<figure>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={b.bild_url} alt={cap} className="w-full object-cover" style={{ borderRadius: "var(--radius-vintage)" }} />{cap && <figcaption className="text-xs italic text-vintage-dust mt-1">{cap}</figcaption>}</figure>)
     : (<div className="flex items-center justify-center gap-2 py-10 text-vintage-dust border border-dashed border-vintage-sand"><ImageIcon className="w-5 h-5" /> Изображение не выбрано</div>);
   if (b.type === "divider") return (
     <div className="flex items-center gap-3 py-1" aria-hidden>
@@ -245,14 +250,14 @@ function BlockPreview({ block: b }: { block: ProduktBlock }) {
   );
   if (b.type === "columns") return (
     <div className="grid grid-cols-2 gap-4 text-sm text-vintage-ink" style={{ lineHeight: 1.6 }}>
-      <div className="space-y-2">{(b.text ?? "").trim() ? (b.text ?? "").split(/\n{2,}/).filter(Boolean).map((p, j) => <p key={j}>{p}</p>) : <p className="text-vintage-dust italic">Левая колонка…</p>}</div>
-      <div className="space-y-2">{(b.text2 ?? "").trim() ? (b.text2 ?? "").split(/\n{2,}/).filter(Boolean).map((p, j) => <p key={j}>{p}</p>) : <p className="text-vintage-dust italic">Правая колонка…</p>}</div>
+      <div className="space-y-2">{t.trim() ? t.split(/\n{2,}/).filter(Boolean).map((p, j) => <p key={j}>{p}</p>) : <p className="text-vintage-dust italic">Левая колонка…</p>}</div>
+      <div className="space-y-2">{t2.trim() ? t2.split(/\n{2,}/).filter(Boolean).map((p, j) => <p key={j}>{p}</p>) : <p className="text-vintage-dust italic">Правая колонка…</p>}</div>
     </div>
   );
   if (b.type === "button") return (
     <div className="py-1">
       <span className="inline-flex items-center px-5 py-2.5 text-sm font-medium" style={{ background: "var(--color-coral)", color: "#fff", borderRadius: "var(--radius-button, 4px)" }}>
-        {b.label || "Кнопка"}
+        {lbl || "Кнопка"}
       </span>
     </div>
   );
@@ -275,6 +280,44 @@ function BlockPreview({ block: b }: { block: ProduktBlock }) {
 
 /* ── Eigenschaften-Panel (je Block-Typ) ───────────────────────────────────── */
 const fieldCls = "w-full px-3 py-2 text-sm bg-vintage-parchment border border-vintage-sand text-vintage-ink";
+
+const I18N_LOCALES: { code: "ru" | "en" | "de"; flag: string }[] = [
+  { code: "ru", flag: "🇷🇺" }, { code: "en", flag: "🇬🇧" }, { code: "de", flag: "🇩🇪" },
+];
+
+/** Mehrsprachiges Text-/Textarea-Feld mit RU/EN/DE-Tabs (· = ausgefüllt). */
+function I18nField({
+  value, onChange, multiline, rows, placeholder,
+}: {
+  value?:      I18nText;
+  onChange:    (v: I18nText) => void;
+  multiline?:  boolean;
+  rows?:       number;
+  placeholder?: string;
+}) {
+  const [active, setActive] = useState<"ru" | "en" | "de">("ru");
+  const v = value ?? {};
+  const set = (s: string) => onChange({ ...v, [active]: s });
+  return (
+    <div className="space-y-1">
+      <div className="flex gap-0.5">
+        {I18N_LOCALES.map(l => {
+          const filled = (v[l.code] ?? "").trim().length > 0;
+          return (
+            <button key={l.code} type="button" onClick={() => setActive(l.code)}
+              className={`px-1.5 py-0.5 text-[11px] border transition-colors ${active === l.code ? "border-vintage-gold bg-vintage-parchment" : "border-vintage-sand text-vintage-dust"}`}
+              style={{ borderRadius: 4 }}>
+              {l.flag}{filled ? " •" : ""}
+            </button>
+          );
+        })}
+      </div>
+      {multiline
+        ? <textarea className={fieldCls} rows={rows ?? 4} value={v[active] ?? ""} placeholder={placeholder} onChange={e => set(e.target.value)} />
+        : <input className={fieldCls} value={v[active] ?? ""} placeholder={placeholder} onChange={e => set(e.target.value)} />}
+    </div>
+  );
+}
 
 function BlockProps({ block: b, galerie, onPatch }: {
   block: ProduktBlock; galerie: Produktbild[]; onPatch: (p: Partial<ProduktBlock>) => void;
@@ -310,15 +353,15 @@ function BlockProps({ block: b, galerie, onPatch }: {
       <p className="text-[11px] uppercase tracking-widest text-vintage-gold/80">{labelFor(b.type)}</p>
 
       {b.type === "heading" && (
-        <input className={fieldCls} value={b.text ?? ""} placeholder="Подзаголовок" onChange={e => onPatch({ text: e.target.value })} />
+        <I18nField value={b.text} onChange={v => onPatch({ text: v })} placeholder="Подзаголовок" />
       )}
       {(b.type === "text" || b.type === "highlight") && (
-        <textarea className={fieldCls} rows={b.type === "text" ? 8 : 4} value={b.text ?? ""} placeholder={b.type === "text" ? "Текст… (пустая строка = новый абзац)" : "Подсказка…"} onChange={e => onPatch({ text: e.target.value })} />
+        <I18nField multiline rows={b.type === "text" ? 8 : 4} value={b.text} onChange={v => onPatch({ text: v })} placeholder={b.type === "text" ? "Текст… (пустая строка = новый абзац)" : "Подсказка…"} />
       )}
       {b.type === "quote" && (
         <>
-          <textarea className={fieldCls} rows={3} value={b.text ?? ""} placeholder="Цитата…" onChange={e => onPatch({ text: e.target.value })} />
-          <input className={fieldCls} value={b.caption ?? ""} placeholder="Автор / источник" onChange={e => onPatch({ caption: e.target.value })} />
+          <I18nField multiline rows={3} value={b.text} onChange={v => onPatch({ text: v })} placeholder="Цитата…" />
+          <I18nField value={b.caption} onChange={v => onPatch({ caption: v })} placeholder="Автор / источник" />
         </>
       )}
       {b.type === "image" && (
@@ -355,20 +398,20 @@ function BlockProps({ block: b, galerie, onPatch }: {
             </div>
           )}
 
-          <input className={fieldCls} value={b.caption ?? ""} placeholder="Подпись (необязательно)" onChange={e => onPatch({ caption: e.target.value })} />
+          <I18nField value={b.caption} onChange={v => onPatch({ caption: v })} placeholder="Подпись (необязательно)" />
         </div>
       )}
 
       {b.type === "columns" && (
         <div className="space-y-2">
-          <textarea className={fieldCls} rows={5} value={b.text ?? ""} placeholder="Левая колонка…" onChange={e => onPatch({ text: e.target.value })} />
-          <textarea className={fieldCls} rows={5} value={b.text2 ?? ""} placeholder="Правая колонка…" onChange={e => onPatch({ text2: e.target.value })} />
+          <I18nField multiline rows={5} value={b.text}  onChange={v => onPatch({ text: v })}  placeholder="Левая колонка…" />
+          <I18nField multiline rows={5} value={b.text2} onChange={v => onPatch({ text2: v })} placeholder="Правая колонка…" />
         </div>
       )}
 
       {b.type === "button" && (
         <div className="space-y-2">
-          <input className={fieldCls} value={b.label ?? ""} placeholder="Текст кнопки" onChange={e => onPatch({ label: e.target.value })} />
+          <I18nField value={b.label} onChange={v => onPatch({ label: v })} placeholder="Текст кнопки" />
           <input className={fieldCls} value={b.url ?? ""} placeholder="Ссылка (/kontakt или https://…)" onChange={e => onPatch({ url: e.target.value })} />
         </div>
       )}

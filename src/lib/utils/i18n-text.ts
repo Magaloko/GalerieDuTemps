@@ -27,3 +27,16 @@ export function i18nOr(
 ): string {
   return i18n(jsonb, locale) ?? fallback ?? "";
 }
+
+/**
+ * Resolver für Story-Block-Texte: akzeptiert i18n-Map ODER Legacy-String
+ * (sprachneutral). Für mehrsprachige Blöcke + Rückwärtskompatibilität.
+ */
+export function blockText(
+  v: Record<string, string> | string | null | undefined,
+  locale: Locale,
+): string {
+  if (v == null) return "";
+  if (typeof v === "string") return v;
+  return i18nOr(v, locale, "");
+}

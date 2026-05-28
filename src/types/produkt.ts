@@ -11,23 +11,26 @@ export type ProduktBlockTyp =
   | "heading" | "text" | "image" | "highlight" | "quote"
   | "divider" | "button" | "columns" | "gallery" | "video";
 
+/** Mehrsprachiger Textwert eines Blocks (Fallback-Kette ru→en→de). */
+export type I18nText = { ru?: string; en?: string; de?: string };
+
 export interface ProduktBlock {
   type:     ProduktBlockTyp;
-  /** Block-Hintergrund (Key aus STORY_BG; "standard"/leer = ohne). */
+  /** Block-Hintergrund (Key aus STORY_BG; "standard"/leer = ohne). Sprachneutral. */
   bg?:      string;
-  /** heading/text/highlight/quote: Textinhalt · columns: linke Spalte. */
-  text?:    string;
-  /** columns: rechte Spalte. */
-  text2?:   string;
-  /** image: Bild-URL. */
+  /** heading/text/highlight/quote: Textinhalt · columns: linke Spalte. Mehrsprachig. */
+  text?:    I18nText;
+  /** columns: rechte Spalte. Mehrsprachig. */
+  text2?:   I18nText;
+  /** image: Bild-URL. Sprachneutral. */
   bild_url?: string;
-  /** gallery: mehrere Bild-URLs (Grid). */
+  /** gallery: mehrere Bild-URLs (Grid). Sprachneutral. */
   bilder?:  string[];
-  /** image: Bildunterschrift · quote: Urheber/Quelle. */
-  caption?: string;
-  /** button: Beschriftung. */
-  label?:   string;
-  /** button: Ziel-URL (intern /… oder extern https://…). */
+  /** image: Bildunterschrift · quote: Urheber/Quelle. Mehrsprachig. */
+  caption?: I18nText;
+  /** button: Beschriftung. Mehrsprachig. */
+  label?:   I18nText;
+  /** button: Ziel-URL (intern /… oder extern https://…). Sprachneutral. */
   url?:     string;
 }
 
