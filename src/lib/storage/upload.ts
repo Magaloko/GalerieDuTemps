@@ -2,6 +2,41 @@ import { writeFile, mkdir } from "fs/promises";
 import { join, extname } from "path";
 import { randomUUID } from "crypto";
 import sharp from "sharp";
+import { supabaseStorageAktiv, supabaseUpload } from "./supabase-storage";
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Persistenz-Backend-Switch
+ *
+ * Wenn Supabase Storage konfiguriert (SUPABASE_URL + SERVICE_ROLE_KEY) →
+ * Upload in den Bucket (dauerhaft, redundant, CDN). Sonst → lokales
+ * Filesystem (Dev / Übergang). Object-Key-Schema: produkte/<uuid>/<name>.<ext>
+ *
+ * WICHTIG (Atomarität): persist() wirft bei Fehler → bildVerarbeiten bricht ab
+ * BEVOR eine DB-Row geschrieben wird. So entstehen keine toten DB→Datei-Links.
+ * ────────────────────────────────────────────────────────────────────────── */
+const MIME_FOR_EXT: Record<string, string> = {
+  jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png",
+  webp: "image/webp", avif: "image/avif",
+};
+
+async function persist(
+  baseId: string,
+  name:   string,   // "original" | "thumb" | "medium" | "large"
+  ext:    string,
+  buffer: Buffer,
+): Promise<{ url: string; dateiname: string }> {
+  const dateiname = name === "original" ? `${baseId}.${ext}` : `${baseId}-${name}.${ext}`;
+  if (supabaseStorageAktiv()) {
+    const key = `produkte/${baseId}/${name}.${ext}`;
+    const url = await supabaseUpload(key, buffer, MIME_FOR_EXT[ext] ?? "application/octet-stream");
+    return { url, dateiname };
+  }
+  // Fallback: Filesystem
+  const dir = uploadDirGet();
+  await mkdir(dir, { recursive: true });
+  await writeFile(join(dir, dateiname), buffer);
+  return { url: publicUrlFor(dateiname), dateiname };
+}
 
 /* ──────────────────────────────────────────────────────────────────────────
  * Upload-Pipeline mit Bildverarbeitung (sharp)
@@ -109,9 +144,8 @@ export async function bildVerarbeiten(file: File): Promise<BildUploadResult> {
     throw new Error(`Datei zu groß: max. ${maxMb} MB erlaubt`);
   }
 
-  const dir = uploadDirGet();
-  await mkdir(dir, { recursive: true });
-
+  // Hinweis: Persistenz (Disk vs Supabase) übernimmt persist(). Beim
+  // Filesystem-Fallback legt persist() das Verzeichnis selbst an.
   const buffer = Buffer.from(await file.arrayBuffer());
   const baseId = randomUUID();
 
@@ -159,36 +193,42 @@ export async function bildVerarbeiten(file: File): Promise<BildUploadResult> {
     origExt    = "jpg";
   }
 
-  const origDateiname = `${baseId}.${origExt}`;
-  await writeFile(join(dir, origDateiname), origBuffer);
-
   // Final-Dimensionen NACH rotate() (kann breite ↔ hoehe drehen!)
   const finalMeta = await sharp(origBuffer).metadata();
   const breite    = finalMeta.width  ?? metadata.width  ?? 0;
   const hoehe     = finalMeta.height ?? metadata.height ?? 0;
 
-  // ── Varianten parallel generieren ─────────────────────────────────────────
-  const variantResults = await Promise.all(
+  // ── Varianten-Buffer parallel generieren (im RAM) ─────────────────────────
+  const variantBuffers = await Promise.all(
     VARIANTS.map(async (variant) => {
-      const variantBuffer = await basePipeline()
+      const buf = await basePipeline()
         .resize({
           width:           variant.maxSide,
           height:          variant.maxSide,
-          fit:             "inside",         // Aspect-ratio bleibt, max-Kante = limit
-          withoutEnlargement: true,           // Kleine Bilder werden NICHT hochskaliert
+          fit:             "inside",
+          withoutEnlargement: true,
         })
         .webp({ quality: variant.quality, effort: 4 })
         .toBuffer();
-      const variantDateiname = `${baseId}-${variant.name}.webp`;
-      await writeFile(join(dir, variantDateiname), variantBuffer);
-      return [variant.name, publicUrlFor(variantDateiname)] as const;
+      return [variant.name, buf] as const;
     }),
   );
 
-  const variantMap = Object.fromEntries(variantResults);
+  // ── Persistieren: Original + Varianten ────────────────────────────────────
+  // Original ZUERST (Hauptbild). Wenn das fehlschlägt → Exception, kein
+  // weiterer Upload, keine DB-Row beim Caller. Atomar.
+  const orig = await persist(baseId, "original", origExt, origBuffer);
+
+  const variantPersisted = await Promise.all(
+    variantBuffers.map(async ([name, buf]) => {
+      const r = await persist(baseId, name, "webp", buf);
+      return [name, r.url] as const;
+    }),
+  );
+  const variantMap = Object.fromEntries(variantPersisted);
 
   return {
-    url:          publicUrlFor(origDateiname),
+    url:          orig.url,
     url_thumb:    variantMap.thumb,
     url_medium:   variantMap.medium,
     url_large:    variantMap.large,
@@ -196,7 +236,7 @@ export async function bildVerarbeiten(file: File): Promise<BildUploadResult> {
     breite,
     hoehe,
     dateigroesse: origBuffer.length,
-    dateiname:    origDateiname,
+    dateiname:    orig.dateiname,
   };
 }
 
@@ -246,12 +286,30 @@ export async function bildSpeichern(file: File): Promise<UploadResult> {
  * Best-Effort — Fehler werden geloggt, nie geworfen.
  */
 export async function bildLoeschenVonDisk(url: string): Promise<void> {
+  // ── Supabase-Storage-Pfad ────────────────────────────────────────────────
+  // URL-Schema: .../object/public/<bucket>/produkte/<uuid>/<name>.<ext>
+  // → lösche alle 4 Varianten unter dem produkte/<uuid>/ Prefix.
+  if (url.includes("/storage/v1/object/public/")) {
+    const { extractObjectKey, supabaseDelete } = await import("./supabase-storage");
+    const key = extractObjectKey(url);
+    if (key) {
+      // key = produkte/<uuid>/<name>.<ext> → Prefix produkte/<uuid>/
+      const prefix = key.replace(/\/[^/]+$/, "");
+      await supabaseDelete([
+        `${prefix}/original.jpg`, `${prefix}/original.png`,
+        `${prefix}/original.webp`, `${prefix}/original.avif`,
+        `${prefix}/thumb.webp`, `${prefix}/medium.webp`, `${prefix}/large.webp`,
+      ]);
+    }
+    return;
+  }
+
+  // ── Filesystem-Pfad (Fallback / Legacy) ──────────────────────────────────
   const { unlink } = await import("fs/promises");
   const dir        = uploadDirGet();
   const dateiname  = url.split("/").pop();
   if (!dateiname) return;
 
-  // Original + alle 3 Varianten parallel löschen
   const baseId = dateiname.replace(/\.[^.]+$/, "");
   const kandidaten = [
     dateiname,
