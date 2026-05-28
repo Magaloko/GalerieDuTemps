@@ -61,6 +61,66 @@ export async function cartLeeren(customerId: string): Promise<void> {
   );
 }
 
+/* ──────────────────────────────────────────────────────────────────────────
+ * Warenkorb-Recovery — verlassene Carts für die Erinnerungs-Push finden.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+export interface AbandonedCart {
+  customer_id:     string;
+  chat_id:         number;
+  vorname:         string | null;
+  items:           CartItem[];
+  aktualisiert_am: string;
+}
+
+/**
+ * Verlassene Carts mit Telegram-erreichbarem Kunden, die eine Erinnerung
+ * verdienen:
+ *  - älter als `stundenSchwelle` (keine Aktivität),
+ *  - nicht leer,
+ *  - noch nicht erinnert seit der letzten Cart-Änderung (Idempotenz),
+ *  - Kunde hat Telegram verknüpft + Notifications an,
+ *  - KEINE Bestellung seit der letzten Cart-Änderung (→ vermutlich konvertiert,
+ *    auch wenn der Client-seitige Cart-Clear nicht lief).
+ */
+export async function abandonedCarts(
+  stundenSchwelle: number,
+  limit = 100,
+): Promise<AbandonedCart[]> {
+  const r = await query<AbandonedCart>(
+    `SELECT c.customer_id,
+            cu.telegram_chat_id AS chat_id,
+            cu.vorname,
+            c.items,
+            c.aktualisiert_am
+       FROM sebo.carts c
+       JOIN sebo.customers cu ON cu.id = c.customer_id
+      WHERE c.aktualisiert_am < now() - make_interval(hours => $1)
+        AND jsonb_array_length(c.items) > 0
+        AND (c.erinnert_am IS NULL OR c.erinnert_am < c.aktualisiert_am)
+        AND cu.telegram_chat_id IS NOT NULL
+        AND cu.telegram_notifications_aktiv = true
+        AND NOT EXISTS (
+          SELECT 1 FROM sebo.orders o
+           WHERE o.customer_id = c.customer_id
+             AND o.erstellt_am >= c.aktualisiert_am
+        )
+      ORDER BY c.aktualisiert_am ASC
+      LIMIT $2`,
+    [stundenSchwelle, limit],
+  );
+  return r.rows;
+}
+
+/** Erinnerungs-Stempel setzen (nach erfolgreichem Versand). */
+export async function cartErinnertMarkieren(customerIds: string[]): Promise<void> {
+  if (customerIds.length === 0) return;
+  await query(
+    `UPDATE sebo.carts SET erinnert_am = now() WHERE customer_id = ANY($1::uuid[])`,
+    [customerIds],
+  );
+}
+
 /**
  * Merge zweier Carts — wird beim Login verwendet wenn Anonymous-User
  * lokale Items hat UND Server bereits Items hat (z.B. von anderem Device).
