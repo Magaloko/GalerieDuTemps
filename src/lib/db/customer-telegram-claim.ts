@@ -1,6 +1,63 @@
 import { randomBytes } from "crypto";
+import type { PoolClient } from "pg";
 import { query, withTransaction } from "./index";
 import type { Customer } from "@/types/commerce";
+
+/**
+ * Hängt ALLE customer_id-Referenzen von `fromId` auf `toId` um und löscht
+ * danach das (E-Mail-lose Wegwerf-) Konto `fromId`. Muss innerhalb einer
+ * Transaction laufen (PoolClient). Konflikt-sicher für PK/UNIQUE-Tabellen.
+ *
+ * Alle FKs auf sebo.customers sind CASCADE oder SET NULL (kein RESTRICT) →
+ * nach dem Umhängen ist das DELETE des Quell-Kontos gefahrlos.
+ */
+async function customerMerge(client: PoolClient, fromId: string, toId: string): Promise<void> {
+  // carts (PK customer_id): aktive (Wegwerf-) Session gewinnt → auf Ziel kopieren.
+  await client.query(
+    `INSERT INTO sebo.carts (customer_id, items, coupon_code, aktualisiert_am)
+     SELECT $2, items, coupon_code, now() FROM sebo.carts WHERE customer_id = $1
+     ON CONFLICT (customer_id) DO UPDATE
+       SET items = EXCLUDED.items, coupon_code = EXCLUDED.coupon_code`,
+    [fromId, toId],
+  );
+  await client.query(`DELETE FROM sebo.carts WHERE customer_id = $1`, [fromId]);
+
+  // customer_tags (PK customer_id,tag_id): Vereinigung.
+  await client.query(
+    `INSERT INTO sebo.customer_tags (customer_id, tag_id, erstellt_am, erstellt_von)
+     SELECT $2, tag_id, erstellt_am, erstellt_von FROM sebo.customer_tags WHERE customer_id = $1
+     ON CONFLICT (customer_id, tag_id) DO NOTHING`,
+    [fromId, toId],
+  );
+  await client.query(`DELETE FROM sebo.customer_tags WHERE customer_id = $1`, [fromId]);
+
+  // newsletter_subscribers (UNIQUE email): nur übernehmen wenn Ziel keinen hat.
+  await client.query(
+    `UPDATE sebo.newsletter_subscribers SET customer_id = $2
+       WHERE customer_id = $1
+         AND NOT EXISTS (SELECT 1 FROM sebo.newsletter_subscribers n WHERE n.customer_id = $2)`,
+    [fromId, toId],
+  );
+  await client.query(`UPDATE sebo.newsletter_subscribers SET customer_id = NULL WHERE customer_id = $1`, [fromId]);
+
+  // drip_flow_runs (UNIQUE flow_id,customer_id): kollisionsfrei übernehmen, Rest droppen.
+  await client.query(
+    `UPDATE sebo.drip_flow_runs SET customer_id = $2
+       WHERE customer_id = $1
+         AND NOT EXISTS (SELECT 1 FROM sebo.drip_flow_runs d
+                          WHERE d.customer_id = $2 AND d.flow_id = sebo.drip_flow_runs.flow_id)`,
+    [fromId, toId],
+  );
+  await client.query(`DELETE FROM sebo.drip_flow_runs WHERE customer_id = $1`, [fromId]);
+
+  // Einfache Umhängungen (keine PK/UNIQUE-Konflikte auf customer_id).
+  for (const tbl of ["orders", "leads", "notes", "tasks", "crm_events", "invoices", "newsletter_sends"]) {
+    await client.query(`UPDATE sebo.${tbl} SET customer_id = $2 WHERE customer_id = $1`, [fromId, toId]);
+  }
+
+  // Wegwerf-Konto ist jetzt referenzfrei → löschen.
+  await client.query(`DELETE FROM sebo.customers WHERE id = $1`, [fromId]);
+}
 
 /* ──────────────────────────────────────────────────────────────────────────
  * Telegram-Claim — Reverse-Direction Link-Flow.
@@ -171,16 +228,9 @@ export async function claimBestaetigen(token: string): Promise<string | null> {
         // Echtes anderes Konto (mit E-Mail) → kein stiller Merge, Abbruch.
         if (throwaway.email != null) return null;
 
-        // E-Mail-loses Wegwerf-Konto → chat_id freigeben + Daten umhängen.
-        await client.query(
-          `UPDATE sebo.customers
-              SET telegram_chat_id = NULL, telegram_username = NULL,
-                  telegram_notifications_aktiv = false
-            WHERE id = $1`,
-          [throwaway.id],
-        );
-        await client.query(`UPDATE sebo.orders SET customer_id = $1 WHERE customer_id = $2`, [target.id, throwaway.id]);
-        await client.query(`UPDATE sebo.leads  SET customer_id = $1 WHERE customer_id = $2`, [target.id, throwaway.id]);
+        // E-Mail-loses Wegwerf-Konto → ALLE Daten ans Ziel umhängen und das
+        // Wegwerf-Konto löschen (gibt die chat_id frei für die Verknüpfung).
+        await customerMerge(client, throwaway.id, target.id);
       }
 
       // 3. Ziel-Account verknüpfen + Claim-Felder leeren.
