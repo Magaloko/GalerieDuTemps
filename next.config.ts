@@ -28,13 +28,20 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname:  "galeriedutemps.kz",
-        pathname:  "/uploads/**",
-      },
-      {
-        protocol: "https",
         hostname:  "*.apps.dadakaev.tech",
         pathname:  "/uploads/**",
+      },
+      // Supabase Storage (aktives Backend für Produktfotos).
+      // Produktbilder liegen als
+      //   https://<projectref>.supabase.co/storage/v1/object/public/<bucket>/...
+      // next/image MUSS diesen Host erlauben, sonst werden alle Fotos
+      // blockiert (broken image) — der Mini-App-Editor nutzt ein nacktes
+      // <img> und zeigt sie trotzdem, der Katalog/die Produktseite (next/image)
+      // aber nicht.
+      {
+        protocol: "https",
+        hostname:  "*.supabase.co",
+        pathname:  "/storage/v1/object/public/**",
       },
     ],
     // Bildformate optimieren
