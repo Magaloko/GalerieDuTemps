@@ -86,6 +86,13 @@ const nextConfig: NextConfig = {
       "base-uri 'self'",
       "object-src 'none'",
     ].join("; ");
+    // Authentifizierte, nutzer-spezifische Antworten dürfen NIE in einem
+    // geteilten Cache (CDN/Proxy/Telegram-WebView) landen — sonst kann ein
+    // anderer Account die gecachte Admin-/Kunden-Antwort sehen (z.B. die
+    // whoami-Identität oder eine gerenderte Admin-Seite). `private, no-store`
+    // verbietet jegliches Caching. Betrifft die komplette Mini-App + alle
+    // Telegram-API-Routen (alle sind sitzungs-/identitätsabhängig).
+    const noStore = "private, no-store, max-age=0, must-revalidate";
     return [
       {
         source: "/(.*)",
@@ -96,6 +103,14 @@ const nextConfig: NextConfig = {
           { key: "Permissions-Policy",       value: "camera=(), microphone=(), geolocation=(), browsing-topics=()" },
           { key: "Content-Security-Policy",  value: csp },
         ],
+      },
+      {
+        source:  "/tg/:path*",
+        headers: [{ key: "Cache-Control", value: noStore }],
+      },
+      {
+        source:  "/api/telegram/:path*",
+        headers: [{ key: "Cache-Control", value: noStore }],
       },
     ];
   },
