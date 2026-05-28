@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth, requireAdminSession } from "@/lib/auth/config";
-import { produktErstellen, produktAktualisieren, produktLoeschen, produktById, produktReservieren, produktReservierungAufheben, produktEntwurfErstellen } from "@/lib/db/produkte";
+import { produktErstellen, produktAktualisieren, produktLoeschen, produktById, produktReservieren, produktReservierungAufheben, produktEntwurfErstellen, entwuerfeListe } from "@/lib/db/produkte";
 import { ProduktCreateSchema } from "@/lib/utils/validierung";
 import { auditLog } from "@/lib/db/audit-log";
 
@@ -442,6 +442,34 @@ export async function entwurfLoeschenAction(
   } catch (err) {
     console.error("[entwurfLoeschen]", err);
     return { ok: false, error: "Ошибка удаления" };
+  }
+}
+
+/**
+ * Stapel-Veröffentlichen: alle Drafts mit echter Preisangabe (> 1 = kein
+ * Platzhalter) live schalten. Schnell (kein KI) → in einer Action sicher.
+ */
+export async function entwuerfeBatchVeroeffentlichenAction(): Promise<{
+  ok: boolean; veroeffentlicht: number; uebersprungen: number; error?: string;
+}> {
+  const session = await requireAdminSession();
+  if (!session) return { ok: false, veroeffentlicht: 0, uebersprungen: 0, error: "Нет прав" };
+  try {
+    const drafts = await entwuerfeListe(200);
+    const { autoBroadcastBeiPublish } = await import("@/lib/telegram/neuheiten");
+    let pub = 0, skip = 0;
+    for (const d of drafts) {
+      if (!(Number(d.preis) > 1)) { skip++; continue; }   // Platzhalter (1) überspringen
+      await produktAktualisieren(d.id, { aktiv: true, b2c_mode: "visible" });
+      await autoBroadcastBeiPublish(d.id);
+      pub++;
+    }
+    revalidatePath("/admin/produkte/entwuerfe");
+    revalidatePath("/admin/produkte");
+    return { ok: true, veroeffentlicht: pub, uebersprungen: skip };
+  } catch (err) {
+    console.error("[entwuerfeBatchVeroeffentlichen]", err);
+    return { ok: false, veroeffentlicht: 0, uebersprungen: 0, error: "Ошибка" };
   }
 }
 

@@ -3,6 +3,7 @@ import { ChevronLeft, ImagePlus, Inbox } from "lucide-react";
 import { entwuerfeListe } from "@/lib/db/produkte";
 import { alleKategorien } from "@/lib/db/kategorien";
 import { EntwurfRowClient } from "./entwurf-row";
+import { BatchBar } from "./batch-bar";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Черновики · на проверку" };
@@ -56,6 +57,11 @@ export default async function EntwuerfePage() {
         </div>
       ) : (
         <div className="space-y-3">
+          <BatchBar
+            kiIds={entwuerfe
+              .filter(e => [e.name, e.beschreibung ?? ""].join(" ").trim().length >= 20)
+              .map(e => e.id)}
+          />
           {entwuerfe.map(e => (
             <EntwurfRowClient
               key={e.id}
