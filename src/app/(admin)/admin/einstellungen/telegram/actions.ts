@@ -6,6 +6,7 @@ import { query } from "@/lib/db";
 import { requireAdminSession } from "@/lib/auth/config";
 import {
   getBotInfo, setWebhook, deleteWebhook, getWebhookInfo, setMyCommands,
+  setChatMenuButton, resetChatMenuButton,
 } from "@/lib/telegram/client";
 import { getSiteUrl } from "@/lib/site-url";
 
@@ -86,6 +87,7 @@ export async function telegramVerbindenAction(
   // Vorschläge in der Client-UI.
   await setMyCommands(token, [
     { command: "start",    description: "Запустить бота" },
+    { command: "shop",     description: "Открыть магазин" },
     { command: "menu",     description: "Главное меню" },
     { command: "katalog",  description: "Каталог товаров" },
     { command: "orders",   description: "Мои заказы" },
@@ -96,13 +98,21 @@ export async function telegramVerbindenAction(
     { command: "unlink",   description: "Отвязать аккаунт" },
   ]).catch(err => console.warn("[telegram setMyCommands]", err));
 
+  // Mini-App Menu-Button — der „🛍 Магазин"-Knopf links unten im Chat.
+  // Best-effort: wenn das fehlschlägt, ist der Bot trotzdem funktional,
+  // nur ohne den prominenten WebApp-Launcher.
+  const miniAppUrl = `${getSiteUrl()}/tg`;
+  await setChatMenuButton(token, "🛍 Магазин", miniAppUrl)
+    .catch(err => console.warn("[telegram setChatMenuButton]", err));
+
   revalidatePath("/admin/einstellungen/telegram");
   return {
     ok: true,
     message:
       `Бот @${bot.username} подключён.\n` +
       `Webhook: ${webhookUrl}\n` +
-      `Меню команд установлено.`,
+      `Меню команд установлено.\n` +
+      `Mini-App: ${miniAppUrl}`,
   };
 }
 
@@ -200,6 +210,7 @@ export async function telegramWebhookNeuRegistrierenAction(): Promise<ActionResu
 
   await setMyCommands(token, [
     { command: "start",    description: "Запустить бота" },
+    { command: "shop",     description: "Открыть магазин" },
     { command: "menu",     description: "Главное меню" },
     { command: "katalog",  description: "Каталог товаров" },
     { command: "orders",   description: "Мои заказы" },
@@ -210,9 +221,40 @@ export async function telegramWebhookNeuRegistrierenAction(): Promise<ActionResu
     { command: "unlink",   description: "Отвязать аккаунт" },
   ]).catch(err => console.warn("[telegram setMyCommands]", err));
 
+  // Mini-App Menu-Button auch hier neu setzen (gleiche URL = idempotent)
+  const miniAppUrl = `${getSiteUrl()}/tg`;
+  await setChatMenuButton(token, "🛍 Магазин", miniAppUrl)
+    .catch(err => console.warn("[telegram setChatMenuButton]", err));
+
   revalidatePath("/admin/einstellungen/telegram");
   return {
     ok: true,
-    message: `Webhook перерегистрирован: ${webhookUrl}\nМеню команд обновлено.`,
+    message:
+      `Webhook перерегистрирован: ${webhookUrl}\n` +
+      `Меню команд обновлено.\n` +
+      `Mini-App: ${miniAppUrl}`,
   };
+}
+
+/** Mini-App Menu-Button ausschalten — wenn Admin den nicht mehr will. */
+export async function telegramMiniAppDeaktivierenAction(): Promise<ActionResult> {
+  const session = await requireAdminSession();
+  if (!session) return { ok: false, error: "Нет прав" };
+
+  const konto = await findeTelegramKonto();
+  if (!konto) return { ok: false, error: "Аккаунт не подключён" };
+
+  const tokRes = await query<{ access_token: string }>(
+    `SELECT access_token FROM sebo.kanal_konten WHERE id = $1`,
+    [konto.id]
+  );
+  const token = tokRes.rows[0]?.access_token;
+  if (!token) return { ok: false, error: "Токен отсутствует" };
+
+  try {
+    await resetChatMenuButton(token);
+    return { ok: true, message: "Кнопка «Магазин» убрана. Теперь в чате будет показано меню команд." };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Не удалось" };
+  }
 }

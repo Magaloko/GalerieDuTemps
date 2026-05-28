@@ -228,21 +228,45 @@ export async function POST(
     return NextResponse.json({ ok: true });
   }
 
-  // ── /katalog & /shop — public, deep-link in den Web-Shop ────────────────
-  if (text === "/katalog" || text === "/shop" || text === "/каталог") {
+  // ── /shop — Mini-App-Launcher (web_app-Button öffnet im Telegram-WebView) ─
+  if (text === "/shop" || text === "/магазин") {
     if (konto.access_token) {
       await sendMessage(
         konto.access_token,
         chat.id,
-        `🛍️ <b>Каталог Galerie du Temps</b>\n\n` +
+        `🛍 <b>Магазин в Telegram</b>\n\n` +
+        `<i>Открой каталог прямо здесь — оплата, доставка, всё в одном окне.</i>`,
+        {
+          parse_mode: "HTML",
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "🛍 Открыть магазин", web_app: { url: `${siteBase}/tg` } }],
+              [{ text: "Открыть в браузере", url: `${siteBase}/katalog` }],
+            ],
+          },
+        },
+      ).catch(err => console.error("[tg send shop]", err));
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  // ── /katalog — Web-Links (без Mini-App, для пользователей которые
+  // предпочитают полную версию сайта) ───────────────────────────────────
+  if (text === "/katalog" || text === "/каталог") {
+    if (konto.access_token) {
+      await sendMessage(
+        konto.access_token,
+        chat.id,
+        `🛍 <b>Каталог Galerie du Temps</b>\n\n` +
         `<i>Новые поступления каждую среду.</i>`,
         {
           parse_mode: "HTML",
           reply_markup: {
             inline_keyboard: [
-              [{ text: "Все товары",  url: `${siteBase}/katalog` }],
-              [{ text: "Категории",   url: `${siteBase}/kategorien` }],
-              [{ text: "Журнал",      url: `${siteBase}/journal` }],
+              [{ text: "🛍 Открыть в Telegram", web_app: { url: `${siteBase}/tg` } }],
+              [{ text: "Все товары",            url: `${siteBase}/katalog` }],
+              [{ text: "Категории",             url: `${siteBase}/kategorien` }],
+              [{ text: "Журнал",                url: `${siteBase}/journal` }],
             ],
           },
         },
@@ -424,7 +448,7 @@ async function handleCallbackQuery(
 function buildPublicMainMenu(siteBase: string): InlineKeyboardMarkup {
   return {
     inline_keyboard: [
-      [{ text: "🛍️ Каталог", url: `${siteBase}/katalog` }],
+      [{ text: "🛍 Открыть магазин", web_app: { url: `${siteBase}/tg` } }],
       [
         { text: "📰 Журнал",  url: `${siteBase}/journal` },
         { text: "✉ Контакт", callback_data: "help" },
@@ -437,15 +461,13 @@ function buildPublicMainMenu(siteBase: string): InlineKeyboardMarkup {
 function buildLinkedMainMenu(siteBase: string): InlineKeyboardMarkup {
   return {
     inline_keyboard: [
+      [{ text: "🛍 Открыть магазин", web_app: { url: `${siteBase}/tg` } }],
       [{ text: "📋 Мои заказы", callback_data: "orders" }],
       [
-        { text: "🛍️ Каталог",   url: `${siteBase}/katalog` },
         { text: "❤ Избранное", url: `${siteBase}/wunschliste` },
+        { text: "👤 Профиль",  url: `${siteBase}/kunde/profil` },
       ],
-      [
-        { text: "👤 Профиль",   url: `${siteBase}/kunde/profil` },
-        { text: "❓ Помощь",    callback_data: "help" },
-      ],
+      [{ text: "❓ Помощь", callback_data: "help" }],
     ],
   };
 }

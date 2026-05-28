@@ -75,10 +75,11 @@ export interface TelegramUpdate {
   pre_checkout_query?: TelegramPreCheckoutQuery;
 }
 
-/** Inline-Keyboard-Button — entweder URL-Link oder Callback-Data. */
+/** Inline-Keyboard-Button — URL-Link, Callback-Data, oder WebApp-Launcher. */
 export type InlineKeyboardButton =
   | { text: string; url:           string }
-  | { text: string; callback_data: string };
+  | { text: string; callback_data: string }
+  | { text: string; web_app:       { url: string } };
 
 export type InlineKeyboardMarkup = {
   inline_keyboard: InlineKeyboardButton[][];
@@ -173,6 +174,35 @@ export async function answerCallbackQuery(token: string, callback_query_id: stri
 export interface BotCommand { command: string; description: string }
 export async function setMyCommands(token: string, commands: BotCommand[]): Promise<boolean> {
   return callApi<boolean>(token, "setMyCommands", { commands });
+}
+
+/** Chat-Menü-Button (links unten im Chat-Eingabefeld) auf eine WebApp setzen.
+ *  Default ist „commands" (zeigt das „/" Menü). Wir überschreiben mit einem
+ *  Web-App-Launcher der die Mini-App im Telegram-WebView öffnet.
+ *
+ *  Spec: https://core.telegram.org/bots/api#setchatmenubutton
+ *
+ *  Wenn chat_id weggelassen wird, gilt der Button global für alle Privat-Chats
+ *  des Bots — das wollen wir hier (ein Shop für alle). */
+export async function setChatMenuButton(
+  token:  string,
+  text:   string,
+  webAppUrl: string,
+): Promise<boolean> {
+  return callApi<boolean>(token, "setChatMenuButton", {
+    menu_button: {
+      type:    "web_app",
+      text,
+      web_app: { url: webAppUrl },
+    },
+  });
+}
+
+/** Zurück auf Default-Button (zeigt das „/" Menü) — für „Disconnect Mini App". */
+export async function resetChatMenuButton(token: string): Promise<boolean> {
+  return callApi<boolean>(token, "setChatMenuButton", {
+    menu_button: { type: "default" },
+  });
 }
 
 /**
