@@ -133,7 +133,20 @@ export async function setWebAppSessionCookieByRole(
 
 export async function clearWebAppSessionCookie(): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.delete(COOKIE_NAME);
+  // WICHTIG (Sicherheit): Der `__Secure-`-Präfix verlangt, dass das Cookie auch
+  // beim LÖSCHEN mit Secure + exakt gleichem Path/SameSite gesendet wird. Ein
+  // blankes cookieStore.delete(name) sendet das nicht zuverlässig → der Browser
+  // ignoriert die Löschung und ein altes Cookie (z.B. eine Admin-Session) bleibt
+  // bestehen. Auf einem Gerät mit mehreren Telegram-Accounts (geteilter
+  // Cookie-Jar) würde ein Gast so die Admin-Session erben. Deshalb: explizit als
+  // abgelaufenes Cookie mit IDENTISCHEN Attributen überschreiben.
+  cookieStore.set(COOKIE_NAME, "", {
+    httpOnly: true,
+    secure:   true,
+    sameSite: "none",
+    path:     "/",
+    maxAge:   0,
+  });
 }
 
 export async function getWebAppSession(): Promise<WebAppSession | null> {
