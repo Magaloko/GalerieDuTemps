@@ -16,6 +16,8 @@ interface Props {
   preisCents:   number;
   lagerbestand: number;
   verkauft:     boolean;
+  /** Aktuell reserviert (binär) — kein Kauf/keine Anfrage-Aktion möglich. */
+  reserviert?:  boolean;
   waehrung:     Currency;
   /** false = Schaufenster-Modus: MainButton fragt nur an, kein Kauf. */
   kaufenAktiv?: boolean;
@@ -36,7 +38,7 @@ interface Props {
  * MainButton wiederholt nur den Preis als Bestätigung.
  * ────────────────────────────────────────────────────────────────────────── */
 export function ProductMiniClient({
-  produktId, slug, name, bildUrl, preisCents, lagerbestand, verkauft, waehrung,
+  produktId, slug, name, bildUrl, preisCents, lagerbestand, verkauft, reserviert = false, waehrung,
   kaufenAktiv = true,
 }: Props) {
   const hinzufuegen = useCart(s => s.hinzufuegen);
@@ -48,6 +50,14 @@ export function ProductMiniClient({
     if (!tg) return;
 
     const main = tg.MainButton;
+
+    // ── Reserviert ───────────────────────────────────────────────────────
+    // Hat Vorrang vor Kauf/Anfrage: das Stück ist gebunden.
+    if (reserviert && !verkauft) {
+      main.setText("Зарезервировано");
+      main.show();
+      return () => main.hide();
+    }
 
     // ── Schaufenster-Modus ───────────────────────────────────────────────
     // Kein Kauf, kein Warenkorb. MainButton führt zur Kurator-Anfrage.
@@ -111,7 +121,7 @@ export function ProductMiniClient({
       main.offClick(onClick);
       main.hide();
     };
-  }, [produktId, slug, name, bildUrl, preisCents, lagerbestand, verkauft, waehrung, kaufenAktiv, hinzufuegen, router]);
+  }, [produktId, slug, name, bildUrl, preisCents, lagerbestand, verkauft, reserviert, waehrung, kaufenAktiv, hinzufuegen, router]);
 
   return null;
 }

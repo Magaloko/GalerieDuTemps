@@ -75,7 +75,8 @@ export async function produkteListe(params: {
        p.id, p.name, p.slug, p.artikel_code, p.preis, p.originalpreis, p.waehrung,
        k.name AS kategorie_name,
        p.zustand, p.lagerbestand, p.verkauft, p.featured, p.aktiv, p.b2c_mode,
-       p.erstellt_am,
+       p.erstellt_am, p.reserviert_bis,
+       (p.reserviert_bis IS NOT NULL AND p.reserviert_bis > now() AND p.verkauft = false) AS reserviert,
        COALESCE(
          p.hauptbild_url,
          (SELECT pb.url FROM sebo.produktbilder pb
@@ -327,6 +328,45 @@ export async function produktAktualisieren(
 
   revalidatePublicCatalogCache();
   return produktById(id);
+}
+
+// ---------------------------------------------------------------------------
+// Reservierung (manuell, durch Kurator/Admin)
+// ---------------------------------------------------------------------------
+
+/**
+ * Reserviert ein Stück für `stunden` (Default 48h). Atomar + race-safe:
+ * Setzt reserviert_bis NUR, wenn das Stück nicht verkauft und nicht bereits
+ * aktiv reserviert ist (abgelaufene Reservierung gilt als frei). Gibt false
+ * zurück, wenn das Stück nicht (mehr) reservierbar war.
+ */
+export async function produktReservieren(
+  id:      string,
+  stunden = 48,
+  fuer?:   string | null,
+): Promise<boolean> {
+  const r = await query(
+    `UPDATE sebo.produkte
+        SET reserviert_bis = now() + make_interval(hours => $2::int),
+            reserviert_von = $3
+      WHERE id = $1
+        AND verkauft = false
+        AND (reserviert_bis IS NULL OR reserviert_bis < now())
+      RETURNING id`,
+    [id, stunden, fuer ?? null],
+  );
+  const ok = (r.rowCount ?? 0) > 0;
+  if (ok) revalidatePublicCatalogCache();
+  return ok;
+}
+
+/** Hebt eine Reservierung auf (Stück wieder verfügbar). */
+export async function produktReservierungAufheben(id: string): Promise<void> {
+  await query(
+    `UPDATE sebo.produkte SET reserviert_bis = NULL, reserviert_von = NULL WHERE id = $1`,
+    [id],
+  );
+  revalidatePublicCatalogCache();
 }
 
 // ---------------------------------------------------------------------------

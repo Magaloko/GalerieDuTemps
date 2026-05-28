@@ -65,6 +65,10 @@ export interface Produkt {
   abmessungen:        Abmessungen | null;
   lagerbestand:       number;
   verkauft:           boolean;
+  /** Reservierung gültig bis (ISO). NULL = nicht reserviert. Server/Admin-only. */
+  reserviert_bis:     string | null;
+  /** Admin-Kontext: für wen reserviert. NIE öffentlich serialisieren. */
+  reserviert_von:     string | null;
   featured:           boolean;
   aktiv:              boolean;
   b2c_mode:           "visible" | "teaser" | "hidden";
@@ -128,6 +132,10 @@ export interface ProduktListItem {
   b2c_mode?:       "visible" | "teaser" | "hidden";
   lagerbestand:    number;
   verkauft:        boolean;
+  /** Binär: aktuell reserviert (Frist in der Zukunft, nicht verkauft). */
+  reserviert?:     boolean;
+  /** Admin-Liste: Reservierungs-Frist (ISO). NUR Admin — nie in Public-Queries selektiert. */
+  reserviert_bis?: string | null;
   featured:        boolean;
   hauptbild_url:   string | null;
   erstellt_am:     string;

@@ -39,6 +39,7 @@ async function featuredProdukteUncached(limit = 8): Promise<ProduktListItem[]> {
        p.zustand, p.lagerbestand, p.verkauft, p.featured, p.b2c_mode,
        p.erstellt_am,
        p.era, p.material, p.herkunft,
+       (p.reserviert_bis IS NOT NULL AND p.reserviert_bis > now() AND p.verkauft = false) AS reserviert,
        (SELECT COUNT(*)::int FROM sebo.produktbilder pb WHERE pb.produkt_id = p.id) AS bilder_count,
        COALESCE(
          p.hauptbild_url,
@@ -150,6 +151,7 @@ async function katalogProdukteUncached(params: {
          p.zustand, p.lagerbestand, p.verkauft, p.featured, p.era, p.b2c_mode,
          p.erstellt_am,
          p.material, p.herkunft,
+         (p.reserviert_bis IS NOT NULL AND p.reserviert_bis > now() AND p.verkauft = false) AS reserviert,
          (SELECT COUNT(*)::int FROM sebo.produktbilder pb WHERE pb.produkt_id = p.id) AS bilder_count,
          COALESCE(
            p.hauptbild_url,
@@ -227,6 +229,7 @@ async function aehnlicheProdukteUncached(
        k.name AS kategorie_name, p.zustand, p.lagerbestand,
        p.verkauft, p.featured, p.erstellt_am,
        p.era, p.material, p.herkunft,
+       (p.reserviert_bis IS NOT NULL AND p.reserviert_bis > now() AND p.verkauft = false) AS reserviert,
        (SELECT COUNT(*)::int FROM sebo.produktbilder pb WHERE pb.produkt_id = p.id) AS bilder_count,
        COALESCE(
          p.hauptbild_url,

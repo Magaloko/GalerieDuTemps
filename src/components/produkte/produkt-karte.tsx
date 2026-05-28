@@ -93,6 +93,8 @@ export function ProduktKarte({ produkt, priority = false }: ProduktKarteProps) {
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
           {produkt.verkauft ? (
             <StatusBadge label="Продано" tone="muted" />
+          ) : produkt.reserviert ? (
+            <StatusBadge label="Зарезервировано" tone="gold" />
           ) : ausverkauft ? (
             <StatusBadge label="Нет в наличии" tone="warning" />
           ) : isNew ? (

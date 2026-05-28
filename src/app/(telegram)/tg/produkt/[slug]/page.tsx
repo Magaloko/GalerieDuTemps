@@ -37,6 +37,7 @@ export default async function TelegramProduktPage({
 
   const name = i18nOr(produkt.name_i18n,             locale, produkt.name);
   const kurz = i18nOr(produkt.kurzbeschreibung_i18n, locale, produkt.kurzbeschreibung);
+  const reserviert = !!produkt.reserviert_bis && new Date(produkt.reserviert_bis) > new Date() && !produkt.verkauft;
 
   return (
     <TelegramAuthGate>
@@ -114,8 +115,23 @@ export default async function TelegramProduktPage({
             </p>
           )}
 
+          {/* Reserviert-Badge (binär, beide Modi) */}
+          {reserviert && (
+            <p
+              className="mt-3 inline-flex items-center gap-1.5 px-2 py-1 text-[10px] uppercase font-medium"
+              style={{
+                letterSpacing: "0.22em",
+                background:    "rgba(201,168,76,0.12)",
+                color:         "#9A7B1F",
+                border:        "1px solid rgba(201,168,76,0.40)",
+              }}
+            >
+              ⏳ Зарезервировано
+            </p>
+          )}
+
           {/* Shop-Modus: «Последний экземпляр»-Pulse (Verknappungs-Taktik, mit Stückzahl-Bezug) */}
-          {kaufenAktiv && !produkt.verkauft && produkt.lagerbestand === 1 && (
+          {kaufenAktiv && !reserviert && !produkt.verkauft && produkt.lagerbestand === 1 && (
             <p
               className="mt-3 inline-flex items-center gap-1.5 px-2 py-1 text-[10px] uppercase font-medium"
               style={{
@@ -130,8 +146,9 @@ export default async function TelegramProduktPage({
             </p>
           )}
 
-          {/* Schaufenster-Modus: nur binäre Verfügbarkeit, KEINE Stückzahl */}
-          {!kaufenAktiv && (
+          {/* Schaufenster-Modus: nur binäre Verfügbarkeit, KEINE Stückzahl.
+              Bei Reservierung übernimmt das Reserviert-Badge oben. */}
+          {!kaufenAktiv && !reserviert && (
             <p
               className="mt-3 inline-flex items-center gap-1.5 px-2 py-1 text-[10px] uppercase font-medium"
               style={{
@@ -188,6 +205,7 @@ export default async function TelegramProduktPage({
           /* Schaufenster: exakten Bestand NICHT in den Client-Payload geben. */
           lagerbestand={kaufenAktiv ? produkt.lagerbestand : (produkt.lagerbestand > 0 ? 1 : 0)}
           verkauft={produkt.verkauft}
+          reserviert={reserviert}
           waehrung={(produkt.waehrung as "KZT"|"EUR"|"USD"|"RUB") ?? "KZT"}
           kaufenAktiv={kaufenAktiv}
         />

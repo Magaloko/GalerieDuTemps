@@ -330,6 +330,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
                         featured={p.featured}
                         verkauft={p.verkauft}
                         lagerbestand={p.lagerbestand}
+                        reserviert={p.reserviert ?? false}
                       />
                     </td>
 

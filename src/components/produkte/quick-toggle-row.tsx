@@ -1,8 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CheckCircle2, XCircle, EyeOff, Star, Loader2 } from "lucide-react";
-import { produktQuickToggleAction } from "@/app/(admin)/admin/produkte/actions";
+import { CheckCircle2, XCircle, EyeOff, Star, Loader2, Clock } from "lucide-react";
+import {
+  produktQuickToggleAction,
+  produktReservierenAction,
+  produktReservierungAufhebenAction,
+} from "@/app/(admin)/admin/produkte/actions";
 
 interface Props {
   id:           string;
@@ -10,6 +14,7 @@ interface Props {
   featured:     boolean;
   verkauft:     boolean;
   lagerbestand: number;
+  reserviert?:  boolean;
 }
 
 /**
@@ -18,8 +23,9 @@ interface Props {
  *  - Aktiv     (Status-Pill: Активен / Неактивен / Продано / Нет в наличии)
  * Klick = sofortige Mutation via Server Action, mit optimistic UI.
  */
-export function QuickToggleRow({ id, aktiv, featured, verkauft, lagerbestand }: Props) {
+export function QuickToggleRow({ id, aktiv, featured, verkauft, lagerbestand, reserviert = false }: Props) {
   const [optimistic, setOptimistic] = useState({ aktiv, featured, verkauft });
+  const [reserviertState, setReserviert] = useState(reserviert);
   const [pending, start] = useTransition();
 
   const toggle = (feld: "aktiv" | "featured" | "verkauft") => {
@@ -30,6 +36,20 @@ export function QuickToggleRow({ id, aktiv, featured, verkauft, lagerbestand }: 
       if (!r.ok) {
         // Revert bei Fehler
         setOptimistic(o => ({ ...o, [feld]: !next }));
+        alert(r.error ?? "Ошибка");
+      }
+    });
+  };
+
+  const toggleReservierung = () => {
+    const willReserve = !reserviertState;
+    setReserviert(willReserve);
+    start(async () => {
+      const r = willReserve
+        ? await produktReservierenAction(id, 48)
+        : await produktReservierungAufhebenAction(id);
+      if (!r.ok) {
+        setReserviert(!willReserve);   // revert
         alert(r.error ?? "Ошибка");
       }
     });
@@ -83,6 +103,25 @@ export function QuickToggleRow({ id, aktiv, featured, verkauft, lagerbestand }: 
           style={{ borderRadius: "var(--radius-vintage)" }}
         >
           Продано ↺
+        </button>
+      )}
+
+      {/* Reservierung — nur sinnvoll wenn nicht verkauft */}
+      {!optimistic.verkauft && (
+        <button
+          type="button"
+          onClick={toggleReservierung}
+          disabled={pending}
+          title={reserviertState ? "Снять резерв" : "Зарезервировать на 48 часов"}
+          className={`flex items-center gap-1 px-2 py-1 border text-xs transition-colors ${
+            reserviertState
+              ? "border-vintage-gold/50 text-vintage-gold hover:bg-vintage-gold/10"
+              : "border-vintage-sand text-vintage-dust hover:bg-vintage-parchment"
+          }`}
+          style={{ borderRadius: "var(--radius-vintage)" }}
+        >
+          <Clock className="w-3 h-3" />
+          {reserviertState ? "Зарезервировано ↺" : "Резерв 48ч"}
         </button>
       )}
     </div>

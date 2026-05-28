@@ -97,6 +97,19 @@ function MiniCard({ produkt }: { produkt: ProduktListItem & { era?: string | nul
           />
         )}
         <HeartToggle produktId={produkt.id} overlay size={16} />
+        {(produkt.verkauft || produkt.reserviert) && (
+          <span
+            className="absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[9px] uppercase font-medium"
+            style={{
+              letterSpacing: "0.14em",
+              background:    produkt.verkauft ? "rgba(15,20,48,0.82)" : "rgba(201,168,76,0.92)",
+              color:         produkt.verkauft ? "var(--color-gold, #C9A84C)" : "#1a1410",
+              backdropFilter:"blur(4px)",
+            }}
+          >
+            {produkt.verkauft ? "Продано" : "Зарезервировано"}
+          </span>
+        )}
       </div>
       <div className="pt-2">
         {produkt.kategorie_name && (

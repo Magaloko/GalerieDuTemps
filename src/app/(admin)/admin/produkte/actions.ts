@@ -3,8 +3,9 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth, requireAdminSession } from "@/lib/auth/config";
-import { produktErstellen, produktAktualisieren, produktLoeschen, produktById } from "@/lib/db/produkte";
+import { produktErstellen, produktAktualisieren, produktLoeschen, produktById, produktReservieren, produktReservierungAufheben } from "@/lib/db/produkte";
 import { ProduktCreateSchema } from "@/lib/utils/validierung";
+import { auditLog } from "@/lib/db/audit-log";
 
 export type FormState = {
   errors?:  Record<string, string[]>;
@@ -171,6 +172,55 @@ export async function produktQuickToggleAction(
   } catch (err) {
     console.error("[quickToggle]", err);
     return { ok: false, error: "Aktualisierung fehlgeschlagen" };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Reservierung — manuell durch Kurator/Admin (48h Default)
+// ---------------------------------------------------------------------------
+export async function produktReservierenAction(
+  id:      string,
+  stunden = 48,
+  fuer?:   string,
+): Promise<{ ok: boolean; error?: string }> {
+  const session = await requireAdminSession();
+  if (!session) return { ok: false, error: "Нет прав" };
+
+  try {
+    const ok = await produktReservieren(id, stunden, fuer ?? null);
+    if (!ok) return { ok: false, error: "Товар уже продан или зарезервирован" };
+    await auditLog({
+      action:     "produkt_reserviert",
+      actorEmail: session.user.email ?? null,
+      entity:     id,
+      neuWert:    { stunden, fuer: fuer ?? null },
+    });
+    revalidatePath("/admin/produkte");
+    return { ok: true };
+  } catch (err) {
+    console.error("[reservieren]", err);
+    return { ok: false, error: "Не удалось зарезервировать" };
+  }
+}
+
+export async function produktReservierungAufhebenAction(
+  id: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const session = await requireAdminSession();
+  if (!session) return { ok: false, error: "Нет прав" };
+
+  try {
+    await produktReservierungAufheben(id);
+    await auditLog({
+      action:     "produkt_reservierung_aufgehoben",
+      actorEmail: session.user.email ?? null,
+      entity:     id,
+    });
+    revalidatePath("/admin/produkte");
+    return { ok: true };
+  } catch (err) {
+    console.error("[reservierung-aufheben]", err);
+    return { ok: false, error: "Не удалось снять резерв" };
   }
 }
 

@@ -401,6 +401,7 @@ export default async function ProduktDetailPage({ params }: Props) {
                 originalpreis: produkt.originalpreis,
                 waehrung,
                 verkauft:      produkt.verkauft,
+                reserviert:    !!produkt.reserviert_bis && new Date(produkt.reserviert_bis) > new Date() && !produkt.verkauft,
                 /* Schaufenster: exakten Bestand nicht in den Client-Payload geben. */
                 lagerbestand:  kaufenAktiv ? produkt.lagerbestand : (produkt.lagerbestand > 0 ? 1 : 0),
                 hauptbildUrl:  bilder[0]?.url ?? null,

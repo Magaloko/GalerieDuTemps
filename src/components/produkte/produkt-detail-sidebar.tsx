@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   Heart, Share2, Check, Truck, MessageCircle, Send, Mail,
-  Phone, QrCode, X, Copy,
+  Phone, QrCode, X, Copy, Clock,
 } from "lucide-react";
 import { useWunschliste } from "@/hooks/use-wunschliste";
 import { formatPreis, rabattProzent } from "@/lib/utils/preis";
@@ -21,6 +21,8 @@ interface Props {
     waehrung:       "KZT" | "EUR" | "USD" | "RUB";
     verkauft:       boolean;
     lagerbestand:   number;
+    /** Aktuell reserviert (binär) — nicht kaufbar, „Зарезервировано". */
+    reserviert?:    boolean;
     hauptbildUrl:   string | null;
     b2c_mode?:      "visible" | "teaser" | "hidden";
   };
@@ -72,6 +74,7 @@ export function ProduktDetailSidebar({ produkt, kontakt, versandHinweis, kaspi, 
   const [qrOpen, setQrOpen] = useState(false);
 
   const isSold       = produkt.verkauft;
+  const istReserviert = !!produkt.reserviert && !produkt.verkauft;
   const ausverkauft  = produkt.lagerbestand === 0 && !produkt.verkauft;
 
   const handleShare = async () => {
@@ -170,7 +173,15 @@ export function ProduktDetailSidebar({ produkt, kontakt, versandHinweis, kaspi, 
         )}
 
         {/* ── 2. Verfügbarkeit ──────────────────────────────────── */}
-        {produkt.lagerbestand > 0 && !isSold && (
+        {istReserviert && (
+          <div className="flex items-center gap-1.5">
+            <Clock size={13} style={{ color: "var(--color-gold, #C9A84C)" }} />
+            <span className="font-body text-xs tracking-[0.12em] uppercase" style={{ color: "var(--color-gold, #C9A84C)" }}>
+              Зарезервировано
+            </span>
+          </div>
+        )}
+        {produkt.lagerbestand > 0 && !isSold && !istReserviert && (
           <div className="flex items-center gap-1.5">
             <Check size={13} style={{ color: "#7A8B6F" }} />
             <span className="font-body text-xs" style={{ color: "#7A8B6F" }}>
@@ -249,7 +260,7 @@ export function ProduktDetailSidebar({ produkt, kontakt, versandHinweis, kaspi, 
             {/* Cart-Button — NUR im Shop-Modus (kaufenAktiv) und wenn lager > 0.
                 Im Schaufenster-Modus bleiben oben die WhatsApp/Telegram/Mail-
                 Anfrage-Buttons als „Запросить" der einzige Weg. */}
-            {kaufenAktiv && produkt.lagerbestand > 0 && produkt.b2c_mode !== "teaser" && (
+            {kaufenAktiv && !istReserviert && produkt.lagerbestand > 0 && produkt.b2c_mode !== "teaser" && (
               <>
                 <Divider />
                 <AddToCartButton
@@ -268,7 +279,7 @@ export function ProduktDetailSidebar({ produkt, kontakt, versandHinweis, kaspi, 
         )}
 
         {/* ── 5. Kaspi (KZ-spezifisch) — nur Shop-Modus ────────── */}
-        {kaufenAktiv && kaspi?.aktiv && kaspi.link && !isSold && (
+        {kaufenAktiv && !istReserviert && kaspi?.aktiv && kaspi.link && !isSold && (
           <>
             <Divider />
             <div>
