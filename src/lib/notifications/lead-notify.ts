@@ -1,5 +1,7 @@
 import { query } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
+import { notifyAdminsTelegram } from "@/lib/notifications/admin-telegram";
+import { getSiteUrl } from "@/lib/site-url";
 import type { Lead } from "@/lib/db/leads";
 
 const THROTTLE_MIN = 15;   // max 1 Mail/15min/Admin/Event
@@ -110,9 +112,30 @@ export async function notifyNewLead(lead: Pick<Lead,
         console.error("[notifyNewLead]", admin.email, err);
       }
     }
+
+    // Zusätzlich: Telegram-Push an verknüpfte Admins (instant, mit Deep-Link
+    // in den Mini-App-Inbox-Reply). Throttle gilt nur für Email — Telegram
+    // ist günstig + erwünscht-instant, daher kein 15-Min-Limit.
+    const siteBase = getSiteUrl();
+    const tgText =
+      `🔔 <b>Новый лид</b> · ${quelle}\n\n` +
+      `От: <b>${escapeTg(contact)}</b>\n` +
+      (lead.betreff ? `Тема: ${escapeTg(lead.betreff)}\n` : "") +
+      (lead.vorschau ? `\n<i>${escapeTg(lead.vorschau.slice(0, 200))}</i>` : "");
+    notifyAdminsTelegram(tgText, {
+      keyboard: {
+        inline_keyboard: [[
+          { text: "💬 Ответить", web_app: { url: `${siteBase}/tg/admin/inbox/${lead.id}` } },
+        ]],
+      },
+    }).catch(err => console.error("[notifyNewLead tg]", err));
   } catch (err) {
     console.error("[notifyNewLead] unexpected", err);
   }
+}
+
+function escapeTg(s: string): string {
+  return s.replace(/[&<>]/g, c => (c === "&" ? "&amp;" : c === "<" ? "&lt;" : "&gt;"));
 }
 
 /** Zähler für Header-Bell / Sidebar-Badge: ungelesene Leads (status=neu) */

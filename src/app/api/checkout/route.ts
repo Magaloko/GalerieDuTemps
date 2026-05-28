@@ -241,6 +241,20 @@ export async function POST(req: NextRequest) {
       coupon_code,
     });
 
+    // 5a. Critical-Alert: große Bestellung → Admins via Telegram pushen.
+    // Schwelle ₸500 000 (= 50 000 000 cents). Best-effort, non-blocking.
+    if (berechnung.total_cents >= 500_000_00) {
+      void import("@/lib/notifications/admin-telegram").then(({ notifyAdminsCritical }) =>
+        notifyAdminsCritical(
+          "large_order",
+          `Заказ <b>GDT-${order.order_number}</b>\n` +
+          `Сумма: <b>${(berechnung.total_cents / 100).toLocaleString("ru-RU")} ₸</b>\n` +
+          `Клиент: ${customer_name ?? customer_email ?? "гость"}`,
+          `/admin/bestellungen/${order.id}`,
+        ),
+      ).catch(err => console.error("[large_order alert]", err));
+    }
+
     // 5b. Picker-Modus: Order ist angelegt, Provider-Wahl im Method-Picker.
     if (parsed.data.picker) {
       return NextResponse.json({

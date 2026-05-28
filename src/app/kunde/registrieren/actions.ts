@@ -95,7 +95,7 @@ export async function customerRegistrierenAction(
     tags: ["customer-confirm"],
   }).catch(err => console.error("[Registrierung] Brevo:", err));
 
-  // Bei B2B zusätzlich Welcome-Mail
+  // Bei B2B zusätzlich Welcome-Mail + Admin-Critical-Alert
   if (isB2B && data.company_name) {
     sendEmail({
       to: [{ email: customer.email, name: `${customer.vorname} ${customer.nachname}` }],
@@ -103,6 +103,17 @@ export async function customerRegistrierenAction(
       htmlContent: b2bWelcomeMail(customer.vorname ?? "", data.company_name),
       tags: ["b2b-pending"],
     }).catch(err => console.error("[Registrierung B2B] Brevo:", err));
+
+    // Telegram-Alert an Admins: neue B2B-Bewerbung zum Freischalten.
+    void import("@/lib/notifications/admin-telegram").then(({ notifyAdminsCritical }) =>
+      notifyAdminsCritical(
+        "b2b_pending",
+        `Компания: <b>${(data.company_name ?? "").replace(/[&<>]/g, "")}</b>\n` +
+        `Контакт: ${customer.vorname ?? ""} ${customer.nachname ?? ""}\n` +
+        `БИН/ИИН: ${data.ust_id ?? "—"}`,
+        "/admin/kunden?filter=b2b_pending",
+      ),
+    ).catch(err => console.error("[b2b alert]", err));
   }
 
   redirect(`/kunde/registrieren/erfolg?tab=${tab}`);
