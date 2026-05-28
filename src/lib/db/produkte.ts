@@ -424,7 +424,8 @@ export async function produktReservieren(
   const r = await query(
     `UPDATE sebo.produkte
         SET reserviert_bis = now() + make_interval(hours => $2::int),
-            reserviert_von = $3
+            reserviert_von = $3,
+            reservierung_erinnert_am = NULL
       WHERE id = $1
         AND verkauft = false
         AND (reserviert_bis IS NULL OR reserviert_bis < now())
@@ -443,6 +444,46 @@ export async function produktReservierungAufheben(id: string): Promise<void> {
     [id],
   );
   revalidatePublicCatalogCache();
+}
+
+/** Reservierungen, die innerhalb des Fensters (Default 12h) auslaufen — für die
+ *  Ablauf-Erinnerung an den Kurator. Nur aktive (Frist in der Zukunft, nicht
+ *  verkauft). `stunden_rest` = Stunden bis zum Ablauf (aufgerundet). */
+export interface ReservierungBaldFaellig {
+  id:             string;
+  name:           string;
+  slug:           string;
+  reserviert_bis: string;
+  reserviert_von: string | null;
+  stunden_rest:   number;
+}
+
+export async function reservierungenBaldFaellig(
+  fensterStunden = 12,
+): Promise<ReservierungBaldFaellig[]> {
+  const r = await query<ReservierungBaldFaellig>(
+    `SELECT
+       id, name, slug, reserviert_bis, reserviert_von,
+       CEIL(EXTRACT(EPOCH FROM (reserviert_bis - now())) / 3600.0)::int AS stunden_rest
+     FROM sebo.produkte
+     WHERE verkauft = false
+       AND reserviert_bis IS NOT NULL
+       AND reserviert_bis > now()
+       AND reserviert_bis <= now() + make_interval(hours => $1::int)
+       AND reservierung_erinnert_am IS NULL
+     ORDER BY reserviert_bis ASC`,
+    [fensterStunden],
+  );
+  return r.rows;
+}
+
+/** Markiert Reservierungen als „erinnert" — verhindert Doppel-Benachrichtigung. */
+export async function reservierungenErinnertMarkieren(ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+  await query(
+    `UPDATE sebo.produkte SET reservierung_erinnert_am = now() WHERE id = ANY($1::uuid[])`,
+    [ids],
+  );
 }
 
 // ---------------------------------------------------------------------------
