@@ -3,6 +3,8 @@ import { bildVerarbeiten } from "@/lib/storage/upload";
 import { produktErstellen } from "@/lib/db/produkte";
 import { bildEinfuegen } from "@/lib/db/bilder";
 import { getSiteUrl } from "@/lib/site-url";
+import { formatPreis } from "@/lib/utils/preis";
+import { parsePreis } from "./caption-preis";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * Produkt-Erstellung via Telegram-Foto (Sprint B · Phase 4.1)
@@ -35,10 +37,14 @@ const PLACEHOLDER_PREIS = 1;          // positive (DB-CHECK), Admin überschreib
 const MAX_TG_PHOTO_BYTES = 10 * 1024 * 1024;
 
 export interface ProduktAusFotoResult {
-  ok:      true;
+  ok:        true;
   produktId: string;
-  name:    string;
-  editUrl: string;
+  name:      string;
+  editUrl:   string;
+  /** true = direkt veröffentlicht (Preis in Caption erkannt). false = Entwurf. */
+  live:      boolean;
+  /** Erkannter Preis (KZT) oder null wenn keiner in der Caption stand. */
+  preis:     number | null;
 }
 export interface ProduktAusFotoError {
   ok:    false;
@@ -90,27 +96,41 @@ export async function produktAusFotoErstellen(opts: {
     return { ok: false, error: "Не удалось обработать изображение." };
   }
 
-  // 3. Caption parsen
+  // 3. Caption parsen — Name (Zeile 1) · Preis (Zahl-Zeile / „Цена: …") · Beschreibung (Rest)
   const cap   = (caption ?? "").trim();
   const lines = cap.split("\n").map(l => l.trim()).filter(Boolean);
   const name  = lines[0]?.slice(0, 200)
     || `Черновик · ${new Date().toLocaleDateString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`;
-  const beschreibung = lines.length > 1 ? cap : null;
 
-  // 4. Draft-Produkt anlegen
+  // Preis suchen: erste Zeile ab #2 die als Preis lesbar ist (bevorzugt Zeile 2).
+  let preis: number | null = null;
+  let preisIdx = -1;
+  for (let i = 1; i < lines.length; i++) {
+    const p = parsePreis(lines[i]);
+    if (p != null) { preis = p; preisIdx = i; break; }
+  }
+
+  // Beschreibung = restliche Zeilen (ohne Name- und Preis-Zeile).
+  const beschreibungLines = lines.filter((_, i) => i !== 0 && i !== preisIdx);
+  const beschreibung = beschreibungLines.length ? beschreibungLines.join("\n") : null;
+
+  // Live wenn ein gültiger Preis erkannt wurde — sonst Entwurf (versteckt).
+  const live = preis != null;
+
+  // 4. Produkt anlegen (live ODER Entwurf)
   let produktId: string;
   try {
-    // produktErstellen erwartet ProduktCreateInput — wir bauen das Minimal-
-    // Objekt. aktiv=false + b2c_mode=hidden ⇒ nirgends sichtbar bis Admin
-    // auf der Web-Seite Preis setzt und published.
+    // produktErstellen erwartet ProduktCreateInput. Mit Preis ⇒ aktiv + sichtbar
+    // (sofort im Katalog). Ohne Preis ⇒ Entwurf: aktiv=false + b2c_mode=hidden,
+    // nirgends sichtbar bis der Admin den Preis nachträgt.
     const produkt = await produktErstellen({
       name,
-      preis:        PLACEHOLDER_PREIS,
+      preis:        preis ?? PLACEHOLDER_PREIS,
       beschreibung: beschreibung ?? undefined,
       zustand:      "gut",
       lagerbestand: 1,
-      aktiv:        false,
-      b2c_mode:     "hidden",
+      aktiv:        live,
+      b2c_mode:     live ? "visible" : "hidden",
       waehrung:     "KZT",
       featured:     false,
       verkauft:     false,
@@ -121,7 +141,7 @@ export async function produktAusFotoErstellen(opts: {
     produktId = produkt.id;
   } catch (err) {
     console.error("[produktAusFoto] produktErstellen", err);
-    return { ok: false, error: "Не удалось создать черновик товара." };
+    return { ok: false, error: "Не удалось создать товар." };
   }
 
   // 5. Bild als Galerie-Hauptbild verknüpfen
@@ -146,24 +166,45 @@ export async function produktAusFotoErstellen(opts: {
   }
 
   const editUrl = `${getSiteUrl()}/admin/produkte/${produktId}/bearbeiten`;
-  return { ok: true, produktId, name, editUrl };
+  return { ok: true, produktId, name, editUrl, live, preis };
 }
 
 /** Baut die Antwort-Nachricht + Inline-Keyboard nach erfolgreicher Erstellung. */
 export function buildErfolgsAntwort(r: ProduktAusFotoResult): {
   text: string; keyboard: InlineKeyboardMarkup;
 } {
-  const queueUrl = `${getSiteUrl()}/admin/produkte/entwuerfe`;
+  const siteBase   = getSiteUrl();
+  const queueUrl   = `${siteBase}/admin/produkte/entwuerfe`;
+  const miniAppEdit = `${siteBase}/tg/admin/produkte/${r.produktId}`;
+
+  if (r.live && r.preis != null) {
+    // Direkt veröffentlicht (Preis erkannt) → sichtbar im Katalog.
+    const text =
+      `✓ <b>Опубликовано</b>\n\n` +
+      `📦 ${escapeHtml(r.name)}\n` +
+      `💰 ${escapeHtml(formatPreis(r.preis, "KZT"))} · <i>виден покупателям</i>\n\n` +
+      `Можно отредактировать (фото, описание, категория) или удалить.`;
+    const keyboard: InlineKeyboardMarkup = {
+      inline_keyboard: [
+        [{ text: "✏️ Редактировать", web_app: { url: miniAppEdit } }],
+        [{ text: "🌐 Открыть на сайте", url: r.editUrl }],
+        [{ text: "🗑 Удалить", callback_data: `delprod:${r.produktId}` }],
+      ],
+    };
+    return { text, keyboard };
+  }
+
+  // Kein Preis → Entwurf (versteckt). Hinweis, wie man direkt veröffentlicht.
   const text =
     `✓ <b>Черновик создан</b>\n\n` +
     `📦 ${escapeHtml(r.name)}\n` +
     `<i>Цена не указана · скрыт от покупателей</i>\n\n` +
-    `Пришлите ещё фото — каждое станет черновиком. Затем в «Черновиках» ` +
-    `заполните ИИ/вручную и опубликуйте пачкой.`;
+    `💡 Чтобы опубликовать сразу — укажите <b>цену во второй строке</b> подписи к фото ` +
+    `(напр.: <code>45000</code>). Третья строка и далее — описание.`;
   const keyboard: InlineKeyboardMarkup = {
     inline_keyboard: [
-      [{ text: "📥 Черновики (заполнить · ИИ)", url: queueUrl }],
-      [{ text: "✏️ Этот товар", url: r.editUrl }],
+      [{ text: "✏️ Заполнить и опубликовать", web_app: { url: miniAppEdit } }],
+      [{ text: "📥 Черновики (ИИ · пачкой)", url: queueUrl }],
       [{ text: "🗑 Удалить черновик", callback_data: `delprod:${r.produktId}` }],
     ],
   };
