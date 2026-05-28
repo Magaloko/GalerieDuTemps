@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth, requireAdminSession } from "@/lib/auth/config";
-import { produktErstellen, produktAktualisieren, produktLoeschen, produktById, produktReservieren, produktReservierungAufheben } from "@/lib/db/produkte";
+import { produktErstellen, produktAktualisieren, produktLoeschen, produktById, produktReservieren, produktReservierungAufheben, produktEntwurfErstellen } from "@/lib/db/produkte";
 import { ProduktCreateSchema } from "@/lib/utils/validierung";
 import { auditLog } from "@/lib/db/audit-log";
 
@@ -104,6 +104,16 @@ function parseProduktFormData(formData: FormData) {
                         .filter(v => v.length > 0),
     abmessungen,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Foto-first-Anlegen: Draft erzeugen und direkt in den Editor springen
+// ---------------------------------------------------------------------------
+export async function produktEntwurfStartenAction(): Promise<void> {
+  const session = await requireAdminSession();
+  if (!session) throw new Error("Нет прав");
+  const id = await produktEntwurfErstellen();
+  redirect(`/admin/produkte/${id}?neu=1`);
 }
 
 // ---------------------------------------------------------------------------

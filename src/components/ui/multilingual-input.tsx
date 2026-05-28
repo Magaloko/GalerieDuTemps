@@ -19,6 +19,8 @@ interface Props {
   maxLength?:    number;
   rows?:         number;
   placeholder?:  string;
+  /** Live-Callback (z.B. für Vorschau). Bekommt die komplette Locale-Map. */
+  onChange?:     (values: Record<string, string>) => void;
 }
 
 /**
@@ -28,7 +30,7 @@ interface Props {
  */
 export function MultilingualInput({
   label, name, initial, fallbackValue, variant = "input",
-  maxLength, rows, placeholder,
+  maxLength, rows, placeholder, onChange,
 }: Props) {
   // Initialwert: jeweilige Locale aus initial, oder ru = fallbackValue
   const initialMap: Record<string, string> = {
@@ -41,7 +43,11 @@ export function MultilingualInput({
   const [active, setActive] = useState<"ru" | "en" | "de">("ru");
 
   const setValue = (loc: "ru"|"en"|"de", v: string) => {
-    setValues(prev => ({ ...prev, [loc]: v }));
+    setValues(prev => {
+      const next = { ...prev, [loc]: v };
+      onChange?.(next);
+      return next;
+    });
   };
 
   return (

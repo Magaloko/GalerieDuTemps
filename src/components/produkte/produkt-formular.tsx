@@ -12,8 +12,10 @@ import { MultilingualInput } from "@/components/ui/multilingual-input";
 import { SingleMediaUpload } from "@/components/ui/single-media-upload";
 import { BildManager } from "./bild-manager";
 import { InstagramUrlsInput } from "./instagram-urls-input";
-import { Save, Trash2, AlertCircle, CheckCircle2, ImagePlus, Info } from "lucide-react";
+import { Save, Trash2, AlertCircle, CheckCircle2, ImagePlus, Info, Eye } from "lucide-react";
 import { InstagramIcon } from "./instagram-icon";
+import Image from "next/image";
+import { formatPreis } from "@/lib/utils/preis";
 import type { Produkt, Produktbild } from "@/types/produkt";
 import type { Kategorie } from "@/types/produkt";
 import type { FormState } from "@/app/(admin)/admin/produkte/actions";
@@ -81,6 +83,18 @@ export function ProduktFormular({
     ...kategorien.map(k => ({ value: String(k.id), label: k.name })),
   ];
 
+  // ── Live-Vorschau-State (wie im Newsletter-Editor) ───────────────────────
+  // Spiegelt Name + Preis live; Hauptbild kommt aus den bereits gespeicherten
+  // Bildern (aktualisiert sich nach Upload beim Reload).
+  const [pvName, setPvName] = useState(produkt?.name ?? "");
+  const [pvPreis, setPvPreis] = useState<number>(Number(produkt?.preis ?? 0));
+  const pvWaehrung = (produkt?.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT";
+  const pvBild =
+    initialBilder.find(b => b.ist_hauptbild)?.url ??
+    initialBilder[0]?.url ??
+    produkt?.hauptbild_url ??
+    null;
+
   return (
     <form action={formAction} className="space-y-8">
 
@@ -125,6 +139,10 @@ export function ProduktFormular({
         </div>
       )}
 
+      {/* ── 2-Spalten: links Felder, rechts Live-Vorschau (wie Newsletter-Editor) ── */}
+      <div className="grid lg:grid-cols-[1fr_320px] gap-6 items-start">
+        <div className="space-y-8 min-w-0">
+
       {/* ─── Basisinformationen ───────────────────────────────────── */}
       <section
         className="bg-vintage-white border border-vintage-sand p-6 space-y-5"
@@ -142,6 +160,7 @@ export function ProduktFormular({
           fallbackValue={produkt?.name}
           maxLength={300}
           placeholder="напр. Комод бидермейер"
+          onChange={(v) => setPvName(v.ru || v.en || v.de || "")}
         />
         {/* Hidden default-Sprache (ru) für name-Spalte fallback */}
         <input type="hidden" name="name" value={produkt?.name ?? ""} />
@@ -193,8 +212,51 @@ export function ProduktFormular({
         />
       </section>
 
+      {/* ─── Fotos (foto-first: direkt nach den Basis-Infos) ──────── */}
+      <section
+        className="bg-vintage-white border border-vintage-sand p-6 space-y-5"
+        style={{ borderRadius: "var(--radius-card)" }}
+      >
+        <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
+          <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2">
+            <ImagePlus className="w-4 h-4 text-vintage-gold" />
+            Фотографии
+          </h2>
+          {produkt && (
+            <p className="text-xs font-sans text-vintage-dust">
+              {initialBilder.length} {initialBilder.length === 1 ? "фото" : "фото"}
+            </p>
+          )}
+        </div>
+
+        {produkt ? (
+          <BildManager produktId={produkt.id} initialBilder={initialBilder} />
+        ) : (
+          <div
+            className="flex items-start gap-3 p-4"
+            style={{
+              background:   "rgba(201,168,76,0.08)",
+              border:       "1px solid rgba(201,168,76,0.30)",
+              borderLeft:   "4px solid var(--color-gold, #C9A84C)",
+              borderRadius: "var(--radius-card)",
+            }}
+          >
+            <Info className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "var(--color-gold, #C9A84C)" }} />
+            <div className="text-sm text-vintage-ink font-sans flex-1">
+              <p>
+                <strong>Сначала сохрани товар</strong> — после этого откроется галерея с
+                функциями: drag-sort, главное фото, alt-тексты, массовое удаление, paste из буфера.
+              </p>
+              <p className="text-xs text-vintage-dust mt-1">
+                Все фото обрабатываются автоматически: WebP-варианты, EXIF-strip, сжатие.
+              </p>
+            </div>
+          </div>
+        )}
+      </section>
+
       {/* ─── Preise & Marge ───────────────────────────────────────── */}
-      <PreiseSektion produkt={produkt} e={e} />
+      <PreiseSektion produkt={produkt} e={e} onPreisChange={setPvPreis} />
 
       {/* ─── Beschreibungen ───────────────────────────────────────── */}
       <section
@@ -402,51 +464,6 @@ export function ProduktFormular({
         </div>
       </section>
 
-      {/* ─── Bilder (Galerie inline bei Edit, Hinweis bei Neu) ──── */}
-      <section
-        className="bg-vintage-white border border-vintage-sand p-6 space-y-5"
-        style={{ borderRadius: "var(--radius-card)" }}
-      >
-        <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
-          <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2">
-            <ImagePlus className="w-4 h-4 text-vintage-gold" />
-            Фотографии
-          </h2>
-          {produkt && (
-            <p className="text-xs font-sans text-vintage-dust">
-              {initialBilder.length} {initialBilder.length === 1 ? "фото" : "фото"}
-            </p>
-          )}
-        </div>
-
-        {produkt ? (
-          // EDIT: Galerie direkt inline — alle Bilder + Hauptbild-Flag + Sortierung
-          <BildManager produktId={produkt.id} initialBilder={initialBilder} />
-        ) : (
-          // NEU: Hinweis dass Bilder nach dem Speichern hinzugefügt werden
-          <div
-            className="flex items-start gap-3 p-4"
-            style={{
-              background:   "rgba(201,168,76,0.08)",
-              border:       "1px solid rgba(201,168,76,0.30)",
-              borderLeft:   "4px solid var(--color-gold, #C9A84C)",
-              borderRadius: "var(--radius-card)",
-            }}
-          >
-            <Info className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "var(--color-gold, #C9A84C)" }} />
-            <div className="text-sm text-vintage-ink font-sans flex-1">
-              <p>
-                <strong>Сначала сохрани товар</strong> — после этого откроется галерея с
-                функциями: drag-sort, главное фото, alt-тексты, массовое удаление, paste из буфера.
-              </p>
-              <p className="text-xs text-vintage-dust mt-1">
-                Все фото обрабатываются автоматически: WebP-варианты, EXIF-strip, сжатие.
-              </p>
-            </div>
-          </div>
-        )}
-      </section>
-
       {/* ─── Видео (опционально) ─────────────────────────────────── */}
       <section
         className="bg-vintage-white border border-vintage-sand p-6 space-y-3"
@@ -515,6 +532,42 @@ export function ProduktFormular({
           rows={3}
         />
       </section>
+
+        </div>{/* /linke Spalte (Felder) */}
+
+        {/* ── Live-Vorschau (sticky, Desktop) ── */}
+        <aside className="hidden lg:block lg:sticky lg:top-6 space-y-2">
+          <div
+            className="overflow-hidden bg-vintage-white border border-vintage-sand"
+            style={{ borderRadius: "var(--radius-card)" }}
+          >
+            <div className="relative w-full" style={{ aspectRatio: "4/5", background: "var(--color-paper-warm, #E8DFD0)" }}>
+              {pvBild ? (
+                <Image src={pvBild} alt="" fill sizes="320px" className="object-cover" />
+              ) : (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-vintage-dust">
+                  <ImagePlus className="w-6 h-6 opacity-40" />
+                  <span className="text-[11px] uppercase tracking-widest">Нет фото</span>
+                </div>
+              )}
+            </div>
+            <div className="p-3">
+              <p className="text-[10px] uppercase tracking-widest text-vintage-dust mb-1 flex items-center gap-1">
+                <Eye className="w-3 h-3" /> Предпросмотр
+              </p>
+              <p className="font-serif text-base text-vintage-ink line-clamp-2">
+                {pvName || "Без названия"}
+              </p>
+              <p className="font-serif text-lg text-vintage-ink mt-1">
+                {pvPreis > 0 ? formatPreis(pvPreis, pvWaehrung) : "—"}
+              </p>
+            </div>
+          </div>
+          <p className="text-[11px] text-vintage-dust px-1 leading-snug">
+            Так карточка появится в каталоге. Фото обновляется после загрузки.
+          </p>
+        </aside>
+      </div>{/* /Grid */}
 
       {/* ─── Sticky Save-Bar ─────────────────────────────────────────
           Bleibt am unteren Rand sichtbar während des Scrollens — Admin sieht
@@ -634,9 +687,11 @@ export function ProduktFormular({
 function PreiseSektion({
   produkt,
   e,
+  onPreisChange,
 }: {
   produkt?: Produkt;
   e:        (field: string) => string | undefined;
+  onPreisChange?: (p: number) => void;
 }) {
   const [einkauf, setEinkauf] = useState<number>(Number(produkt?.einkaufspreis ?? 0));
   const [b2c,     setB2c]     = useState<number>(Number(produkt?.preis ?? 0));
@@ -679,7 +734,7 @@ function PreiseSektion({
           required
           error={e("preis")}
           hint="Видна клиентам · автоконвертация в другие валюты"
-          onChange={(p) => setB2c(p)}
+          onChange={(p) => { setB2c(p); onPreisChange?.(p); }}
         />
       </div>
 

@@ -148,6 +148,41 @@ export async function produktBySlug(slug: string): Promise<Produkt | null> {
 }
 
 // ---------------------------------------------------------------------------
+// Entwurf (Draft) anlegen — für den Foto-first-Anlege-Flow
+//
+// Legt sofort einen versteckten Draft an (aktiv=false, b2c_mode='hidden'), damit
+// der normale Editor inkl. Foto-Galerie direkt mit einer echten produkt_id
+// arbeiten kann (Fotos beim Anlegen statt erst nach dem Speichern).
+// Räumt vorher verwaiste leere Drafts auf (> 1 Tag, ohne Foto) — kein Müll.
+// ---------------------------------------------------------------------------
+const ENTWURF_NAME = "Новый товар (черновик)";
+
+export async function produktEntwurfErstellen(): Promise<string> {
+  // Aufräumen: alte leere Drafts ohne Foto (best-effort, blockiert nie).
+  await query(
+    `DELETE FROM sebo.produkte p
+      WHERE p.name = $1
+        AND p.aktiv = false
+        AND p.verkauft = false
+        AND p.erstellt_am < now() - interval '1 day'
+        AND NOT EXISTS (SELECT 1 FROM sebo.produktbilder pb WHERE pb.produkt_id = p.id)`,
+    [ENTWURF_NAME],
+  ).catch(() => {});
+
+  const slug = uniqueSlug("entwurf");
+  // veroeffentlicht_am wird gesetzt → Sichtbarkeit hängt dann NUR an aktiv +
+  // b2c_mode (Draft ist hidden+inaktiv = unsichtbar, bis der Admin publiziert).
+  const r = await query<{ id: string }>(
+    `INSERT INTO sebo.produkte
+       (name, slug, preis, lagerbestand, zustand, aktiv, b2c_mode, verkauft, waehrung, veroeffentlicht_am)
+     VALUES ($1, $2, 0, 1, 'gut', false, 'hidden', false, 'KZT', now())
+     RETURNING id`,
+    [ENTWURF_NAME, slug],
+  );
+  return r.rows[0].id;
+}
+
+// ---------------------------------------------------------------------------
 // Produkt erstellen
 // ---------------------------------------------------------------------------
 export async function produktErstellen(
