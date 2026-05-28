@@ -2,11 +2,13 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, MessageCircle } from "lucide-react";
-import { oeffentlichesProduktBySlug } from "@/lib/db/produkte-public";
+import { oeffentlichesProduktBySlug, aehnlicheProdukte } from "@/lib/db/produkte-public";
 import { TelegramAuthGate } from "../../auth-gate";
 import { ProductMiniClient } from "./product-client";
 import { HeartToggle } from "../../heart-toggle";
 import { ProduktStory } from "@/components/produkte/produkt-story";
+import { maskBestandListe } from "@/lib/utils/showcase-mask";
+import { formatPreis } from "@/lib/utils/preis";
 import { i18nOr } from "@/lib/utils/i18n-text";
 import { getLocale } from "@/i18n";
 import type { Metadata } from "next";
@@ -47,6 +49,12 @@ export default async function TelegramProduktPage({
     return produkt.hauptbild_url ? [produkt.hauptbild_url] : [];
   })();
   const hatStory = (produkt.inhalt_blocks?.length ?? 0) > 0;
+
+  // „Похожее" — gleiche Kategorie, ähnlicher Preis. Bestand maskiert (Schaufenster).
+  const aehnliche = maskBestandListe(
+    await aehnlicheProdukte(produkt.id, produkt.kategorie_id ?? null, produkt.preis, 4).catch(() => []),
+    kaufenAktiv,
+  );
 
   return (
     <TelegramAuthGate>
@@ -230,6 +238,80 @@ export default async function TelegramProduktPage({
             </Link>
           )}
         </div>
+
+        {/* „Похожее" — ähnliche Produkte (gleiche Kategorie, ähnlicher Preis) */}
+        {aehnliche.length > 0 && (
+          <section className="px-4 pt-2">
+            <h2
+              className="text-[11px] uppercase font-medium mb-3"
+              style={{
+                letterSpacing: "0.22em",
+                color:         "var(--tg-theme-link-color, var(--color-coral))",
+              }}
+            >
+              Похожее
+            </h2>
+            <div
+              className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
+              {aehnliche.map(a => {
+                const w = (a.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT";
+                return (
+                  <Link
+                    key={a.id}
+                    href={`/tg/produkt/${a.slug}`}
+                    className="block shrink-0"
+                    style={{ width: 132, touchAction: "manipulation" }}
+                  >
+                    <div
+                      className="relative w-full overflow-hidden"
+                      style={{ aspectRatio: "4/5", background: "var(--color-paper-warm)" }}
+                    >
+                      {a.hauptbild_url && (
+                        <Image src={a.hauptbild_url} alt={a.name} fill sizes="132px" className="object-cover" />
+                      )}
+                      {(a.verkauft || a.reserviert) && (
+                        <span
+                          className="absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[9px] uppercase font-medium"
+                          style={{
+                            letterSpacing: "0.14em",
+                            background:    a.verkauft ? "rgba(15,20,48,0.82)" : "rgba(201,168,76,0.92)",
+                            color:         a.verkauft ? "var(--color-gold, #C9A84C)" : "#1a1410",
+                            backdropFilter:"blur(4px)",
+                          }}
+                        >
+                          {a.verkauft ? "Продано" : "Зарезервировано"}
+                        </span>
+                      )}
+                    </div>
+                    <h3
+                      className="line-clamp-2 mt-1.5"
+                      style={{
+                        fontFamily: "var(--font-display)",
+                        fontSize:   14,
+                        lineHeight: 1.15,
+                        color:      "var(--tg-theme-text-color, var(--color-ink))",
+                      }}
+                    >
+                      {a.name}
+                    </h3>
+                    <p
+                      className="mt-0.5"
+                      style={{
+                        fontFamily: "var(--font-display)",
+                        fontSize:   13,
+                        color:      "var(--tg-theme-text-color, var(--color-ink))",
+                      }}
+                    >
+                      {formatPreis(a.preis, w)}
+                    </p>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* Keyframes für Pulse-Badge (server-render-time CSS) */}
         <style>{`
