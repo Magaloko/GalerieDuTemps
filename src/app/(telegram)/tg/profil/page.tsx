@@ -8,6 +8,7 @@ import { ClaimInitForm } from "./claim-init-form";
 import {
   Mail, Briefcase, Package, Heart, ExternalLink, ArrowRight, MessageCircle,
 } from "lucide-react";
+import { InstagramIcon } from "@/components/produkte/instagram-icon";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -263,6 +264,7 @@ export default async function TgProfilPage() {
         <section className="space-y-2 pt-2">
           <NavRow href="/tg/orders"        icon={Package}         label="Мои заказы" />
           <NavRow href="/tg/wunschliste"   icon={Heart}           label="Избранное"   />
+          <NavRow href="/tg/instagram"     icon={InstagramIcon}   label="Из Instagram" />
           <NavRow href="/tg/kontakt"       icon={MessageCircle}   label="Связаться с куратором" />
         </section>
 

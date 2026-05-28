@@ -9,6 +9,7 @@ import {
   Tag, Ticket, Briefcase, Mail, UserCheck, Coins, Wallet, BookOpen,
   Send, ArrowRight, ExternalLink, TrendingUp, Clock,
 } from "lucide-react";
+import { InstagramIcon } from "@/components/produkte/instagram-icon";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -67,10 +68,11 @@ export default async function TgAdminHome() {
     {
       title: "Каталог",
       items: [
-        { href: "/tg/admin/produkte",       label: "Товары",     icon: Package, kind: "native" },
-        { href: "/tg/admin/reservierungen", label: "Брони",      icon: Clock,   kind: "native", badge: reservCount },
-        { href: "/tg/admin/kategorien",     label: "Категории",  icon: Tag,     kind: "native" },
-        { href: "/tg/admin/coupons",        label: "Промокоды",  icon: Ticket,  kind: "native" },
+        { href: "/tg/admin/produkte",       label: "Товары",     icon: Package,   kind: "native" },
+        { href: "/tg/admin/reservierungen", label: "Брони",      icon: Clock,     kind: "native", badge: reservCount },
+        { href: "/tg/admin/kategorien",     label: "Категории",  icon: Tag,       kind: "native" },
+        { href: "/tg/admin/instagram",      label: "Instagram",  icon: InstagramIcon, kind: "native" },
+        { href: "/tg/admin/coupons",        label: "Промокоды",  icon: Ticket,    kind: "native" },
       ],
     },
     {

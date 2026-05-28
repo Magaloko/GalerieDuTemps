@@ -9,6 +9,13 @@ import { auszahlungAlsBezahltMarkieren } from "@/lib/db/auszahlungen";
 import { produktAktualisieren, produktReservieren, produktReservierungAufheben, produktReservierungVerlaengern } from "@/lib/db/produkte";
 import { orderStatusUpdate } from "@/lib/db/orders";
 import { kategorieErstellen } from "@/lib/db/kategorien";
+import {
+  instagramKategorieErstellen,
+  instagramPostErstellen,
+  instagramPostAktualisieren,
+  instagramPostLoeschen,
+} from "@/lib/db/instagram-archive";
+import { extractInstagramUrl, instagramShortcode, instagramTyp } from "@/lib/utils/instagram";
 import { auditLog } from "@/lib/db/audit-log";
 import { bildVerarbeiten } from "@/lib/storage/upload";
 import { bildEinfuegen, bildLoeschen, hauptbildSetzen } from "@/lib/db/bilder";
@@ -328,5 +335,86 @@ export async function produktHauptbildAction(bildId: string, produktId: string, 
   } catch (err) {
     console.error("[produktHauptbild]", err);
     return { ok: false, error: "Ошибка" };
+  }
+}
+
+/* ── Instagram-Archiv: Kategorie anlegen ───────────────────────────────────── */
+export async function instagramKategorieCreateAction(name: string): Promise<ActionRes> {
+  if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
+  if (name.trim().length < 2) return { ok: false, error: "Слишком короткое название" };
+  try {
+    await instagramKategorieErstellen(name);
+    revalidatePath("/tg/admin/instagram");
+    revalidatePath("/tg/instagram");
+    return { ok: true, message: "Категория создана" };
+  } catch (err) {
+    console.error("[instagramKategorieCreate]", err);
+    return { ok: false, error: "Ошибка БД" };
+  }
+}
+
+/* ── Instagram-Archiv: Post anlegen (Embed-Code oder URL) ──────────────────── */
+export async function instagramPostCreateAction(input: {
+  embedOderUrl: string;
+  kategorieId?: number | null;
+  produktId?:   string | null;
+  titel?:       string | null;
+}): Promise<ActionRes> {
+  if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
+
+  const permalink = extractInstagramUrl(input.embedOderUrl ?? "");
+  if (!permalink) return { ok: false, error: "Не распознан Instagram-эмбед или ссылка" };
+  const shortcode = instagramShortcode(permalink);
+  const typ       = instagramTyp(permalink);
+  if (!shortcode || !typ) return { ok: false, error: "Не удалось разобрать ссылку" };
+
+  try {
+    await instagramPostErstellen({
+      permalink, shortcode, typ,
+      kategorieId: input.kategorieId ?? null,
+      produktId:   input.produktId ?? null,
+      titel:       input.titel ?? null,
+    });
+    await auditLog({ action: "instagram_post_erstellt", actorEmail: null, entity: shortcode, neuWert: { typ, via: "tg-admin" } });
+    revalidatePath("/tg/admin/instagram");
+    revalidatePath("/tg/instagram");
+    return { ok: true, message: "Пост добавлен" };
+  } catch (err) {
+    const msg = err instanceof Error && /unique|duplicate/i.test(err.message)
+      ? "Этот пост уже в архиве"
+      : "Ошибка БД";
+    console.error("[instagramPostCreate]", err);
+    return { ok: false, error: msg };
+  }
+}
+
+/* ── Instagram-Archiv: Post bearbeiten (Kategorie/Produkt/aktiv/Titel) ─────── */
+export async function instagramPostUpdateAction(
+  id: string,
+  input: { kategorieId?: number | null; produktId?: string | null; titel?: string | null; aktiv?: boolean; sortierung?: number },
+): Promise<ActionRes> {
+  if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
+  try {
+    await instagramPostAktualisieren(id, input);
+    revalidatePath("/tg/admin/instagram");
+    revalidatePath("/tg/instagram");
+    return { ok: true, message: "Сохранено" };
+  } catch (err) {
+    console.error("[instagramPostUpdate]", err);
+    return { ok: false, error: "Ошибка БД" };
+  }
+}
+
+/* ── Instagram-Archiv: Post löschen ────────────────────────────────────────── */
+export async function instagramPostDeleteAction(id: string): Promise<ActionRes> {
+  if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
+  try {
+    await instagramPostLoeschen(id);
+    revalidatePath("/tg/admin/instagram");
+    revalidatePath("/tg/instagram");
+    return { ok: true, message: "Удалено" };
+  } catch (err) {
+    console.error("[instagramPostDelete]", err);
+    return { ok: false, error: "Ошибка БД" };
   }
 }

@@ -1,0 +1,61 @@
+import { getWebAppSession } from "@/lib/telegram/webapp-session";
+import { TelegramAuthGate } from "../../auth-gate";
+import { AdminBack, AdminHeader, AdminEmpty, AdminNotAllowed } from "../_ui";
+import { instagramPostsAlle, instagramKategorienAlle } from "@/lib/db/instagram-archive";
+import { produkteListe } from "@/lib/db/produkte";
+import { InstagramCreate } from "./instagram-create";
+import { InstagramRow } from "./instagram-row";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Instagram · Mini-App", robots: { index: false, follow: false } };
+export const dynamic = "force-dynamic";
+
+/* /tg/admin/instagram — Archiv verwalten: Embeds einfügen, kategorisieren, verknüpfen. */
+export default async function TgAdminInstagram() {
+  const session = await getWebAppSession();
+  if (!session || session.role !== "admin") {
+    return <TelegramAuthGate><AdminNotAllowed /></TelegramAuthGate>;
+  }
+
+  const [posts, kategorien, produkteRes] = await Promise.all([
+    instagramPostsAlle().catch(() => []),
+    instagramKategorienAlle().catch(() => []),
+    produkteListe({ seite: 1, limit: 200, status: "aktiv" }).catch(() => ({ items: [] as Awaited<ReturnType<typeof produkteListe>>["items"] })),
+  ]);
+
+  const katOptions  = kategorien.map(k => ({ value: String(k.id), label: k.name }));
+  const prodOptions = produkteRes.items.map(p => ({ value: p.id, label: p.name }));
+
+  return (
+    <TelegramAuthGate>
+      <main className="p-4 pb-8">
+        <AdminBack />
+        <AdminHeader eyebrow="✦ Каталог" titel="Instagram архив" sub={`${posts.length} постов · ${kategorien.length} категорий`} />
+
+        <InstagramCreate kategorien={katOptions} produkte={prodOptions} />
+
+        {posts.length === 0 ? (
+          <AdminEmpty text="Архив пуст. Вставьте embed-код поста выше." />
+        ) : (
+          <div className="space-y-2">
+            {posts.map(p => (
+              <InstagramRow
+                key={p.id}
+                id={p.id}
+                permalink={p.permalink}
+                shortcode={p.shortcode}
+                typ={p.typ}
+                aktiv={p.aktiv}
+                kategorieId={p.kategorie_id}
+                produktId={p.produkt_id}
+                titel={p.titel}
+                kategorien={katOptions}
+                produkte={prodOptions}
+              />
+            ))}
+          </div>
+        )}
+      </main>
+    </TelegramAuthGate>
+  );
+}

@@ -123,6 +123,13 @@ export function TelegramCatalogClient({
         >
           Galerie du Temps
         </h1>
+        <Link
+          href="/tg/instagram"
+          className="inline-flex items-center gap-1 mt-2 text-[11px] uppercase font-medium"
+          style={{ letterSpacing: "0.18em", color: "var(--tg-theme-link-color, var(--color-coral))" }}
+        >
+          ✦ Из Instagram →
+        </Link>
       </header>
 
       {/* Suchfeld */}
