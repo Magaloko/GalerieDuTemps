@@ -7,7 +7,7 @@ import { query } from "@/lib/db";
 import {
   Shield, Inbox, Package, Users, BarChart3, ShoppingBag, FileText,
   Tag, Ticket, Briefcase, Mail, UserCheck, Coins, Wallet, BookOpen,
-  Send, ArrowRight, ExternalLink, TrendingUp,
+  Send, ArrowRight, ExternalLink, TrendingUp, Clock,
 } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -44,9 +44,10 @@ export default async function TgAdminHome() {
     return <TelegramAuthGate><AdminNotAllowed /></TelegramAuthGate>;
   }
 
-  const [badges, today] = await Promise.all([
+  const [badges, today, reservCount] = await Promise.all([
     adminBadgeCounts().catch(() => null),
     loadToday().catch(() => ({ revenue_today_cents: 0, orders_pending: 0 })),
+    loadReservCount().catch(() => 0),
   ]);
   const b = badges ?? {
     orders_pending: 0, b2b_pending: 0, leads_unread: 0, kontakt_neu: 0,
@@ -66,9 +67,10 @@ export default async function TgAdminHome() {
     {
       title: "Каталог",
       items: [
-        { href: "/tg/admin/produkte",  label: "Товары",     icon: Package, kind: "native" },
-        { href: "/tg/admin/kategorien", label: "Категории", icon: Tag,    kind: "native" },
-        { href: "/tg/admin/coupons",   label: "Промокоды",  icon: Ticket,  kind: "native" },
+        { href: "/tg/admin/produkte",       label: "Товары",     icon: Package, kind: "native" },
+        { href: "/tg/admin/reservierungen", label: "Брони",      icon: Clock,   kind: "native", badge: reservCount },
+        { href: "/tg/admin/kategorien",     label: "Категории",  icon: Tag,     kind: "native" },
+        { href: "/tg/admin/coupons",        label: "Промокоды",  icon: Ticket,  kind: "native" },
       ],
     },
     {
@@ -200,4 +202,12 @@ async function loadToday(): Promise<{ revenue_today_cents: number; orders_pendin
         WHERE status IN ('pending','paid') AND versendet_am IS NULL) AS orders_pending`,
   );
   return r.rows[0] ?? { revenue_today_cents: 0, orders_pending: 0 };
+}
+
+async function loadReservCount(): Promise<number> {
+  const r = await query<{ n: number }>(
+    `SELECT COUNT(*)::int AS n FROM sebo.produkte
+      WHERE verkauft = false AND reserviert_bis IS NOT NULL AND reserviert_bis > now()`,
+  );
+  return r.rows[0]?.n ?? 0;
 }

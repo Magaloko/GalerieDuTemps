@@ -486,6 +486,63 @@ export async function reservierungenErinnertMarkieren(ids: string[]): Promise<vo
   );
 }
 
+/** Alle aktiven Reservierungen (für die Admin-Übersicht). Mit Hauptbild +
+ *  Reststunden bis Ablauf (kann negativ wirken, ist aber > now() gefiltert). */
+export interface AktiveReservierung {
+  id:             string;
+  name:           string;
+  slug:           string;
+  preis:          number;
+  waehrung:       string;
+  hauptbild_url:  string | null;
+  reserviert_bis: string;
+  reserviert_von: string | null;
+  stunden_rest:   number;
+}
+
+export async function aktiveReservierungen(): Promise<AktiveReservierung[]> {
+  const r = await query<AktiveReservierung>(
+    `SELECT
+       p.id, p.name, p.slug, p.preis, p.waehrung,
+       p.reserviert_bis, p.reserviert_von,
+       CEIL(EXTRACT(EPOCH FROM (p.reserviert_bis - now())) / 3600.0)::int AS stunden_rest,
+       COALESCE(
+         p.hauptbild_url,
+         (SELECT COALESCE(pb.url_medium, pb.url) FROM sebo.produktbilder pb
+           WHERE pb.produkt_id = p.id
+           ORDER BY pb.ist_hauptbild DESC, pb.sortierung, pb.erstellt_am LIMIT 1)
+       ) AS hauptbild_url
+     FROM sebo.produkte p
+     WHERE p.verkauft = false
+       AND p.reserviert_bis IS NOT NULL
+       AND p.reserviert_bis > now()
+     ORDER BY p.reserviert_bis ASC`,
+  );
+  return r.rows;
+}
+
+/** Verlängert eine AKTIVE Reservierung (Uhr neu auf now()+stunden) und setzt die
+ *  Erinnerung zurück. Greift nur, wenn aktuell aktiv reserviert & nicht verkauft. */
+export async function produktReservierungVerlaengern(
+  id:      string,
+  stunden = 48,
+): Promise<boolean> {
+  const r = await query(
+    `UPDATE sebo.produkte
+        SET reserviert_bis = now() + make_interval(hours => $2::int),
+            reservierung_erinnert_am = NULL
+      WHERE id = $1
+        AND verkauft = false
+        AND reserviert_bis IS NOT NULL
+        AND reserviert_bis > now()
+      RETURNING id`,
+    [id, stunden],
+  );
+  const ok = (r.rowCount ?? 0) > 0;
+  if (ok) revalidatePublicCatalogCache();
+  return ok;
+}
+
 // ---------------------------------------------------------------------------
 // Produkt löschen
 // ---------------------------------------------------------------------------

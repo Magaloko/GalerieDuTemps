@@ -6,7 +6,7 @@ import { query } from "@/lib/db";
 import { b2bFreischalten, b2bAblehnen } from "@/lib/db/customer-b2b";
 import { couponToggleAktiv } from "@/lib/db/coupons";
 import { auszahlungAlsBezahltMarkieren } from "@/lib/db/auszahlungen";
-import { produktAktualisieren, produktReservieren, produktReservierungAufheben } from "@/lib/db/produkte";
+import { produktAktualisieren, produktReservieren, produktReservierungAufheben, produktReservierungVerlaengern } from "@/lib/db/produkte";
 import { kategorieErstellen } from "@/lib/db/kategorien";
 import { auditLog } from "@/lib/db/audit-log";
 import { bildVerarbeiten } from "@/lib/storage/upload";
@@ -80,9 +80,28 @@ export async function produktReservierungTgAction(
       await auditLog({ action: "produkt_reservierung_aufgehoben", actorEmail: null, entity: produktId, neuWert: { via: "tg-admin" } });
     }
     revalidatePath("/tg/admin/produkte");
+    revalidatePath("/tg/admin/reservierungen");
     return { ok: true, message: reservieren ? "Зарезервировано на 48ч" : "Резерв снят" };
   } catch (err) {
     console.error("[produktReservierungTg]", err);
+    return { ok: false, error: "Ошибка БД" };
+  }
+}
+
+/* ── Produkt: aktive Reservierung verlängern (Uhr neu auf 48h) ──────────────── */
+export async function produktReservierungVerlaengernTgAction(
+  produktId: string,
+): Promise<ActionRes> {
+  if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
+  try {
+    const ok = await produktReservierungVerlaengern(produktId, 48);
+    if (!ok) return { ok: false, error: "Бронь неактивна или товар продан" };
+    await auditLog({ action: "produkt_reservierung_verlaengert", actorEmail: null, entity: produktId, neuWert: { stunden: 48, via: "tg-admin" } });
+    revalidatePath("/tg/admin/produkte");
+    revalidatePath("/tg/admin/reservierungen");
+    return { ok: true, message: "Продлено на 48ч" };
+  } catch (err) {
+    console.error("[produktReservierungVerlaengernTg]", err);
     return { ok: false, error: "Ошибка БД" };
   }
 }
