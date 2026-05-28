@@ -3,9 +3,9 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Check, Loader2, Eye, EyeOff, Tag, Pencil } from "lucide-react";
+import { Check, Loader2, Eye, EyeOff, Tag, Pencil, Clock } from "lucide-react";
 import { formatPreis } from "@/lib/utils/preis";
-import { produktSchnellEditAction } from "../actions";
+import { produktSchnellEditAction, produktReservierungTgAction } from "../actions";
 import { haptic } from "../../fx";
 
 interface Props {
@@ -17,6 +17,7 @@ interface Props {
   lagerbestand: number;
   bildUrl:      string | null;
   verkauft:     boolean;
+  reserviert:   boolean;
 }
 
 /* Eine Produkt-Zeile mit aufklappbaren Quick-Actions: Preis setzen, Publish/Hide. */
@@ -32,6 +33,14 @@ export function ProduktRow(p: Props) {
   const run = (opts: Parameters<typeof produktSchnellEditAction>[0]) => {
     start(async () => {
       const r = await produktSchnellEditAction(opts);
+      if (r.ok) { haptic("success"); setFlash("✓"); setTimeout(() => setFlash(null), 1500); router.refresh(); }
+      else { haptic("error"); setFlash(r.error); setTimeout(() => setFlash(null), 2500); }
+    });
+  };
+
+  const runReserve = (reservieren: boolean) => {
+    start(async () => {
+      const r = await produktReservierungTgAction(p.id, reservieren);
       if (r.ok) { haptic("success"); setFlash("✓"); setTimeout(() => setFlash(null), 1500); router.refresh(); }
       else { haptic("error"); setFlash(r.error); setTimeout(() => setFlash(null), 2500); }
     });
@@ -59,6 +68,9 @@ export function ProduktRow(p: Props) {
               : p.aktiv
                 ? <span className="text-[9px] uppercase px-1 py-0.5 shrink-0" style={{ background: "rgba(127,140,90,0.15)", color: "#52663F" }}>🟢</span>
                 : <span className="text-[9px] uppercase px-1 py-0.5 shrink-0" style={{ background: "rgba(232,112,58,0.12)", color: "var(--color-coral)" }}>черновик</span>}
+            {p.reserviert && !p.verkauft && (
+              <span className="text-[9px] uppercase px-1 py-0.5 shrink-0" style={{ background: "rgba(201,168,76,0.18)", color: "#9A7B1F" }}>⏳ бронь</span>
+            )}
           </div>
           <p className="text-[11px] mt-0.5" style={{ color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
             <span className="font-mono">{p.artikelCode ?? "—"}</span>
@@ -117,6 +129,31 @@ export function ProduktRow(p: Props) {
               </button>
             )}
           </div>
+          {/* Reservierung (nur wenn nicht verkauft) */}
+          {!p.verkauft && (
+            p.reserviert ? (
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => runReserve(false)}
+                className="w-full flex items-center justify-center gap-1.5 py-2 text-[11px] uppercase font-medium"
+                style={{ letterSpacing: "0.16em", background: "rgba(201,168,76,0.14)", color: "#9A7B1F", border: "1px solid rgba(201,168,76,0.55)" }}
+              >
+                <Clock className="w-3.5 h-3.5" /> Снять резерв
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => runReserve(true)}
+                className="w-full flex items-center justify-center gap-1.5 py-2 text-[11px] uppercase font-medium disabled:opacity-40"
+                style={{ letterSpacing: "0.16em", background: "var(--color-bone)", color: "var(--color-ink-soft)", border: "1px solid var(--color-line)" }}
+              >
+                <Clock className="w-3.5 h-3.5" /> Зарезервировать 48ч
+              </button>
+            )
+          )}
+
           {/* Voll-Editor öffnen */}
           <Link
             href={`/tg/admin/produkte/${p.id}`}

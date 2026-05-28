@@ -56,6 +56,7 @@ export default async function TgAdminProdukte({
                 lagerbestand={p.lagerbestand}
                 bildUrl={p.hauptbild_url}
                 verkauft={p.verkauft}
+                reserviert={p.reserviert ?? false}
               />
             ))}
           </div>

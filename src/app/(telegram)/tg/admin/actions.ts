@@ -6,8 +6,9 @@ import { query } from "@/lib/db";
 import { b2bFreischalten, b2bAblehnen } from "@/lib/db/customer-b2b";
 import { couponToggleAktiv } from "@/lib/db/coupons";
 import { auszahlungAlsBezahltMarkieren } from "@/lib/db/auszahlungen";
-import { produktAktualisieren } from "@/lib/db/produkte";
+import { produktAktualisieren, produktReservieren, produktReservierungAufheben } from "@/lib/db/produkte";
 import { kategorieErstellen } from "@/lib/db/kategorien";
+import { auditLog } from "@/lib/db/audit-log";
 import { bildVerarbeiten } from "@/lib/storage/upload";
 import { bildEinfuegen, bildLoeschen, hauptbildSetzen } from "@/lib/db/bilder";
 import type { ProduktUpdateInput } from "@/lib/utils/validierung";
@@ -53,6 +54,30 @@ export async function produktSchnellEditAction(opts: {
     return { ok: true, message: "Обновлено" };
   } catch (err) {
     console.error("[produktSchnellEdit]", err);
+    return { ok: false, error: "Ошибка БД" };
+  }
+}
+
+/* ── Produkt: Reservierung (48h) setzen / aufheben ─────────────────────────── */
+export async function produktReservierungTgAction(
+  produktId:  string,
+  reservieren: boolean,
+): Promise<ActionRes> {
+  const admin = await requireTgAdmin();
+  if (!admin) return { ok: false, error: "Нет прав" };
+  try {
+    if (reservieren) {
+      const ok = await produktReservieren(produktId, 48);
+      if (!ok) return { ok: false, error: "Товар продан или уже зарезервирован" };
+      await auditLog({ action: "produkt_reserviert", actorEmail: null, entity: produktId, neuWert: { stunden: 48, via: "tg-admin" } });
+    } else {
+      await produktReservierungAufheben(produktId);
+      await auditLog({ action: "produkt_reservierung_aufgehoben", actorEmail: null, entity: produktId, neuWert: { via: "tg-admin" } });
+    }
+    revalidatePath("/tg/admin/produkte");
+    return { ok: true, message: reservieren ? "Зарезервировано на 48ч" : "Резерв снят" };
+  } catch (err) {
+    console.error("[produktReservierungTg]", err);
     return { ok: false, error: "Ошибка БД" };
   }
 }
