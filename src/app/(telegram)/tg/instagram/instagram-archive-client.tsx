@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Script from "next/script";
-import { Film, Image as ImageIcon, ArrowRight, Loader2 } from "lucide-react";
+import { Film, Image as ImageIcon, Tv, ArrowRight, Loader2, ExternalLink } from "lucide-react";
+import { InstagramIcon } from "@/components/produkte/instagram-icon";
 
 type Chip = { slug: string; name: string; anzahl: number };
 type Post = {
@@ -18,18 +18,12 @@ type Post = {
   produkt_name:   string | null;
 };
 
-declare global {
-  interface Window {
-    instgrm?: { Embeds?: { process: () => void } };
-  }
-}
-
 /* ──────────────────────────────────────────────────────────────────────────
- * Instagram-Archiv (Mini-App) — Kategorie-Chips + Lazy-Feed.
+ * Instagram-Archiv (Mini-App) — native Karten statt Embeds.
  *
- * Performance: echte IG-Embeds sind schwer. Jeder Post rendert erst, wenn er
- * via IntersectionObserver in den Viewport kommt (LazyEmbed) — bis dahin nur
- * eine leichte Platzhalter-Karte. embed.js wird einmal pro Seite geladen.
+ * Instagram embed.js wird in Telegramms WebView blockiert. Deshalb zeigen
+ * wir marken-konforme Karten mit direktem Link zum Post — kein iframe, kein
+ * externes Script. Funktioniert zuverlässig in allen Umgebungen.
  * ────────────────────────────────────────────────────────────────────────── */
 export function InstagramArchiveClient({
   posts, kategorien, aktiveKategorie,
@@ -43,9 +37,10 @@ export function InstagramArchiveClient({
   };
 
   return (
-    <main className="p-4">
+    <main className="p-4 pb-8">
       <header className="mb-4">
-        <p className="text-[10px] uppercase font-medium mb-2" style={{ letterSpacing: "0.28em", color: "var(--tg-theme-link-color, var(--color-coral))" }}>
+        <p className="text-[10px] uppercase font-medium mb-2"
+          style={{ letterSpacing: "0.28em", color: "var(--tg-theme-link-color, var(--color-coral))" }}>
           ✦ Из Instagram
         </p>
         <h1 style={{ fontFamily: "var(--font-display)", fontSize: 28, lineHeight: 1.05, color: "var(--tg-theme-text-color, var(--color-ink))" }}>
@@ -55,38 +50,37 @@ export function InstagramArchiveClient({
 
       {/* Kategorie-Chips */}
       {kategorien.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-1 mb-4" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+        <div className="flex gap-2 overflow-x-auto pb-1 mb-5"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
           <Chip label="Все" aktiv={!aktiveKategorie} onClick={() => navigate("")} />
           {kategorien.map(k => (
-            <Chip key={k.slug} label={k.name} count={k.anzahl} aktiv={aktiveKategorie === k.slug}
+            <Chip key={k.slug} label={k.name} count={k.anzahl}
+              aktiv={aktiveKategorie === k.slug}
               onClick={() => navigate(aktiveKategorie === k.slug ? "" : k.slug)} />
           ))}
-          {pending && <Loader2 className="w-4 h-4 animate-spin shrink-0 self-center" style={{ color: "var(--color-ink-mute)" }} />}
+          {pending && <Loader2 className="w-4 h-4 animate-spin shrink-0 self-center"
+            style={{ color: "var(--color-ink-mute)" }} />}
         </div>
       )}
 
       {posts.length === 0 ? (
         <div className="py-16 text-center">
-          <p style={{ color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>Пока пусто.</p>
+          <p style={{ color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
+            Пока пусто.
+          </p>
         </div>
       ) : (
-        <div className="flex flex-col items-center gap-5" style={{ opacity: pending ? 0.55 : 1 }}>
-          {posts.map(p => <LazyEmbed key={p.id} post={p} />)}
+        <div className="flex flex-col gap-3" style={{ opacity: pending ? 0.55 : 1 }}>
+          {posts.map(p => <PostCard key={p.id} post={p} />)}
         </div>
       )}
-
-      {/* embed.js einmal pro Seite — lazyOnload. */}
-      <Script
-        id="instagram-embed-js"
-        src="https://www.instagram.com/embed.js"
-        strategy="lazyOnload"
-        onLoad={() => { try { window.instgrm?.Embeds?.process(); } catch { /* ignore */ } }}
-      />
     </main>
   );
 }
 
-function Chip({ label, count, aktiv, onClick }: { label: string; count?: number; aktiv: boolean; onClick: () => void }) {
+function Chip({ label, count, aktiv, onClick }: {
+  label: string; count?: number; aktiv: boolean; onClick: () => void;
+}) {
   return (
     <button type="button" onClick={onClick}
       className="shrink-0 px-3 py-1.5 text-[11px] uppercase font-medium whitespace-nowrap"
@@ -101,72 +95,83 @@ function Chip({ label, count, aktiv, onClick }: { label: string; count?: number;
   );
 }
 
-/* Rendert das echte IG-Embed erst, wenn die Karte in den Viewport scrollt. */
-function LazyEmbed({ post }: { post: Post }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [show, setShow] = useState(false);
+const TYP_LABEL: Record<string, string> = { reel: "Reel", tv: "IGTV", p: "Post" };
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || show) return;
-    const io = new IntersectionObserver((entries) => {
-      if (entries.some(e => e.isIntersecting)) { setShow(true); io.disconnect(); }
-    }, { rootMargin: "300px 0px" });
-    io.observe(el);
-    return () => io.disconnect();
-  }, [show]);
-
-  // Sobald sichtbar → blockquote rendern und embed.js neu prozessieren.
-  useEffect(() => {
-    if (!show) return;
-    const t = window.setTimeout(() => { try { window.instgrm?.Embeds?.process(); } catch { /* ignore */ } }, 100);
-    return () => window.clearTimeout(t);
-  }, [show]);
-
-  const Icon = post.typ === "reel" ? Film : ImageIcon;
+function PostCard({ post }: { post: Post }) {
+  const Icon = post.typ === "reel" ? Film : post.typ === "tv" ? Tv : ImageIcon;
 
   return (
-    <div ref={ref} className="w-full" style={{ maxWidth: 540 }}>
-      {show ? (
-        <blockquote
-          className="instagram-media"
-          data-instgrm-captioned
-          data-instgrm-permalink={post.permalink}
-          data-instgrm-version="14"
-          style={{ background: "#FFF", border: 0, borderRadius: 3, boxShadow: "0 0 1px 0 rgba(0,0,0,0.5), 0 1px 10px 0 rgba(0,0,0,0.15)", margin: 0, maxWidth: 540, minWidth: 280, padding: 0, width: "100%" }}
-        >
-          <div style={{ padding: 16 }}>
-            <a href={post.permalink} target="_blank" rel="noopener noreferrer" style={{ color: "#3897f0", textDecoration: "none", fontSize: 14 }}>
-              Открыть в Instagram →
-            </a>
-          </div>
-        </blockquote>
-      ) : (
-        /* Leichter Platzhalter bis sichtbar */
-        <div className="flex items-center gap-3 p-4 w-full"
-          style={{ background: "var(--tg-theme-section-bg-color, #fff)", border: "1px solid var(--color-line)", borderRadius: 3, minHeight: 88 }}>
-          <Icon className="w-5 h-5 shrink-0" style={{ color: "var(--color-coral)" }} />
-          <div className="min-w-0">
-            {post.kategorie_name && (
-              <p className="text-[10px] uppercase font-medium" style={{ letterSpacing: "0.2em", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
-                {post.kategorie_name}
-              </p>
-            )}
-            <p className="text-sm truncate" style={{ fontFamily: "var(--font-display)", color: "var(--tg-theme-text-color, var(--color-ink))" }}>
-              {post.titel || post.shortcode}
-            </p>
-          </div>
+    <div style={{
+      background: "var(--tg-theme-section-bg-color, #fff)",
+      border:     "1px solid var(--color-line)",
+      borderRadius: 6,
+      overflow: "hidden",
+    }}>
+      {/* Header: IG-Icon + Typ-Badge + Titel */}
+      <div className="flex items-start gap-3 p-3">
+        {/* IG-Farbverlauf-Icon */}
+        <div className="shrink-0 flex items-center justify-center w-10 h-10 rounded-full"
+          style={{ background: "linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)" }}>
+          <InstagramIcon className="w-5 h-5" style={{ color: "#fff" }} />
         </div>
-      )}
 
-      {/* „Zum Produkt" wenn verknüpft */}
-      {post.produkt_slug && (
-        <Link href={`/tg/produkt/${post.produkt_slug}`}
-          className="mt-2 flex items-center justify-center gap-1.5 py-2 text-[11px] uppercase font-medium"
-          style={{ letterSpacing: "0.18em", background: "var(--tg-theme-section-bg-color, #fff)", border: "1px solid var(--color-coral)", color: "var(--color-coral)", touchAction: "manipulation" }}>
-          Перейти к товару <ArrowRight className="w-3.5 h-3.5" />
-        </Link>
-      )}
+        <div className="flex-1 min-w-0 pt-0.5">
+          {/* Kategorie + Typ */}
+          <div className="flex items-center gap-2 mb-0.5">
+            {post.kategorie_name && (
+              <span className="text-[10px] uppercase font-medium"
+                style={{ letterSpacing: "0.18em", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
+                {post.kategorie_name}
+              </span>
+            )}
+            <span className="flex items-center gap-1 text-[10px]"
+              style={{ color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
+              <Icon className="w-3 h-3" />
+              {TYP_LABEL[post.typ] ?? post.typ}
+            </span>
+          </div>
+          {/* Titel */}
+          <p className="text-sm leading-snug"
+            style={{ fontFamily: "var(--font-display)", color: "var(--tg-theme-text-color, var(--color-ink))" }}>
+            {post.titel || post.shortcode}
+          </p>
+        </div>
+      </div>
+
+      {/* Buttons */}
+      <div className="flex flex-col gap-0" style={{ borderTop: "1px solid var(--color-line)" }}>
+        {/* In Instagram öffnen */}
+        <a
+          href={post.permalink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 py-2.5 text-[11px] uppercase font-medium"
+          style={{
+            letterSpacing: "0.18em",
+            color: "var(--color-coral)",
+            touchAction: "manipulation",
+          }}>
+          <ExternalLink className="w-3.5 h-3.5" />
+          Открыть в Instagram
+        </a>
+
+        {/* Zum Produkt — wenn verknüpft */}
+        {post.produkt_slug && (
+          <Link
+            href={`/tg/produkt/${post.produkt_slug}`}
+            className="flex items-center justify-center gap-2 py-2.5 text-[11px] uppercase font-medium"
+            style={{
+              borderTop: "1px solid var(--color-line)",
+              letterSpacing: "0.18em",
+              background: "var(--color-coral)",
+              color: "#fff",
+              touchAction: "manipulation",
+            }}>
+            {post.produkt_name ? `К товару: ${post.produkt_name}` : "К товару"}
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        )}
+      </div>
     </div>
   );
 }
