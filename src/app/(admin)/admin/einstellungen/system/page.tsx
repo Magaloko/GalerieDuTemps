@@ -7,6 +7,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { stat, readdir } from "node:fs/promises";
 import { SystemHealthRefresh } from "./client";
+import { MigrateImagesButton } from "./migrate-images-button";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Системное состояние" };
@@ -299,6 +300,9 @@ export default async function SystemPage() {
           <SystemCheckCard key={check.title} check={check} Icon={Icon} />
         ))}
       </div>
+
+      {/* Bild-Migration (lokale Uploads → Supabase) */}
+      <MigrateImagesButton />
 
       {/* CLI-Tools */}
       <div
