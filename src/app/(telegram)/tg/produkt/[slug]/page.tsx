@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, MessageCircle } from "lucide-react";
+import { ChevronLeft, MessageCircle, ExternalLink, Film, Image as ImageIcon, Tv } from "lucide-react";
+import { InstagramIcon } from "@/components/produkte/instagram-icon";
 import { oeffentlichesProduktBySlug, aehnlicheProdukte } from "@/lib/db/produkte-public";
+import { instagramPostsFuerProdukt } from "@/lib/db/instagram-archive";
 import { TelegramAuthGate } from "../../auth-gate";
 import { ProductMiniClient } from "./product-client";
 import { HeartToggle } from "../../heart-toggle";
@@ -37,6 +39,7 @@ export default async function TelegramProduktPage({
     isFeatureEnabled("kaufen_aktiv").catch(() => true),
   ]);
   if (!produkt) notFound();
+  const igPosts = await instagramPostsFuerProdukt(produkt.id).catch(() => []);
 
   const name = i18nOr(produkt.name_i18n,             locale, produkt.name);
   const kurz = i18nOr(produkt.kurzbeschreibung_i18n, locale, produkt.kurzbeschreibung);
@@ -238,6 +241,64 @@ export default async function TelegramProduktPage({
             </Link>
           )}
         </div>
+
+        {/* ✦ Из Instagram — verknüpfte Posts (native Karten, kein embed.js) */}
+        {igPosts.length > 0 && (
+          <section className="px-4 pt-2 pb-4">
+            <div className="flex items-center gap-1.5 mb-3">
+              <InstagramIcon className="w-3.5 h-3.5" style={{ color: "var(--color-coral)" }} />
+              <h2 className="text-[11px] uppercase font-medium"
+                style={{ letterSpacing: "0.22em", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
+                Из Instagram
+              </h2>
+            </div>
+            <div className="flex flex-col gap-2">
+              {igPosts.map(ig => {
+                const TypIcon = ig.typ === "reel" ? Film : ig.typ === "tv" ? Tv : ImageIcon;
+                const typLabel = ig.typ === "reel" ? "Reel" : ig.typ === "tv" ? "IGTV" : "Post";
+                return (
+                  <div key={ig.id} style={{
+                    background: "var(--tg-theme-section-bg-color, #fff)",
+                    border: "1px solid var(--color-line)", borderRadius: 6, overflow: "hidden",
+                  }}>
+                    <div className="flex items-center gap-3 p-3">
+                      {/* IG gradient icon */}
+                      <div className="shrink-0 flex items-center justify-center w-9 h-9 rounded-full"
+                        style={{ background: "linear-gradient(135deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)" }}>
+                        <InstagramIcon className="w-4 h-4" style={{ color: "#fff" }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          {ig.kategorie_name && (
+                            <span className="text-[9px] uppercase font-medium"
+                              style={{ letterSpacing: "0.18em", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
+                              {ig.kategorie_name}
+                            </span>
+                          )}
+                          <span className="flex items-center gap-0.5 text-[9px]"
+                            style={{ color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
+                            <TypIcon className="w-2.5 h-2.5" />{typLabel}
+                          </span>
+                        </div>
+                        <p className="text-sm truncate"
+                          style={{ fontFamily: "var(--font-display)", color: "var(--tg-theme-text-color, var(--color-ink))" }}>
+                          {ig.titel || ig.shortcode}
+                        </p>
+                      </div>
+                    </div>
+                    <a href={ig.permalink} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 py-2.5 text-[11px] uppercase font-medium"
+                      style={{ borderTop: "1px solid var(--color-line)", letterSpacing: "0.18em",
+                        color: "var(--color-coral)", touchAction: "manipulation" }}>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      Открыть в Instagram
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* „Похожее" — ähnliche Produkte (gleiche Kategorie, ähnlicher Preis) */}
         {aehnliche.length > 0 && (

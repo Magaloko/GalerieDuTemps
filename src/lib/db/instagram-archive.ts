@@ -118,6 +118,23 @@ export async function instagramPostsAlle(): Promise<InstagramPost[]> {
   return r.rows;
 }
 
+/** Aktive Posts die mit einem bestimmten Produkt verknüpft sind — für die Produktdetailseite. */
+export async function instagramPostsFuerProdukt(produktId: string): Promise<InstagramPost[]> {
+  const r = await query<InstagramPost>(
+    `SELECT p.id, p.permalink, p.shortcode, p.typ, p.kategorie_id, p.produkt_id,
+            p.titel, p.sortierung, p.aktiv, p.erstellt_am, p.kanal_gepostet_am,
+            k.name AS kategorie_name, k.slug AS kategorie_slug,
+            pr.slug AS produkt_slug, pr.name AS produkt_name
+       FROM sebo.instagram_posts p
+       LEFT JOIN sebo.instagram_kategorien k ON k.id = p.kategorie_id
+       LEFT JOIN sebo.produkte pr ON pr.id = p.produkt_id
+      WHERE p.produkt_id = $1 AND p.aktiv = true
+      ORDER BY p.sortierung, p.erstellt_am DESC`,
+    [produktId],
+  );
+  return r.rows;
+}
+
 /** Einzelnen Post mit joins — für den Kanal-Broadcast. */
 export async function instagramPostById(id: string): Promise<InstagramPost | null> {
   const r = await query<InstagramPost>(
