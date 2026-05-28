@@ -1,5 +1,6 @@
 import { query } from "./index";
 import { orderById } from "./orders";
+import { istPlatzhalterEmail } from "@/lib/utils/email";
 import type { Order } from "@/types/commerce";
 
 export interface Invoice {
@@ -62,7 +63,10 @@ export async function rechnungZuOrder(orderId: string): Promise<Invoice | null> 
       order.tax_total_cents,
       order.total_cents,
       order.customer_name ?? null,
-      order.customer_email,
+      // Platzhalter-Adressen (Telegram-first ohne echte E-Mail) NICHT in die
+      // Rechnung schreiben — sonst landet eine unzustellbare .local-Adresse im
+      // Rechnungsdatensatz (Bounce bei spätererem Versand).
+      istPlatzhalterEmail(order.customer_email) ? null : order.customer_email,
       JSON.stringify(order.billing_address ?? {}),
       order.ust_id_snapshot,
       order.reverse_charge,

@@ -4,6 +4,7 @@ import { orderSetPaymentMethod, orderSetPaymentStatus } from "@/lib/db/order-pay
 import { sendMessage } from "@/lib/telegram/client";
 import type { TelegramSuccessfulPayment } from "@/lib/telegram/client";
 import type { Address } from "@/types/commerce";
+import { telegramPlatzhalterEmail } from "@/lib/utils/email";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * handleSuccessfulPayment
@@ -71,8 +72,9 @@ export async function handleSuccessfulPayment(
     return true; // Customer fehlt → Retry hilft nicht.
   }
   // Order braucht eine non-null E-Mail. Telegram-first-Konten ohne E-Mail
-  // bekommen eine stabile, eindeutige Platzhalter-Adresse (nie versendbar).
-  const orderEmail = customer.email ?? `tg-${chatId}@telegram.galeriedutemps.local`;
+  // bekommen eine stabile, eindeutige Platzhalter-Adresse (nie versendbar;
+  // wird in Rechnungen/Mailversand via istPlatzhalterEmail() wieder gefiltert).
+  const orderEmail = customer.email ?? telegramPlatzhalterEmail(chatId);
 
   const existingPaid = await query<{ id: string; order_number: number }>(
     `SELECT id, order_number
