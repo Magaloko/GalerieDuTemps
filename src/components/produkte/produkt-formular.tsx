@@ -12,6 +12,7 @@ import { MultilingualInput } from "@/components/ui/multilingual-input";
 import { SingleMediaUpload } from "@/components/ui/single-media-upload";
 import { BildManager } from "./bild-manager";
 import { InstagramUrlsInput } from "./instagram-urls-input";
+import { ProduktStoryEditor } from "./produkt-story-editor";
 import { Save, Trash2, AlertCircle, CheckCircle2, ImagePlus, Info, Eye } from "lucide-react";
 import { InstagramIcon } from "./instagram-icon";
 import Image from "next/image";
@@ -303,6 +304,22 @@ export function ProduktFormular({
         {/* Hidden-Felder für Backwards-Compat (Action liest auch i18n) */}
         <input type="hidden" name="kurzbeschreibung" value={produkt?.kurzbeschreibung ?? ""} />
         <input type="hidden" name="beschreibung"     value={produkt?.beschreibung ?? ""} />
+      </section>
+
+      {/* ─── Story-Blöcke (block-basierte Detail-Beschreibung) ───────── */}
+      <section
+        className="bg-vintage-white border border-vintage-sand p-6 space-y-4"
+        style={{ borderRadius: "var(--radius-card)" }}
+      >
+        <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
+          <h2 className="font-serif text-lg text-vintage-espresso">История товара</h2>
+          <p className="text-xs font-sans text-vintage-dust">Опционально · блоки: текст, фото, цитата</p>
+        </div>
+        <p className="text-xs text-vintage-dust font-sans">
+          Соберите страницу товара из блоков (как рассылку). Если оставить пустым —
+          показывается обычное описание выше.
+        </p>
+        <ProduktStoryEditor initial={produkt?.inhalt_blocks ?? []} />
       </section>
 
       {/* ─── Details ──────────────────────────────────────────────── */}

@@ -20,6 +20,7 @@ import { getDictionary, getLocale } from "@/i18n";
 import { siteUrl } from "@/lib/site-url";
 import { isFeatureEnabled } from "@/lib/db/feature-flags";
 import { maskBestandListe } from "@/lib/utils/showcase-mask";
+import { ProduktStory } from "@/components/produkte/produkt-story";
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -85,6 +86,7 @@ export default async function ProduktDetailPage({ params }: Props) {
   const name   = i18nOr(produkt.name_i18n,             locale, produkt.name);
   const kurz   = i18nOr(produkt.kurzbeschreibung_i18n, locale, produkt.kurzbeschreibung);
   const lang   = i18nOr(produkt.beschreibung_i18n,     locale, produkt.beschreibung);
+  const hatStory = (produkt.inhalt_blocks?.length ?? 0) > 0;
 
   const aehnliche = await aehnlicheProdukte(
     produkt.id,
@@ -333,8 +335,8 @@ export default async function ProduktDetailPage({ params }: Props) {
               </p>
             )}
 
-            {/* Beschreibung */}
-            {lang && (
+            {/* Beschreibung (Markdown) — nur wenn KEINE Story-Blöcke gepflegt sind */}
+            {!hatStory && lang && (
               <ExpandableSection title="Описание" defaultOpen>
                 <div
                   className="prose-vintage text-[14px] leading-relaxed"
@@ -425,8 +427,9 @@ export default async function ProduktDetailPage({ params }: Props) {
         </div>
       </section>
 
-      {/* ── Story-Band (bone bg) — Long-Form Storytelling ─────────── */}
-      {lang && (
+      {/* ── Story-Band (bone bg) — Long-Form Storytelling ─────────────
+           Block-basierte Story hat Vorrang; sonst Fallback auf Markdown. */}
+      {(hatStory || lang) && (
         <section style={{ background: "var(--color-bone)" }}>
           <div className="max-w-[1440px] mx-auto px-5 md:px-14 py-14 md:py-20 grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-10 md:gap-16">
             <div>
@@ -449,17 +452,21 @@ export default async function ProduktDetailPage({ params }: Props) {
                 </em>
               </h2>
             </div>
-            <div
-              className="prose-vintage text-[15px] leading-relaxed"
-              style={{
-                fontFamily:  "var(--font-italic)",
-                fontStyle:   "italic",
-                color:       "var(--color-ink-soft)",
-                columnCount: 2,
-                columnGap:   32,
-              }}
-              dangerouslySetInnerHTML={{ __html: markdownToHtml(lang) }}
-            />
+            {hatStory ? (
+              <ProduktStory blocks={produkt.inhalt_blocks} />
+            ) : (
+              <div
+                className="prose-vintage text-[15px] leading-relaxed"
+                style={{
+                  fontFamily:  "var(--font-italic)",
+                  fontStyle:   "italic",
+                  color:       "var(--color-ink-soft)",
+                  columnCount: 2,
+                  columnGap:   32,
+                }}
+                dangerouslySetInnerHTML={{ __html: markdownToHtml(lang) }}
+              />
+            )}
           </div>
         </section>
       )}

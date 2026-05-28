@@ -21,6 +21,12 @@ export const ProduktCreateSchema = z.object({
   rueckbild_url:   z.string().max(500).optional().nullable(),
   video_url:       z.string().max(500).optional().nullable(),
   instagram_urls:  z.array(z.string().url()).max(10).optional(),
+  inhalt_blocks:   z.array(z.object({
+    type:     z.enum(["heading", "text", "image", "highlight", "quote"]),
+    text:     z.string().max(5000).optional(),
+    bild_url: z.string().max(500).optional(),
+    caption:  z.string().max(500).optional(),
+  })).max(50).optional(),
   abmessungen:     z.object({
     breite:  z.coerce.number().nonnegative().optional(),
     hoehe:   z.coerce.number().nonnegative().optional(),

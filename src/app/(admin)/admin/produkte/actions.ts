@@ -102,6 +102,12 @@ function parseProduktFormData(formData: FormData) {
     instagram_urls:   formData.getAll("instagram_urls")
                         .map(v => typeof v === "string" ? v.trim() : "")
                         .filter(v => v.length > 0),
+    inhalt_blocks:    (() => {
+      const raw = formData.get("inhalt_blocks");
+      if (typeof raw !== "string" || !raw.trim()) return [];
+      try { const a = JSON.parse(raw); return Array.isArray(a) ? a : []; }
+      catch { return []; }
+    })(),
     abmessungen,
   };
 }

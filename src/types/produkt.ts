@@ -4,6 +4,21 @@
 
 export type Zustand = "sehr_gut" | "gut" | "akzeptabel" | "restauriert";
 
+// ---------------------------------------------------------------------------
+// Story-Blöcke (block-basierte Produktbeschreibung, wie im Newsletter-Editor)
+// ---------------------------------------------------------------------------
+export type ProduktBlockTyp = "heading" | "text" | "image" | "highlight" | "quote";
+
+export interface ProduktBlock {
+  type:     ProduktBlockTyp;
+  /** heading/text/highlight/quote: der Textinhalt. */
+  text?:    string;
+  /** image: Bild-URL. */
+  bild_url?: string;
+  /** image: Bildunterschrift · quote: Urheber/Quelle. */
+  caption?: string;
+}
+
 export interface Produktbild {
   id:            string;
   produkt_id:    string;
@@ -84,6 +99,8 @@ export interface Produkt {
   video_url:          string | null;
   /** Instagram-Permalink-URLs (Posts/Reels/TV) für dieses Produkt. Reihenfolge = Anzeige. */
   instagram_urls:     string[];
+  /** Story-Blöcke der Produktseite (leer = Fallback auf beschreibung). */
+  inhalt_blocks:      ProduktBlock[];
   // Relations
   bilder?:            Produktbild[];
   dateien?:           Produktdatei[];

@@ -353,6 +353,11 @@ export async function produktAktualisieren(
     werte.push(`{${urls.map(u => `"${u.replace(/"/g, '\\"')}"`).join(",")}}`);
   }
 
+  if (input.inhalt_blocks !== undefined) {
+    felder.push(`inhalt_blocks = $${idx++}::jsonb`);
+    werte.push(JSON.stringify(Array.isArray(input.inhalt_blocks) ? input.inhalt_blocks : []));
+  }
+
   if (felder.length === 0) return produktById(id);
 
   werte.push(id);
