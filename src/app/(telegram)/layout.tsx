@@ -1,5 +1,6 @@
 import Script from "next/script";
 import { MiniAppTabBar } from "./tg/tab-bar";
+import { isFeatureEnabled } from "@/lib/db/feature-flags";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * Mini-App Layout — Telegram WebView
@@ -23,7 +24,8 @@ export const metadata = {
   viewport: { width: "device-width", initialScale: 1, viewportFit: "cover" },
 };
 
-export default function TelegramLayout({ children }: { children: React.ReactNode }) {
+export default async function TelegramLayout({ children }: { children: React.ReactNode }) {
+  const kaufenAktiv = await isFeatureEnabled("kaufen_aktiv").catch(() => true);
   return (
     <>
       <Script
@@ -39,7 +41,7 @@ export default function TelegramLayout({ children }: { children: React.ReactNode
         }}
       >
         {children}
-        <MiniAppTabBar />
+        <MiniAppTabBar kaufenAktiv={kaufenAktiv} />
       </div>
     </>
   );

@@ -29,6 +29,16 @@ const CheckoutSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  // Schaufenster-Modus: Checkout serverseitig sperren (Defense-in-Depth —
+  // UI versteckt den Kauf bereits, aber direkte API-Calls hier abweisen).
+  const { isFeatureEnabled } = await import("@/lib/db/feature-flags");
+  if (!(await isFeatureEnabled("kaufen_aktiv").catch(() => true))) {
+    return NextResponse.json(
+      { error: "Покупка временно недоступна — оформите запрос через сайт." },
+      { status: 403 },
+    );
+  }
+
   // Rate-Limit: 30 Checkouts / 10 Min / IP.
   // Hochgesetzt von 10 — bei mehreren Familienmitgliedern hinter NAT oder
   // beim aktiven Testen wurde die alte Schwelle leicht erreicht. 30 erlaubt

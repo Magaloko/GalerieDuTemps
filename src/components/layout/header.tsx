@@ -22,6 +22,8 @@ type HeaderProps = {
   userHref?:       string;
   /** True wenn eine Session existiert — bestimmt Tooltip/Icon-Tönung. */
   userEingeloggt?: boolean;
+  /** Schaufenster-Modus: false → kein Warenkorb-Icon im Header. Default true. */
+  kaufenAktiv?:    boolean;
 };
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -40,6 +42,7 @@ export function Header({
   t, locale, kategorien = [], promo,
   userHref = "/kunde/anmelden",
   userEingeloggt = false,
+  kaufenAktiv = true,
 }: HeaderProps) {
   const pathname = usePathname();
   const router   = useRouter();
@@ -213,7 +216,7 @@ export function Header({
                     </span>
                   )}
                 </Link>
-                <CartBadge />
+                {kaufenAktiv && <CartBadge />}
                 <LanguageSwitcher ariaLabel={t.nav.sprache} />
                 <Link
                   href={userHref}
@@ -352,7 +355,7 @@ export function Header({
                     </span>
                   )}
                 </Link>
-                <CartBadge />
+                {kaufenAktiv && <CartBadge />}
                 <Link
                   href={userHref}
                   className="ml-1 p-2 transition-colors hover:text-coral"

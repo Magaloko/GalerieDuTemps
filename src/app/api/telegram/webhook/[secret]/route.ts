@@ -9,6 +9,7 @@ import {
 import { adminTelegramVerknuepfen } from "@/lib/db/admin-telegram";
 import { benutzerByTelegramChatId } from "@/lib/telegram/role-resolver";
 import { getMarketingString } from "@/lib/db/marketing-strings";
+import { isFeatureEnabled } from "@/lib/db/feature-flags";
 import {
   sendMessage,
   sendPhoto,
@@ -325,16 +326,21 @@ export async function POST(
   // ── /shop — Mini-App-Launcher (web_app-Button öffnet im Telegram-WebView) ─
   if (text === "/shop" || text === "/магазин") {
     if (konto.access_token) {
+      const kaufenAktiv = await isFeatureEnabled("kaufen_aktiv").catch(() => true);
+      const shopText = kaufenAktiv
+        ? `🛍 <b>Магазин в Telegram</b>\n\n` +
+          `<i>Открой каталог прямо здесь — оплата, доставка, всё в одном окне.</i>`
+        : `🛍 <b>Витрина в Telegram</b>\n\n` +
+          `<i>Загляни в каталог — понравившуюся вещь можно запросить у куратора.</i>`;
       await sendMessage(
         konto.access_token,
         chat.id,
-        `🛍 <b>Магазин в Telegram</b>\n\n` +
-        `<i>Открой каталог прямо здесь — оплата, доставка, всё в одном окне.</i>`,
+        shopText,
         {
           parse_mode: "HTML",
           reply_markup: {
             inline_keyboard: [
-              [{ text: "🛍 Открыть магазин", web_app: { url: `${siteBase}/tg` } }],
+              [{ text: kaufenAktiv ? "🛍 Открыть магазин" : "🛍 Открыть витрину", web_app: { url: `${siteBase}/tg` } }],
               [{ text: "Открыть в браузере", url: `${siteBase}/katalog` }],
             ],
           },

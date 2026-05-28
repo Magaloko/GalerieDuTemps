@@ -1,6 +1,9 @@
+import Link from "next/link";
 import { WarenkorbClient } from "./client";
 import { StepIndicator } from "@/components/checkout/step-indicator";
 import { TrustStrip } from "@/components/checkout/trust-strip";
+import { isFeatureEnabled } from "@/lib/db/feature-flags";
+import { ArrowRight, MessageCircle } from "lucide-react";
 import type { Metadata } from "next";
 import { getDictionary } from "@/i18n";
 
@@ -13,6 +16,35 @@ export const metadata: Metadata = {
 
 export default async function WarenkorbPage() {
   const { t } = await getDictionary();
+  const kaufenAktiv = await isFeatureEnabled("kaufen_aktiv").catch(() => true);
+
+  // Schaufenster-Modus: keine Korzina/Bezahlung → Hinweis + Weg zur Anfrage.
+  if (!kaufenAktiv) {
+    return (
+      <div style={{ background: "var(--color-paper)", color: "var(--color-ink)" }}
+           className="min-h-[100dvh] flex items-center justify-center px-6 py-20">
+        <div className="max-w-md text-center">
+          <p className="text-[11px] uppercase font-medium mb-3" style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}>✦ Витрина</p>
+          <h1 className="mb-4" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.75rem,4vw,2.5rem)", color: "var(--color-ink)", lineHeight: 1.1 }}>
+            Покупка сейчас по запросу
+          </h1>
+          <p className="text-sm mb-8" style={{ fontFamily: "var(--font-italic)", fontStyle: "italic", color: "var(--color-ink-soft)", lineHeight: 1.6 }}>
+            Понравившуюся вещь можно зарезервировать через запрос — куратор свяжется
+            с вами по наличию, цене и доставке.
+          </p>
+          <div className="flex flex-wrap gap-3 justify-center">
+            <Link href="/katalog" className="btn-coral btn-coral-lg inline-flex items-center gap-2">
+              Открыть каталог <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link href="/kontakt" className="btn-coral btn-coral-ghost btn-coral-lg inline-flex items-center gap-2">
+              <MessageCircle className="w-4 h-4" /> Связаться
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       style={{ background: "var(--color-paper)", color: "var(--color-ink)" }}

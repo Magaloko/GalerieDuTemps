@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Home, Heart, ShoppingBag, User, Inbox, Package, Shield,
+  Home, Heart, ShoppingBag, User, Inbox, Package, Shield, MessageCircle,
 } from "lucide-react";
 import { useCart } from "@/lib/cart";
 
@@ -35,11 +35,20 @@ interface Tab {
   isActive: (p: string) => boolean;
 }
 
+// Shop-Modus: mit Korzina-Tab.
 const TABS_GUEST_CUSTOMER: Tab[] = [
   { href: "/tg",             label: "Каталог",   icon: Home,        isActive: p => p === "/tg" || p.startsWith("/tg/produkt") },
   { href: "/tg/wunschliste", label: "Избранное", icon: Heart,       isActive: p => p.startsWith("/tg/wunschliste") },
   { href: "/tg/cart",        label: "Корзина",   icon: ShoppingBag, isActive: p => p.startsWith("/tg/cart") },
-  { href: "/tg/profil",      label: "Профиль",   icon: User,        isActive: p => p.startsWith("/tg/profil") || p.startsWith("/tg/orders") || p.startsWith("/tg/kontakt") },
+  { href: "/tg/profil",      label: "Профиль",   icon: User,        isActive: p => p.startsWith("/tg/profil") || p.startsWith("/tg/orders") },
+];
+
+// Schaufenster-Modus: kein Korzina-Tab, stattdessen «Связаться» (Kurator-Anfrage).
+const TABS_GUEST_CUSTOMER_SCHAUFENSTER: Tab[] = [
+  { href: "/tg",             label: "Каталог",   icon: Home,          isActive: p => p === "/tg" || p.startsWith("/tg/produkt") },
+  { href: "/tg/wunschliste", label: "Избранное", icon: Heart,         isActive: p => p.startsWith("/tg/wunschliste") },
+  { href: "/tg/kontakt",     label: "Связаться", icon: MessageCircle, isActive: p => p.startsWith("/tg/kontakt") },
+  { href: "/tg/profil",      label: "Профиль",   icon: User,          isActive: p => p.startsWith("/tg/profil") || p.startsWith("/tg/orders") },
 ];
 
 const TABS_ADMIN: Tab[] = [
@@ -49,7 +58,7 @@ const TABS_ADMIN: Tab[] = [
   { href: "/tg",               label: "Каталог", icon: Home,    isActive: p => p === "/tg" || p.startsWith("/tg/produkt") },
 ];
 
-export function MiniAppTabBar() {
+export function MiniAppTabBar({ kaufenAktiv = true }: { kaufenAktiv?: boolean }) {
   const pathname  = usePathname();
   const [role, setRole] = useState<Role>("guest");
   const cartCount = useCart(s => s.items.reduce((acc, i) => acc + i.menge, 0));
@@ -69,7 +78,12 @@ export function MiniAppTabBar() {
     return () => { aborted = true; };
   }, [pathname]);  // re-check beim Navigieren (z.B. nach claim-success)
 
-  const tabs = role === "admin" ? TABS_ADMIN : TABS_GUEST_CUSTOMER;
+  const tabs =
+    role === "admin"
+      ? TABS_ADMIN
+      : kaufenAktiv
+        ? TABS_GUEST_CUSTOMER
+        : TABS_GUEST_CUSTOMER_SCHAUFENSTER;
 
   return (
     <nav

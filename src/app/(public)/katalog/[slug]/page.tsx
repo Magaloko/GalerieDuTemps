@@ -18,6 +18,7 @@ import { i18nOr } from "@/lib/utils/i18n-text";
 import type { Metadata } from "next";
 import { getDictionary, getLocale } from "@/i18n";
 import { siteUrl } from "@/lib/site-url";
+import { isFeatureEnabled } from "@/lib/db/feature-flags";
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -70,11 +71,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * ────────────────────────────────────────────────────────────────────────── */
 export default async function ProduktDetailPage({ params }: Props) {
   const { slug } = await params;
-  const [produkt, { t }, kontakt, kaspiCfg] = await Promise.all([
+  const [produkt, { t }, kontakt, kaspiCfg, kaufenAktiv] = await Promise.all([
     oeffentlichesProduktBySlug(slug),
     getDictionary(),
     kontaktKanaeleLaden().catch(() => null),
     getKaspiConfig().catch(() => null),
+    isFeatureEnabled("kaufen_aktiv").catch(() => true),
   ]);
   if (!produkt) notFound();
 
@@ -410,6 +412,7 @@ export default async function ProduktDetailPage({ params }: Props) {
                 telefon:      kontakt?.whatsapp_nummer ?? null,
               }}
               versandHinweis="Доставка по Казахстану"
+              kaufenAktiv={kaufenAktiv}
               kaspi={{
                 aktiv: kaspiCfg ? kaspiKonfiguriert(kaspiCfg) : false,
                 link:  null,  // Kaspi-Pay-Link wird im Checkout dynamisch erstellt

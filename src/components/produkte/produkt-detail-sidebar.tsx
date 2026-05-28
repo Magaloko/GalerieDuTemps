@@ -38,6 +38,9 @@ interface Props {
     aktiv: boolean;
     link?: string | null;
   };
+  /** Wenn false: Schaufenster-Modus — kein Warenkorb/Kauf, nur Anfrage,
+   *  Verfügbarkeit als „есть/нет" ohne Stückzahl. Default true. */
+  kaufenAktiv?: boolean;
   /** Page-URL für QR-Code (full URL — wird im Client gelesen via window.location.href) */
 }
 
@@ -62,7 +65,7 @@ interface Props {
  * Sticky auf Desktop (top-24), Mobile inline.
  * ────────────────────────────────────────────────────────────────────────── */
 
-export function ProduktDetailSidebar({ produkt, kontakt, versandHinweis, kaspi }: Props) {
+export function ProduktDetailSidebar({ produkt, kontakt, versandHinweis, kaspi, kaufenAktiv = true }: Props) {
   const { toggle, istGemerkt } = useWunschliste();
   const gemerkt = istGemerkt(produkt.id);
   const rabatt  = produkt.originalpreis ? rabattProzent(produkt.preis, produkt.originalpreis) : 0;
@@ -171,7 +174,8 @@ export function ProduktDetailSidebar({ produkt, kontakt, versandHinweis, kaspi }
           <div className="flex items-center gap-1.5">
             <Check size={13} style={{ color: "#7A8B6F" }} />
             <span className="font-body text-xs" style={{ color: "#7A8B6F" }}>
-              В наличии{produkt.lagerbestand > 1 ? ` — ${produkt.lagerbestand} шт.` : ""}
+              {/* Schaufenster-Modus: nur „В наличии" ohne Stückzahl */}
+              В наличии{kaufenAktiv && produkt.lagerbestand > 1 ? ` — ${produkt.lagerbestand} шт.` : ""}
             </span>
           </div>
         )}
@@ -242,8 +246,10 @@ export function ProduktDetailSidebar({ produkt, kontakt, versandHinweis, kaspi }
               </a>
             )}
 
-            {/* Cart-Button — wenn lager > 0 und Preis sichtbar */}
-            {produkt.lagerbestand > 0 && produkt.b2c_mode !== "teaser" && (
+            {/* Cart-Button — NUR im Shop-Modus (kaufenAktiv) und wenn lager > 0.
+                Im Schaufenster-Modus bleiben oben die WhatsApp/Telegram/Mail-
+                Anfrage-Buttons als „Запросить" der einzige Weg. */}
+            {kaufenAktiv && produkt.lagerbestand > 0 && produkt.b2c_mode !== "teaser" && (
               <>
                 <Divider />
                 <AddToCartButton
@@ -261,8 +267,8 @@ export function ProduktDetailSidebar({ produkt, kontakt, versandHinweis, kaspi }
           </div>
         )}
 
-        {/* ── 5. Kaspi (KZ-spezifisch) ─────────────────────────── */}
-        {kaspi?.aktiv && kaspi.link && !isSold && (
+        {/* ── 5. Kaspi (KZ-spezifisch) — nur Shop-Modus ────────── */}
+        {kaufenAktiv && kaspi?.aktiv && kaspi.link && !isSold && (
           <>
             <Divider />
             <div>

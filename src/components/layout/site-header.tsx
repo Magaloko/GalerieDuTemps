@@ -8,12 +8,14 @@ import { getDictionary } from "@/i18n";
 import { alleKategorien } from "@/lib/db/kategorien";
 import { getMarketingStrings } from "@/lib/db/marketing-strings";
 import { auth } from "@/lib/auth/config";
+import { isFeatureEnabled } from "@/lib/db/feature-flags";
 
 export async function SiteHeader() {
-  const [{ t, locale }, kategorien, session] = await Promise.all([
+  const [{ t, locale }, kategorien, session, kaufenAktiv] = await Promise.all([
     getDictionary(),
     alleKategorien().catch(() => []),
     auth().catch(() => null),
+    isFeatureEnabled("kaufen_aktiv").catch(() => true),
   ]);
 
   // Promo-Bar-Texte aus DB (editierbar in Admin → Marketing-Texte).
@@ -45,6 +47,7 @@ export async function SiteHeader() {
       }}
       userHref={userHref}
       userEingeloggt={userEingeloggt}
+      kaufenAktiv={kaufenAktiv}
     />
   );
 }

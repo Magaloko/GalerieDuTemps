@@ -27,9 +27,11 @@ export default async function TelegramProduktPage({
   params,
 }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [produkt, locale] = await Promise.all([
+  const { isFeatureEnabled } = await import("@/lib/db/feature-flags");
+  const [produkt, locale, kaufenAktiv] = await Promise.all([
     oeffentlichesProduktBySlug(slug),
     getLocale(),
+    isFeatureEnabled("kaufen_aktiv").catch(() => true),
   ]);
   if (!produkt) notFound();
 
@@ -112,8 +114,8 @@ export default async function TelegramProduktPage({
             </p>
           )}
 
-          {/* «Последний экземпляр»-Highlight mit Pulse-Animation */}
-          {!produkt.verkauft && produkt.lagerbestand === 1 && (
+          {/* Shop-Modus: «Последний экземпляр»-Pulse (Verknappungs-Taktik, mit Stückzahl-Bezug) */}
+          {kaufenAktiv && !produkt.verkauft && produkt.lagerbestand === 1 && (
             <p
               className="mt-3 inline-flex items-center gap-1.5 px-2 py-1 text-[10px] uppercase font-medium"
               style={{
@@ -125,6 +127,21 @@ export default async function TelegramProduktPage({
               }}
             >
               ⚠ Последний экземпляр
+            </p>
+          )}
+
+          {/* Schaufenster-Modus: nur binäre Verfügbarkeit, KEINE Stückzahl */}
+          {!kaufenAktiv && (
+            <p
+              className="mt-3 inline-flex items-center gap-1.5 px-2 py-1 text-[10px] uppercase font-medium"
+              style={{
+                letterSpacing: "0.22em",
+                background:    produkt.verkauft || produkt.lagerbestand <= 0 ? "rgba(120,120,120,0.12)" : "rgba(127,140,90,0.12)",
+                color:         produkt.verkauft || produkt.lagerbestand <= 0 ? "var(--color-ink-mute)" : "#52663F",
+                border:        `1px solid ${produkt.verkauft || produkt.lagerbestand <= 0 ? "rgba(120,120,120,0.30)" : "rgba(127,140,90,0.40)"}`,
+              }}
+            >
+              {produkt.verkauft ? "Продано" : produkt.lagerbestand > 0 ? "✓ В наличии" : "Нет в наличии"}
             </p>
           )}
           {kurz && (
@@ -171,6 +188,7 @@ export default async function TelegramProduktPage({
           lagerbestand={produkt.lagerbestand}
           verkauft={produkt.verkauft}
           waehrung={(produkt.waehrung as "KZT"|"EUR"|"USD"|"RUB") ?? "KZT"}
+          kaufenAktiv={kaufenAktiv}
         />
       </main>
     </TelegramAuthGate>

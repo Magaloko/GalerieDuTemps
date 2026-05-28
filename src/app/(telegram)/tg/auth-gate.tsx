@@ -27,7 +27,7 @@ declare global {
         themeParams:    Record<string, string>;
         colorScheme:    "light" | "dark";
         BackButton: { show(): void; hide(): void; onClick(cb: () => void): void };
-        MainButton: { setText(t: string): void; show(): void; hide(): void; onClick(cb: () => void): void };
+        MainButton: { setText(t: string): void; show(): void; hide(): void; onClick(cb: () => void): void; offClick(cb: () => void): void };
       };
     };
   }

@@ -17,6 +17,8 @@ interface Props {
   lagerbestand: number;
   verkauft:     boolean;
   waehrung:     Currency;
+  /** false = Schaufenster-Modus: MainButton fragt nur an, kein Kauf. */
+  kaufenAktiv?: boolean;
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -35,6 +37,7 @@ interface Props {
  * ────────────────────────────────────────────────────────────────────────── */
 export function ProductMiniClient({
   produktId, slug, name, bildUrl, preisCents, lagerbestand, verkauft, waehrung,
+  kaufenAktiv = true,
 }: Props) {
   const hinzufuegen = useCart(s => s.hinzufuegen);
   const router      = useRouter();
@@ -45,6 +48,30 @@ export function ProductMiniClient({
     if (!tg) return;
 
     const main = tg.MainButton;
+
+    // ── Schaufenster-Modus ───────────────────────────────────────────────
+    // Kein Kauf, kein Warenkorb. MainButton führt zur Kurator-Anfrage.
+    // Verfügbarkeit binär: ist die Sache weg, kein Button.
+    if (!kaufenAktiv) {
+      if (verkauft || lagerbestand <= 0) {
+        main.setText("Продано");
+        main.show();
+        return () => main.hide();
+      }
+      main.setText("Спросить о наличии");
+      main.show();
+      const onAsk = () => {
+        haptic("medium");
+        router.push(`/tg/kontakt?produkt=${produktId}&name=${encodeURIComponent(name)}`);
+      };
+      main.onClick(onAsk);
+      return () => {
+        main.offClick(onAsk);
+        main.hide();
+      };
+    }
+
+    // ── Shop-Modus ───────────────────────────────────────────────────────
     if (verkauft || lagerbestand <= 0) {
       main.setText("Нет в наличии");
       main.show();
@@ -81,9 +108,10 @@ export function ProductMiniClient({
     main.onClick(onClick);
 
     return () => {
+      main.offClick(onClick);
       main.hide();
     };
-  }, [produktId, slug, name, bildUrl, preisCents, lagerbestand, verkauft, waehrung, hinzufuegen, router]);
+  }, [produktId, slug, name, bildUrl, preisCents, lagerbestand, verkauft, waehrung, kaufenAktiv, hinzufuegen, router]);
 
   return null;
 }
