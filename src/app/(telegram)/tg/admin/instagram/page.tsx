@@ -45,6 +45,7 @@ export default async function TgAdminInstagram() {
               posts={posts.map(p => ({
                 id: p.id, permalink: p.permalink, shortcode: p.shortcode, typ: p.typ,
                 aktiv: p.aktiv, kategorie_id: p.kategorie_id, produkt_id: p.produkt_id, titel: p.titel,
+                kanal_gepostet_am: p.kanal_gepostet_am ?? null,
               }))}
               kategorien={katOptions}
               produkte={prodOptions}

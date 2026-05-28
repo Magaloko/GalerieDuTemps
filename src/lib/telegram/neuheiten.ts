@@ -161,3 +161,54 @@ export async function markKanalGepostet(produktId: string): Promise<void> {
     await query(`UPDATE sebo.produkte SET kanal_gepostet_am = now() WHERE id = $1`, [produktId]);
   } catch {/* ignore */}
 }
+
+/**
+ * Einen kuratierten Instagram-Post in den öffentlichen Kanal posten.
+ * Da wir kein direktes Bild-URL haben, senden wir eine formatierte Text-Nachricht
+ * mit URL-Buttons (nur URL-Buttons sind in Kanälen erlaubt).
+ */
+export async function broadcastInstagramInKanal(post: {
+  permalink:        string;
+  shortcode:        string;
+  typ:              string;
+  titel?:           string | null;
+  kategorie_name?:  string | null;
+  produkt_slug?:    string | null;
+  produkt_name?:    string | null;
+}): Promise<BroadcastErgebnis> {
+  const token = await loadBroadcastBotToken();
+  if (!token) return { ok: false, error: "Бот не настроен (нет токена)" };
+
+  const { telegram_channel } = await kontaktKanaeleLaden();
+  const ch = (telegram_channel ?? "").replace(/^@/, "").trim();
+  if (!ch) return { ok: false, error: "Канал не указан (Настройки → Контакты)" };
+
+  const siteBase  = getSiteUrl();
+  const typLabel  = post.typ === "reel" ? "Reel" : post.typ === "tv" ? "IGTV" : "Post";
+  const titel     = post.titel?.trim() || post.shortcode;
+  const katLine   = post.kategorie_name ? `\n<i>${escapeHtml(post.kategorie_name)}</i>` : "";
+
+  const text =
+    `✦ <b>Из Instagram</b>\n\n` +
+    `<b>${escapeHtml(titel)}</b>${katLine}`;
+
+  const buttons: { text: string; url: string }[][] = [
+    [{ text: `Открыть ${typLabel} в Instagram →`, url: post.permalink }],
+  ];
+  if (post.produkt_slug && post.produkt_name) {
+    buttons.push([{
+      text: `К товару: ${post.produkt_name.slice(0, 40)} →`,
+      url:  `${siteBase}/katalog/${post.produkt_slug}`,
+    }]);
+  }
+
+  const keyboard: InlineKeyboardMarkup = { inline_keyboard: buttons };
+
+  try {
+    await sendMessage(token, `@${ch}`, text, { parse_mode: "HTML", reply_markup: keyboard });
+    return { ok: true };
+  } catch (err) {
+    console.error("[broadcastInstagramInKanal]", err);
+    return { ok: false, error: err instanceof Error ? err.message : "Ошибка отправки в канал" };
+  }
+}

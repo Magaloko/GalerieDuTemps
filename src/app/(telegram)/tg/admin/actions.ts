@@ -15,7 +15,10 @@ import {
   instagramPostAktualisieren,
   instagramPostLoeschen,
   instagramPostsSortierungSetzen,
+  instagramPostById,
+  instagramPostKanalMarkieren,
 } from "@/lib/db/instagram-archive";
+import { broadcastInstagramInKanal } from "@/lib/telegram/neuheiten";
 import { extractInstagramUrl, instagramShortcode, instagramTyp } from "@/lib/utils/instagram";
 import { auditLog } from "@/lib/db/audit-log";
 import { bildVerarbeiten } from "@/lib/storage/upload";
@@ -432,5 +435,33 @@ export async function instagramPostsReorderAction(orderedIds: string[]): Promise
   } catch (err) {
     console.error("[instagramPostsReorder]", err);
     return { ok: false, error: "Ошибка БД" };
+  }
+}
+
+/* ── Instagram-Archiv: Post in den Telegram-Kanal broadcasten ─────────────── */
+export async function instagramPostInKanalTgAction(postId: string): Promise<ActionRes> {
+  if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
+  try {
+    const post = await instagramPostById(postId);
+    if (!post) return { ok: false, error: "Пост не найден" };
+
+    const res = await broadcastInstagramInKanal({
+      permalink:       post.permalink,
+      shortcode:       post.shortcode,
+      typ:             post.typ,
+      titel:           post.titel,
+      kategorie_name:  post.kategorie_name,
+      produkt_slug:    post.produkt_slug,
+      produkt_name:    post.produkt_name,
+    });
+    if (!res.ok) return { ok: false, error: res.error };
+
+    await instagramPostKanalMarkieren(postId);
+    await auditLog({ action: "instagram_broadcast_kanal", actorEmail: null, entity: postId, neuWert: { via: "tg-admin" } });
+    revalidatePath("/tg/admin/instagram");
+    return { ok: true, message: "Опубликовано в канал" };
+  } catch (err) {
+    console.error("[instagramPostInKanal]", err);
+    return { ok: false, error: "Ошибка отправки" };
   }
 }

@@ -9,14 +9,15 @@ import { haptic } from "../../fx";
 
 type Option = { value: string; label: string };
 interface Post {
-  id:           string;
-  permalink:    string;
-  shortcode:    string;
-  typ:          string;
-  aktiv:        boolean;
-  kategorie_id: number | null;
-  produkt_id:   string | null;
-  titel:        string | null;
+  id:                string;
+  permalink:         string;
+  shortcode:         string;
+  typ:               string;
+  aktiv:             boolean;
+  kategorie_id:      number | null;
+  produkt_id:        string | null;
+  titel:             string | null;
+  kanal_gepostet_am: string | null;
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -38,7 +39,7 @@ export function InstagramList({
   const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   // Resync, wenn der Server neue Daten liefert (z.B. nach Row-Edit-Refresh).
-  const sig = posts.map(p => `${p.id}:${p.aktiv}:${p.kategorie_id}:${p.produkt_id}`).join("|");
+  const sig = posts.map(p => `${p.id}:${p.aktiv}:${p.kategorie_id}:${p.produkt_id}:${p.kanal_gepostet_am}`).join("|");
   useEffect(() => { setOrder(posts); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [sig]);
 
   const move = (e: PointerEvent) => {
@@ -129,6 +130,7 @@ export function InstagramList({
               kategorieId={p.kategorie_id}
               produktId={p.produkt_id}
               titel={p.titel}
+              kanalGepostetAm={p.kanal_gepostet_am}
               kategorien={kategorien}
               produkte={produkte}
             />

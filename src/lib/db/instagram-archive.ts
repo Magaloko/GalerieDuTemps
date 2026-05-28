@@ -20,16 +20,17 @@ export interface InstagramKategorie {
 }
 
 export interface InstagramPost {
-  id:           string;
-  permalink:    string;
-  shortcode:    string;
-  typ:          "p" | "reel" | "tv";
-  kategorie_id: number | null;
-  produkt_id:   string | null;
-  titel:        string | null;
-  sortierung:   number;
-  aktiv:        boolean;
-  erstellt_am:  string;
+  id:                string;
+  permalink:         string;
+  shortcode:         string;
+  typ:               "p" | "reel" | "tv";
+  kategorie_id:      number | null;
+  produkt_id:        string | null;
+  titel:             string | null;
+  sortierung:        number;
+  aktiv:             boolean;
+  erstellt_am:       string;
+  kanal_gepostet_am: string | null;
   // joined
   kategorie_name?: string | null;
   kategorie_slug?: string | null;
@@ -106,7 +107,7 @@ export async function instagramKategorieErstellen(name: string): Promise<Instagr
 export async function instagramPostsAlle(): Promise<InstagramPost[]> {
   const r = await query<InstagramPost>(
     `SELECT p.id, p.permalink, p.shortcode, p.typ, p.kategorie_id, p.produkt_id,
-            p.titel, p.sortierung, p.aktiv, p.erstellt_am,
+            p.titel, p.sortierung, p.aktiv, p.erstellt_am, p.kanal_gepostet_am,
             k.name AS kategorie_name, k.slug AS kategorie_slug,
             pr.slug AS produkt_slug, pr.name AS produkt_name
        FROM sebo.instagram_posts p
@@ -115,6 +116,29 @@ export async function instagramPostsAlle(): Promise<InstagramPost[]> {
       ORDER BY p.sortierung, p.erstellt_am DESC`,
   );
   return r.rows;
+}
+
+/** Einzelnen Post mit joins — für den Kanal-Broadcast. */
+export async function instagramPostById(id: string): Promise<InstagramPost | null> {
+  const r = await query<InstagramPost>(
+    `SELECT p.id, p.permalink, p.shortcode, p.typ, p.kategorie_id, p.produkt_id,
+            p.titel, p.sortierung, p.aktiv, p.erstellt_am, p.kanal_gepostet_am,
+            k.name AS kategorie_name, k.slug AS kategorie_slug,
+            pr.slug AS produkt_slug, pr.name AS produkt_name
+       FROM sebo.instagram_posts p
+       LEFT JOIN sebo.instagram_kategorien k ON k.id = p.kategorie_id
+       LEFT JOIN sebo.produkte pr ON pr.id = p.produkt_id
+      WHERE p.id = $1`,
+    [id],
+  );
+  return r.rows[0] ?? null;
+}
+
+/** Idempotenz-Stempel nach manuellem Kanal-Broadcast. */
+export async function instagramPostKanalMarkieren(id: string): Promise<void> {
+  try {
+    await query(`UPDATE sebo.instagram_posts SET kanal_gepostet_am = now() WHERE id = $1`, [id]);
+  } catch { /* best-effort */ }
 }
 
 export async function instagramPostErstellen(input: {
