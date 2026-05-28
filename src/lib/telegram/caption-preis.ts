@@ -11,6 +11,22 @@
  * Gibt null zurück, wenn die Zeile kein plausibler Preis ist (>1, < 100 Mrd) —
  * so wird z.B. eine Epoche-Zeile wie "1970-е" NICHT als Preis missverstanden.
  */
+const WAEHRUNG_RE = /(?:₸|тг\.?|тенге|tenge|kzt)/i;
+const MARKER_RE   = /(?:цена|стоимость|price|preis)/i;
+
+/**
+ * True, wenn die Zeile den Preis EXPLIZIT markiert — entweder per Währung
+ * (₸ / тг / тенге / kzt) oder Schlüsselwort (Цена / стоимость / price / preis).
+ * Eine NACKTE Zahl (z.B. eine Jahreszahl wie „1950") gilt NICHT als markiert.
+ *
+ * Wird genutzt, um die Auto-Veröffentlichung abzusichern: nur ein klar
+ * markierter Preis schaltet ein Stück live; eine bloße Zahl bleibt Entwurf.
+ */
+export function preisHatMarker(zeile: string): boolean {
+  const s = zeile.trim();
+  return MARKER_RE.test(s) || WAEHRUNG_RE.test(s);
+}
+
 export function parsePreis(zeile: string): number | null {
   const s = zeile.trim();
   if (!s) return null;

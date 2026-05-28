@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect } from "vitest";
-import { parsePreis } from "../telegram/caption-preis";
+import { parsePreis, preisHatMarker } from "../telegram/caption-preis";
 
 describe("parsePreis (Telegram-Caption Preis-Erkennung)", () => {
   it("liest reine Zahlen", () => {
@@ -40,5 +40,28 @@ describe("parsePreis (Telegram-Caption Preis-Erkennung)", () => {
   it("lehnt unplausible Werte ab (<= 1)", () => {
     expect(parsePreis("0")).toBeNull();
     expect(parsePreis("1")).toBeNull();
+  });
+});
+
+describe("preisHatMarker (Auto-Live nur mit markiertem Preis)", () => {
+  it("erkennt Währungs-Marker", () => {
+    expect(preisHatMarker("45000₸")).toBe(true);
+    expect(preisHatMarker("45 000 ₸")).toBe(true);
+    expect(preisHatMarker("45000 тг")).toBe(true);
+    expect(preisHatMarker("45000 тенге")).toBe(true);
+    expect(preisHatMarker("45000 KZT")).toBe(true);
+  });
+
+  it("erkennt Schlüsselwort-Marker", () => {
+    expect(preisHatMarker("Цена: 45000")).toBe(true);
+    expect(preisHatMarker("стоимость 45000")).toBe(true);
+    expect(preisHatMarker("Price 45000")).toBe(true);
+  });
+
+  it("nackte Zahl / Jahr ist NICHT markiert (bleibt Entwurf)", () => {
+    expect(preisHatMarker("45000")).toBe(false);
+    expect(preisHatMarker("1950")).toBe(false);
+    expect(preisHatMarker("2010 год")).toBe(false);
+    expect(preisHatMarker("45 000")).toBe(false);
   });
 });

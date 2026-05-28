@@ -4,7 +4,7 @@ import { produktErstellen } from "@/lib/db/produkte";
 import { bildEinfuegen } from "@/lib/db/bilder";
 import { getSiteUrl } from "@/lib/site-url";
 import { formatPreis } from "@/lib/utils/preis";
-import { parsePreis } from "./caption-preis";
+import { parsePreis, preisHatMarker } from "./caption-preis";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * Produkt-Erstellung via Telegram-Foto (Sprint B · Phase 4.1)
@@ -103,26 +103,30 @@ export async function produktAusFotoErstellen(opts: {
     || `Черновик · ${new Date().toLocaleDateString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`;
 
   // Preis suchen: erste Zeile ab #2 die als Preis lesbar ist (bevorzugt Zeile 2).
+  // `preisMarkiert` = die Zeile hat eine Währung/«Цена» (nicht nur eine nackte Zahl).
   let preis: number | null = null;
   let preisIdx = -1;
+  let preisMarkiert = false;
   for (let i = 1; i < lines.length; i++) {
     const p = parsePreis(lines[i]);
-    if (p != null) { preis = p; preisIdx = i; break; }
+    if (p != null) { preis = p; preisIdx = i; preisMarkiert = preisHatMarker(lines[i]); break; }
   }
 
   // Beschreibung = restliche Zeilen (ohne Name- und Preis-Zeile).
   const beschreibungLines = lines.filter((_, i) => i !== 0 && i !== preisIdx);
   const beschreibung = beschreibungLines.length ? beschreibungLines.join("\n") : null;
 
-  // Live wenn ein gültiger Preis erkannt wurde — sonst Entwurf (versteckt).
-  const live = preis != null;
+  // Auto-LIVE nur bei einem KLAR markierten Preis (Währung/«Цена»). Eine nackte
+  // Zahl (z.B. eine Jahreszahl) wird zwar als Preis vorausgefüllt, bleibt aber
+  // Entwurf — verhindert versehentliche Veröffentlichung zum Falschpreis.
+  const live = preis != null && preisMarkiert;
 
   // 4. Produkt anlegen (live ODER Entwurf)
   let produktId: string;
   try {
-    // produktErstellen erwartet ProduktCreateInput. Mit Preis ⇒ aktiv + sichtbar
-    // (sofort im Katalog). Ohne Preis ⇒ Entwurf: aktiv=false + b2c_mode=hidden,
-    // nirgends sichtbar bis der Admin den Preis nachträgt.
+    // produktErstellen erwartet ProduktCreateInput. Markierter Preis ⇒ aktiv +
+    // sichtbar (sofort im Katalog). Sonst Entwurf: aktiv=false + b2c_mode=hidden,
+    // nirgends sichtbar bis der Admin prüft/veröffentlicht.
     const produkt = await produktErstellen({
       name,
       preis:        preis ?? PLACEHOLDER_PREIS,
@@ -194,13 +198,17 @@ export function buildErfolgsAntwort(r: ProduktAusFotoResult): {
     return { text, keyboard };
   }
 
-  // Kein Preis → Entwurf (versteckt). Hinweis, wie man direkt veröffentlicht.
+  // Entwurf (versteckt). Entweder kein Preis ODER eine nackte Zahl ohne Währung
+  // (→ vorausgefüllt, aber NICHT auto-veröffentlicht). Hinweis: Währung angeben.
+  const preisZeile = r.preis != null
+    ? `💰 ${escapeHtml(formatPreis(r.preis, "KZT"))} · <i>предзаполнено, скрыт от покупателей</i>\n`
+    : `<i>Цена не указана · скрыт от покупателей</i>\n`;
   const text =
     `✓ <b>Черновик создан</b>\n\n` +
     `📦 ${escapeHtml(r.name)}\n` +
-    `<i>Цена не указана · скрыт от покупателей</i>\n\n` +
-    `💡 Чтобы опубликовать сразу — укажите <b>цену во второй строке</b> подписи к фото ` +
-    `(напр.: <code>45000</code>). Третья строка и далее — описание.`;
+    preisZeile +
+    `\n💡 Чтобы опубликовать сразу — укажите цену во второй строке <b>с валютой</b> ` +
+    `(напр.: <code>45000 ₸</code> или <code>Цена: 45000</code>). Просто число публикует не будет.`;
   const keyboard: InlineKeyboardMarkup = {
     inline_keyboard: [
       [{ text: "✏️ Заполнить и опубликовать", web_app: { url: miniAppEdit } }],
