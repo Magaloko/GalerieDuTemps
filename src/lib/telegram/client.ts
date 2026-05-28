@@ -103,6 +103,19 @@ export async function getBotInfo(token: string): Promise<TelegramUser> {
   return callApi<TelegramUser>(token, "getMe");
 }
 
+/** File-Metadaten holen (file_path für Download). */
+export async function getFile(token: string, file_id: string): Promise<{ file_id: string; file_path?: string; file_size?: number }> {
+  return callApi(token, "getFile", { file_id });
+}
+
+/** Telegram-Datei als Buffer herunterladen (z.B. ein gesendetes Foto).
+ *  file_path kommt aus getFile(). */
+export async function downloadTelegramFile(token: string, file_path: string): Promise<Buffer> {
+  const r = await fetch(`${TG_BASE}/file/bot${token}/${file_path}`);
+  if (!r.ok) throw new Error(`Telegram file download failed: HTTP ${r.status}`);
+  return Buffer.from(await r.arrayBuffer());
+}
+
 /** Webhook registrieren mit Secret-Path-Token.
  *  WICHTIG: allowed_updates muss callback_query enthalten damit Inline-Button-
  *  Klicks ankommen, und pre_checkout_query + successful_payment für Telegram-

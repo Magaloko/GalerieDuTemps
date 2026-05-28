@@ -102,7 +102,34 @@ export async function POST(
   }
 
   const msg = update.message ?? update.edited_message ?? update.channel_post;
-  if (!msg || (!msg.text && !msg.caption)) {
+  if (!msg) {
+    return NextResponse.json({ ok: true });
+  }
+
+  // ── Foto von einem Admin → Produkt-Draft erstellen (Sprint B 4.1) ────────
+  // Muss VOR dem text-required-Check stehen, weil Foto-only-Messages keinen
+  // text haben. Nur Admins dürfen Produkte anlegen.
+  if (msg.photo && msg.photo.length > 0 && konto.access_token) {
+    const fotoAdmin = await benutzerByTelegramChatId(msg.chat.id).catch(() => null);
+    if (fotoAdmin) {
+      const { handleAdminFoto } = await import("@/lib/telegram/produkt-erstellung");
+      await handleAdminFoto({
+        botToken:   konto.access_token,
+        chatId:     msg.chat.id,
+        photos:     msg.photo,
+        caption:    msg.caption ?? null,
+        benutzerId: fotoAdmin.id,
+      }).catch(err => console.error("[tg admin-foto]", err));
+    } else {
+      // Nicht-Admin schickt Foto → höfliche Antwort, kein Lead-Spam
+      await sendMessage(konto.access_token, msg.chat.id,
+        "Спасибо за фото! Если у вас вопрос о товаре — напишите текстом, куратор ответит.",
+      ).catch(() => {});
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  if (!msg.text && !msg.caption) {
     return NextResponse.json({ ok: true });
   }
 
@@ -190,7 +217,9 @@ export async function POST(
         welcomeText =
           `<b>✨ Galerie du Temps · Admin</b>\n\n` +
           `Здравствуйте, ${escapeHtml(linkedAdmin.name ?? linkedAdmin.email)}.\n` +
-          `<i>Mini-App в админ-режиме готов.</i>`;
+          `<i>Mini-App в админ-режиме готов.</i>\n\n` +
+          `📸 <b>Совет:</b> пришлите фото товара (с подписью — название в первой строке), ` +
+          `и я создам черновик. Останется указать цену на сайте.`;
         menu = {
           inline_keyboard: [
             [{ text: "🛡 Открыть Admin Mini-App", web_app: { url: `${siteBase}/tg/admin` } }],
@@ -459,6 +488,27 @@ async function handleCallbackQuery(
   await answerCallbackQuery(botToken, cq.id).catch(() => {});
 
   if (!chatId) return;
+
+  // ── delprod:<id> — Draft-Produkt löschen (nur Admin) ──────────────────────
+  if (data.startsWith("delprod:")) {
+    const produktId = data.slice("delprod:".length);
+    const admin = await benutzerByTelegramChatId(chatId).catch(() => null);
+    if (!admin) {
+      await sendMessage(botToken, chatId, "Только администратор может удалять товары.").catch(() => {});
+      return;
+    }
+    try {
+      const { produktLoeschen } = await import("@/lib/db/produkte");
+      const ok = await produktLoeschen(produktId);
+      await sendMessage(botToken, chatId,
+        ok ? "🗑 Черновик удалён." : "Не найдено — возможно, уже удалено.",
+      ).catch(() => {});
+    } catch (err) {
+      console.error("[cb delprod]", err);
+      await sendMessage(botToken, chatId, "Ошибка при удалении.").catch(() => {});
+    }
+    return;
+  }
 
   if (data === "menu") {
     const linked = await customerByTelegramChatId(chatId).catch(() => null);
