@@ -3,18 +3,25 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ImagePlus, Loader2, Check, X, ArrowRight } from "lucide-react";
+import { ImagePlus, Loader2, Check, X, ArrowRight, CopyMinus } from "lucide-react";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * BulkUploader — viele Fotos → je Foto ein Draft-Produkt.
  *
- * Pro Datei sequenziell: POST /api/produkte (Draft) → POST /api/bilder (Bild).
- * Sequenziell, um Storage/DB nicht zu überlasten. Danach → Review-Queue.
+ * Pro Datei sequenziell: SHA-256 (Dedup-Check) → POST /api/produkte (Draft) →
+ * POST /api/bilder (Bild). Bereits vorhandene Bilder (gleicher Hash) werden
+ * übersprungen — keine doppelten Drafts. Danach → Review-Queue.
  * Der Dateiname (ohne Endung) wird als Start-Name verwendet (Kontext).
  * ────────────────────────────────────────────────────────────────────────── */
 
-type Status = "pending" | "uploading" | "done" | "error";
+type Status = "pending" | "uploading" | "done" | "error" | "duplicate";
 interface Item { file: File; status: Status; error?: string }
+
+/** SHA-256 der Originaldatei (Web Crypto) — identisch zum Server-Hash. */
+async function sha256OfFile(file: File): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
+  return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
 
 const DRAFT_NAME = (f: File) => {
   const base = f.name.replace(/\.[^.]+$/, "").trim().slice(0, 120);
@@ -44,9 +51,17 @@ export function BulkUploader() {
     setRunning(true); setDoneCount(0);
     let ok = 0;
     for (let i = 0; i < items.length; i++) {
-      if (items[i].status === "done") { ok++; continue; }
+      if (items[i].status === "done" || items[i].status === "duplicate") { ok++; continue; }
       setStatus(i, "uploading");
       try {
+        // 0. Dedup: gleicher Bild-Hash schon vorhanden? → überspringen
+        try {
+          const hash = await sha256OfFile(items[i].file);
+          const dr = await fetch(`/api/bilder/dedup?hash=${hash}`);
+          const dj = await dr.json().catch(() => ({}));
+          if (dj.duplicate) { setStatus(i, "duplicate", dj.name ?? undefined); ok++; continue; }
+        } catch {/* Dedup-Fehler ist nicht fatal → normal weiter */}
+
         // 1. Draft anlegen
         const pr = await fetch("/api/produkte", {
           method: "POST",
@@ -76,7 +91,7 @@ export function BulkUploader() {
     setRunning(false); setFertig(true);
   };
 
-  const pending = items.filter(i => i.status !== "done").length;
+  const pending = items.filter(i => i.status !== "done" && i.status !== "duplicate").length;
 
   return (
     <div className="space-y-4">
@@ -121,10 +136,12 @@ export function BulkUploader() {
             {items.map((it, i) => (
               <li key={i} className="flex items-center gap-2 text-xs px-3 py-2 bg-vintage-white border border-vintage-sand" style={{ borderRadius: "var(--radius-vintage)" }}>
                 {it.status === "uploading" ? <Loader2 className="w-3.5 h-3.5 animate-spin text-vintage-gold shrink-0" />
-                 : it.status === "done"    ? <Check className="w-3.5 h-3.5 text-vintage-sage shrink-0" />
-                 : it.status === "error"   ? <X className="w-3.5 h-3.5 text-vintage-burgundy shrink-0" />
+                 : it.status === "done"      ? <Check className="w-3.5 h-3.5 text-vintage-sage shrink-0" />
+                 : it.status === "duplicate" ? <CopyMinus className="w-3.5 h-3.5 text-vintage-gold shrink-0" />
+                 : it.status === "error"     ? <X className="w-3.5 h-3.5 text-vintage-burgundy shrink-0" />
                  : <span className="w-3.5 h-3.5 rounded-full border border-vintage-sand shrink-0" />}
                 <span className="truncate flex-1 text-vintage-ink">{it.file.name}</span>
+                {it.status === "duplicate" && <span className="text-vintage-gold shrink-0">дубликат — пропущено</span>}
                 {it.status === "error" && <span className="text-vintage-burgundy">{it.error}</span>}
               </li>
             ))}

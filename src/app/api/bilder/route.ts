@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
       dateigroesse:  upload.dateigroesse,
       breite:        upload.breite,
       hoehe:         upload.hoehe,
+      sha256:        upload.sha256,
     });
 
     return NextResponse.json(bild, { status: 201 });

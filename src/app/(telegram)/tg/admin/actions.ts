@@ -227,6 +227,7 @@ export async function produktBildUploadAction(formData: FormData): Promise<Actio
       dateigroesse:  bild.dateigroesse,
       breite:        bild.breite,
       hoehe:         bild.hoehe,
+      sha256:        bild.sha256,
     });
     if (istErstes) {
       await query(`UPDATE sebo.produkte SET hauptbild_url = $1 WHERE id = $2`, [bild.url, produktId]);

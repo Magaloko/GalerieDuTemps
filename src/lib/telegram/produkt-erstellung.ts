@@ -138,6 +138,7 @@ export async function produktAusFotoErstellen(opts: {
       dateigroesse:  bild.dateigroesse,
       breite:        bild.breite,
       hoehe:         bild.hoehe,
+      sha256:        bild.sha256,
     });
   } catch (err) {
     // Nicht fatal — Produkt existiert, hauptbild_url ist schon gesetzt.

@@ -25,6 +25,7 @@ export async function bildEinfuegen(data: {
   dateigroesse?: number;
   breite?:       number;
   hoehe?:        number;
+  sha256?:       string;
 }): Promise<Produktbild> {
   // Sortierungsnummer = max + 1
   const sortResult = await query<{ max: number }>(
@@ -37,8 +38,8 @@ export async function bildEinfuegen(data: {
   const result = await query<Produktbild>(
     `INSERT INTO sebo.produktbilder
        (produkt_id, url, url_thumb, url_medium, url_large, format,
-        alt_text, sortierung, ist_hauptbild, dateigroesse, breite, hoehe)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+        alt_text, sortierung, ist_hauptbild, dateigroesse, breite, hoehe, sha256)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
      RETURNING *`,
     [
       data.produkt_id,
@@ -53,9 +54,30 @@ export async function bildEinfuegen(data: {
       data.dateigroesse ?? null,
       data.breite       ?? null,
       data.hoehe        ?? null,
+      data.sha256       ?? null,
     ]
   );
   return result.rows[0];
+}
+
+/**
+ * Dedup-Lookup: existiert bereits ein Bild mit diesem SHA-256?
+ * Liefert das zugehörige Produkt (id + name) oder null.
+ */
+export async function bildSha256Existiert(
+  sha256: string,
+): Promise<{ produktId: string; produktName: string } | null> {
+  if (!sha256) return null;
+  const r = await query<{ produkt_id: string; name: string }>(
+    `SELECT pb.produkt_id, p.name
+       FROM sebo.produktbilder pb
+       JOIN sebo.produkte p ON p.id = pb.produkt_id
+      WHERE pb.sha256 = $1
+      LIMIT 1`,
+    [sha256],
+  );
+  const row = r.rows[0];
+  return row ? { produktId: row.produkt_id, produktName: row.name } : null;
 }
 
 /** Alt-Text eines Bildes aktualisieren (Inline-Edit in der Galerie) */

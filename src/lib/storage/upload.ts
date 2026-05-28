@@ -1,6 +1,6 @@
 import { writeFile, mkdir } from "fs/promises";
 import { join, extname } from "path";
-import { randomUUID } from "crypto";
+import { randomUUID, createHash } from "crypto";
 import sharp from "sharp";
 import { supabaseStorageAktiv, supabaseUpload } from "./supabase-storage";
 
@@ -140,6 +140,8 @@ export interface BildUploadResult {
   hoehe:        number;
   dateigroesse: number;   // Bytes der Original-Datei nach Compression
   dateiname:    string;
+  /** SHA-256 der HOCHGELADENEN Originalbytes (für Dedup). */
+  sha256:       string;
 }
 
 export interface UploadResult {
@@ -169,6 +171,7 @@ export async function bildVerarbeiten(file: File): Promise<BildUploadResult> {
   // Hinweis: Persistenz (Disk vs Supabase) übernimmt persist(). Beim
   // Filesystem-Fallback legt persist() das Verzeichnis selbst an.
   const buffer = Buffer.from(await file.arrayBuffer());
+  const sha256 = createHash("sha256").update(buffer).digest("hex");
   const baseId = randomUUID();
 
   // Metadata lesen (Dimensionen, Format, Orientation)
@@ -266,6 +269,7 @@ export async function bildVerarbeiten(file: File): Promise<BildUploadResult> {
     hoehe,
     dateigroesse: origBuffer.length,
     dateiname:    orig.dateiname,
+    sha256,
   };
 }
 
