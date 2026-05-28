@@ -78,9 +78,11 @@ const nextConfig: NextConfig = {
     // BEWUSST KEIN default-src: ohne default-src bleiben nicht-gelistete
     // Direktiven (script-src/style-src/img-src/connect-src) unbeschränkt — so
     // laden Next-Hydration, Stripe, Supabase-Bilder, Sentry & Telegram weiter.
-    // Eingeschränkt wird nur das Gefahrlose.
+    // KEIN frame-ancestors: Telegram lädt die Mini-App je nach Client in einem
+    // Frame/WebView mit teils nicht-deterministischer Ancestor-Origin — eine
+    // Whitelist riskiert, dass die App gar nicht rendert. Clickjacking-Schutz
+    // hier bewusst zugunsten der Verfügbarkeit zurückgestellt.
     const csp = [
-      "frame-ancestors 'self' https://web.telegram.org https://*.telegram.org",
       "base-uri 'self'",
       "object-src 'none'",
     ].join("; ");

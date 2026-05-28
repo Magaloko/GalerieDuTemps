@@ -8,8 +8,6 @@ import {
   setWebAppSessionCookieByRole,
   clearWebAppSessionCookie,
 } from "@/lib/telegram/webapp-session";
-import { rateLimitAsync, getClientIp, tooManyRequestsResponse } from "@/lib/utils/rate-limit";
-
 export const dynamic     = "force-dynamic";
 export const maxDuration = 10;
 
@@ -37,12 +35,12 @@ export async function POST(req: NextRequest) {
   const log = (msg: string, extra?: Record<string, unknown>) =>
     console.log(`[tg-auth:${msg}]`, { ms: Date.now() - t0, ...extra });
 
-  // Rate-Limit ZUERST (vor Body-Parsing): teurer Public-Endpoint (HMAC + 2 DB-
-  // Lookups). 30/5min pro IP — großzügig für legitimes Re-Auth, bremst Abuse.
-  const ip = getClientIp(req);
-  const rl = await rateLimitAsync(`tg-auth:${ip}`, 30, 5 * 60 * 1000);
-  if (!rl.erlaubt) return tooManyRequestsResponse(rl);
-
+  // KEIN IP-Rate-Limit hier: Diese Route läuft bei JEDEM Mini-App-Start. Hinter
+  // Proxy/NAT teilen sich viele Nutzer eine IP → ein per-IP-Limit würde alle
+  // gleichzeitig aussperren. Missbrauch ist ohnehin durch die initData-HMAC-
+  // Prüfung (Bot-Token) begrenzt — die teuren DB-Lookups laufen erst NACH der
+  // Signatur-Verifikation. (Ein per-Telegram-User-Limit nach verify wäre der
+  // sichere Weg, falls je nötig.)
   let body: { initData?: string };
   try {
     body = await req.json();
