@@ -101,6 +101,8 @@ export async function telegramVerbindenAction(
     { command: "kontakt",  description: "Связаться с куратором" },
     { command: "help",     description: "Помощь и команды" },
     { command: "unlink",   description: "Отвязать аккаунт" },
+    { command: "sales",    description: "Продажи (для админа)" },
+    { command: "draft",    description: "Черновики товаров (для админа)" },
   ]).catch(err => console.warn("[telegram setMyCommands]", err));
 
   // Mini-App Menu-Button — der „🛍 Магазин"-Knopf links unten im Chat.
@@ -224,6 +226,8 @@ export async function telegramWebhookNeuRegistrierenAction(): Promise<ActionResu
     { command: "kontakt",  description: "Связаться с куратором" },
     { command: "help",     description: "Помощь и команды" },
     { command: "unlink",   description: "Отвязать аккаунт" },
+    { command: "sales",    description: "Продажи (для админа)" },
+    { command: "draft",    description: "Черновики товаров (для админа)" },
   ]).catch(err => console.warn("[telegram setMyCommands]", err));
 
   // Mini-App Menu-Button auch hier neu setzen (gleiche URL = idempotent)

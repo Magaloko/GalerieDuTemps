@@ -385,6 +385,19 @@ export async function POST(
     return NextResponse.json({ ok: true });
   }
 
+  // ── Admin-Commands (/sales, /edit, /draft) — nur verknüpfte Admins ──────
+  if (text.startsWith("/") && konto.access_token) {
+    const cmdAdmin = await benutzerByTelegramChatId(chat.id).catch(() => null);
+    if (cmdAdmin) {
+      const { handleAdminCommand } = await import("@/lib/telegram/admin-commands");
+      const handled = await handleAdminCommand(text, {
+        botToken: konto.access_token,
+        chatId:   chat.id,
+      });
+      if (handled) return NextResponse.json({ ok: true });
+    }
+  }
+
   // ── Bekannter Customer → Commands oder Ack ─────────────────────────────
   const linkedCustomer = await customerByTelegramChatId(chat.id);
   if (linkedCustomer && konto.access_token) {
