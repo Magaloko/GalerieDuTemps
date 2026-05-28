@@ -4,9 +4,10 @@ import { useState, useTransition } from "react";
 import {
   Heading2, Type, Image as ImageIcon, Lightbulb, Quote,
   ArrowUp, ArrowDown, Copy, Trash2, X, Upload, LayoutPanelTop, Loader2,
-  Minus, MousePointerClick, Columns2, LayoutGrid,
+  Minus, MousePointerClick, Columns2, LayoutGrid, Film,
 } from "lucide-react";
 import { storyBildUploadAction } from "@/app/(admin)/admin/produkte/actions";
+import { STORY_BG, storyBgCss } from "./story-bg";
 import type { ProduktBlock, ProduktBlockTyp, Produktbild } from "@/types/produkt";
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -30,6 +31,7 @@ const PALETTE: { type: ProduktBlockTyp; label: string; icon: React.ElementType; 
   { type: "highlight", label: "Подсказка",    icon: Lightbulb,        sub: "Выделенный блок" },
   { type: "quote",     label: "Цитата",       icon: Quote,            sub: "С автором" },
   { type: "button",    label: "Кнопка",       icon: MousePointerClick, sub: "CTA-ссылка" },
+  { type: "video",     label: "Видео",        icon: Film,             sub: "YouTube/Vimeo/MP4" },
   { type: "divider",   label: "Разделитель",  icon: Minus,            sub: "◆ линия" },
 ];
 
@@ -42,6 +44,7 @@ const NEU: Record<ProduktBlockTyp, ProduktBlock> = {
   highlight: { type: "highlight", text: "" },
   quote:     { type: "quote",     text: "", caption: "" },
   button:    { type: "button",    label: "Связаться с куратором", url: "/kontakt" },
+  video:     { type: "video",     url: "" },
   divider:   { type: "divider" },
 };
 
@@ -173,7 +176,12 @@ function StoryOverlay({
                     <Ctl title="Удалить"    onClick={(e) => { e.stopPropagation(); remove(i); }} danger><Trash2 className="w-3.5 h-3.5" /></Ctl>
                   </div>
                 )}
-                <BlockPreview block={b} />
+                {(() => {
+                  const bg = storyBgCss(b.bg);
+                  return bg
+                    ? <div style={{ background: bg, padding: "1rem 1.25rem", borderRadius: "var(--radius-card)" }}><BlockPreview block={b} /></div>
+                    : <BlockPreview block={b} />;
+                })()}
               </div>
             ))}
           </div>
@@ -257,6 +265,11 @@ function BlockPreview({ block: b }: { block: ProduktBlock }) {
         ))}</div>)
       : (<div className="flex items-center justify-center gap-2 py-10 text-vintage-dust border border-dashed border-vintage-sand"><LayoutGrid className="w-5 h-5" /> Галерея пуста</div>);
   }
+  if (b.type === "video") return (
+    <div className="flex items-center justify-center gap-2 py-8 text-vintage-dust border border-dashed border-vintage-sand" style={{ borderRadius: "var(--radius-vintage)" }}>
+      <Film className="w-5 h-5" /> {b.url ? "Видео: " + b.url.slice(0, 48) : "Видео не задано"}
+    </div>
+  );
   return null;
 }
 
@@ -364,6 +377,13 @@ function BlockProps({ block: b, galerie, onPatch }: {
         <p className="text-sm text-vintage-dust">Декоративный разделитель ◆ — без настроек.</p>
       )}
 
+      {b.type === "video" && (
+        <div className="space-y-1.5">
+          <input className={fieldCls} value={b.url ?? ""} placeholder="YouTube / Vimeo / .mp4 URL" onChange={e => onPatch({ url: e.target.value })} />
+          <p className="text-[11px] text-vintage-dust">Поддержка: youtube.com, youtu.be, vimeo.com, прямые .mp4/.webm.</p>
+        </div>
+      )}
+
       {b.type === "gallery" && (
         <div className="space-y-3">
           <label
@@ -411,6 +431,32 @@ function BlockProps({ block: b, galerie, onPatch }: {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Block-Hintergrund — für alle Block-Typen (außer Trenner) */}
+      {b.type !== "divider" && (
+        <div className="pt-3 mt-1 border-t border-vintage-sand/50">
+          <p className="text-[10px] uppercase tracking-widest text-vintage-dust mb-2">Фон блока</p>
+          <div className="flex flex-wrap gap-1.5">
+            {Object.entries(STORY_BG).map(([key, v]) => {
+              const aktiv = (b.bg ?? "standard") === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  title={v.label}
+                  onClick={() => onPatch({ bg: key })}
+                  className="w-7 h-7 transition-all"
+                  style={{
+                    background:   key === "standard" ? "repeating-linear-gradient(45deg,#fff,#fff 3px,#eee 3px,#eee 6px)" : v.swatch,
+                    border:       aktiv ? "2px solid var(--color-coral)" : "1px solid var(--color-line)",
+                    borderRadius: "var(--radius-vintage)",
+                  }}
+                />
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

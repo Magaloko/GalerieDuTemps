@@ -2,6 +2,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { Quote } from "lucide-react";
 import type { ProduktBlock } from "@/types/produkt";
+import { storyBgCss } from "./story-bg";
+
+/** Video-URL → Embed (YouTube/Vimeo iframe oder natives <video>). */
+function videoEmbed(url: string): { kind: "iframe" | "video"; src: string } | null {
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
+  if (yt) return { kind: "iframe", src: `https://www.youtube.com/embed/${yt[1]}` };
+  const vimeo = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeo) return { kind: "iframe", src: `https://player.vimeo.com/video/${vimeo[1]}` };
+  if (/\.(mp4|webm|mov)(\?|$)/i.test(url)) return { kind: "video", src: url };
+  return null;
+}
 
 /* ──────────────────────────────────────────────────────────────────────────
  * ProduktStory — rendert die block-basierte Produktbeschreibung (editorial).
@@ -15,6 +26,7 @@ export function ProduktStory({ blocks }: { blocks: ProduktBlock[] }) {
   return (
     <div className="space-y-6">
       {blocks.map((b, i) => {
+        const inner = (() => {
         switch (b.type) {
           case "heading":
             return (
@@ -134,9 +146,37 @@ export function ProduktStory({ blocks }: { blocks: ProduktBlock[] }) {
               </div>
             ) : null;
 
+          case "video": {
+            const v = b.url ? videoEmbed(b.url) : null;
+            if (!v) return null;
+            return (
+              <div key={i} className="relative w-full overflow-hidden" style={{ aspectRatio: "16/9", background: "#000" }}>
+                {v.kind === "iframe" ? (
+                  <iframe
+                    src={v.src}
+                    className="absolute inset-0 w-full h-full"
+                    style={{ border: 0 }}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title="Видео"
+                  />
+                ) : (
+                  // eslint-disable-next-line jsx-a11y/media-has-caption
+                  <video src={v.src} controls className="absolute inset-0 w-full h-full object-contain" />
+                )}
+              </div>
+            );
+          }
+
           default:
             return null;
         }
+        })();
+        if (!inner) return null;
+        const bg = storyBgCss(b.bg);
+        return bg
+          ? <div key={i} style={{ background: bg, padding: "1.25rem 1.5rem", borderRadius: "var(--radius-card)" }}>{inner}</div>
+          : <div key={i}>{inner}</div>;
       })}
     </div>
   );

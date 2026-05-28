@@ -9,10 +9,12 @@ export type Zustand = "sehr_gut" | "gut" | "akzeptabel" | "restauriert";
 // ---------------------------------------------------------------------------
 export type ProduktBlockTyp =
   | "heading" | "text" | "image" | "highlight" | "quote"
-  | "divider" | "button" | "columns" | "gallery";
+  | "divider" | "button" | "columns" | "gallery" | "video";
 
 export interface ProduktBlock {
   type:     ProduktBlockTyp;
+  /** Block-Hintergrund (Key aus STORY_BG; "standard"/leer = ohne). */
+  bg?:      string;
   /** heading/text/highlight/quote: Textinhalt · columns: linke Spalte. */
   text?:    string;
   /** columns: rechte Spalte. */
