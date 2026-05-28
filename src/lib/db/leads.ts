@@ -38,6 +38,7 @@ export interface Lead {
   // joined
   zugewiesen_an_name?: string | null;
   produkt_name?:       string | null;
+  produkt_bild_url?:   string | null;
   customer_email?:     string | null;
 }
 
@@ -136,6 +137,10 @@ export async function leadsListe(params: {
          l.*,
          b.name  AS zugewiesen_an_name,
          p.name  AS produkt_name,
+         COALESCE(p.hauptbild_url,
+           (SELECT COALESCE(pb.url_medium, pb.url) FROM sebo.produktbilder pb
+             WHERE pb.produkt_id = p.id ORDER BY pb.ist_hauptbild DESC, pb.sortierung LIMIT 1)
+         ) AS produkt_bild_url,
          c.email AS customer_email
        FROM sebo.leads l
        LEFT JOIN sebo.benutzer  b ON b.id = l.zugewiesen_an

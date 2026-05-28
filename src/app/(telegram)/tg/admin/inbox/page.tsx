@@ -120,10 +120,17 @@ export default async function TgAdminInboxPage() {
                     touchAction: "manipulation",
                   }}
                 >
+                  {/* Produkt-Thumbnail (wenn Lead zu einem Stück gehört) */}
+                  {l.produkt_bild_url && (
+                    <div className="w-10 h-10 shrink-0 overflow-hidden mt-0.5" style={{ background: "var(--color-bone)" }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={l.produkt_bild_url} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span
-                        className="text-[9px] uppercase font-medium px-1.5 py-0.5"
+                        className="text-[9px] uppercase font-medium px-1.5 py-0.5 shrink-0"
                         style={{
                           letterSpacing: "0.18em",
                           background:    "var(--color-bone)",
@@ -133,7 +140,7 @@ export default async function TgAdminInboxPage() {
                         {l.quelle}
                       </span>
                       <span
-                        className="text-xs truncate"
+                        className="text-xs truncate flex-1"
                         style={{
                           fontFamily: "var(--font-display)",
                           color:      "var(--tg-theme-text-color, var(--color-ink))",
@@ -141,7 +148,21 @@ export default async function TgAdminInboxPage() {
                       >
                         {l.kontakt_name ?? l.kontakt_handle ?? l.kontakt_email ?? "—"}
                       </span>
+                      <span
+                        className="text-[10px] shrink-0"
+                        style={{ color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}
+                      >
+                        {relativeZeit(l.erstellt_am)}
+                      </span>
                     </div>
+                    {l.produkt_name && (
+                      <p
+                        className="text-[11px] truncate"
+                        style={{ color: "var(--color-coral)" }}
+                      >
+                        {l.produkt_name}
+                      </p>
+                    )}
                     {l.betreff && (
                       <p
                         className="text-xs truncate"
@@ -185,6 +206,20 @@ export default async function TgAdminInboxPage() {
       </main>
     </TelegramAuthGate>
   );
+}
+
+/** Kompakte relative Zeit auf Russisch (für die Lead-Liste). */
+function relativeZeit(iso: string): string {
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return "";
+  const diffMin = Math.floor((Date.now() - then) / 60000);
+  if (diffMin < 1)   return "сейчас";
+  if (diffMin < 60)  return `${diffMin} мин`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24)    return `${diffH} ч`;
+  const diffD = Math.floor(diffH / 24);
+  if (diffD < 7)     return `${diffD} дн`;
+  return new Date(then).toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
 }
 
 function NotAdmin() {
