@@ -106,10 +106,8 @@ export default async function TgAdminInboxPage() {
           <ul className="space-y-2">
             {leads.map(l => (
               <li key={l.id}>
-                <a
-                  href={`/admin/leads/${l.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href={`/tg/admin/inbox/${l.id}`}
                   className="flex items-start gap-3 p-3"
                   style={{
                     background:  "var(--tg-theme-section-bg-color, #fff)",
@@ -168,7 +166,7 @@ export default async function TgAdminInboxPage() {
                     )}
                   </div>
                   <ArrowRight className="w-3.5 h-3.5 opacity-40 shrink-0 mt-1" />
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
@@ -182,7 +180,7 @@ export default async function TgAdminInboxPage() {
             color:      "var(--tg-theme-hint-color, var(--color-ink-mute))",
           }}
         >
-          Ответ удобнее писать на десктопе — клик открывает полную форму.
+          Нажмите на сообщение, чтобы ответить прямо здесь.
         </p>
       </main>
     </TelegramAuthGate>

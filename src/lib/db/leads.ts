@@ -280,6 +280,37 @@ export async function leadKonvertierenZuCustomer(
   await query(`UPDATE sebo.leads SET customer_id = $1 WHERE id = $2`, [customer_id, lead_id]);
 }
 
+/**
+ * Extrahiert die Telegram-chat_id eines Leads (für Inline-Reply via Bot).
+ * Funktioniert nur für quelle='telegram' Leads. Quellen der chat_id:
+ *  1. raw_payload.telegram_user.id (Mini-App-Kontakt)
+ *  2. raw_payload.message.chat.id (Bot-DM via Webhook)
+ *  3. externe_id Format „tg:<chatId>:<msgId>" oder „tg-miniapp:<chatId>:<ts>"
+ * Returns null wenn nicht ermittelbar.
+ */
+export async function leadTelegramChatId(lead_id: string): Promise<number | null> {
+  const r = await query<{ quelle: string; externe_id: string; raw_payload: unknown }>(
+    `SELECT quelle, externe_id, raw_payload FROM sebo.leads WHERE id = $1`,
+    [lead_id],
+  );
+  const row = r.rows[0];
+  if (!row || row.quelle !== "telegram") return null;
+
+  // 1+2. raw_payload durchsuchen
+  const rp = row.raw_payload as {
+    telegram_user?: { id?: number };
+    message?:       { chat?: { id?: number } };
+  } | null;
+  if (rp?.telegram_user?.id) return rp.telegram_user.id;
+  if (rp?.message?.chat?.id) return rp.message.chat.id;
+
+  // 3. externe_id parsen: „tg:<id>:..." oder „tg-miniapp:<id>:..."
+  const m = row.externe_id.match(/^tg(?:-miniapp)?:(-?\d+):/);
+  if (m) return parseInt(m[1], 10);
+
+  return null;
+}
+
 // ===========================================================================
 // Inbound-Hooks (vorbereitet für Session 2/3)
 // ===========================================================================
