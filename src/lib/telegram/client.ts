@@ -160,6 +160,40 @@ export async function editMessageText(token: string, chat_id: number | string, m
   });
 }
 
+/** Foto schicken — URL ODER file_id. Caption supports HTML.
+ *  Spec: https://core.telegram.org/bots/api#sendphoto */
+export async function sendPhoto(
+  token: string,
+  chat_id: number | string,
+  photo: string,             // public URL or telegram file_id
+  options?: {
+    caption?:      string;
+    parse_mode?:   "Markdown" | "HTML";
+    reply_markup?: InlineKeyboardMarkup;
+  },
+): Promise<TelegramMessage> {
+  return callApi<TelegramMessage>(token, "sendPhoto", {
+    chat_id, photo, ...options,
+  });
+}
+
+/** Animation (GIF/MP4) schicken — für animierte Welcomes/Drops.
+ *  Spec: https://core.telegram.org/bots/api#sendanimation */
+export async function sendAnimation(
+  token: string,
+  chat_id: number | string,
+  animation: string,         // public URL or file_id
+  options?: {
+    caption?:      string;
+    parse_mode?:   "Markdown" | "HTML";
+    reply_markup?: InlineKeyboardMarkup;
+  },
+): Promise<TelegramMessage> {
+  return callApi<TelegramMessage>(token, "sendAnimation", {
+    chat_id, animation, ...options,
+  });
+}
+
 /** Callback-Query bestätigen (verhindert Lade-Spinner auf Inline-Button).
  *  Optional Toast-Text (kurz, max 200 Zeichen). */
 export async function answerCallbackQuery(token: string, callback_query_id: string, options?: {

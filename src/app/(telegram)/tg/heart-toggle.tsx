@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
+import { haptic } from "./fx";
 
 interface Props {
   produktId: string;
@@ -54,11 +55,7 @@ export function HeartToggle({ produktId, size = 18, overlay = false }: Props) {
     setLiked(next);
     setBusy(true);
 
-    // Haptic-Feedback
-    const tg = window.Telegram?.WebApp as unknown as {
-      HapticFeedback?: { impactOccurred: (s: string) => void };
-    } | undefined;
-    try { tg?.HapticFeedback?.impactOccurred(next ? "light" : "soft"); } catch {}
+    haptic(next ? "light" : "soft");
 
     try {
       const r = await fetch("/api/wunschliste", {

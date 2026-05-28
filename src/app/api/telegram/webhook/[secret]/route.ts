@@ -10,6 +10,7 @@ import { adminTelegramVerknuepfen } from "@/lib/db/admin-telegram";
 import { benutzerByTelegramChatId } from "@/lib/telegram/role-resolver";
 import {
   sendMessage,
+  sendPhoto,
   answerPreCheckoutQuery,
   answerCallbackQuery,
   type InlineKeyboardMarkup,
@@ -186,40 +187,51 @@ export async function POST(
       let menu;
       if (linkedAdmin) {
         welcomeText =
-          `<b>Galerie du Temps · Admin</b>\n\n` +
-          `Здравствуйте, ${escapeHtml(linkedAdmin.name ?? linkedAdmin.email)}.\n\n` +
-          `Открыть Mini-App в админ-режиме — Inbox, очередь заказов, статистика.`;
+          `<b>✨ Galerie du Temps · Admin</b>\n\n` +
+          `Здравствуйте, ${escapeHtml(linkedAdmin.name ?? linkedAdmin.email)}.\n` +
+          `<i>Mini-App в админ-режиме готов.</i>`;
         menu = {
           inline_keyboard: [
             [{ text: "🛡 Открыть Admin Mini-App", web_app: { url: `${siteBase}/tg/admin` } }],
             [{ text: "🛍 Каталог (как клиент)",   web_app: { url: `${siteBase}/tg` } }],
-            [{ text: "📊 /admin на сайте",          url:     `${siteBase}/admin` }],
+            [{ text: "📊 Открыть /admin на сайте", url:     `${siteBase}/admin` }],
           ],
         };
       } else if (linkedCustomer) {
         welcomeText =
-          `<b>Galerie du Temps</b>\n\n` +
-          `Вы уже привязаны, ${escapeHtml(linkedCustomer.vorname ?? linkedCustomer.email)}.\n\n` +
-          `Чем могу помочь?`;
+          `<b>✨ С возвращением!</b>\n\n` +
+          `Рады видеть вас снова, <b>${escapeHtml(linkedCustomer.vorname ?? linkedCustomer.email)}</b>.\n` +
+          `<i>Новые поступления каждую среду.</i>`;
         menu = buildLinkedMainMenu(siteBase);
       } else {
         welcomeText =
-          `<b>Galerie du Temps</b>\n` +
+          `<b>✨ Galerie du Temps</b>\n` +
           `<i>Кураторская галерея винтажа в Алматы.</i>\n\n` +
-          `Я бот-помощник магазина. Могу:\n` +
-          `• показать каталог\n` +
-          `• ответить на вопросы\n` +
-          `• передать сообщение куратору\n\n` +
-          `Привяжите аккаунт, чтобы получать уведомления о заказах.`;
+          `Откройте магазин одним касанием — украшения, посуда, винтаж ` +
+          `с историей и сертификатом подлинности.\n\n` +
+          `🛍 <b>Открыть Mini-App</b> · просматривайте, лайкайте, заказывайте\n` +
+          `💌 <b>Связаться</b> · куратор ответит лично\n` +
+          `📰 <b>Подписаться</b> · уведомления о новых поступлениях`;
         menu = buildPublicMainMenu(siteBase);
       }
 
-      await sendMessage(
-        konto.access_token,
-        chat.id,
-        welcomeText,
-        { parse_mode: "HTML", reply_markup: menu },
-      ).catch(err => console.error("[tg send welcome]", err));
+      // Hero-Photo zur Welcome-Message — Logo / Brand-Visual.
+      // sendPhoto > sendMessage für WOW-Faktor beim ersten /start.
+      const heroUrl = `${siteBase}/images/hero-stack-1.jpg`;
+      const send = sendPhoto(konto.access_token, chat.id, heroUrl, {
+        caption:      welcomeText,
+        parse_mode:   "HTML",
+        reply_markup: menu,
+      }).catch(async err => {
+        // Fallback: wenn das Hero-Bild nicht erreichbar ist (z.B. URL down),
+        // senden wir ohne Foto damit der User wenigstens das Menü kriegt.
+        console.warn("[tg sendPhoto welcome failed, fallback text]", err);
+        return sendMessage(konto.access_token!, chat.id, welcomeText, {
+          parse_mode:   "HTML",
+          reply_markup: menu,
+        });
+      });
+      await send.catch(err => console.error("[tg send welcome final]", err));
     }
     return NextResponse.json({ ok: true });
   }

@@ -111,6 +111,22 @@ export default async function TelegramProduktPage({
               {produkt.era}
             </p>
           )}
+
+          {/* «Последний экземпляр»-Highlight mit Pulse-Animation */}
+          {!produkt.verkauft && produkt.lagerbestand === 1 && (
+            <p
+              className="mt-3 inline-flex items-center gap-1.5 px-2 py-1 text-[10px] uppercase font-medium"
+              style={{
+                letterSpacing: "0.22em",
+                background:    "rgba(232,112,58,0.10)",
+                color:         "var(--color-coral)",
+                border:        "1px solid rgba(232,112,58,0.40)",
+                animation:     "tg-pulse-coral 1.8s ease-in-out infinite",
+              }}
+            >
+              ⚠ Последний экземпляр
+            </p>
+          )}
           {kurz && (
             <p
               className="mt-4 text-sm leading-relaxed"
@@ -136,6 +152,14 @@ export default async function TelegramProduktPage({
             Спросить куратора
           </Link>
         </div>
+
+        {/* Keyframes für Pulse-Badge (server-render-time CSS) */}
+        <style>{`
+          @keyframes tg-pulse-coral {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(232,112,58,0.5); }
+            50%      { box-shadow: 0 0 0 6px rgba(232,112,58,0); }
+          }
+        `}</style>
 
         {/* MainButton-Mount-Punkt (kein visuelles Markup, nur side-effect) */}
         <ProductMiniClient

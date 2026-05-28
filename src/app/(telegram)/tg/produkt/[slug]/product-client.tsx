@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/cart";
 import { formatPreis } from "@/lib/utils/preis";
+import { confettiBurst, haptic } from "../../fx";
 
 type Currency = "KZT" | "EUR" | "USD" | "RUB";
 
@@ -68,10 +69,14 @@ export function ProductMiniClient({
         ist_seminar:       false,
         max_menge:         lagerbestand,
       });
-      // Quick-feedback via Telegram HapticFeedback wenn verfügbar
-      const haptic = (tg as unknown as { HapticFeedback?: { notificationOccurred: (s: string) => void } }).HapticFeedback;
-      try { haptic?.notificationOccurred("success"); } catch {}
-      router.push("/tg/cart");
+      // WOW: confetti aus dem Viewport-Zentrum (MainButton ist bottom-fixed,
+      // also Burst von dort sieht aus als „kommt aus dem Button").
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight - 60;
+      confettiBurst(cx, cy, 50);
+      haptic("success");
+      // kleiner Delay damit User die Animation kurz sieht bevor Navigation
+      setTimeout(() => router.push("/tg/cart"), 350);
     };
     main.onClick(onClick);
 
