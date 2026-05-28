@@ -41,4 +41,12 @@ EMERGENCY_SHOP_DISABLE    # Notfall: "true" → erzwingt sofort Schaufenster-Mod
                           #   (kaufen_aktiv=false, fail-closed) ohne Deploy/DB-Write.
                           #   Sperrt alle Kaufpfade serverseitig + kippt die UI in
                           #   den Vitrinen-Zustand. Wieder entfernen = Normalbetrieb.
+
+# Sentry (Error-Tracking, optional — ohne DSN ist Sentry no-op)
+NEXT_PUBLIC_SENTRY_DSN    # Client-DSN (Browser-Fehler + Session-Replay)
+SENTRY_DSN                # Server-/Edge-DSN (Server-Components, Route-Handler,
+                          #   Server-Actions via onRequestError)
+SENTRY_ORG                # Nur Build-Zeit: Source-Map-Upload (withSentryConfig)
+SENTRY_PROJECT            # Nur Build-Zeit: Source-Map-Upload
+SENTRY_AUTH_TOKEN         # Nur Build-Zeit: Source-Map-Upload (CI/Coolify-Build)
 ```
