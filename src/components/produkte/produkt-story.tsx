@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Quote } from "lucide-react";
 import type { ProduktBlock } from "@/types/produkt";
 
@@ -83,6 +84,55 @@ export function ProduktStory({ blocks }: { blocks: ProduktBlock[] }) {
                 )}
               </blockquote>
             );
+
+          case "divider":
+            return (
+              <div key={i} className="flex items-center gap-3 py-2" aria-hidden>
+                <span className="flex-1 h-px" style={{ background: "rgba(201,168,76,0.35)" }} />
+                <span style={{ fontSize: 9, color: "rgba(201,168,76,0.7)" }}>◆</span>
+                <span className="flex-1 h-px" style={{ background: "rgba(201,168,76,0.35)" }} />
+              </div>
+            );
+
+          case "columns":
+            return (
+              <div key={i} className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-[15px]" style={{ color: "var(--color-ink-soft)", lineHeight: 1.7 }}>
+                <div className="space-y-3">
+                  {(b.text ?? "").split(/\n{2,}/).filter(Boolean).map((p, j) => <p key={j}>{p}</p>)}
+                </div>
+                <div className="space-y-3">
+                  {(b.text2 ?? "").split(/\n{2,}/).filter(Boolean).map((p, j) => <p key={j}>{p}</p>)}
+                </div>
+              </div>
+            );
+
+          case "gallery": {
+            const imgs = (b.bilder ?? []).filter(Boolean);
+            if (imgs.length === 0) return null;
+            const cols = imgs.length === 1 ? "grid-cols-1" : imgs.length === 2 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3";
+            return (
+              <div key={i} className={`grid ${cols} gap-2`}>
+                {imgs.map((url, j) => (
+                  <div key={j} className="relative w-full overflow-hidden" style={{ aspectRatio: "1/1", background: "var(--color-paper-warm, #E8DFD0)" }}>
+                    <Image src={url} alt="" fill sizes="(max-width:768px) 50vw, 240px" className="object-cover" />
+                  </div>
+                ))}
+              </div>
+            );
+          }
+
+          case "button":
+            return b.url ? (
+              <div key={i} className="py-1">
+                <Link
+                  href={b.url}
+                  className="btn-coral btn-coral-lg inline-flex items-center"
+                  {...(b.url.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                >
+                  {b.label || "Подробнее"}
+                </Link>
+              </div>
+            ) : null;
 
           default:
             return null;

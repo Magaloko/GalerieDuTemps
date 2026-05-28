@@ -22,10 +22,14 @@ export const ProduktCreateSchema = z.object({
   video_url:       z.string().max(500).optional().nullable(),
   instagram_urls:  z.array(z.string().url()).max(10).optional(),
   inhalt_blocks:   z.array(z.object({
-    type:     z.enum(["heading", "text", "image", "highlight", "quote"]),
+    type:     z.enum(["heading", "text", "image", "highlight", "quote", "divider", "button", "columns", "gallery"]),
     text:     z.string().max(5000).optional(),
+    text2:    z.string().max(5000).optional(),
     bild_url: z.string().max(500).optional(),
+    bilder:   z.array(z.string().max(500)).max(12).optional(),
     caption:  z.string().max(500).optional(),
+    label:    z.string().max(120).optional(),
+    url:      z.string().max(500).optional(),
   })).max(50).optional(),
   abmessungen:     z.object({
     breite:  z.coerce.number().nonnegative().optional(),

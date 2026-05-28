@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import {
   Heading2, Type, Image as ImageIcon, Lightbulb, Quote,
   ArrowUp, ArrowDown, Copy, Trash2, X, Upload, LayoutPanelTop, Loader2,
+  Minus, MousePointerClick, Columns2, LayoutGrid,
 } from "lucide-react";
 import { storyBildUploadAction } from "@/app/(admin)/admin/produkte/actions";
 import type { ProduktBlock, ProduktBlockTyp, Produktbild } from "@/types/produkt";
@@ -21,19 +22,27 @@ import type { ProduktBlock, ProduktBlockTyp, Produktbild } from "@/types/produkt
  * ────────────────────────────────────────────────────────────────────────── */
 
 const PALETTE: { type: ProduktBlockTyp; label: string; icon: React.ElementType; sub: string }[] = [
-  { type: "heading",   label: "Подзаголовок", icon: Heading2,  sub: "H2" },
-  { type: "text",      label: "Текст",        icon: Type,      sub: "Абзац" },
-  { type: "image",     label: "Изображение",  icon: ImageIcon, sub: "Фото + подпись" },
-  { type: "highlight", label: "Подсказка",    icon: Lightbulb, sub: "Выделенный блок" },
-  { type: "quote",     label: "Цитата",       icon: Quote,     sub: "С автором" },
+  { type: "heading",   label: "Подзаголовок", icon: Heading2,         sub: "H2" },
+  { type: "text",      label: "Текст",        icon: Type,             sub: "Абзац" },
+  { type: "image",     label: "Изображение",  icon: ImageIcon,        sub: "Фото + подпись" },
+  { type: "gallery",   label: "Галерея",      icon: LayoutGrid,       sub: "Сетка фото" },
+  { type: "columns",   label: "2 колонки",    icon: Columns2,         sub: "Текст слева/справа" },
+  { type: "highlight", label: "Подсказка",    icon: Lightbulb,        sub: "Выделенный блок" },
+  { type: "quote",     label: "Цитата",       icon: Quote,            sub: "С автором" },
+  { type: "button",    label: "Кнопка",       icon: MousePointerClick, sub: "CTA-ссылка" },
+  { type: "divider",   label: "Разделитель",  icon: Minus,            sub: "◆ линия" },
 ];
 
 const NEU: Record<ProduktBlockTyp, ProduktBlock> = {
   heading:   { type: "heading",   text: "" },
   text:      { type: "text",      text: "" },
   image:     { type: "image",     bild_url: "", caption: "" },
+  gallery:   { type: "gallery",   bilder: [] },
+  columns:   { type: "columns",   text: "", text2: "" },
   highlight: { type: "highlight", text: "" },
   quote:     { type: "quote",     text: "", caption: "" },
+  button:    { type: "button",    label: "Связаться с куратором", url: "/kontakt" },
+  divider:   { type: "divider" },
 };
 
 const labelFor = (t: ProduktBlockTyp) => PALETTE.find(p => p.type === t)?.label ?? t;
@@ -219,6 +228,35 @@ function BlockPreview({ block: b }: { block: ProduktBlock }) {
   if (b.type === "image") return b.bild_url
     ? (<figure>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={b.bild_url} alt={b.caption ?? ""} className="w-full object-cover" style={{ borderRadius: "var(--radius-vintage)" }} />{b.caption && <figcaption className="text-xs italic text-vintage-dust mt-1">{b.caption}</figcaption>}</figure>)
     : (<div className="flex items-center justify-center gap-2 py-10 text-vintage-dust border border-dashed border-vintage-sand"><ImageIcon className="w-5 h-5" /> Изображение не выбрано</div>);
+  if (b.type === "divider") return (
+    <div className="flex items-center gap-3 py-1" aria-hidden>
+      <span className="flex-1 h-px" style={{ background: "rgba(201,168,76,0.35)" }} />
+      <span style={{ fontSize: 9, color: "rgba(201,168,76,0.7)" }}>◆</span>
+      <span className="flex-1 h-px" style={{ background: "rgba(201,168,76,0.35)" }} />
+    </div>
+  );
+  if (b.type === "columns") return (
+    <div className="grid grid-cols-2 gap-4 text-sm text-vintage-ink" style={{ lineHeight: 1.6 }}>
+      <div className="space-y-2">{(b.text ?? "").trim() ? (b.text ?? "").split(/\n{2,}/).filter(Boolean).map((p, j) => <p key={j}>{p}</p>) : <p className="text-vintage-dust italic">Левая колонка…</p>}</div>
+      <div className="space-y-2">{(b.text2 ?? "").trim() ? (b.text2 ?? "").split(/\n{2,}/).filter(Boolean).map((p, j) => <p key={j}>{p}</p>) : <p className="text-vintage-dust italic">Правая колонка…</p>}</div>
+    </div>
+  );
+  if (b.type === "button") return (
+    <div className="py-1">
+      <span className="inline-flex items-center px-5 py-2.5 text-sm font-medium" style={{ background: "var(--color-coral)", color: "#fff", borderRadius: "var(--radius-button, 4px)" }}>
+        {b.label || "Кнопка"}
+      </span>
+    </div>
+  );
+  if (b.type === "gallery") {
+    const imgs = (b.bilder ?? []).filter(Boolean);
+    return imgs.length
+      ? (<div className="grid grid-cols-3 gap-1.5">{imgs.map((u, j) => (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img key={j} src={u} alt="" className="w-full aspect-square object-cover" style={{ borderRadius: 4 }} />
+        ))}</div>)
+      : (<div className="flex items-center justify-center gap-2 py-10 text-vintage-dust border border-dashed border-vintage-sand"><LayoutGrid className="w-5 h-5" /> Галерея пуста</div>);
+  }
   return null;
 }
 
@@ -237,6 +275,21 @@ function BlockProps({ block: b, galerie, onPatch }: {
       if (r.ok && r.url) onPatch({ bild_url: r.url });
       else alert(r.error ?? "Ошибка загрузки");
     });
+  };
+
+  /** Galerie-Block: hochgeladenes Bild ans bilder-Array anhängen. */
+  const uploadAppend = (file: File) => {
+    const fd = new FormData(); fd.append("file", file);
+    start(async () => {
+      const r = await storyBildUploadAction(fd);
+      if (r.ok && r.url) onPatch({ bilder: [...(b.bilder ?? []), r.url] });
+      else alert(r.error ?? "Ошибка загрузки");
+    });
+  };
+
+  const toggleGalerie = (url: string) => {
+    const cur = b.bilder ?? [];
+    onPatch({ bilder: cur.includes(url) ? cur.filter(u => u !== url) : [...cur, url] });
   };
 
   return (
@@ -290,6 +343,74 @@ function BlockProps({ block: b, galerie, onPatch }: {
           )}
 
           <input className={fieldCls} value={b.caption ?? ""} placeholder="Подпись (необязательно)" onChange={e => onPatch({ caption: e.target.value })} />
+        </div>
+      )}
+
+      {b.type === "columns" && (
+        <div className="space-y-2">
+          <textarea className={fieldCls} rows={5} value={b.text ?? ""} placeholder="Левая колонка…" onChange={e => onPatch({ text: e.target.value })} />
+          <textarea className={fieldCls} rows={5} value={b.text2 ?? ""} placeholder="Правая колонка…" onChange={e => onPatch({ text2: e.target.value })} />
+        </div>
+      )}
+
+      {b.type === "button" && (
+        <div className="space-y-2">
+          <input className={fieldCls} value={b.label ?? ""} placeholder="Текст кнопки" onChange={e => onPatch({ label: e.target.value })} />
+          <input className={fieldCls} value={b.url ?? ""} placeholder="Ссылка (/kontakt или https://…)" onChange={e => onPatch({ url: e.target.value })} />
+        </div>
+      )}
+
+      {b.type === "divider" && (
+        <p className="text-sm text-vintage-dust">Декоративный разделитель ◆ — без настроек.</p>
+      )}
+
+      {b.type === "gallery" && (
+        <div className="space-y-3">
+          <label
+            className="flex items-center justify-center gap-2 py-2.5 text-sm border border-vintage-sand text-vintage-ink hover:bg-vintage-parchment cursor-pointer transition-colors"
+            style={{ borderRadius: "var(--radius-vintage)" }}
+          >
+            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4 text-vintage-gold" />}
+            {busy ? "Загрузка…" : "Добавить фото"}
+            <input type="file" accept="image/*" className="hidden" disabled={busy}
+              onChange={e => { const f = e.target.files?.[0]; if (f) uploadAppend(f); e.target.value = ""; }} />
+          </label>
+
+          {/* Aktuelle Galerie-Auswahl (mit Entfernen) */}
+          {(b.bilder ?? []).length > 0 && (
+            <div className="grid grid-cols-3 gap-1.5">
+              {(b.bilder ?? []).map((u, j) => (
+                <div key={j} className="relative aspect-square overflow-hidden border border-vintage-sand">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={u} alt="" className="w-full h-full object-cover" />
+                  <button type="button" onClick={() => onPatch({ bilder: (b.bilder ?? []).filter((_, idx) => idx !== j) })}
+                    title="Убрать" className="absolute top-0.5 right-0.5 p-1 bg-vintage-white/90 text-vintage-burgundy" style={{ borderRadius: 4 }}>
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Aus Produkt-Galerie auswählen (toggle) */}
+          {galerie.length > 0 && (
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-vintage-dust mb-1.5">Из галереи (нажмите, чтобы добавить)</p>
+              <div className="grid grid-cols-3 gap-1.5">
+                {galerie.map(g => {
+                  const aktiv = (b.bilder ?? []).includes(g.url);
+                  return (
+                    <button key={g.id} type="button" onClick={() => toggleGalerie(g.url)}
+                      className="relative aspect-square overflow-hidden border transition-all"
+                      style={{ borderColor: aktiv ? "var(--color-coral)" : "var(--color-line)", borderWidth: aktiv ? 2 : 1 }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={g.url_thumb ?? g.url} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

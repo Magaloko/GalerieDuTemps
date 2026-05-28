@@ -7,16 +7,26 @@ export type Zustand = "sehr_gut" | "gut" | "akzeptabel" | "restauriert";
 // ---------------------------------------------------------------------------
 // Story-Blöcke (block-basierte Produktbeschreibung, wie im Newsletter-Editor)
 // ---------------------------------------------------------------------------
-export type ProduktBlockTyp = "heading" | "text" | "image" | "highlight" | "quote";
+export type ProduktBlockTyp =
+  | "heading" | "text" | "image" | "highlight" | "quote"
+  | "divider" | "button" | "columns" | "gallery";
 
 export interface ProduktBlock {
   type:     ProduktBlockTyp;
-  /** heading/text/highlight/quote: der Textinhalt. */
+  /** heading/text/highlight/quote: Textinhalt · columns: linke Spalte. */
   text?:    string;
+  /** columns: rechte Spalte. */
+  text2?:   string;
   /** image: Bild-URL. */
   bild_url?: string;
+  /** gallery: mehrere Bild-URLs (Grid). */
+  bilder?:  string[];
   /** image: Bildunterschrift · quote: Urheber/Quelle. */
   caption?: string;
+  /** button: Beschriftung. */
+  label?:   string;
+  /** button: Ziel-URL (intern /… oder extern https://…). */
+  url?:     string;
 }
 
 export interface Produktbild {
