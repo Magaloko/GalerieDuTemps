@@ -8,9 +8,12 @@ import {
   setWebAppSessionCookieByRole,
   clearWebAppSessionCookie,
 } from "@/lib/telegram/webapp-session";
+import { rateLimitAsync, getClientIp, tooManyRequestsResponse } from "@/lib/utils/rate-limit";
 
 export const dynamic     = "force-dynamic";
 export const maxDuration = 10;
+
+const IS_DEV = process.env.NODE_ENV === "development";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * POST /api/telegram/auth
@@ -34,6 +37,12 @@ export async function POST(req: NextRequest) {
   const log = (msg: string, extra?: Record<string, unknown>) =>
     console.log(`[tg-auth:${msg}]`, { ms: Date.now() - t0, ...extra });
 
+  // Rate-Limit ZUERST (vor Body-Parsing): teurer Public-Endpoint (HMAC + 2 DB-
+  // Lookups). 30/5min pro IP — großzügig für legitimes Re-Auth, bremst Abuse.
+  const ip = getClientIp(req);
+  const rl = await rateLimitAsync(`tg-auth:${ip}`, 30, 5 * 60 * 1000);
+  if (!rl.erlaubt) return tooManyRequestsResponse(rl);
+
   let body: { initData?: string };
   try {
     body = await req.json();
@@ -56,7 +65,7 @@ export async function POST(req: NextRequest) {
       {
         error: "База данных недоступна. Попробуйте позже.",
         step:  "load-token",
-        detail: err instanceof Error ? err.message : String(err),
+        detail: IS_DEV ? (err instanceof Error ? err.message : String(err)) : undefined,
       },
       { status: 503 },
     );
@@ -99,7 +108,7 @@ export async function POST(req: NextRequest) {
           ? "Применены не все миграции: 026_customer_telegram.sql и 037_admin_telegram.sql."
           : "Ошибка БД при поиске пользователя.",
         step:    "resolve",
-        detail:  msg,
+        detail:  IS_DEV ? msg : undefined,
       },
       { status: 500 },
     );
