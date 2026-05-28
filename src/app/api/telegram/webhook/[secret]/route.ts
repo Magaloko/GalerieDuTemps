@@ -6,6 +6,8 @@ import {
   customerTelegramVerknuepfen,
   customerByTelegramChatId,
 } from "@/lib/db/customer-telegram";
+import { adminTelegramVerknuepfen } from "@/lib/db/admin-telegram";
+import { benutzerByTelegramChatId } from "@/lib/telegram/role-resolver";
 import {
   sendMessage,
   answerPreCheckoutQuery,
@@ -111,8 +113,31 @@ export async function POST(
   if (text.startsWith("/start")) {
     const param = text.slice("/start".length).trim().split(/\s+/)[0];
 
-    // a) Deep-Link mit Token → Customer-Verknüpfung
+    // a) Deep-Link mit Token → Customer- ODER Admin-Verknüpfung
     if (param && param.length >= 16) {
+      // Erst Admin-Token probieren (admin-Tokens sind selten, Lookup billig)
+      const admin = await adminTelegramVerknuepfen(param, chat.id, username);
+      if (admin && konto.access_token) {
+        await sendMessage(
+          konto.access_token,
+          chat.id,
+          `✓ <b>Admin-аккаунт привязан</b>\n\n` +
+          `Здравствуйте, ${escapeHtml(admin.name ?? admin.email)}!\n\n` +
+          `Теперь Mini-App покажет вам админский режим: Inbox, очередь ` +
+          `заказов, статистика. Откройте «🛍 Магазин» в чате.`,
+          {
+            parse_mode: "HTML",
+            reply_markup: {
+              inline_keyboard: [[
+                { text: "🛍 Открыть Mini-App", web_app: { url: `${siteBase}/tg` } },
+              ]],
+            },
+          },
+        ).catch(err => console.error("[tg send admin-verify]", err));
+        return NextResponse.json({ ok: true });
+      }
+
+      // Sonst: Customer-Token
       const customer = await customerTelegramVerknuepfen(param, chat.id, username);
       if (customer && konto.access_token) {
         await sendMessage(
@@ -151,28 +176,49 @@ export async function POST(
 
     // b) /start ohne Parameter → Welcome (mit Status-Hinweis falls schon linked)
     if (konto.access_token) {
-      const linked = await customerByTelegramChatId(chat.id).catch(() => null);
-      const welcomeText = linked
-        ? `<b>Galerie du Temps</b>\n\n` +
-          `Вы уже привязаны, ${escapeHtml(linked.vorname ?? linked.email)}.\n\n` +
-          `Чем могу помочь?`
-        : `<b>Galerie du Temps</b>\n` +
+      // Prüfe Admin VOR Customer (Admin gewinnt)
+      const linkedAdmin    = await benutzerByTelegramChatId(chat.id).catch(() => null);
+      const linkedCustomer = linkedAdmin
+        ? null
+        : await customerByTelegramChatId(chat.id).catch(() => null);
+
+      let welcomeText: string;
+      let menu;
+      if (linkedAdmin) {
+        welcomeText =
+          `<b>Galerie du Temps · Admin</b>\n\n` +
+          `Здравствуйте, ${escapeHtml(linkedAdmin.name ?? linkedAdmin.email)}.\n\n` +
+          `Открыть Mini-App в админ-режиме — Inbox, очередь заказов, статистика.`;
+        menu = {
+          inline_keyboard: [
+            [{ text: "🛡 Открыть Admin Mini-App", web_app: { url: `${siteBase}/tg/admin` } }],
+            [{ text: "🛍 Каталог (как клиент)",   web_app: { url: `${siteBase}/tg` } }],
+            [{ text: "📊 /admin на сайте",          url:     `${siteBase}/admin` }],
+          ],
+        };
+      } else if (linkedCustomer) {
+        welcomeText =
+          `<b>Galerie du Temps</b>\n\n` +
+          `Вы уже привязаны, ${escapeHtml(linkedCustomer.vorname ?? linkedCustomer.email)}.\n\n` +
+          `Чем могу помочь?`;
+        menu = buildLinkedMainMenu(siteBase);
+      } else {
+        welcomeText =
+          `<b>Galerie du Temps</b>\n` +
           `<i>Кураторская галерея винтажа в Алматы.</i>\n\n` +
           `Я бот-помощник магазина. Могу:\n` +
           `• показать каталог\n` +
           `• ответить на вопросы\n` +
           `• передать сообщение куратору\n\n` +
           `Привяжите аккаунт, чтобы получать уведомления о заказах.`;
+        menu = buildPublicMainMenu(siteBase);
+      }
+
       await sendMessage(
         konto.access_token,
         chat.id,
         welcomeText,
-        {
-          parse_mode: "HTML",
-          reply_markup: linked
-            ? buildLinkedMainMenu(siteBase)
-            : buildPublicMainMenu(siteBase),
-        },
+        { parse_mode: "HTML", reply_markup: menu },
       ).catch(err => console.error("[tg send welcome]", err));
     }
     return NextResponse.json({ ok: true });

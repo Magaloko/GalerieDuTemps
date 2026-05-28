@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   verifyInitData,
   loadBotTokenForAuth,
-  findCustomerForTelegramUser,
 } from "@/lib/telegram/webapp-auth";
-import { setWebAppSessionCookie, clearWebAppSessionCookie } from "@/lib/telegram/webapp-session";
+import { resolveTelegramIdentity } from "@/lib/telegram/role-resolver";
+import {
+  setWebAppSessionCookieByRole,
+  clearWebAppSessionCookie,
+} from "@/lib/telegram/webapp-session";
 
 export const dynamic     = "force-dynamic";
 export const maxDuration = 10;
@@ -82,66 +85,81 @@ export async function POST(req: NextRequest) {
   }
   log("verified", { user_id: valid.user.id });
 
-  // ── Step 3: Customer SUCHEN (ohne create) ─────────────────────────────────
-  // Linked customer: hat in der Vergangenheit über /kunde/profil → /start <token>
-  // im Bot die OTP-Verknüpfung durchgeführt → sein telegram_chat_id === user.id.
-  // Unlinked: gibt einfach null zurück. Mini-App rendert anonym.
-  let customer;
+  // ── Step 3: Identity resolven (admin > customer > guest) ──────────────────
+  let identity;
   try {
-    customer = await findCustomerForTelegramUser(valid.user);
+    identity = await resolveTelegramIdentity(valid.user.id);
   } catch (err) {
-    console.error("[tg-auth] findCustomer failed:", err);
+    console.error("[tg-auth] resolveTelegramIdentity failed:", err);
     const msg = err instanceof Error ? err.message : String(err);
     const isMigrationError = msg.includes("telegram_chat_id") || msg.includes("column");
     return NextResponse.json(
       {
         error: isMigrationError
-          ? "Колонка telegram_chat_id отсутствует. Примените миграцию 026_customer_telegram.sql."
-          : "Ошибка БД при поиске клиента.",
-        step:    "customer",
+          ? "Применены не все миграции: 026_customer_telegram.sql и 037_admin_telegram.sql."
+          : "Ошибка БД при поиске пользователя.",
+        step:    "resolve",
         detail:  msg,
       },
       { status: 500 },
     );
   }
+  log("identity-resolved", { role: identity.role });
 
-  // ── Step 4: Session-Cookie setzen (oder löschen wenn unlinked) ────────────
-  // Wenn customer === null → wir LÖSCHEN den eventuellen alten Cookie,
-  // damit die Mini-App weiß: dieser Telegram-User ist nicht (mehr) verknüpft.
-  if (!customer) {
+  // ── Step 4: Session-Cookie setzen oder löschen ───────────────────────────
+  if (identity.role === "guest") {
     await clearWebAppSessionCookie();
-    log("done-unlinked");
+    log("done-guest");
     return NextResponse.json({
-      ok:       true,
-      customer: null,
-      hint:     "Аккаунт не привязан. Используйте «Привязать» в Профиле Mini-App.",
+      ok:    true,
+      role:  "guest",
+      hint:  "Аккаунт не привязан. Используйте «Привязать» в Профиле Mini-App.",
     });
   }
 
-  log("customer-found", { customer_id: customer.id });
-
   try {
-    await setWebAppSessionCookie(customer.id);
+    if (identity.role === "admin" && identity.admin) {
+      await setWebAppSessionCookieByRole("admin", identity.admin.id);
+      log("done-admin");
+      return NextResponse.json({
+        ok:   true,
+        role: "admin",
+        user: {
+          id:    identity.admin.id,
+          name:  identity.admin.name,
+          email: identity.admin.email,
+          rolle: identity.admin.rolle,
+        },
+      });
+    }
+
+    if (identity.role === "customer" && identity.customer) {
+      await setWebAppSessionCookieByRole("customer", identity.customer.id);
+      log("done-customer");
+      return NextResponse.json({
+        ok:   true,
+        role: "customer",
+        user: {
+          id:       identity.customer.id,
+          vorname:  identity.customer.vorname,
+          nachname: identity.customer.nachname,
+          email:    identity.customer.email,
+        },
+      });
+    }
+
+    // Fallthrough — sollte durch obigen role-Check eigentlich nie kommen
+    await clearWebAppSessionCookie();
+    return NextResponse.json({ ok: true, role: "guest" });
   } catch (err) {
     console.error("[tg-auth] setWebAppSessionCookie failed:", err);
     return NextResponse.json(
       {
-        error: "Не удалось установить cookie.",
-        step:  "cookie",
+        error:  "Не удалось установить cookie.",
+        step:   "cookie",
         detail: err instanceof Error ? err.message : String(err),
       },
       { status: 500 },
     );
   }
-  log("done-linked");
-
-  return NextResponse.json({
-    ok: true,
-    customer: {
-      id:       customer.id,
-      vorname:  customer.vorname,
-      nachname: customer.nachname,
-      email:    customer.email,
-    },
-  });
 }

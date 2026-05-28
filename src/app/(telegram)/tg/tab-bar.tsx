@@ -1,35 +1,75 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Heart, ShoppingBag, User } from "lucide-react";
+import {
+  Home, Heart, ShoppingBag, User, Inbox, Package, Shield,
+} from "lucide-react";
 import { useCart } from "@/lib/cart";
 
 /* ──────────────────────────────────────────────────────────────────────────
- * MiniAppTabBar — fixed bottom-bar im Telegram-WebView.
+ * MiniAppTabBar — role-aware Bottom-Navigation.
  *
- * Wichtig: paddingBottom = env(safe-area-inset-bottom) damit auf iPhone-Notch
- * der letzte Tab nicht in der Home-Indicator-Zone landet.
+ * Liest beim Mount /api/telegram/whoami um die Rolle zu ermitteln. Bis
+ * Antwort da ist, rendert nur die guest-Tabs (Standard). Nach Rolle-
+ * Detection wechselt das Tab-Set:
  *
- * Aktive-Erkennung über usePathname — wenn der Route-Path mit dem Tab-href
- * beginnt (für nested-Pages wie /tg/produkt/foo zählt Каталог als aktiv).
+ *  - admin/manager: Inbox · Заказы · Каталог · Профиль
+ *  - customer:      Каталог · Избранное · Корзина · Профиль
+ *  - guest:         Каталог · Избранное · Корзина · Профиль (Profil hat
+ *                   Link-Account-Form)
  *
- * Cart-Badge zeigt Item-Anzahl (Live aus zustand-Store).
+ * Hinweis: TabBar lebt im (telegram)/layout.tsx, AUßERHALB von AuthGate
+ * (das ist pro Page). Daher kommt das Identity NICHT via Context, sondern
+ * per HTTP-Cookie über /api/telegram/whoami (das Cookie wird beim ersten
+ * Page-Load vom AuthGate gesetzt).
  * ────────────────────────────────────────────────────────────────────────── */
 
-const TABS = [
-  { href: "/tg",             label: "Каталог",   icon: Home,          isActive: (p: string) => p === "/tg" || p.startsWith("/tg/produkt") },
-  { href: "/tg/wunschliste", label: "Избранное", icon: Heart,         isActive: (p: string) => p.startsWith("/tg/wunschliste") },
-  { href: "/tg/cart",        label: "Корзина",   icon: ShoppingBag,   isActive: (p: string) => p.startsWith("/tg/cart") },
-  { href: "/tg/profil",      label: "Профиль",   icon: User,          isActive: (p: string) => p.startsWith("/tg/profil") || p.startsWith("/tg/orders") },
+type Role = "admin" | "customer" | "guest";
+
+interface Tab {
+  href:    string;
+  label:   string;
+  icon:    React.ElementType;
+  isActive: (p: string) => boolean;
+}
+
+const TABS_GUEST_CUSTOMER: Tab[] = [
+  { href: "/tg",             label: "Каталог",   icon: Home,        isActive: p => p === "/tg" || p.startsWith("/tg/produkt") },
+  { href: "/tg/wunschliste", label: "Избранное", icon: Heart,       isActive: p => p.startsWith("/tg/wunschliste") },
+  { href: "/tg/cart",        label: "Корзина",   icon: ShoppingBag, isActive: p => p.startsWith("/tg/cart") },
+  { href: "/tg/profil",      label: "Профиль",   icon: User,        isActive: p => p.startsWith("/tg/profil") || p.startsWith("/tg/orders") || p.startsWith("/tg/kontakt") },
+];
+
+const TABS_ADMIN: Tab[] = [
+  { href: "/tg/admin",         label: "Админ",   icon: Shield,  isActive: p => p === "/tg/admin" },
+  { href: "/tg/admin/inbox",   label: "Inbox",   icon: Inbox,   isActive: p => p.startsWith("/tg/admin/inbox") },
+  { href: "/tg/admin/orders",  label: "Заказы",  icon: Package, isActive: p => p.startsWith("/tg/admin/orders") },
+  { href: "/tg",               label: "Каталог", icon: Home,    isActive: p => p === "/tg" || p.startsWith("/tg/produkt") },
 ];
 
 export function MiniAppTabBar() {
-  const pathname = usePathname();
+  const pathname  = usePathname();
+  const [role, setRole] = useState<Role>("guest");
   const cartCount = useCart(s => s.items.reduce((acc, i) => acc + i.menge, 0));
 
-  // Auf /tg/cart selbst nicht doppelt zeigen (MainButton übernimmt CTA dort)
-  // — aber Navigation bleibt verfügbar.
+  // Role einmal pro Mount fetchen. Wenn 401 / network-error → bleibt guest.
+  useEffect(() => {
+    let aborted = false;
+    fetch("/api/telegram/whoami", { credentials: "include" })
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        if (aborted || !d) return;
+        if (d.role === "admin" || d.role === "customer") {
+          setRole(d.role);
+        }
+      })
+      .catch(() => {/* silent — bleibt guest */});
+    return () => { aborted = true; };
+  }, [pathname]);  // re-check beim Navigieren (z.B. nach claim-success)
+
+  const tabs = role === "admin" ? TABS_ADMIN : TABS_GUEST_CUSTOMER;
 
   return (
     <nav
@@ -42,7 +82,7 @@ export function MiniAppTabBar() {
       }}
       aria-label="Mini-App Navigation"
     >
-      {TABS.map(({ href, label, icon: Icon, isActive }) => {
+      {tabs.map(({ href, label, icon: Icon, isActive }) => {
         const active = isActive(pathname);
         const isCart = href === "/tg/cart";
         return (

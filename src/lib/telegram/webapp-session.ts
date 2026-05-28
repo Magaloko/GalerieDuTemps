@@ -9,11 +9,20 @@ import { cookies } from "next/headers";
  * separaten, eigenständigen Session-Cookie, sodass eingeloggte Email-User
  * UND Telegram-WebApp-User unabhängig laufen können.
  *
- * Format des Cookies:
- *   base64(JSON({customerId, exp})) + "." + base64(HMAC_SHA256(...))
+ * Cookie-Format:
+ *   base64url(JSON({ role, subjectId, exp })) + "." + base64url(HMAC_SHA256(...))
+ *
+ *   role:       "admin" | "customer"
+ *   subjectId:  bei "admin"   → sebo.benutzer.id
+ *               bei "customer" → sebo.customers.id
+ *   exp:        Unix-Sekunden
+ *
+ * Backwards-Compat: alte Cookies hatten nur `{ customerId, exp }` (kein role-
+ * Feld). verifyWebAppSession() erkennt das und upgrade'd implizit auf
+ * role="customer".
  *
  * Secret: AUTH_SECRET (oder NEXTAUTH_SECRET) — gleiche env-var wie NextAuth.
- * Wenn keiner gesetzt ist: random per Boot (sessions invalidieren bei Restart).
+ * Ohne ENV: random per Boot, Restart invalidiert alle Sessions.
  * ────────────────────────────────────────────────────────────────────────── */
 
 const COOKIE_NAME = "__Secure-galerie-tgapp";
@@ -23,7 +32,6 @@ function getSecret(): string {
   return (
     process.env.AUTH_SECRET ??
     process.env.NEXTAUTH_SECRET ??
-    // Last-Resort: ein Random per process. Restart invalidiert alle Sessions.
     process.env.__tg_runtime_secret ??
     (process.env.__tg_runtime_secret = randomBytes(32).toString("hex"))
   );
@@ -37,14 +45,27 @@ function fromB64url(s: string): string {
   return Buffer.from(s, "base64url").toString("utf-8");
 }
 
-export function signWebAppSession(customerId: string, ttlSeconds = DEFAULT_TTL_SECONDS): string {
-  const payload  = { customerId, exp: Math.floor(Date.now() / 1000) + ttlSeconds };
-  const body     = b64url(JSON.stringify(payload));
-  const sig      = createHmac("sha256", getSecret()).update(body).digest("base64url");
-  return `${body}.${sig}`;
+export type WebAppRole = "admin" | "customer";
+
+export interface WebAppSession {
+  role:        WebAppRole;
+  subjectId:   string;
+  exp:         number;
+  /** @deprecated alias auf subjectId wenn role="customer" — für Caller die
+   *  noch das alte Schema lesen. */
+  customerId?: string;
 }
 
-export interface WebAppSession { customerId: string; exp: number }
+export function signWebAppSession(
+  role:      WebAppRole,
+  subjectId: string,
+  ttlSeconds = DEFAULT_TTL_SECONDS,
+): string {
+  const payload = { role, subjectId, exp: Math.floor(Date.now() / 1000) + ttlSeconds };
+  const body    = b64url(JSON.stringify(payload));
+  const sig     = createHmac("sha256", getSecret()).update(body).digest("base64url");
+  return `${body}.${sig}`;
+}
 
 export function verifyWebAppSession(token: string | undefined | null): WebAppSession | null {
   if (!token) return null;
@@ -55,22 +76,56 @@ export function verifyWebAppSession(token: string | undefined | null): WebAppSes
   let diff = 0;
   for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ sig.charCodeAt(i);
   if (diff !== 0) return null;
+
   try {
-    const payload = JSON.parse(fromB64url(body)) as WebAppSession;
-    if (!payload.customerId || !payload.exp) return null;
+    const payload = JSON.parse(fromB64url(body)) as {
+      role?:       WebAppRole;
+      subjectId?:  string;
+      customerId?: string;
+      exp:         number;
+    };
+    if (!payload.exp) return null;
     if (payload.exp < Math.floor(Date.now() / 1000)) return null;
-    return payload;
+
+    // Neues Format (role + subjectId)
+    if (payload.role && payload.subjectId) {
+      return {
+        role:       payload.role,
+        subjectId:  payload.subjectId,
+        exp:        payload.exp,
+        customerId: payload.role === "customer" ? payload.subjectId : undefined,
+      };
+    }
+    // Backwards-Compat: alter Cookie nur mit customerId
+    if (payload.customerId) {
+      return {
+        role:       "customer",
+        subjectId:  payload.customerId,
+        exp:        payload.exp,
+        customerId: payload.customerId,
+      };
+    }
+    return null;
   } catch {
     return null;
   }
 }
 
+/** Bestehende Helper-API. */
 export async function setWebAppSessionCookie(customerId: string): Promise<void> {
+  await setWebAppSessionCookieByRole("customer", customerId);
+}
+
+/** Neue, role-aware Variante. */
+export async function setWebAppSessionCookieByRole(
+  role:      WebAppRole,
+  subjectId: string,
+): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.set(COOKIE_NAME, signWebAppSession(customerId), {
+  cookieStore.set(COOKIE_NAME, signWebAppSession(role, subjectId), {
     httpOnly: true,
     secure:   true,
-    sameSite: "none",  // Telegram-WebView lädt Cross-Origin von telegram.org
+    sameSite: "none",
     path:     "/",
     maxAge:   DEFAULT_TTL_SECONDS,
   });

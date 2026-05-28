@@ -1,20 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 /* ──────────────────────────────────────────────────────────────────────────
- * TelegramAuthGate
+ * TelegramAuthGate + useTgIdentity hook
  *
- * 1. Erkennt window.Telegram.WebApp + initData
- * 2. POSTet zu /api/telegram/auth → setzt Session-Cookie
- * 3. Bei OK: rendert children
- * 4. Bei Fehler: zeigt diagnostische Fehler-UI mit Retry-Button
+ * Verantwortlichkeiten:
+ *  1. Erkennt window.Telegram.WebApp + initData
+ *  2. POSTet zu /api/telegram/auth → Session-Cookie wird gesetzt
+ *  3. Liefert die aufgelöste Rolle (admin / customer / guest) via React-
+ *     Context an children — die können dann rollenspezifisch rendern
+ *  4. Renderfehler-Zustände: Timeout, HTTP-Fehler, „kein Telegram"
  *
- * 15-Sek-Timeout via AbortController. Detailliertes Logging in console
- * damit der Owner via DevTools im Telegram-Desktop debuggen kann.
- *
- * Fallback: kein window.Telegram (z.B. im normalen Browser auf URL /tg
- * navigiert) → Hinweis-Screen mit Hint zum Bot.
+ * 15-Sek-Timeout + Retry-Button + Konsolen-Logging für Telegram-Desktop-
+ * DevTools-Debug.
  * ────────────────────────────────────────────────────────────────────────── */
 
 declare global {
@@ -36,15 +35,29 @@ declare global {
 
 const AUTH_TIMEOUT_MS = 15_000;
 
+export type TgRole = "admin" | "customer" | "guest";
+
+export interface TgIdentity {
+  role: TgRole;
+  name: string | null;
+  email: string | null;
+}
+
+const TgIdentityContext = createContext<TgIdentity | null>(null);
+
+export function useTgIdentity(): TgIdentity {
+  return useContext(TgIdentityContext) ?? { role: "guest", name: null, email: null };
+}
+
 type State =
   | { kind: "init" }
   | { kind: "no-telegram" }
   | { kind: "authing" }
   | { kind: "auth-error"; msg: string; status?: number; detail?: string }
-  | { kind: "ready"; customerName: string | null };  // null = anonymous Mini-App
+  | { kind: "ready"; identity: TgIdentity };
 
 export function TelegramAuthGate({ children }: { children: React.ReactNode }) {
-  const [state, setState]   = useState<State>({ kind: "init" });
+  const [state, setState]     = useState<State>({ kind: "init" });
   const [attempt, setAttempt] = useState(0);
 
   const runAuth = useCallback(async () => {
@@ -85,10 +98,8 @@ export function TelegramAuthGate({ children }: { children: React.ReactNode }) {
 
       if (!r.ok) {
         let detail = "";
-        try {
-          const j = await r.json();
-          detail = j?.error ?? "";
-        } catch { /* not JSON */ }
+        try { const j = await r.json(); detail = j?.error ?? ""; }
+        catch { /* not JSON */ }
         setState({
           kind:   "auth-error",
           msg:    detail || `Сервер вернул HTTP ${r.status}`,
@@ -99,19 +110,22 @@ export function TelegramAuthGate({ children }: { children: React.ReactNode }) {
       }
 
       const j = await r.json() as {
-        customer?: { vorname: string | null; email: string } | null;
-        hint?: string;
+        role?: TgRole;
+        user?: { vorname?: string | null; name?: string | null; email?: string };
+        customer?: { vorname?: string | null; email?: string }; // backwards-compat
       };
-      // customer === null heißt: kein verknüpfter Account. Trotzdem ready —
-      // Mini-App rendert anonym (Catalog + localStorage-Cart). Tabs wie
-      // /tg/orders zeigen dann die „Привязать аккаунт"-CTA selbst.
+
+      const role:  TgRole = j.role ?? (j.customer ? "customer" : "guest");
+      const name:  string | null = j.user?.vorname ?? j.user?.name ?? j.customer?.vorname ?? null;
+      const email: string | null = j.user?.email ?? j.customer?.email ?? null;
+
       setState({
-        kind:         "ready",
-        customerName: j.customer?.vorname ?? j.customer?.email ?? null,
+        kind:     "ready",
+        identity: { role, name, email },
       });
     } catch (err) {
       clearTimeout(timeout);
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg     = err instanceof Error ? err.message : String(err);
       const isAbort = err instanceof Error && err.name === "AbortError";
       console.error("[TgAuth] fetch error", err);
       setState({
@@ -219,7 +233,11 @@ export function TelegramAuthGate({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return <>{children}</>;
+  return (
+    <TgIdentityContext.Provider value={state.identity}>
+      {children}
+    </TgIdentityContext.Provider>
+  );
 }
 
 function Spinner() {
