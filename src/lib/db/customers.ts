@@ -70,7 +70,10 @@ export async function customerProfilAktualisieren(
   data: Partial<{
     vorname:           string;
     nachname:          string;
-    telefon:           string;
+    telefon:           string | null;
+    whatsapp:          string | null;
+    telegram_username: string | null;
+    kontakt_kanal:     string | null;
     billing_address:   Address;
     shipping_address:  Address;
     geburtsdatum:      string | null;

@@ -5,6 +5,7 @@ import { getWebAppSession } from "@/lib/telegram/webapp-session";
 import { formatPreis } from "@/lib/utils/preis";
 import { TelegramAuthGate } from "../auth-gate";
 import { ClaimInitForm } from "./claim-init-form";
+import { KontaktEdit } from "./kontakt-edit";
 import {
   Mail, Briefcase, Package, Heart, ExternalLink, ArrowRight, MessageCircle,
 } from "lucide-react";
@@ -259,6 +260,16 @@ export default async function TgProfilPage() {
             color={TYPE_COLOR[customer.customer_type]}
           />
         </section>
+
+        {/* ─ Kontaktdaten editieren ──────────────────────────── */}
+        <KontaktEdit
+          initial={{
+            telefon:           customer.telefon ?? null,
+            whatsapp:          customer.whatsapp ?? null,
+            telegram_username: customer.telegram_username ?? null,
+            kontakt_kanal:     customer.kontakt_kanal ?? null,
+          }}
+        />
 
         {/* ─ Quick-Links ─────────────────────────────────────── */}
         <section className="space-y-2 pt-2">

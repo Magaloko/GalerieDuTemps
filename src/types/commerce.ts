@@ -38,6 +38,9 @@ export interface Customer {
   vorname:            string | null;
   nachname:           string | null;
   telefon:            string | null;
+  // Kontakt-Präferenzen (siehe sql/049_kontakt_praeferenzen.sql)
+  whatsapp?:          string | null;
+  kontakt_kanal?:     string | null;   // telegram | telefon | whatsapp | email
   customer_type:      CustomerType;
   company_name:       string | null;
   ust_id:             string | null;
