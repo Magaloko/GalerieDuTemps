@@ -98,19 +98,36 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: m.msg }, { status: m.status });
   }
 
-  // ── Magic-Link-Email senden ──────────────────────────────────────────────
-  const claimUrl = `${getSiteUrl()}/kunde/telegram-claim?token=${result.token}`;
-  const display  = valid.user.username
-    ? `@${valid.user.username}`
-    : valid.user.first_name ?? "Telegram-аккаунт";
+  // ── Anti-Spam: pro Ziel-Adresse drosseln ─────────────────────────────────
+  // Das IP-Limit allein schützt nicht vor IP-Rotation. Da der Versand nur an
+  // EXISTIERENDE Kundenadressen geht (mit angreifer-gewähltem Telegram-Handle
+  // im Text), drosseln wir zusätzlich PRO ZIEL-ADRESSE — so kann niemand eine
+  // fremde Inbox mit Claim-Mails bombardieren. Bei Drosselung wird NICHT
+  // gesendet, aber dieselbe „pending"-Antwort zurückgegeben (kein Info-Leak).
+  const zielEmail = parsed.data.email.trim().toLowerCase();
+  let mailErlaubt = true;
+  try {
+    const er = await rateLimitAsync(`tg-claim-mail:${zielEmail}`, 2, 60 * 60 * 1000); // max 2/h
+    mailErlaubt = er.erlaubt;
+  } catch {
+    mailErlaubt = true; // Limiter-Ausfall → best-effort senden (IP-Limit greift weiter)
+  }
 
-  await sendEmail({
-    to:      [{ email: parsed.data.email.trim().toLowerCase() }],
-    subject: "Привязка Telegram · Galerie du Temps",
-    htmlContent: htmlTemplate({ claimUrl, display }),
-    textContent: textTemplate({ claimUrl, display }),
-    tags:    ["telegram-claim"],
-  });
+  if (mailErlaubt) {
+    // ── Magic-Link-Email senden ────────────────────────────────────────────
+    const claimUrl = `${getSiteUrl()}/kunde/telegram-claim?token=${result.token}`;
+    const display  = valid.user.username
+      ? `@${valid.user.username}`
+      : valid.user.first_name ?? "Telegram-аккаунт";
+
+    await sendEmail({
+      to:      [{ email: zielEmail }],
+      subject: "Привязка Telegram · Galerie du Temps",
+      htmlContent: htmlTemplate({ claimUrl, display }),
+      textContent: textTemplate({ claimUrl, display }),
+      tags:    ["telegram-claim"],
+    });
+  }
 
   return NextResponse.json({
     ok:          true,
