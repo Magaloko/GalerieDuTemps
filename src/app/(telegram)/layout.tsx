@@ -1,5 +1,6 @@
 import Script from "next/script";
 import { MiniAppTabBar } from "./tg/tab-bar";
+import { ErudaLoader } from "./eruda-loader";
 import { isFeatureEnabled } from "@/lib/db/feature-flags";
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -42,6 +43,7 @@ export default async function TelegramLayout({ children }: { children: React.Rea
       >
         {children}
         <MiniAppTabBar kaufenAktiv={kaufenAktiv} />
+        <ErudaLoader />
       </div>
     </>
   );

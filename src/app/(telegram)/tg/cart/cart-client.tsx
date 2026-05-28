@@ -8,6 +8,7 @@ import { Trash2, ChevronLeft } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { useCartSync } from "@/hooks/use-cart-sync";
 import { formatPreis } from "@/lib/utils/preis";
+import { mainButtonOffClick } from "../tg-webapp";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * Mini-App Cart-Client
@@ -87,7 +88,7 @@ export function CartClient() {
     };
     main.onClick(onClick);
 
-    return () => { main.offClick(onClick); main.hide(); };
+    return () => { mainButtonOffClick(main, onClick); main.hide(); };
   }, [items, totalCents, busy, router]);
 
   return (

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/cart";
 import { formatPreis } from "@/lib/utils/preis";
 import { confettiBurst, haptic } from "../../fx";
+import { mainButtonOffClick } from "../../tg-webapp";
 
 type Currency = "KZT" | "EUR" | "USD" | "RUB";
 
@@ -76,7 +77,7 @@ export function ProductMiniClient({
       };
       main.onClick(onAsk);
       return () => {
-        main.offClick(onAsk);
+        mainButtonOffClick(main, onAsk);
         main.hide();
       };
     }
@@ -118,7 +119,7 @@ export function ProductMiniClient({
     main.onClick(onClick);
 
     return () => {
-      main.offClick(onClick);
+      mainButtonOffClick(main, onClick);
       main.hide();
     };
   }, [produktId, slug, name, bildUrl, preisCents, lagerbestand, verkauft, reserviert, waehrung, kaufenAktiv, hinzufuegen, router]);

@@ -22,6 +22,10 @@ declare global {
       WebApp?: {
         initData:       string;
         initDataUnsafe: { user?: { id: number; first_name?: string; username?: string } };
+        /** Bot-API-Version des Clients, z.B. "6.9". */
+        version:        string;
+        /** Nativer Versions-Check (ab 6.7). */
+        isVersionAtLeast?(v: string): boolean;
         ready():        void;
         expand():       void;
         themeParams:    Record<string, string>;
