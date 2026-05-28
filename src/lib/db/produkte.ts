@@ -19,6 +19,8 @@ export async function produkteListe(params: {
   kategorie?:   string;     // slug-based
   kategorie_id?: number;
   zustand?:     string;
+  /** Status-Filter (Admin): aktiv | entwurf | verkauft | reserviert. */
+  status?:      "aktiv" | "entwurf" | "verkauft" | "reserviert";
   sortierung?:  string;
 }): Promise<PaginierteProdukte> {
   const seite  = Math.max(1, params.seite  ?? 1);
@@ -50,6 +52,17 @@ export async function produkteListe(params: {
   if (params.zustand) {
     conditions.push(`p.zustand = $${idx++}`);
     queryParams.push(params.zustand);
+  }
+
+  // Status-Filter (Admin) — abgeleitete Zustände, kein eigener Enum.
+  if (params.status === "aktiv") {
+    conditions.push(`p.aktiv = true AND p.verkauft = false`);
+  } else if (params.status === "entwurf") {
+    conditions.push(`p.aktiv = false AND p.verkauft = false`);
+  } else if (params.status === "verkauft") {
+    conditions.push(`p.verkauft = true`);
+  } else if (params.status === "reserviert") {
+    conditions.push(`p.reserviert_bis IS NOT NULL AND p.reserviert_bis > now() AND p.verkauft = false`);
   }
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
