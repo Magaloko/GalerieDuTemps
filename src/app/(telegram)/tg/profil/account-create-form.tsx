@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { UserPlus, Loader2, AlertCircle } from "lucide-react";
 import { haptic } from "../fx";
+import { useTelegramPost } from "../use-telegram-post";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * AccountCreateForm — 1-Tap-Konto für Telegram-first-Nutzer.
@@ -16,35 +17,17 @@ import { haptic } from "../fx";
  * ────────────────────────────────────────────────────────────────────────── */
 export function AccountCreateForm() {
   const router = useRouter();
-  const [busy, setBusy]   = useState(false);
+  const { busy, post } = useTelegramPost();
   const [error, setError] = useState<string | null>(null);
 
   const anlegen = async () => {
     setError(null);
-    const tg = window.Telegram?.WebApp;
-    if (!tg?.initData) {
-      setError("Откройте Mini-App через бот, а не в обычном браузере.");
-      return;
-    }
-    setBusy(true);
-    try {
-      const r = await fetch("/api/telegram/account-create", {
-        method:      "POST",
-        headers:     { "Content-Type": "application/json" },
-        body:        JSON.stringify({ initData: tg.initData }),
-        credentials: "include",
-      });
-      const d = await r.json().catch(() => ({}));
-      if (r.ok && d.ok) {
-        haptic("success");
-        router.refresh();
-      } else {
-        setError(d.error ?? "Не удалось создать профиль.");
-        setBusy(false);
-      }
-    } catch {
-      setError("Сеть недоступна. Попробуйте ещё раз.");
-      setBusy(false);
+    const r = await post<{ ok?: boolean; error?: string }>("/api/telegram/account-create");
+    if (r.ok && r.data.ok) {
+      haptic("success");
+      router.refresh();
+    } else {
+      setError(r.error ?? r.data.error ?? "Не удалось создать профиль.");
     }
   };
 

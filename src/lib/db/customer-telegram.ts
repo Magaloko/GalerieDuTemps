@@ -1,5 +1,6 @@
 import { randomBytes } from "crypto";
 import { query } from "./index";
+import { customerByEmail } from "./customers";
 import type { Customer } from "@/types/commerce";
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -130,11 +131,9 @@ export async function customerEmailHinzufuegen(
 ): Promise<{ ok: true } | { ok: false; reason: "taken" | "db-error" }> {
   const lc = email.trim().toLowerCase();
   try {
-    const other = await query(
-      `SELECT 1 FROM sebo.customers WHERE email = $1 AND id <> $2 LIMIT 1`,
-      [lc, customerId],
-    );
-    if ((other.rowCount ?? 0) > 0) return { ok: false, reason: "taken" };
+    // Schon von einem ANDEREN Konto belegt? (customerByEmail normalisiert + ist CITEXT.)
+    const vorhanden = await customerByEmail(lc);
+    if (vorhanden && vorhanden.id !== customerId) return { ok: false, reason: "taken" };
 
     await query(
       `UPDATE sebo.customers SET email = $1, email_bestaetigt_am = NULL WHERE id = $2`,

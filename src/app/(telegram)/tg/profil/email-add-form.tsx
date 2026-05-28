@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Mail, Loader2, Check, AlertCircle } from "lucide-react";
 import { haptic } from "../fx";
+import { useTelegramPost } from "../use-telegram-post";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * EmailAddForm — Telegram-first-Kunde ergänzt seine E-Mail.
@@ -15,66 +16,43 @@ import { haptic } from "../fx";
  * ────────────────────────────────────────────────────────────────────────── */
 export function EmailAddForm() {
   const router = useRouter();
+  const { busy, post } = useTelegramPost();
   const [email, setEmail]   = useState("");
-  const [busy, setBusy]     = useState(false);
   const [state, setState]   = useState<"idle" | "added" | "claim" | "error">("idle");
   const [msg, setMsg]       = useState<string | null>(null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMsg(null);
-    const tg = window.Telegram?.WebApp;
-    if (!tg?.initData) { setState("error"); setMsg("Откройте Mini-App через бот."); return; }
     if (!email.includes("@")) { setState("error"); setMsg("Укажите корректный e-mail."); return; }
 
-    setBusy(true);
-    try {
-      const r = await fetch("/api/telegram/email-add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ initData: tg.initData, email: email.trim() }),
-        credentials: "include",
-      });
-      const d = await r.json().catch(() => ({}));
+    const r = await post<{ status?: string; error?: string }>("/api/telegram/email-add", { email: email.trim() });
 
-      if (r.ok && d.status === "added") {
-        haptic("success");
-        setState("added");
-        router.refresh();
-        return;
-      }
-
-      if (r.ok && d.status === "claim-required") {
-        // E-Mail gehört bestehendem Account → Claim-Magic-Link anstoßen.
-        const c = await fetch("/api/telegram/claim-init", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ initData: tg.initData, email: email.trim() }),
-          credentials: "include",
-        });
-        const cd = await c.json().catch(() => ({}));
-        if (c.ok) {
-          haptic("success");
-          setState("claim");
-          setMsg("Эта почта уже зарегистрирована. Мы отправили ссылку — подтвердите, и аккаунты объединятся.");
-        } else {
-          haptic("error");
-          setState("error");
-          setMsg(cd.error ?? "Не удалось отправить ссылку.");
-        }
-        setBusy(false);
-        return;
-      }
-
-      haptic("error");
-      setState("error");
-      setMsg(d.error ?? "Ошибка. Попробуйте позже.");
-      setBusy(false);
-    } catch {
-      setState("error");
-      setMsg("Сеть недоступна. Попробуйте ещё раз.");
-      setBusy(false);
+    if (r.ok && r.data.status === "added") {
+      haptic("success");
+      setState("added");
+      router.refresh();
+      return;
     }
+
+    if (r.ok && r.data.status === "claim-required") {
+      // E-Mail gehört bestehendem Account → Claim-Magic-Link anstoßen.
+      const c = await post<{ error?: string }>("/api/telegram/claim-init", { email: email.trim() });
+      if (c.ok) {
+        haptic("success");
+        setState("claim");
+        setMsg("Эта почта уже зарегистрирована. Мы отправили ссылку — подтвердите, и аккаунты объединятся.");
+      } else {
+        haptic("error");
+        setState("error");
+        setMsg(c.error ?? c.data.error ?? "Не удалось отправить ссылку.");
+      }
+      return;
+    }
+
+    haptic("error");
+    setState("error");
+    setMsg(r.error ?? r.data.error ?? "Ошибка. Попробуйте позже.");
   };
 
   if (state === "added") {

@@ -472,38 +472,20 @@ export async function POST(
 
     // Nicht-Command Freitext eines verknüpften Kunden → als Lead in die Inbox
     // (sonst ginge die Nachricht verloren!) + Customer verknüpfen + Admins
-    // benachrichtigen + freundlicher Ack. Spiegelt den Unbekannt-Absender-Pfad.
-    const cExterne = `tg:${chat.id}:${msg.message_id}`;
-    const cHandle  = username ? `@${username}` : `tg:${chat.id}`;
-    const cName    = [linkedCustomer.vorname, linkedCustomer.nachname].filter(Boolean).join(" ") || cHandle;
-    try {
-      const { id: leadId, created } = await leadAusKanalErstellen({
-        quelle:         "telegram",
-        kanal_konto_id: konto.id,
-        externe_id:     cExterne,
-        kontakt_handle: cHandle,
-        kontakt_name:   cName,
-        kontakt_email:  linkedCustomer.email ?? undefined,
-        text,
-        vorschau:       text.slice(0, 240),
-        raw_payload:    update,
-      });
-      if (created) {
-        await leadKonvertierenZuCustomer(leadId, linkedCustomer.id).catch(() => {});
-        notifyNewLead({
-          id:             leadId,
-          quelle:         "telegram",
-          kontakt_name:   cName,
-          kontakt_email:  linkedCustomer.email ?? null,
-          kontakt_handle: cHandle,
-          betreff:        null,
-          vorschau:       text.slice(0, 240),
-          produkt_id:     null,
-        }).catch(err => console.error("[notify]", err));
-      }
-    } catch (err) {
-      console.error("[telegram-webhook customer-lead]", err);
-    }
+    // benachrichtigen + freundlicher Ack.
+    const cHandle = username ? `@${username}` : `tg:${chat.id}`;
+    const cName   = [linkedCustomer.vorname, linkedCustomer.nachname].filter(Boolean).join(" ") || cHandle;
+    await nachrichtAlsLead({
+      kontoId:    konto.id,
+      chatId:     chat.id,
+      messageId:  msg.message_id,
+      text,
+      rawPayload: update,
+      handle:     cHandle,
+      name:       cName,
+      email:      linkedCustomer.email,
+      customerId: linkedCustomer.id,
+    });
 
     await sendMessage(
       konto.access_token,
@@ -518,54 +500,84 @@ export async function POST(
   }
 
   // ── Unbekannter Absender → als Lead in Inbox + Ack ──────────────────────
-  const externe  = `tg:${chat.id}:${msg.message_id}`;
-  const handle   = username ? `@${username}` : `tg:${chat.id}`;
-  const name     = from
+  const handle = username ? `@${username}` : `tg:${chat.id}`;
+  const name   = from
     ? [from.first_name, from.last_name].filter(Boolean).join(" ")
     : chat.title ?? handle;
 
+  const created = await nachrichtAlsLead({
+    kontoId:    konto.id,
+    chatId:     chat.id,
+    messageId:  msg.message_id,
+    text,
+    rawPayload: update,
+    handle,
+    name,
+  });
+
+  // Acknowledgment nur bei NEUEM Lead (kein Re-Ack bei Duplikat-Retry).
+  if (created && konto.access_token) {
+    await sendMessage(
+      konto.access_token,
+      chat.id,
+      `✓ Получили ваше сообщение — куратор скоро ответит.\n\n` +
+      `А пока — посмотрите каталог: /katalog`,
+      {
+        reply_markup: buildPublicMainMenu(siteBase, kaufenAktiv),
+      },
+    ).catch(err => console.error("[tg ack lead]", err));
+  }
+
+  return NextResponse.json({ ok: true });
+}
+
+/**
+ * Speichert eine eingehende Telegram-Textnachricht als Lead (idempotent),
+ * verknüpft optional den Customer und benachrichtigt Admins. Gibt zurück, ob
+ * ein NEUER Lead entstand (für die Ack-Entscheidung). Best-effort — wirft nie.
+ * Gemeinsamer Pfad für „verknüpfter Kunde" und „unbekannter Absender".
+ */
+async function nachrichtAlsLead(opts: {
+  kontoId:     number;
+  chatId:      number;
+  messageId:   number;
+  text:        string;
+  rawPayload:  unknown;
+  handle:      string;
+  name:        string;
+  email?:      string | null;
+  customerId?: string | null;
+}): Promise<boolean> {
+  const vorschau = opts.text.slice(0, 240);
   try {
     const { id: leadId, created } = await leadAusKanalErstellen({
       quelle:         "telegram",
-      kanal_konto_id: konto.id,
-      externe_id:     externe,
-      kontakt_handle: handle,
-      kontakt_name:   name,
-      text,
-      vorschau:       text.slice(0, 240),
-      raw_payload:    update,
+      kanal_konto_id: opts.kontoId,
+      externe_id:     `tg:${opts.chatId}:${opts.messageId}`,
+      kontakt_handle: opts.handle,
+      kontakt_name:   opts.name,
+      kontakt_email:  opts.email ?? undefined,
+      text:           opts.text,
+      vorschau,
+      raw_payload:    opts.rawPayload,
     });
-
     if (created) {
+      if (opts.customerId) await leadKonvertierenZuCustomer(leadId, opts.customerId).catch(() => {});
       notifyNewLead({
         id:             leadId,
         quelle:         "telegram",
-        kontakt_name:   name,
-        kontakt_email:  null,
-        kontakt_handle: handle,
+        kontakt_name:   opts.name,
+        kontakt_email:  opts.email ?? null,
+        kontakt_handle: opts.handle,
         betreff:        null,
-        vorschau:       text.slice(0, 240),
+        vorschau,
         produkt_id:     null,
       }).catch(err => console.error("[notify]", err));
-
-      // Acknowledgment damit User weiß dass Nachricht angekommen ist
-      if (konto.access_token) {
-        await sendMessage(
-          konto.access_token,
-          chat.id,
-          `✓ Получили ваше сообщение — куратор скоро ответит.\n\n` +
-          `А пока — посмотрите каталог: /katalog`,
-          {
-            reply_markup: buildPublicMainMenu(siteBase, kaufenAktiv),
-          },
-        ).catch(err => console.error("[tg ack lead]", err));
-      }
     }
-
-    return NextResponse.json({ ok: true });
+    return created;
   } catch (err) {
-    console.error("[telegram-webhook]", err);
-    return NextResponse.json({ ok: false, error: "internal" });
+    console.error("[telegram-webhook nachrichtAlsLead]", err);
+    return false;
   }
 }
 
