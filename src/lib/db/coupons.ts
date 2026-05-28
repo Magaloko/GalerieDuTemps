@@ -97,8 +97,30 @@ export async function couponNutzungVerbuchen(opts: {
   rabatt_cents:  number;
 }): Promise<void> {
   await withTransaction(async (client) => {
-    // 1. Atomar incrementieren — nur wenn unter Limit. RETURNING signalisiert
-    //    Erfolg: rowCount === 1 wenn unter Limit, 0 wenn ausgeschöpft.
+    // 1. IDEMPOTENZ: Nutzungs-Record ZUERST mit ON CONFLICT (order_id) DO NOTHING.
+    //    Unique-Index idx_coupon_nutzungen_order (Migration 039) → pro Order
+    //    genau eine Verbuchung. Bei Webhook-Retry / Parallel-Retry liefert
+    //    RETURNING keine Zeile → wir incrementieren NICHT erneut.
+    const insRes = await client.query<{ id: string }>(
+      `INSERT INTO sebo.coupon_nutzungen
+         (coupon_id, order_id, customer_id, customer_email, rabatt_cents)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (order_id) DO NOTHING
+       RETURNING id`,
+      [
+        opts.coupon_id,
+        opts.order_id,
+        opts.customer_id ?? null,
+        opts.customer_email.toLowerCase(),
+        opts.rabatt_cents,
+      ],
+    );
+
+    // Schon für diese Order verbucht (Retry) → kein zweiter Increment.
+    if (insRes.rowCount === 0) return;
+
+    // 2. Erst jetzt atomar incrementieren — nur wenn unter Limit. Bei Limit-
+    //    Überschreitung wirft es → ganze Transaction (inkl. Insert) rollt zurück.
     const updateRes = await client.query<{ id: string }>(
       `UPDATE sebo.coupons
           SET nutzungen_aktuell = nutzungen_aktuell + 1
@@ -114,20 +136,6 @@ export async function couponNutzungVerbuchen(opts: {
         `Order ${opts.order_id} sollte als coupon_race_lost markiert werden.`,
       );
     }
-
-    // 2. Nutzungs-Record schreiben (in derselben Transaction → roll-back-bar)
-    await client.query(
-      `INSERT INTO sebo.coupon_nutzungen
-         (coupon_id, order_id, customer_id, customer_email, rabatt_cents)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [
-        opts.coupon_id,
-        opts.order_id,
-        opts.customer_id ?? null,
-        opts.customer_email.toLowerCase(),
-        opts.rabatt_cents,
-      ],
-    );
   });
 }
 

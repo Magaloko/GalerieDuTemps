@@ -45,7 +45,7 @@ export async function webhookEventReserve(
       `INSERT INTO sebo.webhook_events (provider, event_id, event_type, payload, status)
        VALUES ($1, $2, $3, $4::jsonb, 'processing')
        ON CONFLICT (provider, event_id) DO UPDATE
-         SET status = 'processing', verarbeitet_am = NULL
+         SET status = 'processing'
          WHERE sebo.webhook_events.status <> 'processed'
        RETURNING id`,
       [provider, eventId, eventType, JSON.stringify(payload ?? {})],
@@ -78,7 +78,7 @@ export async function webhookEventMarkProcessed(
 ): Promise<void> {
   await query(
     `UPDATE sebo.webhook_events
-       SET status = 'processed', verarbeitet_am = now()
+       SET status = 'processed', processed_am = now()
      WHERE provider = $1 AND event_id = $2`,
     [provider, eventId],
   ).catch(err => console.warn("[webhookEventMarkProcessed]", err));
