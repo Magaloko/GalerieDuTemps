@@ -68,14 +68,31 @@ const nextConfig: NextConfig = {
 
   // Sicherheits-Header (zusätzlich zu Caddy)
   async headers() {
+    // Bewusst KEIN restriktives script-src/style-src: Next.js-SSR-Hydration,
+    // Stripe.js, Telegram-WebApp-Script und Sentry nutzen Inline-Scripts; ein
+    // strenges script-src bräuchte Nonce-Middleware + Live-Test (separater
+    // Follow-up). Eingeschränkt werden nur ungefährliche, nicht-brechende
+    // Direktiven. frame-ancestors erlaubt Telegram-Web (Mini-App wird dort
+    // geframed) + self (Theme-Customizer-iframe) — daher KEIN X-Frame-Options
+    // (das kann keine Origin-Whitelist und würde Telegram-Web blocken).
+    // BEWUSST KEIN default-src: ohne default-src bleiben nicht-gelistete
+    // Direktiven (script-src/style-src/img-src/connect-src) unbeschränkt — so
+    // laden Next-Hydration, Stripe, Supabase-Bilder, Sentry & Telegram weiter.
+    // Eingeschränkt wird nur das Gefahrlose.
+    const csp = [
+      "frame-ancestors 'self' https://web.telegram.org https://*.telegram.org",
+      "base-uri 'self'",
+      "object-src 'none'",
+    ].join("; ");
     return [
       {
         source: "/(.*)",
         headers: [
-          {
-            key:   "X-DNS-Prefetch-Control",
-            value: "on",
-          },
+          { key: "X-DNS-Prefetch-Control",   value: "on" },
+          { key: "X-Content-Type-Options",   value: "nosniff" },
+          { key: "Referrer-Policy",          value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy",       value: "camera=(), microphone=(), geolocation=(), browsing-topics=()" },
+          { key: "Content-Security-Policy",  value: csp },
         ],
       },
     ];
