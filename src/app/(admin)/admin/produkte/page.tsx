@@ -20,6 +20,7 @@ import {
   ExternalLink,
   AlertTriangle,
   Sparkles,
+  Inbox,
 } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -55,6 +56,14 @@ export default async function ProduktListePage({ searchParams }: Props) {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/admin/produkte/entwuerfe"
+            className="flex items-center gap-2 px-4 py-2.5 border border-vintage-sand text-vintage-ink text-xs font-sans tracking-[0.2em] uppercase hover:bg-vintage-parchment transition-colors"
+            style={{ borderRadius: "var(--radius-button)" }}
+            title="Черновики на проверку (фото-пачка + Telegram)"
+          >
+            <Inbox className="w-3.5 h-3.5" /> Черновики
+          </Link>
           <Link
             href="/admin/produkte/schnell"
             className="flex items-center gap-2 px-4 py-2.5 bg-vintage-gold text-vintage-espresso text-xs font-sans tracking-[0.2em] uppercase hover:bg-vintage-amber transition-colors"

@@ -346,6 +346,106 @@ export async function produktBulkAction(
 }
 
 // ---------------------------------------------------------------------------
+// Entwürfe-Review-Queue: Veröffentlichen / KI-Ausfüllen / Löschen
+// ---------------------------------------------------------------------------
+export async function entwurfVeroeffentlichenAction(
+  id: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const session = await requireAdminSession();
+  if (!session) return { ok: false, error: "Нет прав" };
+  const p = await produktById(id);
+  if (!p) return { ok: false, error: "Не найдено" };
+  if (!(p.preis > 0)) return { ok: false, error: "Укажите цену перед публикацией" };
+  try {
+    await produktAktualisieren(id, { aktiv: true, b2c_mode: "visible" });
+    const { autoBroadcastBeiPublish } = await import("@/lib/telegram/neuheiten");
+    await autoBroadcastBeiPublish(id);
+    revalidatePath("/admin/produkte/entwuerfe");
+    revalidatePath("/admin/produkte");
+    return { ok: true };
+  } catch (err) {
+    console.error("[entwurfVeroeffentlichen]", err);
+    return { ok: false, error: "Не удалось опубликовать" };
+  }
+}
+
+export async function entwurfKiFuellenAction(
+  id: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const session = await requireAdminSession();
+  if (!session) return { ok: false, error: "Нет прав" };
+  const p = await produktById(id);
+  if (!p) return { ok: false, error: "Не найдено" };
+
+  const notizen = [p.name, p.beschreibung ?? ""].join("\n").trim();
+  try {
+    const { extrahiereProduktDaten, ExtraktorError } = await import("@/lib/ai/produkt-extraktor");
+    let daten;
+    try {
+      daten = await extrahiereProduktDaten(notizen, { kategorieHint: p.kategorie_name ?? undefined });
+    } catch (err) {
+      if (err instanceof ExtraktorError) return { ok: false, error: err.message };
+      throw err;
+    }
+    await produktAktualisieren(id, {
+      name:             daten.name,
+      kurzbeschreibung: daten.kurzbeschreibung,
+      beschreibung:     daten.beschreibung,
+      era:              daten.era ?? undefined,
+      herkunft:         daten.herkunft ?? undefined,
+      material:         daten.material ?? undefined,
+      zustand:          daten.zustand,
+      tags:             daten.tags,
+      seo_titel:        daten.seo_titel,
+      seo_beschreibung: daten.seo_beschreibung,
+    });
+    revalidatePath("/admin/produkte/entwuerfe");
+    return { ok: true };
+  } catch (err) {
+    console.error("[entwurfKiFuellen]", err);
+    return { ok: false, error: err instanceof Error ? err.message : "Ошибка ИИ" };
+  }
+}
+
+export async function entwurfFeldAction(
+  id: string,
+  felder: { preis?: number; kategorie_id?: number | null; zustand?: string },
+): Promise<{ ok: boolean; error?: string }> {
+  const session = await requireAdminSession();
+  if (!session) return { ok: false, error: "Нет прав" };
+  try {
+    const upd: { preis?: number; kategorie_id?: number | null; zustand?: "sehr_gut" | "gut" | "akzeptabel" | "restauriert" } = {};
+    if (typeof felder.preis === "number" && felder.preis > 0) upd.preis = felder.preis;
+    if (felder.kategorie_id !== undefined) upd.kategorie_id = felder.kategorie_id;
+    if (felder.zustand && ["sehr_gut", "gut", "akzeptabel", "restauriert"].includes(felder.zustand)) {
+      upd.zustand = felder.zustand as "sehr_gut" | "gut" | "akzeptabel" | "restauriert";
+    }
+    if (Object.keys(upd).length === 0) return { ok: false, error: "Нечего сохранять" };
+    await produktAktualisieren(id, upd);
+    revalidatePath("/admin/produkte/entwuerfe");
+    return { ok: true };
+  } catch (err) {
+    console.error("[entwurfFeld]", err);
+    return { ok: false, error: "Ошибка сохранения" };
+  }
+}
+
+export async function entwurfLoeschenAction(
+  id: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const session = await requireAdminSession();
+  if (!session) return { ok: false, error: "Нет прав" };
+  try {
+    await produktLoeschen(id);
+    revalidatePath("/admin/produkte/entwuerfe");
+    return { ok: true };
+  } catch (err) {
+    console.error("[entwurfLoeschen]", err);
+    return { ok: false, error: "Ошибка удаления" };
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Produkt löschen
 // ---------------------------------------------------------------------------
 export async function produktLoeschenAction(id: string): Promise<void> {

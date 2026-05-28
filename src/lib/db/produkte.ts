@@ -101,6 +101,42 @@ export async function produkteListe(params: {
 }
 
 // ---------------------------------------------------------------------------
+// Entwürfe-Review-Queue: alle Draft-Produkte (aktiv=false, hidden, nicht verkauft)
+// Sammelpunkt für Bulk-Upload + Telegram-Foto-Drafts.
+// ---------------------------------------------------------------------------
+export interface EntwurfRow {
+  id:             string;
+  name:           string;
+  beschreibung:   string | null;
+  preis:          number;
+  waehrung:       string;
+  kategorie_id:   number | null;
+  kategorie_name: string | null;
+  zustand:        string;
+  hauptbild_url:  string | null;
+  erstellt_am:    string;
+}
+
+export async function entwuerfeListe(limit = 100): Promise<EntwurfRow[]> {
+  const r = await query<EntwurfRow>(
+    `SELECT p.id, p.name, p.beschreibung, p.preis, p.waehrung,
+            p.kategorie_id, k.name AS kategorie_name, p.zustand,
+            COALESCE(p.hauptbild_url,
+              (SELECT pb.url FROM sebo.produktbilder pb
+               WHERE pb.produkt_id = p.id ORDER BY pb.ist_hauptbild DESC, pb.sortierung LIMIT 1)
+            ) AS hauptbild_url,
+            p.erstellt_am
+       FROM sebo.produkte p
+       LEFT JOIN sebo.kategorien k ON k.id = p.kategorie_id
+      WHERE p.aktiv = false AND p.verkauft = false AND p.b2c_mode = 'hidden'
+      ORDER BY p.erstellt_am DESC
+      LIMIT $1`,
+    [limit],
+  );
+  return r.rows;
+}
+
+// ---------------------------------------------------------------------------
 // Einzelnes Produkt laden (mit Bildern)
 // ---------------------------------------------------------------------------
 export async function produktById(id: string): Promise<Produkt | null> {
