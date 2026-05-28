@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   verifyInitData,
   loadBotTokenForAuth,
-  findOrCreateCustomerForTelegramUser,
+  findCustomerForTelegramUser,
 } from "@/lib/telegram/webapp-auth";
-import { setWebAppSessionCookie } from "@/lib/telegram/webapp-session";
+import { setWebAppSessionCookie, clearWebAppSessionCookie } from "@/lib/telegram/webapp-session";
 
 export const dynamic     = "force-dynamic";
 export const maxDuration = 10;
@@ -82,30 +82,44 @@ export async function POST(req: NextRequest) {
   }
   log("verified", { user_id: valid.user.id });
 
-  // ── Step 3: Customer finden/anlegen ───────────────────────────────────────
+  // ── Step 3: Customer SUCHEN (ohne create) ─────────────────────────────────
+  // Linked customer: hat in der Vergangenheit über /kunde/profil → /start <token>
+  // im Bot die OTP-Verknüpfung durchgeführt → sein telegram_chat_id === user.id.
+  // Unlinked: gibt einfach null zurück. Mini-App rendert anonym.
   let customer;
   try {
-    customer = await findOrCreateCustomerForTelegramUser(valid.user);
+    customer = await findCustomerForTelegramUser(valid.user);
   } catch (err) {
-    console.error("[tg-auth] findOrCreateCustomer failed:", err);
-    // Diagnose: häufigste Ursache ist fehlende Migration 026
-    // (sebo.customers.telegram_chat_id existiert nicht)
+    console.error("[tg-auth] findCustomer failed:", err);
     const msg = err instanceof Error ? err.message : String(err);
     const isMigrationError = msg.includes("telegram_chat_id") || msg.includes("column");
     return NextResponse.json(
       {
         error: isMigrationError
           ? "Колонка telegram_chat_id отсутствует. Примените миграцию 026_customer_telegram.sql."
-          : "Не удалось создать клиента.",
+          : "Ошибка БД при поиске клиента.",
         step:    "customer",
         detail:  msg,
       },
       { status: 500 },
     );
   }
-  log("customer-ok", { customer_id: customer.id });
 
-  // ── Step 4: Session-Cookie setzen ─────────────────────────────────────────
+  // ── Step 4: Session-Cookie setzen (oder löschen wenn unlinked) ────────────
+  // Wenn customer === null → wir LÖSCHEN den eventuellen alten Cookie,
+  // damit die Mini-App weiß: dieser Telegram-User ist nicht (mehr) verknüpft.
+  if (!customer) {
+    await clearWebAppSessionCookie();
+    log("done-unlinked");
+    return NextResponse.json({
+      ok:       true,
+      customer: null,
+      hint:     "Аккаунт не привязан. Используйте «Привязать» в Профиле Mini-App.",
+    });
+  }
+
+  log("customer-found", { customer_id: customer.id });
+
   try {
     await setWebAppSessionCookie(customer.id);
   } catch (err) {
@@ -119,7 +133,7 @@ export async function POST(req: NextRequest) {
       { status: 500 },
     );
   }
-  log("done");
+  log("done-linked");
 
   return NextResponse.json({
     ok: true,

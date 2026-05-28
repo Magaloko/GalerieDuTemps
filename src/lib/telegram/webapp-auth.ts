@@ -122,41 +122,45 @@ export async function loadBotTokenForAuth(): Promise<string | null> {
 }
 
 /**
- * Findet (oder erstellt) einen Customer für eine Telegram-User-ID.
- * Wenn schon ein Customer mit dieser chat_id verknüpft ist → den.
- * Wenn nicht → neuen Customer anlegen (Mini-App-Onboarding).
+ * Findet einen Customer für eine Telegram-User-ID — OHNE auto-create.
  *
- * Auto-Created-Customers haben keine E-Mail; sie können später optional
- * eine eintragen um Bestellungen per E-Mail zu bekommen.
+ * Vorher legte diese Funktion bei jedem Mini-App-Öffnen einen Pseudo-
+ * Customer mit `tg<id>@telegram.local` an. Das führte zu Duplikat-
+ * Accounts wenn der gleiche User auch ein normales Konto per E-Mail
+ * registrieren wollte — Bestellungen waren auf zwei Customers verteilt
+ * und nicht zusammenführbar ohne manuellen Admin-Eingriff.
+ *
+ * Neue Architektur:
+ *  - Mini-App läuft ANONYM solange der User nicht aktiv verknüpft
+ *  - Verknüpfung passiert ausschließlich über den OTP-Flow:
+ *    1. User registriert/loggt sich auf der Website ein
+ *    2. /kunde/profil → „Подключить Telegram" → OTP-Token
+ *    3. Bot: /start <token> → customerTelegramVerknuepfen
+ *  - Resultat: 1 Customer pro Person, eindeutig identifiziert per E-Mail,
+ *    optional verknüpft mit Telegram
+ *
+ * Auswirkungen aufs UI:
+ *  - /tg/orders zeigt CTA „Привязать аккаунт" wenn customer === null
+ *  - /tg/profil zeigt analog CTA
+ *  - /tg/cart funktioniert weiter (localStorage, /api/cart gibt 401 zurück)
+ *  - Checkout im Mini-App: kann anonym sein (orderErstellen akzeptiert
+ *    customer_id=null mit gast@... E-Mail), oder verlangt Verknüpfung —
+ *    aktuell zweites, weil unverknüpfter User keine Order-Historie sehen
+ *    kann
+ */
+export async function findCustomerForTelegramUser(
+  tgUser: TelegramWebAppUser,
+): Promise<Customer | null> {
+  return customerByTelegramChatId(tgUser.id);
+}
+
+/**
+ * @deprecated benutze findCustomerForTelegramUser — alte Auto-Create-Logik
+ * verursacht Duplikat-Customers. Beibehalten nur für Backwards-Compat;
+ * jede Verwendung sollte überprüft werden.
  */
 export async function findOrCreateCustomerForTelegramUser(
   tgUser: TelegramWebAppUser,
-): Promise<Customer> {
-  const existing = await customerByTelegramChatId(tgUser.id);
-  if (existing) return existing;
-
-  // Eindeutige Pseudo-E-Mail nötig (customers.email ist UNIQUE NOT NULL).
-  // Format: tg<id>@telegram.local — User kann später ersetzen.
-  const pseudoEmail = `tg${tgUser.id}@telegram.local`;
-  const r = await query<Customer>(
-    `INSERT INTO sebo.customers
-       (email, vorname, nachname,
-        telegram_chat_id, telegram_username, telegram_verknuepft_am,
-        telegram_notifications_aktiv,
-        email_bestaetigt_am, agb_akzeptiert_am)
-     VALUES ($1, $2, $3, $4, $5, now(), true, now(), now())
-     ON CONFLICT (email) DO UPDATE
-       SET telegram_chat_id = EXCLUDED.telegram_chat_id,
-           telegram_username = EXCLUDED.telegram_username,
-           telegram_verknuepft_am = COALESCE(sebo.customers.telegram_verknuepft_am, now())
-     RETURNING *`,
-    [
-      pseudoEmail,
-      tgUser.first_name ?? null,
-      tgUser.last_name  ?? null,
-      tgUser.id,
-      tgUser.username   ?? null,
-    ],
-  );
-  return r.rows[0];
+): Promise<Customer | null> {
+  return findCustomerForTelegramUser(tgUser);
 }

@@ -41,7 +41,7 @@ type State =
   | { kind: "no-telegram" }
   | { kind: "authing" }
   | { kind: "auth-error"; msg: string; status?: number; detail?: string }
-  | { kind: "ready"; customerName: string };
+  | { kind: "ready"; customerName: string | null };  // null = anonymous Mini-App
 
 export function TelegramAuthGate({ children }: { children: React.ReactNode }) {
   const [state, setState]   = useState<State>({ kind: "init" });
@@ -99,11 +99,15 @@ export function TelegramAuthGate({ children }: { children: React.ReactNode }) {
       }
 
       const j = await r.json() as {
-        customer?: { vorname: string | null; email: string };
+        customer?: { vorname: string | null; email: string } | null;
+        hint?: string;
       };
+      // customer === null heißt: kein verknüpfter Account. Trotzdem ready —
+      // Mini-App rendert anonym (Catalog + localStorage-Cart). Tabs wie
+      // /tg/orders zeigen dann die „Привязать аккаунт"-CTA selbst.
       setState({
         kind:         "ready",
-        customerName: j.customer?.vorname || j.customer?.email || "Гость",
+        customerName: j.customer?.vorname ?? j.customer?.email ?? null,
       });
     } catch (err) {
       clearTimeout(timeout);
