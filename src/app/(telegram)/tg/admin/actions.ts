@@ -50,6 +50,11 @@ export async function produktSchnellEditAction(opts: {
   try {
     const r = await query(`UPDATE sebo.produkte SET ${sets.join(", ")}, aktualisiert_am = now() WHERE id = $${i}`, vals);
     if (!r.rowCount) return { ok: false, error: "Товар не найден" };
+    // Auto-Broadcast beim Veröffentlichen (best-effort/einmalig).
+    if (opts.publish) {
+      const { autoBroadcastBeiPublish } = await import("@/lib/telegram/neuheiten");
+      await autoBroadcastBeiPublish(opts.produktId);
+    }
     revalidatePath("/tg/admin/produkte");
     return { ok: true, message: "Обновлено" };
   } catch (err) {
@@ -97,12 +102,13 @@ export async function produktInKanalTgAction(produktId: string): Promise<ActionR
     const p = r.rows[0];
     if (!p) return { ok: false, error: "Товар не найден" };
 
-    const { broadcastProduktInKanal } = await import("@/lib/telegram/neuheiten");
+    const { broadcastProduktInKanal, markKanalGepostet } = await import("@/lib/telegram/neuheiten");
     const res = await broadcastProduktInKanal({
       slug: p.slug, name: p.name, preis: Number(p.preis), waehrung: p.waehrung, hauptbild_url: p.hauptbild_url,
     });
     if (!res.ok) return { ok: false, error: res.error };
 
+    await markKanalGepostet(produktId);
     await auditLog({ action: "produkt_broadcast_kanal", actorEmail: null, entity: produktId, neuWert: { via: "tg-admin" } });
     return { ok: true, message: "Опубликовано в канал" };
   } catch (err) {

@@ -167,6 +167,11 @@ export async function produktQuickToggleAction(
 
   try {
     await produktAktualisieren(id, { [feld]: value });
+    // Auto-Broadcast beim Veröffentlichen (aktiv → true), best-effort/einmalig.
+    if (feld === "aktiv" && value === true) {
+      const { autoBroadcastBeiPublish } = await import("@/lib/telegram/neuheiten");
+      await autoBroadcastBeiPublish(id);
+    }
     revalidatePath("/admin/produkte");
     return { ok: true };
   } catch (err) {
@@ -236,7 +241,7 @@ export async function produktInKanalAction(
   const produkt = await produktById(id);
   if (!produkt) return { ok: false, error: "Товар не найден" };
 
-  const { broadcastProduktInKanal } = await import("@/lib/telegram/neuheiten");
+  const { broadcastProduktInKanal, markKanalGepostet } = await import("@/lib/telegram/neuheiten");
   const res = await broadcastProduktInKanal({
     slug:          produkt.slug,
     name:          produkt.name,
@@ -246,6 +251,7 @@ export async function produktInKanalAction(
   });
   if (!res.ok) return { ok: false, error: res.error };
 
+  await markKanalGepostet(id);
   await auditLog({
     action:     "produkt_broadcast_kanal",
     actorEmail: session.user.email ?? null,
@@ -276,7 +282,12 @@ export async function produktBulkAction(
     for (const id of valid) {
       try {
         switch (action) {
-          case "aktivieren":    await produktAktualisieren(id, { aktiv: true });    break;
+          case "aktivieren": {
+            await produktAktualisieren(id, { aktiv: true });
+            const { autoBroadcastBeiPublish } = await import("@/lib/telegram/neuheiten");
+            await autoBroadcastBeiPublish(id);
+            break;
+          }
           case "deaktivieren":  await produktAktualisieren(id, { aktiv: false });   break;
           case "featured_an":   await produktAktualisieren(id, { featured: true }); break;
           case "featured_aus":  await produktAktualisieren(id, { featured: false });break;

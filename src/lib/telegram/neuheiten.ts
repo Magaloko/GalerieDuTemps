@@ -115,3 +115,49 @@ export async function broadcastProduktInKanal(produkt: {
     return { ok: false, error: err instanceof Error ? err.message : "Ошибка отправки в канал" };
   }
 }
+
+/**
+ * Auto-Broadcast beim Veröffentlichen — feuert GENAU EINMAL pro Stück.
+ * Guards (alle müssen erfüllt sein): Schalter `auto_broadcast_neu` an, Stück
+ * aktiv & nicht verkauft, hat ein Hauptbild, und noch nie gepostet
+ * (kanal_gepostet_am IS NULL). Best-effort — wirft nie (darf den Publish-Flow
+ * nicht brechen). Setzt nach Erfolg den Idempotenz-Stempel.
+ */
+export async function autoBroadcastBeiPublish(produktId: string): Promise<void> {
+  try {
+    const { autoBroadcastAktiv } = await import("@/lib/db/feature-flags");
+    if (!(await autoBroadcastAktiv())) return;
+
+    const r = await query<{
+      slug: string; name: string; preis: number; waehrung: string | null;
+      hauptbild_url: string | null; aktiv: boolean; verkauft: boolean; bereits: string | null;
+    }>(
+      `SELECT p.slug, p.name, p.preis, p.waehrung, p.aktiv, p.verkauft,
+              p.kanal_gepostet_am AS bereits,
+              COALESCE(p.hauptbild_url,
+                (SELECT pb.url FROM sebo.produktbilder pb WHERE pb.produkt_id = p.id
+                 ORDER BY pb.ist_hauptbild DESC, pb.sortierung LIMIT 1)
+              ) AS hauptbild_url
+         FROM sebo.produkte p WHERE p.id = $1`,
+      [produktId],
+    );
+    const p = r.rows[0];
+    if (!p || p.bereits || !p.aktiv || p.verkauft || !p.hauptbild_url) return;
+
+    const res = await broadcastProduktInKanal({
+      slug: p.slug, name: p.name, preis: Number(p.preis), waehrung: p.waehrung, hauptbild_url: p.hauptbild_url,
+    });
+    if (res.ok) {
+      await query(`UPDATE sebo.produkte SET kanal_gepostet_am = now() WHERE id = $1`, [produktId]);
+    }
+  } catch (err) {
+    console.warn("[autoBroadcastBeiPublish]", err);
+  }
+}
+
+/** Idempotenz-Stempel nach manuellem Broadcast setzen (best-effort). */
+export async function markKanalGepostet(produktId: string): Promise<void> {
+  try {
+    await query(`UPDATE sebo.produkte SET kanal_gepostet_am = now() WHERE id = $1`, [produktId]);
+  } catch {/* ignore */}
+}

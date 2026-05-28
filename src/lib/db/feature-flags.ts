@@ -45,6 +45,11 @@ export const FEATURE_FLAGS = {
     desc:  "ВКЛ = магазин (корзина, оплата, количество). ВЫКЛ = витрина: только «Запросить», " +
            "наличие показывается как «есть/нет» без количества, корзина и оплата скрыты везде.",
   },
+  auto_broadcast_neu: {
+    label: "Авто-публикация новинок",
+    desc:  "При выставлении товара активным он автоматически публикуется в Telegram-канал " +
+           "(один раз, если есть фото). По умолчанию выключено.",
+  },
 } as const;
 
 export type FeatureKey = keyof typeof FEATURE_FLAGS;
@@ -126,6 +131,23 @@ export async function isFeatureEnabled(key: FeatureKey): Promise<boolean> {
  *
  * @returns true = Kauf gesperrt (Schaufenster / DB nicht erreichbar)
  */
+/**
+ * Fail-OFF Check für auto_broadcast_neu. Liest die Zeile DIREKT (nicht über das
+ * fail-open getAllFeatures, das fehlende Keys auf true defaultet) — ein
+ * Broadcast-Seiteneffekt darf NIE versehentlich an sein. Fehlt die Zeile (z.B.
+ * Migration 043 noch nicht angewandt) oder DB-Fehler → false.
+ */
+export async function autoBroadcastAktiv(): Promise<boolean> {
+  try {
+    const r = await query<{ aktiviert: boolean }>(
+      `SELECT aktiviert FROM sebo.feature_flags WHERE schluessel = 'auto_broadcast_neu'`,
+    );
+    return r.rows[0]?.aktiviert === true;
+  } catch {
+    return false;
+  }
+}
+
 export async function kaufenGesperrt(): Promise<boolean> {
   try {
     const all = await loadAll();          // bewusst ohne fail-open-catch
