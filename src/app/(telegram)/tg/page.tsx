@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { katalogProdukte } from "@/lib/db/produkte-public";
+import { katalogProdukte, neuheitenProdukte } from "@/lib/db/produkte-public";
 import { alleKategorien } from "@/lib/db/kategorien";
 import { isFeatureEnabled } from "@/lib/db/feature-flags";
 import { maskBestandListe } from "@/lib/utils/showcase-mask";
@@ -39,11 +39,15 @@ export default async function TelegramMiniAppHome({
     ? sp.sort
     : "neu";
 
-  const [data, kategorien, kaufenAktiv] = await Promise.all([
+  const hatFilter = !!suche || !!kat || sort !== "neu";
+
+  const [data, kategorien, neuheiten, kaufenAktiv] = await Promise.all([
     katalogProdukte({ seite: 1, limit: 48, suche, kategorie: kat, sortierung: sort }).catch(() => ({
       items: [], gesamt: 0, seite: 1, limit: 48, seiten: 0,
     })),
     alleKategorien().catch(() => []),
+    // Neuheiten-Strip nur im ungefilterten Einstieg laden.
+    hatFilter ? Promise.resolve([]) : neuheitenProdukte(8).catch(() => []),
     isFeatureEnabled("kaufen_aktiv").catch(() => true),
   ]);
 
@@ -59,6 +63,7 @@ export default async function TelegramMiniAppHome({
           produkte={maskBestandListe(data.items, kaufenAktiv)}
           gesamt={data.gesamt}
           kategorien={katChips}
+          neuheiten={maskBestandListe(neuheiten, kaufenAktiv)}
           suche={suche ?? ""}
           aktiveKategorie={kat ?? ""}
           sortierung={sort}

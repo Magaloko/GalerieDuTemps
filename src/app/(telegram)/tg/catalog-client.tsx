@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, X, Loader2 } from "lucide-react";
+import { Search, X, Loader2, Sparkles } from "lucide-react";
 import { formatPreis } from "@/lib/utils/preis";
 import { HeartToggle } from "./heart-toggle";
 import type { ProduktListItem } from "@/types/produkt";
@@ -32,6 +32,7 @@ export function TelegramCatalogClient({
   produkte,
   gesamt,
   kategorien,
+  neuheiten,
   suche,
   aktiveKategorie,
   sortierung,
@@ -39,6 +40,7 @@ export function TelegramCatalogClient({
   produkte:        (ProduktListItem & { era?: string | null })[];
   gesamt:          number;
   kategorien:      KatChip[];
+  neuheiten:       (ProduktListItem & { era?: string | null })[];
   suche:           string;
   aktiveKategorie: string;
   sortierung:      string;
@@ -156,6 +158,32 @@ export function TelegramCatalogClient({
         </div>
       )}
 
+      {/* „Новинки"-Strip — nur im ungefilterten Einstieg (Server liefert sonst []) */}
+      {neuheiten.length > 0 && (
+        <section className="mb-5">
+          <div className="flex items-center gap-1.5 mb-2.5">
+            <Sparkles className="w-3.5 h-3.5" style={{ color: "var(--color-coral)" }} />
+            <h2
+              className="text-[11px] uppercase font-medium"
+              style={{
+                letterSpacing: "0.22em",
+                color:         "var(--tg-theme-text-color, var(--color-ink))",
+              }}
+            >
+              Новинки
+            </h2>
+          </div>
+          <div
+            className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {neuheiten.map(n => (
+              <NeuheitCard key={n.id} produkt={n} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Ergebnis-Zeile + Sortierung */}
       <div className="flex items-center justify-between mb-4">
         <p
@@ -242,6 +270,73 @@ function Chip({
     >
       {label}{count !== undefined ? ` · ${count}` : ""}
     </button>
+  );
+}
+
+function NeuheitCard({ produkt }: { produkt: ProduktListItem & { era?: string | null } }) {
+  const waehrung = (produkt.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT";
+  return (
+    <Link
+      href={`/tg/produkt/${produkt.slug}`}
+      className="block shrink-0"
+      style={{ width: 132, touchAction: "manipulation" }}
+    >
+      <div
+        className="relative w-full overflow-hidden"
+        style={{ aspectRatio: "4/5", background: "var(--color-paper-warm)" }}
+      >
+        {produkt.hauptbild_url && (
+          <Image src={produkt.hauptbild_url} alt={produkt.name} fill sizes="132px" className="object-cover" />
+        )}
+        {produkt.ist_neu && !produkt.verkauft && !produkt.reserviert && (
+          <span
+            className="absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[9px] uppercase font-medium"
+            style={{
+              letterSpacing: "0.14em",
+              background:    "var(--color-coral)",
+              color:         "#fff",
+              borderRadius:  3,
+            }}
+          >
+            Новинка
+          </span>
+        )}
+        {(produkt.verkauft || produkt.reserviert) && (
+          <span
+            className="absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[9px] uppercase font-medium"
+            style={{
+              letterSpacing: "0.14em",
+              background:    produkt.verkauft ? "rgba(15,20,48,0.82)" : "rgba(201,168,76,0.92)",
+              color:         produkt.verkauft ? "var(--color-gold, #C9A84C)" : "#1a1410",
+              backdropFilter:"blur(4px)",
+            }}
+          >
+            {produkt.verkauft ? "Продано" : "Зарезервировано"}
+          </span>
+        )}
+      </div>
+      <h3
+        className="line-clamp-2 mt-1.5"
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize:   14,
+          lineHeight: 1.15,
+          color:      "var(--tg-theme-text-color, var(--color-ink))",
+        }}
+      >
+        {produkt.name}
+      </h3>
+      <p
+        className="mt-0.5"
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize:   13,
+          color:      "var(--tg-theme-text-color, var(--color-ink))",
+        }}
+      >
+        {formatPreis(produkt.preis, waehrung)}
+      </p>
+    </Link>
   );
 }
 

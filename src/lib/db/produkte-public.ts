@@ -65,6 +65,42 @@ export const featuredProdukte = unstable_cache(
   { tags: [PUBLIC_PRODUCTS_TAG], revalidate: PUBLIC_CATALOG_REVALIDATE_SECONDS },
 );
 
+/** Neuheiten — zuletzt veröffentlichte Stücke (für die „Новинки"-Strip im /tg-Einstieg).
+ *  `ist_neu` markiert Stücke, die innerhalb der letzten 14 Tage veröffentlicht wurden. */
+async function neuheitenProdukteUncached(limit = 8): Promise<ProduktListItem[]> {
+  const result = await query<ProduktListItem>(
+    `SELECT
+       p.id, p.name, p.slug, p.preis, p.originalpreis, p.waehrung,
+       k.name AS kategorie_name,
+       p.zustand, p.lagerbestand, p.verkauft, p.featured, p.b2c_mode,
+       p.erstellt_am, p.era, p.material, p.herkunft,
+       (p.reserviert_bis IS NOT NULL AND p.reserviert_bis > now() AND p.verkauft = false) AS reserviert,
+       (p.veroeffentlicht_am > now() - interval '14 days') AS ist_neu,
+       (SELECT COUNT(*)::int FROM sebo.produktbilder pb WHERE pb.produkt_id = p.id) AS bilder_count,
+       COALESCE(
+         p.hauptbild_url,
+         (SELECT COALESCE(pb.url_medium, pb.url)
+            FROM sebo.produktbilder pb
+           WHERE pb.produkt_id = p.id
+           ORDER BY pb.ist_hauptbild DESC, pb.sortierung, pb.erstellt_am
+           LIMIT 1)
+       ) AS hauptbild_url
+     FROM sebo.produkte p
+     LEFT JOIN sebo.kategorien k ON k.id = p.kategorie_id
+     WHERE ${BASE_FILTER}
+     ORDER BY p.veroeffentlicht_am DESC
+     LIMIT $1`,
+    [limit]
+  );
+  return result.rows;
+}
+
+export const neuheitenProdukte = unstable_cache(
+  neuheitenProdukteUncached,
+  ["public-neuheiten-produkte"],
+  { tags: [PUBLIC_PRODUCTS_TAG], revalidate: PUBLIC_CATALOG_REVALIDATE_SECONDS },
+);
+
 /** Öffentlicher Katalog mit Filtern + Paginierung */
 async function katalogProdukteUncached(params: {
   seite?:       number;

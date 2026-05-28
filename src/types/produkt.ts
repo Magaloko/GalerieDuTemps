@@ -180,6 +180,8 @@ export interface ProduktListItem {
   material?:      string | null;
   herkunft?:      string | null;
   bilder_count?:  number | null;
+  /** Neuheit: innerhalb der letzten 14 Tage veröffentlicht (nur in Neuheiten-Query gesetzt). */
+  ist_neu?:       boolean;
 }
 
 export interface PaginierteProdukte {
