@@ -65,15 +65,22 @@ export function MiniAppTabBar({ kaufenAktiv = true }: { kaufenAktiv?: boolean })
   const cartCount = useCart(s => s.items.reduce((acc, i) => acc + i.menge, 0));
 
   // Role einmal pro Mount fetchen. Wenn 401 / network-error → bleibt guest.
+  // x-tg-id: aktuelle Telegram-User-ID mitsenden, damit der Server ein an einen
+  // ANDEREN Nutzer gebundenes (z.B. geerbtes Admin-) Cookie erkennt und auf
+  // Gast herabstuft (geteilter Cookie-Jar bei Multi-Account-Geräten).
   useEffect(() => {
     let aborted = false;
-    fetch("/api/telegram/whoami", { credentials: "include" })
+    const tgId = typeof window !== "undefined"
+      ? window.Telegram?.WebApp?.initDataUnsafe?.user?.id
+      : undefined;
+    const headers: Record<string, string> = {};
+    if (tgId != null) headers["x-tg-id"] = String(tgId);
+    fetch("/api/telegram/whoami", { credentials: "include", headers })
       .then(r => (r.ok ? r.json() : null))
       .then(d => {
         if (aborted || !d) return;
-        if (d.role === "admin" || d.role === "customer") {
-          setRole(d.role);
-        }
+        // Bei Mismatch/Guest IMMER auf guest zurückfallen (nicht nur hochstufen).
+        setRole(d.role === "admin" || d.role === "customer" ? d.role : "guest");
       })
       .catch(() => {/* silent — bleibt guest */});
     return () => { aborted = true; };

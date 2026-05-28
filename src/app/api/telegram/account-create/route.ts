@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
       vorname:  valid.user.first_name ?? null,
     });
 
-    await setWebAppSessionCookieByRole("customer", customer.id);
+    await setWebAppSessionCookieByRole("customer", customer.id, valid.user.id);
 
     return NextResponse.json({
       ok:      true,

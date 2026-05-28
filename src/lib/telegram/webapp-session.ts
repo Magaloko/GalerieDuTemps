@@ -51,6 +51,11 @@ export interface WebAppSession {
   role:        WebAppRole;
   subjectId:   string;
   exp:         number;
+  /** Telegram-User-ID, an die diese Session gebunden ist (aus verifiziertem
+   *  initData). Erlaubt es zu erkennen, wenn auf einem Gerät mit mehreren
+   *  Telegram-Accounts (geteilter Cookie-Jar) ein ANDERER Nutzer das Cookie
+   *  präsentiert. Optional für Rückwärtskompatibilität mit alten Cookies. */
+  tgId?:       number;
   /** @deprecated alias auf subjectId wenn role="customer" — für Caller die
    *  noch das alte Schema lesen. */
   customerId?: string;
@@ -60,10 +65,15 @@ export function signWebAppSession(
   role:      WebAppRole,
   subjectId: string,
   ttlSeconds = DEFAULT_TTL_SECONDS,
+  tgId?:     number,
 ): string {
-  const payload = { role, subjectId, exp: Math.floor(Date.now() / 1000) + ttlSeconds };
-  const body    = b64url(JSON.stringify(payload));
-  const sig     = createHmac("sha256", getSecret()).update(body).digest("base64url");
+  const payload = {
+    role, subjectId,
+    exp: Math.floor(Date.now() / 1000) + ttlSeconds,
+    ...(tgId != null ? { tgId } : {}),
+  };
+  const body = b64url(JSON.stringify(payload));
+  const sig  = createHmac("sha256", getSecret()).update(body).digest("base64url");
   return `${body}.${sig}`;
 }
 
@@ -82,6 +92,7 @@ export function verifyWebAppSession(token: string | undefined | null): WebAppSes
       role?:       WebAppRole;
       subjectId?:  string;
       customerId?: string;
+      tgId?:       number;
       exp:         number;
     };
     if (!payload.exp) return null;
@@ -93,6 +104,7 @@ export function verifyWebAppSession(token: string | undefined | null): WebAppSes
         role:       payload.role,
         subjectId:  payload.subjectId,
         exp:        payload.exp,
+        tgId:       typeof payload.tgId === "number" ? payload.tgId : undefined,
         customerId: payload.role === "customer" ? payload.subjectId : undefined,
       };
     }
@@ -116,13 +128,15 @@ export async function setWebAppSessionCookie(customerId: string): Promise<void> 
   await setWebAppSessionCookieByRole("customer", customerId);
 }
 
-/** Neue, role-aware Variante. */
+/** Neue, role-aware Variante. `tgId` bindet die Session an den verifizierten
+ *  Telegram-Nutzer (siehe WebAppSession.tgId). */
 export async function setWebAppSessionCookieByRole(
   role:      WebAppRole,
   subjectId: string,
+  tgId?:     number,
 ): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.set(COOKIE_NAME, signWebAppSession(role, subjectId), {
+  cookieStore.set(COOKIE_NAME, signWebAppSession(role, subjectId, DEFAULT_TTL_SECONDS, tgId), {
     httpOnly: true,
     secure:   true,
     sameSite: "none",

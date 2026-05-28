@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
 
   try {
     if (identity.role === "admin" && identity.admin) {
-      await setWebAppSessionCookieByRole("admin", identity.admin.id);
+      await setWebAppSessionCookieByRole("admin", identity.admin.id, valid.user.id);
       log("done-admin");
       return NextResponse.json({
         ok:   true,
@@ -141,7 +141,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (identity.role === "customer" && identity.customer) {
-      await setWebAppSessionCookieByRole("customer", identity.customer.id);
+      await setWebAppSessionCookieByRole("customer", identity.customer.id, valid.user.id);
       log("done-customer");
       return NextResponse.json({
         ok:   true,
