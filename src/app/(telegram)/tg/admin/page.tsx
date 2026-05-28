@@ -7,7 +7,7 @@ import { query } from "@/lib/db";
 import {
   Shield, Inbox, Package, Users, BarChart3, ShoppingBag, FileText,
   Tag, Ticket, Briefcase, Mail, UserCheck, Coins, Wallet, BookOpen,
-  Send, ArrowRight, ExternalLink, TrendingUp, Clock,
+  Send, ArrowRight, ExternalLink, TrendingUp, Clock, Bell,
 } from "lucide-react";
 import { InstagramIcon } from "@/components/produkte/instagram-icon";
 import type { Metadata } from "next";
@@ -103,6 +103,12 @@ export default async function TgAdminHome() {
       items: [
         { href: "/admin/journal",    label: "Журнал",   icon: BookOpen, kind: "web" },
         { href: "/admin/newsletter", label: "Рассылка", icon: Send,     kind: "web" },
+      ],
+    },
+    {
+      title: "Настройки",
+      items: [
+        { href: "/tg/admin/profil", label: "Профиль и уведомления", icon: Bell, kind: "native" },
       ],
     },
   ];

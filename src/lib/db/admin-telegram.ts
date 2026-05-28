@@ -101,3 +101,55 @@ export async function adminGetTelegramStatus(benutzerId: string): Promise<{
     verknuepft_am: row?.telegram_verknuepft_am ?? null,
   };
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Admin-Profil im Mini-App (Notifications + Kontaktdaten).
+ * Voraussetzung: Migration 049 (telefon/whatsapp/kontakt_kanal auf benutzer).
+ * ────────────────────────────────────────────────────────────────────────── */
+
+export interface AdminProfil {
+  name:                  string | null;
+  email:                 string;
+  rolle:                 string;
+  telegram_chat_id:      number | null;
+  telegram_username:     string | null;
+  telegram_verknuepft_am: string | null;
+  notifications_aktiv:   boolean;
+  telefon:               string | null;
+  whatsapp:              string | null;
+  kontakt_kanal:         string | null;
+}
+
+export async function adminProfilLaden(benutzerId: string): Promise<AdminProfil | null> {
+  const r = await query<AdminProfil>(
+    `SELECT name, email, rolle,
+            telegram_chat_id, telegram_username, telegram_verknuepft_am,
+            COALESCE(telegram_notifications_aktiv, true) AS notifications_aktiv,
+            telefon, whatsapp, kontakt_kanal
+       FROM sebo.benutzer WHERE id = $1`,
+    [benutzerId],
+  );
+  return r.rows[0] ?? null;
+}
+
+export async function adminTelegramNotificationsSetzen(benutzerId: string, aktiv: boolean): Promise<void> {
+  await query(
+    `UPDATE sebo.benutzer SET telegram_notifications_aktiv = $1 WHERE id = $2`,
+    [aktiv, benutzerId],
+  );
+}
+
+export async function adminProfilKontaktAktualisieren(
+  benutzerId: string,
+  data: { telefon?: string | null; whatsapp?: string | null; kontakt_kanal?: string | null },
+): Promise<void> {
+  const felder: string[] = [];
+  const werte:  unknown[] = [];
+  let idx = 1;
+  for (const key of ["telefon", "whatsapp", "kontakt_kanal"] as const) {
+    if (data[key] !== undefined) { felder.push(`${key} = $${idx++}`); werte.push(data[key]); }
+  }
+  if (felder.length === 0) return;
+  werte.push(benutzerId);
+  await query(`UPDATE sebo.benutzer SET ${felder.join(", ")} WHERE id = $${idx}`, werte);
+}

@@ -19,6 +19,7 @@ import {
   instagramPostKanalMarkieren,
 } from "@/lib/db/instagram-archive";
 import { broadcastInstagramInKanal } from "@/lib/telegram/neuheiten";
+import { adminTelegramNotificationsSetzen, adminProfilKontaktAktualisieren } from "@/lib/db/admin-telegram";
 import { extractInstagramUrl, instagramShortcode, instagramTyp } from "@/lib/utils/instagram";
 import { auditLog } from "@/lib/db/audit-log";
 import { bildVerarbeiten } from "@/lib/storage/upload";
@@ -502,5 +503,51 @@ export async function produktNeuAnlegenTgAction(): Promise<
   } catch (err) {
     console.error("[produktNeuAnlegen]", err);
     return { ok: false, error: "Не удалось создать черновик" };
+  }
+}
+
+/* ── Admin-Profil: Benachrichtigungen an/aus ──────────────────────────────── */
+export async function adminNotificationsToggleAction(aktiv: boolean): Promise<ActionRes> {
+  const admin = await requireTgAdmin();
+  if (!admin) return { ok: false, error: "Нет прав" };
+  try {
+    await adminTelegramNotificationsSetzen(admin.id, aktiv);
+    revalidatePath("/tg/admin/profil");
+    return { ok: true, message: aktiv ? "Уведомления включены" : "Уведомления выключены" };
+  } catch (err) {
+    console.error("[adminNotificationsToggle]", err);
+    return { ok: false, error: "Ошибка" };
+  }
+}
+
+/* ── Admin-Profil: eigene Kontaktdaten speichern ──────────────────────────── */
+export async function adminProfilKontaktAction(input: {
+  telefon?:       string | null;
+  whatsapp?:      string | null;
+  kontakt_kanal?: string | null;
+}): Promise<ActionRes> {
+  const admin = await requireTgAdmin();
+  if (!admin) return { ok: false, error: "Нет прав" };
+
+  const KANAELE = new Set(["telegram", "telefon", "whatsapp", "email"]);
+  const clean = (v: string | null | undefined, max = 50): string | null => {
+    if (v == null) return null;
+    const t = v.trim().slice(0, max);
+    return t.length ? t : null;
+  };
+  const kanalRoh = clean(input.kontakt_kanal, 20);
+  const kanal    = kanalRoh && KANAELE.has(kanalRoh) ? kanalRoh : null;
+
+  try {
+    await adminProfilKontaktAktualisieren(admin.id, {
+      telefon:       clean(input.telefon),
+      whatsapp:      clean(input.whatsapp),
+      kontakt_kanal: kanal,
+    });
+    revalidatePath("/tg/admin/profil");
+    return { ok: true, message: "Сохранено" };
+  } catch (err) {
+    console.error("[adminProfilKontakt]", err);
+    return { ok: false, error: "Ошибка сохранения" };
   }
 }
