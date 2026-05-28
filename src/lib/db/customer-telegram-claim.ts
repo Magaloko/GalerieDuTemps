@@ -51,7 +51,8 @@ async function customerMerge(client: PoolClient, fromId: string, toId: string): 
   await client.query(`DELETE FROM sebo.drip_flow_runs WHERE customer_id = $1`, [fromId]);
 
   // Einfache Umhängungen (keine PK/UNIQUE-Konflikte auf customer_id).
-  for (const tbl of ["orders", "leads", "notes", "tasks", "crm_events", "invoices", "newsletter_sends"]) {
+  // Vollständige Liste aller customer_id-FK-Tabellen ohne Sonder-Constraint.
+  for (const tbl of ["orders", "leads", "notes", "tasks", "crm_events", "invoices", "newsletter_sends", "coupon_nutzungen"]) {
     await client.query(`UPDATE sebo.${tbl} SET customer_id = $2 WHERE customer_id = $1`, [fromId, toId]);
   }
 
