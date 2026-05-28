@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, X, Loader2, Sparkles } from "lucide-react";
+import { Search, X, Loader2, Sparkles, SlidersHorizontal } from "lucide-react";
 import { formatPreis } from "@/lib/utils/preis";
 import { HeartToggle } from "./heart-toggle";
 import type { ProduktListItem } from "@/types/produkt";
@@ -36,6 +36,10 @@ export function TelegramCatalogClient({
   suche,
   aktiveKategorie,
   sortierung,
+  minPreis,
+  maxPreis,
+  preisRange,
+  waehrung,
 }: {
   produkte:        (ProduktListItem & { era?: string | null })[];
   gesamt:          number;
@@ -44,20 +48,31 @@ export function TelegramCatalogClient({
   suche:           string;
   aktiveKategorie: string;
   sortierung:      string;
+  minPreis:        number | null;
+  maxPreis:        number | null;
+  preisRange:      { min: number; max: number };
+  waehrung:        "KZT" | "EUR" | "USD" | "RUB";
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [term, setTerm] = useState(suche);
+  const [preisOffen, setPreisOffen] = useState(false);
+  const [minFeld, setMinFeld] = useState(minPreis !== null ? String(minPreis) : "");
+  const [maxFeld, setMaxFeld] = useState(maxPreis !== null ? String(maxPreis) : "");
 
   // URL aus aktuellem Filter-State bauen und navigieren.
-  const navigate = (next: { q?: string; kat?: string; sort?: string }) => {
+  const navigate = (next: { q?: string; kat?: string; sort?: string; min?: string; max?: string }) => {
     const params = new URLSearchParams();
     const q   = next.q   ?? term;
     const kat = next.kat ?? aktiveKategorie;
     const srt = next.sort ?? sortierung;
+    const mn  = next.min  ?? (minPreis !== null ? String(minPreis) : "");
+    const mx  = next.max  ?? (maxPreis !== null ? String(maxPreis) : "");
     if (q.trim())          params.set("q", q.trim());
     if (kat)               params.set("kat", kat);
     if (srt && srt !== "neu") params.set("sort", srt);
+    if (mn.trim() && Number(mn) >= 0) params.set("min", String(Math.floor(Number(mn))));
+    if (mx.trim() && Number(mx) >= 0) params.set("max", String(Math.ceil(Number(mx))));
     const qs = params.toString();
     startTransition(() => router.push(qs ? `/tg?${qs}` : "/tg"));
   };
@@ -73,10 +88,18 @@ export function TelegramCatalogClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [term]);
 
-  // Server-State → lokales Feld synchron halten (z.B. Back-Navigation).
+  // Server-State → lokale Felder synchron halten (z.B. Back-Navigation).
   useEffect(() => { setTerm(suche); }, [suche]);
+  useEffect(() => { setMinFeld(minPreis !== null ? String(minPreis) : ""); }, [minPreis]);
+  useEffect(() => { setMaxFeld(maxPreis !== null ? String(maxPreis) : ""); }, [maxPreis]);
 
-  const hatFilter = !!suche || !!aktiveKategorie;
+  const preisAktiv = minPreis !== null || maxPreis !== null;
+  const hatFilter  = !!suche || !!aktiveKategorie || preisAktiv;
+
+  const alleZuruecksetzen = () => {
+    setTerm(""); setMinFeld(""); setMaxFeld(""); setPreisOffen(false);
+    navigate({ q: "", kat: "", min: "", max: "" });
+  };
 
   return (
     <main className="p-4">
@@ -184,10 +207,10 @@ export function TelegramCatalogClient({
         </section>
       )}
 
-      {/* Ergebnis-Zeile + Sortierung */}
-      <div className="flex items-center justify-between mb-4">
+      {/* Ergebnis-Zeile + Preis-Filter-Toggle + Sortierung */}
+      <div className="flex items-center justify-between gap-2 mb-3">
         <p
-          className="text-sm"
+          className="text-sm shrink-0"
           style={{
             fontFamily: "var(--font-italic)",
             fontStyle:  "italic",
@@ -196,23 +219,98 @@ export function TelegramCatalogClient({
         >
           {gesamt} {plural(gesamt)}
         </p>
-        <select
-          value={sortierung}
-          onChange={e => navigate({ sort: e.target.value })}
-          className="text-[11px] uppercase font-medium bg-transparent outline-none py-1"
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setPreisOffen(o => !o)}
+            className="inline-flex items-center gap-1 text-[11px] uppercase font-medium py-1"
+            style={{
+              letterSpacing: "0.14em",
+              color:         preisAktiv ? "var(--color-coral)" : "var(--tg-theme-link-color, var(--color-coral))",
+              touchAction:   "manipulation",
+            }}
+            aria-expanded={preisOffen}
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            Цена{preisAktiv ? " •" : ""}
+          </button>
+          <select
+            value={sortierung}
+            onChange={e => navigate({ sort: e.target.value })}
+            className="text-[11px] uppercase font-medium bg-transparent outline-none py-1"
+            style={{
+              letterSpacing: "0.14em",
+              color:         "var(--tg-theme-link-color, var(--color-coral))",
+              touchAction:   "manipulation",
+            }}
+          >
+            {SORT_OPTIONS.map(o => (
+              <option key={o.value} value={o.value} style={{ color: "var(--color-ink)" }}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Preis-Filter-Panel (einklappbar) */}
+      {preisOffen && (
+        <div
+          className="mb-4 p-3"
           style={{
-            letterSpacing: "0.14em",
-            color:         "var(--tg-theme-link-color, var(--color-coral))",
-            touchAction:   "manipulation",
+            background:   "var(--tg-theme-section-bg-color, #fff)",
+            border:       "1px solid var(--color-line)",
+            borderRadius: 12,
           }}
         >
-          {SORT_OPTIONS.map(o => (
-            <option key={o.value} value={o.value} style={{ color: "var(--color-ink)" }}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-      </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              value={minFeld}
+              onChange={e => setMinFeld(e.target.value)}
+              placeholder={preisRange.min ? `от ${preisRange.min}` : "от"}
+              className="w-full bg-transparent px-2 py-2 text-sm outline-none"
+              style={{ border: "1px solid var(--color-line)", borderRadius: 8, color: "var(--tg-theme-text-color, var(--color-ink))" }}
+            />
+            <span style={{ color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>—</span>
+            <input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              value={maxFeld}
+              onChange={e => setMaxFeld(e.target.value)}
+              placeholder={preisRange.max ? `до ${preisRange.max}` : "до"}
+              className="w-full bg-transparent px-2 py-2 text-sm outline-none"
+              style={{ border: "1px solid var(--color-line)", borderRadius: 8, color: "var(--tg-theme-text-color, var(--color-ink))" }}
+            />
+          </div>
+          <p className="mt-2 text-[10px]" style={{ color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
+            {waehrung}
+          </p>
+          <div className="flex items-center gap-2 mt-3">
+            <button
+              type="button"
+              onClick={() => navigate({ min: minFeld, max: maxFeld })}
+              className="flex-1 py-2 text-[11px] uppercase font-medium"
+              style={{ letterSpacing: "0.18em", background: "var(--color-coral)", color: "#fff", borderRadius: 8, touchAction: "manipulation" }}
+            >
+              Применить
+            </button>
+            {preisAktiv && (
+              <button
+                type="button"
+                onClick={() => { setMinFeld(""); setMaxFeld(""); navigate({ min: "", max: "" }); }}
+                className="py-2 px-3 text-[11px] uppercase font-medium"
+                style={{ letterSpacing: "0.14em", border: "1px solid var(--color-line)", color: "var(--tg-theme-text-color, var(--color-ink))", borderRadius: 8, touchAction: "manipulation" }}
+              >
+                Сброс
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {produkte.length === 0 ? (
         <div className="py-16 text-center">
@@ -222,7 +320,7 @@ export function TelegramCatalogClient({
           {hatFilter && (
             <button
               type="button"
-              onClick={() => { setTerm(""); navigate({ q: "", kat: "" }); }}
+              onClick={alleZuruecksetzen}
               className="mt-3 text-[11px] uppercase font-medium"
               style={{ letterSpacing: "0.18em", color: "var(--color-coral)", touchAction: "manipulation" }}
             >

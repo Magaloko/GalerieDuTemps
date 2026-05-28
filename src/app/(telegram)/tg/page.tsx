@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { katalogProdukte, neuheitenProdukte } from "@/lib/db/produkte-public";
+import { katalogProdukte, neuheitenProdukte, preisRange } from "@/lib/db/produkte-public";
 import { alleKategorien } from "@/lib/db/kategorien";
 import { isFeatureEnabled } from "@/lib/db/feature-flags";
 import { maskBestandListe } from "@/lib/utils/showcase-mask";
@@ -30,7 +30,7 @@ export const dynamic = "force-dynamic";
 export default async function TelegramMiniAppHome({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; kat?: string; sort?: string }>;
+  searchParams: Promise<{ q?: string; kat?: string; sort?: string; min?: string; max?: string }>;
 }) {
   const sp     = await searchParams;
   const suche  = (sp.q ?? "").trim() || undefined;
@@ -38,16 +38,27 @@ export default async function TelegramMiniAppHome({
   const sort   = sp.sort === "preis_asc" || sp.sort === "preis_desc" || sp.sort === "name"
     ? sp.sort
     : "neu";
+  // Preis-Filter: nur positive, endliche Zahlen übernehmen.
+  const parsePreis = (v?: string) => {
+    const n = Number(v);
+    return v && Number.isFinite(n) && n >= 0 ? n : undefined;
+  };
+  const minPreis = parsePreis(sp.min);
+  const maxPreis = parsePreis(sp.max);
 
-  const hatFilter = !!suche || !!kat || sort !== "neu";
+  const hatFilter = !!suche || !!kat || sort !== "neu" || minPreis !== undefined || maxPreis !== undefined;
 
-  const [data, kategorien, neuheiten, kaufenAktiv] = await Promise.all([
-    katalogProdukte({ seite: 1, limit: 48, suche, kategorie: kat, sortierung: sort }).catch(() => ({
+  const [data, kategorien, neuheiten, range, kaufenAktiv] = await Promise.all([
+    katalogProdukte({
+      seite: 1, limit: 48, suche, kategorie: kat, sortierung: sort,
+      min_preis: minPreis, max_preis: maxPreis,
+    }).catch(() => ({
       items: [], gesamt: 0, seite: 1, limit: 48, seiten: 0,
     })),
     alleKategorien().catch(() => []),
     // Neuheiten-Strip nur im ungefilterten Einstieg laden.
     hatFilter ? Promise.resolve([]) : neuheitenProdukte(8).catch(() => []),
+    preisRange().catch(() => ({ min: 0, max: 0 })),
     isFeatureEnabled("kaufen_aktiv").catch(() => true),
   ]);
 
@@ -67,6 +78,10 @@ export default async function TelegramMiniAppHome({
           suche={suche ?? ""}
           aktiveKategorie={kat ?? ""}
           sortierung={sort}
+          minPreis={minPreis ?? null}
+          maxPreis={maxPreis ?? null}
+          preisRange={{ min: Math.floor(range.min ?? 0), max: Math.ceil(range.max ?? 0) }}
+          waehrung={(data.items[0]?.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT"}
         />
       </Suspense>
     </TelegramAuthGate>
