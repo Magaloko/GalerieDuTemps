@@ -2,6 +2,7 @@ import Link from "next/link";
 import { customerById } from "@/lib/db/customers";
 import { getWebAppSession } from "@/lib/telegram/webapp-session";
 import { TelegramAuthGate } from "../auth-gate";
+import { ClaimInitForm } from "./claim-init-form";
 import {
   User, Mail, Briefcase, Package, Heart, ExternalLink, ArrowRight,
 } from "lucide-react";
@@ -45,49 +46,73 @@ export default async function TgProfilPage() {
   if (!customer) {
     return (
       <TelegramAuthGate>
-        <main className="p-6 text-center min-h-[60vh] flex flex-col items-center justify-center">
-          <User className="w-10 h-10 mb-3" style={{ color: "var(--color-ink-mute)" }} />
-          <p
-            className="text-[10px] uppercase font-medium mb-2"
-            style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}
-          >
-            Профиль
-          </p>
-          <h1
-            className="mb-2"
+        <main className="p-4 space-y-5">
+          <header className="text-center pt-2">
+            <p
+              className="text-[10px] uppercase font-medium mb-2"
+              style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}
+            >
+              ✦ Профиль
+            </p>
+            <h1
+              className="mb-2"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize:   24,
+                color:      "var(--tg-theme-text-color, var(--color-ink))",
+              }}
+            >
+              Привязать аккаунт
+            </h1>
+            <p
+              className="text-sm max-w-sm mx-auto"
+              style={{
+                fontFamily: "var(--font-italic)",
+                fontStyle:  "italic",
+                color:      "var(--tg-theme-hint-color, var(--color-ink-soft))",
+                lineHeight: 1.5,
+              }}
+            >
+              Введите e-mail вашего аккаунта на сайте. Мы пришлём ссылку
+              для подтверждения — после клика вы увидите свои заказы
+              прямо здесь.
+            </p>
+          </header>
+
+          {/* Claim-Form (Client-Component, läuft initData-Auth-POST) */}
+          <ClaimInitForm />
+
+          {/* Wenn noch kein Account auf Web */}
+          <div
+            className="p-4 text-center"
             style={{
-              fontFamily: "var(--font-display)",
-              fontSize:   24,
-              color:      "var(--tg-theme-text-color, var(--color-ink))",
+              background: "var(--color-bone)",
+              border:     "1px solid var(--color-line)",
             }}
           >
-            Привяжите аккаунт
-          </h1>
-          <p
-            className="text-sm max-w-xs mb-5"
-            style={{
-              fontFamily: "var(--font-italic)",
-              fontStyle:  "italic",
-              color:      "var(--tg-theme-hint-color, var(--color-ink-soft))",
-            }}
-          >
-            Создайте аккаунт на сайте и привяжите Telegram через профиль,
-            чтобы видеть заказы и получать уведомления.
-          </p>
-          <a
-            href="/kunde/anmelden"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block px-5 py-2.5 text-[11px] uppercase font-medium"
-            style={{
-              letterSpacing: "0.22em",
-              background:    "var(--color-coral)",
-              color:         "#fff",
-              touchAction:   "manipulation",
-            }}
-          >
-            Открыть сайт
-          </a>
+            <p
+              className="text-xs mb-3"
+              style={{
+                fontFamily: "var(--font-italic)",
+                fontStyle:  "italic",
+                color:      "var(--tg-theme-hint-color, var(--color-ink-soft))",
+              }}
+            >
+              Ещё нет аккаунта на сайте?
+            </p>
+            <a
+              href="/kunde/registrieren"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-[11px] uppercase font-medium"
+              style={{
+                letterSpacing: "0.22em",
+                color:         "var(--tg-theme-link-color, var(--color-coral))",
+              }}
+            >
+              Зарегистрироваться <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
         </main>
       </TelegramAuthGate>
     );
