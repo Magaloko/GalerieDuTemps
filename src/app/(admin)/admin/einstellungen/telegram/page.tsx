@@ -2,6 +2,7 @@ import Link from "next/link";
 import { query } from "@/lib/db";
 import { TelegramSetupClient } from "./client";
 import { AdminSelfLink } from "./self-link-client";
+import { WelcomeImageClient } from "./welcome-image-client";
 import { ChevronLeft, Send } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -71,6 +72,9 @@ export default async function TelegramSetupPage() {
 
       {/* Persönliche Admin-Verknüpfung — Notifications + Admin-Mini-App */}
       {konto?.aktiv && <AdminSelfLink />}
+
+      {/* Welcome-Bild der /start-Begrüßung */}
+      {konto?.aktiv && <WelcomeImageClient />}
     </div>
   );
 }

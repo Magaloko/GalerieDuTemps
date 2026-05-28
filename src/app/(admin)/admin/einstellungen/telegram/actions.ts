@@ -322,3 +322,41 @@ export async function adminTelegramTrennenAction(): Promise<ActionResult> {
     return { ok: false, error: err instanceof Error ? err.message : "Не удалось" };
   }
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Welcome-Bild der Begrüßungs-Nachricht (sendPhoto bei /start)
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/** Aktuell gesetztes Welcome-Bild lesen (leer = Default hero-stack-1). */
+export async function telegramWelcomeImageGetAction(): Promise<string> {
+  const session = await requireAdminSession();
+  if (!session) return "";
+  const { getMarketingString } = await import("@/lib/db/marketing-strings");
+  return getMarketingString("telegram.welcome.image", "ru", "").catch(() => "");
+}
+
+/** Welcome-Bild setzen. URL absolut (https://...) ODER relativer Pfad
+ *  (/images/...). Leerer Wert → zurück auf Default. */
+export async function telegramWelcomeImageSetAction(url: string): Promise<ActionResult> {
+  const session = await requireAdminSession();
+  if (!session) return { ok: false, error: "Нет прав" };
+
+  const trimmed = url.trim();
+  // Einfache Validierung: leer (= reset) ODER http(s) ODER /pfad
+  if (trimmed && !/^https?:\/\//.test(trimmed) && !trimmed.startsWith("/")) {
+    return { ok: false, error: "URL должен начинаться с https:// или / (например /images/foo.jpg)" };
+  }
+
+  try {
+    const { upsertMarketingString } = await import("@/lib/db/marketing-strings");
+    await upsertMarketingString("telegram.welcome.image", { ru: trimmed });
+    return {
+      ok: true,
+      message: trimmed
+        ? "Картинка обновлена. Откройте бот → /start для проверки."
+        : "Сброшено на изображение по умолчанию.",
+    };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Не удалось сохранить" };
+  }
+}

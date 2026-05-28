@@ -8,6 +8,7 @@ import {
 } from "@/lib/db/customer-telegram";
 import { adminTelegramVerknuepfen } from "@/lib/db/admin-telegram";
 import { benutzerByTelegramChatId } from "@/lib/telegram/role-resolver";
+import { getMarketingString } from "@/lib/db/marketing-strings";
 import {
   sendMessage,
   sendPhoto,
@@ -216,8 +217,14 @@ export async function POST(
       }
 
       // Hero-Photo zur Welcome-Message — Logo / Brand-Visual.
-      // sendPhoto > sendMessage für WOW-Faktor beim ersten /start.
-      const heroUrl = `${siteBase}/images/hero-stack-1.jpg`;
+      // Konfigurierbar via Marketing-String „telegram.welcome.image"
+      // (Admin: /admin/einstellungen/telegram). Fallback auf hero-stack-1.
+      // Relative Pfade werden mit siteBase aufgelöst, absolute (https://...)
+      // bleiben wie sie sind — so kann man auch externe Bilder nutzen.
+      const configured = await getMarketingString("telegram.welcome.image", "ru", "").catch(() => "");
+      const heroUrl = configured
+        ? (configured.startsWith("http") ? configured : `${siteBase}${configured.startsWith("/") ? "" : "/"}${configured}`)
+        : `${siteBase}/images/hero-stack-1.jpg`;
       const send = sendPhoto(konto.access_token, chat.id, heroUrl, {
         caption:      welcomeText,
         parse_mode:   "HTML",
