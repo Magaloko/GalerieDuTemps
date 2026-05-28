@@ -38,6 +38,28 @@ async function persist(
   return { url: publicUrlFor(dateiname), dateiname };
 }
 
+/** Räumt bei Teil-Upload bereits geschriebene Objekte/Dateien weg (kein Orphan). */
+async function cleanupOrphans(baseId: string, origExt: string): Promise<void> {
+  if (supabaseStorageAktiv()) {
+    const { supabaseDelete } = await import("./supabase-storage");
+    await supabaseDelete([
+      `produkte/${baseId}/original.${origExt}`,
+      `produkte/${baseId}/thumb.webp`,
+      `produkte/${baseId}/medium.webp`,
+      `produkte/${baseId}/large.webp`,
+    ]);
+    return;
+  }
+  const { unlink } = await import("fs/promises");
+  const dir = uploadDirGet();
+  await Promise.allSettled([
+    `${baseId}.${origExt}`,
+    `${baseId}-thumb.webp`,
+    `${baseId}-medium.webp`,
+    `${baseId}-large.webp`,
+  ].map(n => unlink(join(dir, n))));
+}
+
 /* ──────────────────────────────────────────────────────────────────────────
  * Upload-Pipeline mit Bildverarbeitung (sharp)
  *
@@ -215,17 +237,24 @@ export async function bildVerarbeiten(file: File): Promise<BildUploadResult> {
   );
 
   // ── Persistieren: Original + Varianten ────────────────────────────────────
-  // Original ZUERST (Hauptbild). Wenn das fehlschlägt → Exception, kein
-  // weiterer Upload, keine DB-Row beim Caller. Atomar.
-  const orig = await persist(baseId, "original", origExt, origBuffer);
-
-  const variantPersisted = await Promise.all(
-    variantBuffers.map(async ([name, buf]) => {
-      const r = await persist(baseId, name, "webp", buf);
-      return [name, r.url] as const;
-    }),
-  );
-  const variantMap = Object.fromEntries(variantPersisted);
+  // Atomar: Original zuerst, dann Varianten. Schlägt IRGENDEIN Upload fehl,
+  // räumen wir bereits hochgeladene Objekte wieder weg (kein Orphan in
+  // Supabase/Disk) und werfen — der Caller schreibt dann KEINE DB-Row.
+  let orig: { url: string; dateiname: string };
+  let variantMap: Record<string, string>;
+  try {
+    orig = await persist(baseId, "original", origExt, origBuffer);
+    const variantPersisted = await Promise.all(
+      variantBuffers.map(async ([name, buf]) => {
+        const r = await persist(baseId, name, "webp", buf);
+        return [name, r.url] as const;
+      }),
+    );
+    variantMap = Object.fromEntries(variantPersisted);
+  } catch (err) {
+    await cleanupOrphans(baseId, origExt).catch(() => {});
+    throw err instanceof Error ? err : new Error(String(err));
+  }
 
   return {
     url:          orig.url,

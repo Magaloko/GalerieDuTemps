@@ -83,14 +83,24 @@ export async function supabaseDelete(paths: string[]): Promise<void> {
 
   // Storage-API: DELETE mit { prefixes: [...] } am Bucket-Endpoint
   const url = `${SUPABASE_URL}/storage/v1/object/${BUCKET}`;
-  await fetch(url, {
-    method: "DELETE",
-    headers: {
-      Authorization:  `Bearer ${SERVICE_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ prefixes: keys }),
-  }).catch(err => console.warn("[supabaseDelete]", err));
+  try {
+    const r = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        Authorization:  `Bearer ${SERVICE_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ prefixes: keys }),
+    });
+    if (!r.ok) {
+      // Storage-Datei bleibt liegen während DB-Row evtl. schon weg ist →
+      // laut loggen, damit ein Orphan-GC/Monitoring das aufgreifen kann.
+      const detail = await r.text().catch(() => "");
+      console.error(`[supabaseDelete] HTTP ${r.status} — Objekte evtl. nicht gelöscht:`, keys, detail.slice(0, 200));
+    }
+  } catch (err) {
+    console.error("[supabaseDelete] Netzwerkfehler — Objekte evtl. nicht gelöscht:", keys, err);
+  }
 }
 
 /** Extrahiert den Object-Key aus einer public-URL (oder gibt den Key durch). */

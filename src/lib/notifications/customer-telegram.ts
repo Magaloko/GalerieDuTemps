@@ -1,6 +1,7 @@
 import { query } from "@/lib/db";
 import { sendMessage } from "@/lib/telegram/client";
 import { formatPreis } from "@/lib/utils/preis";
+import { escapeHtml } from "@/lib/utils/escape-html";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * Customer-Telegram-Notifications
@@ -126,8 +127,12 @@ export async function notifyOrderShipped(
     let text =
       `📦 Заказ отправлен\n\n` +
       `${ctx.bestellnummer}\n`;
-    if (tracking?.nummer) text += `\nТрек-номер: <code>${tracking.nummer}</code>`;
-    if (tracking?.url)    text += `\n${tracking.url}`;
+    if (tracking?.nummer) text += `\nТрек-номер: <code>${escapeHtml(tracking.nummer)}</code>`;
+    // Tracking-URL nur akzeptieren wenn http(s) — sonst weglassen (kein
+    // javascript:/data: o.ä., kein HTML-Injection via < >).
+    if (tracking?.url && /^https?:\/\//i.test(tracking.url)) {
+      text += `\n${escapeHtml(tracking.url)}`;
+    }
     text += `\n\nСтатус заказа: ${ctx.orderUrl}`;
     await sendMessage(ctx.botToken, ctx.chatId, text, { parse_mode: "HTML" })
       .catch(err => console.warn("[notifyOrderShipped]", err));

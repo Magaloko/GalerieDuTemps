@@ -152,6 +152,15 @@ export async function claimBestaetigen(token: string): Promise<string | null> {
              telegram_claim_expires_at   = NULL
        WHERE telegram_claim_token       = $1
          AND telegram_claim_expires_at  > now()
+         -- Dieser Customer darf noch NICHT verknüpft sein
+         AND telegram_chat_id IS NULL
+         -- und die beanspruchte chat_id darf nicht inzwischen bei einem
+         -- ANDEREN Customer gelandet sein (Race zwischen Claim-Init + Confirm)
+         AND NOT EXISTS (
+           SELECT 1 FROM sebo.customers c2
+           WHERE c2.telegram_chat_id = sebo.customers.telegram_claim_chat_id
+             AND c2.id <> sebo.customers.id
+         )
        RETURNING id`,
       [token],
     );

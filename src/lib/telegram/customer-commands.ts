@@ -2,6 +2,7 @@ import { query } from "@/lib/db";
 import { sendMessage } from "@/lib/telegram/client";
 import { formatPreis } from "@/lib/utils/preis";
 import { getSiteUrl } from "@/lib/site-url";
+import { escapeHtml } from "@/lib/utils/escape-html";
 import type { Customer } from "@/types/commerce";
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -189,8 +190,8 @@ async function cmdStatus(ctx: CommandCtx, arg: string): Promise<void> {
     `Создан: ${new Date(o.erstellt_am).toLocaleString("ru-RU")}`;
   if (o.bezahlt_am)   text += `\nОплачен: ${new Date(o.bezahlt_am).toLocaleString("ru-RU")}`;
   if (o.versendet_am) text += `\nОтправлен: ${new Date(o.versendet_am).toLocaleString("ru-RU")}`;
-  if (o.tracking_nummer) text += `\n\nТрек-номер: <code>${o.tracking_nummer}</code>`;
-  if (o.tracking_url)    text += `\n${o.tracking_url}`;
+  if (o.tracking_nummer) text += `\n\nТрек-номер: <code>${escapeHtml(o.tracking_nummer)}</code>`;
+  if (o.tracking_url && /^https?:\/\//i.test(o.tracking_url)) text += `\n${escapeHtml(o.tracking_url)}`;
   text += `\n\nПолностью: ${baseUrl()}/kunde/bestellungen/${o.id}`;
 
   await sendMessage(ctx.botToken, ctx.chatId, text, { parse_mode: "HTML" })
