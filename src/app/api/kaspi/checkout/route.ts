@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { query } from "@/lib/db";
-import { orderErstellen } from "@/lib/db/orders";
+import { orderErstellen, orderCanceln } from "@/lib/db/orders";
 import { auth } from "@/lib/auth/config";
 import { customerById } from "@/lib/db/customers";
 import { erstellePaymentLink, kaspiKonfiguriert, getKaspiConfig } from "@/lib/payment/kaspi";
@@ -151,6 +151,14 @@ export async function POST(req: NextRequest) {
     });
 
     if (!result.ok) {
+      // WICHTIG: Die Order wurde oben bereits angelegt → Lagerbestand ist
+      // reserviert. Schlägt die Payment-Link-Erstellung fehl (Kaspi-API down,
+      // noch nicht implementiert, …), MUSS die Order zurückgerollt werden,
+      // sonst bleibt eine bezahlbare-aber-unbezahlte Geisterbestellung mit
+      // blockiertem Bestand (bei Einzelstücken: Artikel für alle verschwunden).
+      await orderCanceln(order.id, "Kaspi-Payment-Link fehlgeschlagen").catch(e =>
+        console.error("[API Kaspi Checkout] Rollback fehlgeschlagen:", e),
+      );
       return NextResponse.json({ error: result.fehler }, { status: 502 });
     }
 

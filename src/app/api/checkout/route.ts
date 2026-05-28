@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { query } from "@/lib/db";
-import { orderErstellen } from "@/lib/db/orders";
+import { orderErstellen, orderCanceln } from "@/lib/db/orders";
 import { couponValidieren } from "@/lib/db/coupons";
 import { customerById } from "@/lib/db/customers";
 import { auth } from "@/lib/auth/config";
@@ -69,6 +69,11 @@ export async function POST(req: NextRequest) {
       error: "Stripe ist nicht konfiguriert. Bitte STRIPE_SECRET_KEY in .env.local setzen.",
     }, { status: 503 });
   }
+
+  // Tracker für Rollback: wenn nach dem Order-Insert (Bestand reserviert) noch
+  // etwas fehlschlägt (z.B. Stripe-Session-Erstellung), muss die Order storniert
+  // + der Bestand freigegeben werden — sonst Geisterbestellung mit Stuck-Stock.
+  let createdOrderId: string | null = null;
 
   try {
     // 1. Produkte aus DB laden + gegen URL-Manipulation validieren
@@ -251,6 +256,7 @@ export async function POST(req: NextRequest) {
       coupon_id,
       coupon_code,
     });
+    createdOrderId = order.id;  // ab hier ist Bestand reserviert → Rollback nötig bei Fehler
 
     // 5a. Critical-Alert: große Bestellung → Admins via Telegram pushen.
     // Schwelle ₸500 000 (= 50 000 000 cents). Best-effort, non-blocking.
@@ -331,6 +337,12 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     console.error("[API /checkout]", err);
+    // Rollback: wurde die Order schon angelegt (Bestand reserviert), aber danach
+    // ist etwas fehlgeschlagen (z.B. Stripe-Session) → stornieren + Bestand frei.
+    if (createdOrderId) {
+      await orderCanceln(createdOrderId, "Checkout abgebrochen (Fehler nach Order-Anlage)")
+        .catch(e => console.error("[API /checkout] Rollback fehlgeschlagen:", e));
+    }
     const msg = err instanceof Error ? err.message : "Checkout-Fehler";
     return NextResponse.json({ error: msg }, { status: 500 });
   }
