@@ -27,7 +27,7 @@ export const dynamic = "force-dynamic";
 export default async function ZahlungsmethodePage({
   searchParams,
 }: {
-  searchParams: Promise<{ order?: string }>;
+  searchParams: Promise<{ order?: string; t?: string }>;
 }) {
   const sp = await searchParams;
   if (!sp.order) redirect("/warenkorb");
@@ -38,6 +38,12 @@ export default async function ZahlungsmethodePage({
   ]);
   if (!order) redirect("/warenkorb");
   if (order.status !== "pending") redirect(`/checkout/erfolg/${order.id}`);
+
+  // IDOR-Schutz: Token aus URL muss zur Order passen (oder eingeloggter
+  // Customer ist Eigentümer). Sonst zurück zum Warenkorb.
+  const { darfCheckoutBearbeiten } = await import("@/lib/checkout/access");
+  const darf = await darfCheckoutBearbeiten(order, sp.t ?? null);
+  if (!darf) redirect("/warenkorb");
 
   const shippingCountry = (order.shipping_address as { land?: string })?.land?.toUpperCase();
 
@@ -85,6 +91,7 @@ export default async function ZahlungsmethodePage({
 
         <MethodPicker
           orderId={order.id}
+          checkoutToken={sp.t ?? null}
           totalCents={order.total_cents}
           waehrung={order.waehrung ?? "KZT"}
           methods={available.map(m => ({

@@ -24,7 +24,7 @@ export const dynamic = "force-dynamic";
  * setzt payment_status=paid.
  * ────────────────────────────────────────────────────────────────────────── */
 
-const Body = z.object({ order_id: z.string().uuid() });
+const Body = z.object({ order_id: z.string().uuid(), token: z.string().nullable().optional() });
 
 interface OrderItemRow {
   produkt_name:      string;
@@ -51,6 +51,11 @@ export async function POST(req: NextRequest) {
   if (!order) return NextResponse.json({ error: "Заказ не найден" }, { status: 404 });
   if (order.status !== "pending") {
     return NextResponse.json({ error: "Заказ уже оплачен или отменён" }, { status: 409 });
+  }
+  // IDOR-Schutz: Token oder Customer-Ownership
+  const { darfCheckoutBearbeiten } = await import("@/lib/checkout/access");
+  if (!(await darfCheckoutBearbeiten(order, parsed.data.token))) {
+    return NextResponse.json({ error: "Нет доступа к заказу" }, { status: 403 });
   }
 
   // Order-Items für Line-Items laden (orderById liefert sie bei einigen Code-

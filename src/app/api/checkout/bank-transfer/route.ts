@@ -24,7 +24,7 @@ export const dynamic = "force-dynamic";
  * im Admin → setOrderPaymentStatus(paid)).
  * ────────────────────────────────────────────────────────────────────────── */
 
-const Body = z.object({ order_id: z.string().uuid() });
+const Body = z.object({ order_id: z.string().uuid(), token: z.string().nullable().optional() });
 
 export async function POST(req: NextRequest) {
   let body: unknown;
@@ -38,6 +38,10 @@ export async function POST(req: NextRequest) {
   if (!order) return NextResponse.json({ error: "Bestellung nicht gefunden" }, { status: 404 });
   if (order.status !== "pending") {
     return NextResponse.json({ error: "Bestellung ist nicht mehr zahlbar" }, { status: 409 });
+  }
+  const { darfCheckoutBearbeiten } = await import("@/lib/checkout/access");
+  if (!(await darfCheckoutBearbeiten(order, parsed.data.token))) {
+    return NextResponse.json({ error: "Нет доступа к заказу" }, { status: 403 });
   }
 
   const reference = generatePaymentReference(order.order_number);

@@ -256,11 +256,14 @@ export async function POST(req: NextRequest) {
     }
 
     // 5b. Picker-Modus: Order ist angelegt, Provider-Wahl im Method-Picker.
+    //     checkout_token in die Redirect-URL → Zahlungs-Routen prüfen es
+    //     (IDOR-Schutz). Token ist nur dem Besteller bekannt.
     if (parsed.data.picker) {
+      const t = order.checkout_token ? `&t=${order.checkout_token}` : "";
       return NextResponse.json({
         ok:          true,
         order_id:    order.id,
-        redirect_to: `/checkout/zahlung?order=${order.id}`,
+        redirect_to: `/checkout/zahlung?order=${order.id}${t}`,
       });
     }
 

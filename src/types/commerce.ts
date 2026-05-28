@@ -131,6 +131,8 @@ export interface Order {
   kaspi_qr_url?:       string | null;
   stripe_session_id:   string | null;
   stripe_payment_intent: string | null;
+  /** Zufalls-Token gegen IDOR auf Zahlungs-Endpunkten (Migration 038). */
+  checkout_token?:     string | null;
   bezahlt_am:          string | null;
   versendet_am:        string | null;
   tracking_nummer:     string | null;

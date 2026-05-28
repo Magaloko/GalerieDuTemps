@@ -15,11 +15,12 @@ interface MethodItem {
 }
 
 interface Props {
-  orderId:    string;
-  totalCents: number;
-  waehrung:   string;
-  methods:    MethodItem[];
-  locale:     Locale;
+  orderId:       string;
+  checkoutToken: string | null;
+  totalCents:    number;
+  waehrung:      string;
+  methods:       MethodItem[];
+  locale:        Locale;
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -30,7 +31,7 @@ interface Props {
  *  a) eine Redirect-URL liefert (Stripe Checkout, PayPal, Crypto)
  *  b) eine interne Confirm-Page liefert (Bank, Vor-Ort)
  * ────────────────────────────────────────────────────────────────────────── */
-export function MethodPicker({ orderId, totalCents, waehrung, methods, locale }: Props) {
+export function MethodPicker({ orderId, checkoutToken, totalCents, waehrung, methods, locale }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +47,7 @@ export function MethodPicker({ orderId, totalCents, waehrung, methods, locale }:
         const r = await fetch(m.endpoint, {
           method:  "POST",
           headers: { "Content-Type": "application/json" },
-          body:    JSON.stringify({ order_id: orderId }),
+          body:    JSON.stringify({ order_id: orderId, token: checkoutToken }),
         });
         if (!r.ok) {
           const j = await r.json().catch(() => ({}));
