@@ -11,6 +11,15 @@ interface Props {
   kontaktName: string;
 }
 
+/* Vorlagen zum schnellen Antippen — ersetzen den Entwurf (mit Bestätigung,
+ * falls schon Text getippt wurde). */
+const TEMPLATES: { label: string; text: string }[] = [
+  { label: "Доступен",  text: "Здравствуйте! Да, этот предмет ещё доступен. " },
+  { label: "Бронь 48ч", text: "Могу отложить его для вас на 48 часов. Подтвердите, пожалуйста. " },
+  { label: "Продан",    text: "К сожалению, этот предмет уже продан. Но у нас есть похожие — подскажу с радостью. " },
+  { label: "Спасибо",   text: "Спасибо за интерес к Galerie du Temps! " },
+];
+
 /* ──────────────────────────────────────────────────────────────────────────
  * LeadReplyClient — Inline-Reply-Form im Mini-App-Admin.
  *
@@ -90,6 +99,32 @@ export function LeadReplyClient({ leadId, channel, kontaktName }: Props) {
         >
           {channel === "telegram" ? "→ Telegram" : "→ E-mail"}
         </span>
+      </div>
+
+      {/* Schnell-Vorlagen */}
+      <div className="flex flex-wrap gap-1.5">
+        {TEMPLATES.map(t => (
+          <button
+            key={t.label}
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              if (text.trim().length > 0 && !window.confirm("Заменить текущий текст шаблоном?")) return;
+              setText(t.text);
+              haptic("light");
+            }}
+            className="px-2.5 py-1 text-[11px] disabled:opacity-40"
+            style={{
+              background:   "var(--color-bone)",
+              border:       "1px solid var(--color-line)",
+              color:        "var(--color-ink-soft)",
+              borderRadius: 999,
+              touchAction:  "manipulation",
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
       <textarea

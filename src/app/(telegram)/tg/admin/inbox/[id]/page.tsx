@@ -2,9 +2,35 @@ import Link from "next/link";
 import { getWebAppSession } from "@/lib/telegram/webapp-session";
 import { TelegramAuthGate } from "../../../auth-gate";
 import { leadById, leadMessages, leadTelegramChatId, leadOriginalNachricht } from "@/lib/db/leads";
+import { query } from "@/lib/db";
+import { formatPreis } from "@/lib/utils/preis";
 import { LeadReplyClient } from "./reply-client";
-import { ChevronLeft, Inbox } from "lucide-react";
+import { ChevronLeft, Inbox, Package } from "lucide-react";
 import type { Metadata } from "next";
+
+/** Kompakte Produkt-Info für den Lead-Kontext (Bild + Status + Link). */
+interface LeadProdukt {
+  slug:          string;
+  name:          string;
+  preis:         number;
+  waehrung:      string | null;
+  hauptbild_url: string | null;
+  verkauft:      boolean;
+  reserviert:    boolean;
+}
+async function leadProduktInfo(produktId: string): Promise<LeadProdukt | null> {
+  const r = await query<LeadProdukt>(
+    `SELECT p.slug, p.name, p.preis, p.waehrung, p.verkauft,
+            (p.reserviert_bis IS NOT NULL AND p.reserviert_bis > now() AND p.verkauft = false) AS reserviert,
+            COALESCE(p.hauptbild_url,
+              (SELECT COALESCE(pb.url_medium, pb.url) FROM sebo.produktbilder pb
+                WHERE pb.produkt_id = p.id ORDER BY pb.ist_hauptbild DESC, pb.sortierung LIMIT 1)
+            ) AS hauptbild_url
+       FROM sebo.produkte p WHERE p.id = $1`,
+    [produktId],
+  );
+  return r.rows[0] ?? null;
+}
 
 export const metadata: Metadata = {
   title:  "Лид · Mini-App",
@@ -65,10 +91,11 @@ export default async function TgAdminLeadDetailPage({
     );
   }
 
-  // Reply-Kanal bestimmen + Original-Text laden (für kontaktanfrage-Quelle)
-  const [chatId, originalText] = await Promise.all([
+  // Reply-Kanal bestimmen + Original-Text + ggf. Produkt-Kontext laden
+  const [chatId, originalText, produkt] = await Promise.all([
     leadTelegramChatId(id),
     lead.quelle === "kontaktanfrage" ? leadOriginalNachricht(id).catch(() => null) : Promise.resolve(null),
+    lead.produkt_id ? leadProduktInfo(lead.produkt_id).catch(() => null) : Promise.resolve(null),
   ]);
   const replyChannel: "telegram" | "email" | null =
     chatId ? "telegram"
@@ -138,6 +165,38 @@ export default async function TgAdminLeadDetailPage({
             )}
           </div>
         </header>
+
+        {/* Produkt-Kontext (wenn Lead zu einem Stück gehört) */}
+        {produkt && (
+          <Link
+            href={`/tg/produkt/${produkt.slug}`}
+            className="flex items-center gap-3 p-2.5 mb-4"
+            style={{
+              background:  "var(--tg-theme-section-bg-color, #fff)",
+              border:      "1px solid var(--color-line)",
+              borderLeft:  "3px solid var(--color-coral)",
+              touchAction: "manipulation",
+            }}
+          >
+            <div className="w-12 h-12 shrink-0 overflow-hidden" style={{ background: "var(--color-bone)" }}>
+              {produkt.hauptbild_url && /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={produkt.hauptbild_url} alt="" className="w-full h-full object-cover" />}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="flex items-center gap-1 text-[9px] uppercase font-medium"
+                 style={{ letterSpacing: "0.2em", color: "var(--color-coral)" }}>
+                <Package className="w-3 h-3" /> О товаре
+              </p>
+              <p className="text-sm truncate" style={{ fontFamily: "var(--font-display)", color: "var(--tg-theme-text-color, var(--color-ink))" }}>
+                {produkt.name}
+              </p>
+              <p className="text-[11px] mt-0.5" style={{ color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
+                {formatPreis(Number(produkt.preis), (produkt.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT")}
+                {produkt.verkauft ? " · продан" : produkt.reserviert ? " · бронь" : ""}
+              </p>
+            </div>
+          </Link>
+        )}
 
         {/* Original + Conversation */}
         <div className="space-y-2 mb-5">
