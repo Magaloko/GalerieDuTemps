@@ -164,6 +164,14 @@ export default async function TgAdminLeadDetailPage({
               </span>
             )}
           </div>
+
+          {/* Kontaktdaten des Kunden (aus Profil) — anklickbar für Rückkontakt */}
+          <KontaktBlock
+            telefon={lead.customer_telefon}
+            whatsapp={lead.customer_whatsapp}
+            telegram={lead.customer_telegram_username}
+            kanal={lead.customer_kontakt_kanal}
+          />
         </header>
 
         {/* Produkt-Kontext (wenn Lead zu einem Stück gehört) */}
@@ -236,6 +244,54 @@ export default async function TgAdminLeadDetailPage({
         )}
       </main>
     </TelegramAuthGate>
+  );
+}
+
+const KANAL_LABEL: Record<string, string> = {
+  telegram: "Telegram", telefon: "Телефон", whatsapp: "WhatsApp", email: "E-mail",
+};
+
+/** Kontaktdaten-Block: anklickbare Telefon/WhatsApp/Telegram-Links + bevorzugter Kanal. */
+function KontaktBlock({
+  telefon, whatsapp, telegram, kanal,
+}: {
+  telefon: string | null | undefined;
+  whatsapp: string | null | undefined;
+  telegram: string | null | undefined;
+  kanal: string | null | undefined;
+}) {
+  if (!telefon && !whatsapp && !telegram) return null;
+  const waDigits = whatsapp ? whatsapp.replace(/\D/g, "") : "";
+  const tgHandle = telegram ? telegram.replace(/^@+/, "") : "";
+
+  const pill = (label: string, href: string, bevorzugt: boolean) => (
+    <a
+      href={href}
+      target={href.startsWith("http") ? "_blank" : undefined}
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1 px-2 py-1 text-[11px]"
+      style={{
+        background: bevorzugt ? "rgba(232,112,58,0.10)" : "var(--color-bone)",
+        border:     `1px solid ${bevorzugt ? "rgba(232,112,58,0.40)" : "var(--color-line)"}`,
+        color:      bevorzugt ? "var(--color-coral)" : "var(--tg-theme-text-color, var(--color-ink))",
+        touchAction: "manipulation",
+      }}
+    >
+      {label}
+    </a>
+  );
+
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-2">
+      {telefon  && pill(`☎ ${telefon}`,  `tel:${telefon.replace(/\s/g, "")}`, kanal === "telefon")}
+      {waDigits && pill(`WhatsApp`,       `https://wa.me/${waDigits}`,          kanal === "whatsapp")}
+      {tgHandle && pill(`@${tgHandle}`,   `https://t.me/${tgHandle}`,           kanal === "telegram")}
+      {kanal && KANAL_LABEL[kanal] && (
+        <span className="text-[10px] uppercase" style={{ letterSpacing: "0.14em", color: "var(--color-ink-mute)" }}>
+          предпочитает: {KANAL_LABEL[kanal]}
+        </span>
+      )}
+    </div>
   );
 }
 

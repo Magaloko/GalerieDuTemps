@@ -40,6 +40,10 @@ export interface Lead {
   produkt_name?:       string | null;
   produkt_bild_url?:   string | null;
   customer_email?:     string | null;
+  customer_telefon?:           string | null;
+  customer_whatsapp?:          string | null;
+  customer_telegram_username?: string | null;
+  customer_kontakt_kanal?:     string | null;
 }
 
 export interface LeadMessage {
@@ -188,7 +192,11 @@ export async function leadById(id: string): Promise<Lead | null> {
     `SELECT l.*,
             b.name  AS zugewiesen_an_name,
             p.name  AS produkt_name,
-            c.email AS customer_email
+            c.email             AS customer_email,
+            c.telefon           AS customer_telefon,
+            c.whatsapp          AS customer_whatsapp,
+            c.telegram_username AS customer_telegram_username,
+            c.kontakt_kanal     AS customer_kontakt_kanal
      FROM sebo.leads l
      LEFT JOIN sebo.benutzer  b ON b.id = l.zugewiesen_an
      LEFT JOIN sebo.produkte  p ON p.id = l.produkt_id
