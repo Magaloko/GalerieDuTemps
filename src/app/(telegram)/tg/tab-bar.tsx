@@ -35,12 +35,13 @@ interface Tab {
   isActive: (p: string) => boolean;
 }
 
-// Shop-Modus: mit Korzina-Tab.
+// Shop-Modus: mit Korzina-Tab + Kontakt (Kurator immer einen Tap entfernt).
 const TABS_GUEST_CUSTOMER: Tab[] = [
-  { href: "/tg",             label: "Каталог",   icon: Home,        isActive: p => p === "/tg" || p.startsWith("/tg/produkt") },
-  { href: "/tg/wunschliste", label: "Избранное", icon: Heart,       isActive: p => p.startsWith("/tg/wunschliste") },
-  { href: "/tg/cart",        label: "Корзина",   icon: ShoppingBag, isActive: p => p.startsWith("/tg/cart") },
-  { href: "/tg/profil",      label: "Профиль",   icon: User,        isActive: p => p.startsWith("/tg/profil") || p.startsWith("/tg/orders") },
+  { href: "/tg",             label: "Каталог",   icon: Home,          isActive: p => p === "/tg" || p.startsWith("/tg/produkt") },
+  { href: "/tg/wunschliste", label: "Избранное", icon: Heart,         isActive: p => p.startsWith("/tg/wunschliste") },
+  { href: "/tg/cart",        label: "Корзина",   icon: ShoppingBag,   isActive: p => p.startsWith("/tg/cart") },
+  { href: "/tg/kontakt",     label: "Контакт",   icon: MessageCircle, isActive: p => p.startsWith("/tg/kontakt") },
+  { href: "/tg/profil",      label: "Профиль",   icon: User,          isActive: p => p.startsWith("/tg/profil") || p.startsWith("/tg/orders") },
 ];
 
 // Schaufenster-Modus: kein Korzina-Tab, stattdessen «Связаться» (Kurator-Anfrage).
