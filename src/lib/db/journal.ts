@@ -13,6 +13,38 @@ export async function veroeffentlichtePosts(limit = 20): Promise<JournalPost[]> 
   return r.rows;
 }
 
+/** Ähnliche Posts (gleiche Tags) für „Verwandte Artikel" am Detail-Seitenende.
+ *  Fallback: wenn der Post keine Tags hat → die neuesten anderen Posts. */
+export async function aehnlichePosts(
+  slug: string,
+  tags: string[],
+  limit = 3,
+): Promise<JournalPost[]> {
+  if (tags.length > 0) {
+    const r = await query<JournalPost>(
+      `SELECT *,
+              cardinality(ARRAY(SELECT unnest(tags) INTERSECT SELECT unnest($2::text[]))) AS overlap
+       FROM sebo.journal_posts
+       WHERE veroeffentlicht = true
+         AND slug <> $1
+         AND tags && $2::text[]
+       ORDER BY overlap DESC, veroeffentlicht_am DESC
+       LIMIT $3`,
+      [slug, tags, limit]
+    );
+    if (r.rows.length > 0) return r.rows;
+  }
+  // Fallback: latest other posts
+  const r = await query<JournalPost>(
+    `SELECT * FROM sebo.journal_posts
+     WHERE veroeffentlicht = true AND slug <> $1
+     ORDER BY veroeffentlicht_am DESC
+     LIMIT $2`,
+    [slug, limit]
+  );
+  return r.rows;
+}
+
 export async function postBySlug(slug: string): Promise<JournalPost | null> {
   const r = await query<JournalPost>(
     `SELECT * FROM sebo.journal_posts WHERE slug = $1`,
