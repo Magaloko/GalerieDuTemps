@@ -6,6 +6,7 @@ import { Input }  from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   telegramVerbindenAction, telegramTrennenAction, telegramWebhookCheckAction,
+  telegramWebhookNeuRegistrierenAction,
   type ActionResult,
 } from "./actions";
 
@@ -42,6 +43,15 @@ export function TelegramSetupClient({ verbunden, username, webhookUrl }: Props) 
     });
   };
 
+  const runReReg = () => {
+    setActionMsg(null); setActionErr(null);
+    startAction(async () => {
+      const r = await telegramWebhookNeuRegistrierenAction();
+      if (r.ok) setActionMsg(r.message ?? "OK");
+      else setActionErr(r.error);
+    });
+  };
+
   return (
     <div className="space-y-4">
       {/* Verbindungs-Status */}
@@ -63,6 +73,10 @@ export function TelegramSetupClient({ verbunden, username, webhookUrl }: Props) 
             <Button size="sm" variant="ghost" onClick={runCheck} loading={actionPending}
                     icon={<RefreshCw className="w-3.5 h-3.5" />}>
               Проверить статус webhook
+            </Button>
+            <Button size="sm" variant="ghost" onClick={runReReg} loading={actionPending}
+                    icon={<Send className="w-3.5 h-3.5" />}>
+              Перерегистрировать webhook
             </Button>
             <Button size="sm" variant="danger" onClick={runTrennen}
                     icon={<Unlink className="w-3.5 h-3.5" />}>

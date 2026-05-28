@@ -1,6 +1,7 @@
 import { query } from "@/lib/db";
 import { sendMessage } from "@/lib/telegram/client";
 import { formatPreis } from "@/lib/utils/preis";
+import { getSiteUrl } from "@/lib/site-url";
 import type { Customer } from "@/types/commerce";
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -17,7 +18,12 @@ import type { Customer } from "@/types/commerce";
  *   /help           — Übersicht aller Commands
  * ────────────────────────────────────────────────────────────────────────── */
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXTAUTH_URL ?? "https://galeriedutemps.kz";
+// BASE_URL muss lazy resolved werden — getSiteUrl liest ENV-Variablen, und
+// wenn dieses Modul beim Import gerendert wird (Tree-Shake), ist der Wert
+// gecacht. In Server-Routes wird's pro Request frisch geholt.
+function baseUrl(): string {
+  return getSiteUrl();
+}
 
 interface CommandCtx {
   botToken: string;
@@ -102,7 +108,7 @@ async function cmdOrders(ctx: CommandCtx): Promise<void> {
   if (r.rows.length === 0) {
     await sendMessage(
       ctx.botToken, ctx.chatId,
-      `У тебя пока нет заказов.\n\nКаталог: ${BASE_URL}/katalog`,
+      `У тебя пока нет заказов.\n\nКаталог: ${baseUrl()}/katalog`,
     ).catch(err => console.warn("[cmd-orders]", err));
     return;
   }
@@ -185,7 +191,7 @@ async function cmdStatus(ctx: CommandCtx, arg: string): Promise<void> {
   if (o.versendet_am) text += `\nОтправлен: ${new Date(o.versendet_am).toLocaleString("ru-RU")}`;
   if (o.tracking_nummer) text += `\n\nТрек-номер: <code>${o.tracking_nummer}</code>`;
   if (o.tracking_url)    text += `\n${o.tracking_url}`;
-  text += `\n\nПолностью: ${BASE_URL}/kunde/bestellungen/${o.id}`;
+  text += `\n\nПолностью: ${baseUrl()}/kunde/bestellungen/${o.id}`;
 
   await sendMessage(ctx.botToken, ctx.chatId, text, { parse_mode: "HTML" })
     .catch(err => console.warn("[cmd-status send]", err));
@@ -195,7 +201,7 @@ async function cmdStatus(ctx: CommandCtx, arg: string): Promise<void> {
 async function cmdWishlist(ctx: CommandCtx): Promise<void> {
   await sendMessage(
     ctx.botToken, ctx.chatId,
-    `Избранное хранится в браузере на сайте:\n${BASE_URL}/wunschliste\n\n` +
+    `Избранное хранится в браузере на сайте:\n${baseUrl()}/wunschliste\n\n` +
     `(В будущей версии — прямо в боте.)`,
   ).catch(err => console.warn("[cmd-wishlist]", err));
 }
@@ -209,7 +215,7 @@ async function cmdHelp(ctx: CommandCtx): Promise<void> {
     `<code>/wishlist</code> — избранное\n` +
     `<code>/unlink</code> — отвязать аккаунт\n\n` +
     `Уведомления о заказах приходят автоматически.\n` +
-    `Профиль: ${BASE_URL}/kunde/profil`;
+    `Профиль: ${baseUrl()}/kunde/profil`;
   await sendMessage(ctx.botToken, ctx.chatId, text, { parse_mode: "HTML" })
     .catch(err => console.warn("[cmd-help]", err));
 }

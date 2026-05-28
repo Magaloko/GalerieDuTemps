@@ -58,14 +58,31 @@ export interface TelegramSuccessfulPayment {
   order_info?: { name?: string; phone_number?: string; email?: string; shipping_address?: TelegramShippingAddress };
 }
 
+export interface TelegramCallbackQuery {
+  id:       string;
+  from:     TelegramUser;
+  message?: TelegramMessage;
+  data?:    string;
+  chat_instance: string;
+}
+
 export interface TelegramUpdate {
   update_id: number;
   message?:        TelegramMessage & { successful_payment?: TelegramSuccessfulPayment };
   edited_message?: TelegramMessage;
   channel_post?:   TelegramMessage;
-  callback_query?: { id: string; from: TelegramUser; message?: TelegramMessage; data?: string };
+  callback_query?: TelegramCallbackQuery;
   pre_checkout_query?: TelegramPreCheckoutQuery;
 }
+
+/** Inline-Keyboard-Button — entweder URL-Link oder Callback-Data. */
+export type InlineKeyboardButton =
+  | { text: string; url:           string }
+  | { text: string; callback_data: string };
+
+export type InlineKeyboardMarkup = {
+  inline_keyboard: InlineKeyboardButton[][];
+};
 
 async function callApi<T = unknown>(token: string, method: string, body?: object): Promise<T> {
   const r = await fetch(`${TG_BASE}/bot${token}/${method}`, {
@@ -85,12 +102,22 @@ export async function getBotInfo(token: string): Promise<TelegramUser> {
   return callApi<TelegramUser>(token, "getMe");
 }
 
-/** Webhook registrieren mit Secret-Path-Token */
+/** Webhook registrieren mit Secret-Path-Token.
+ *  WICHTIG: allowed_updates muss callback_query enthalten damit Inline-Button-
+ *  Klicks ankommen, und pre_checkout_query + successful_payment für Telegram-
+ *  Payments. Ohne explizite Liste sendet Telegram alle DEFAULT-Updates —
+ *  callback_query und pre_checkout_query sind aber NICHT default. */
 export async function setWebhook(token: string, url: string, secret_token?: string): Promise<boolean> {
   return callApi<boolean>(token, "setWebhook", {
     url,
     secret_token,
-    allowed_updates: ["message", "edited_message", "channel_post"],
+    allowed_updates: [
+      "message",
+      "edited_message",
+      "channel_post",
+      "callback_query",
+      "pre_checkout_query",
+    ],
     drop_pending_updates: true,
   });
 }
@@ -111,12 +138,41 @@ export async function getWebhookInfo(token: string): Promise<WebhookInfo> {
   return callApi<WebhookInfo>(token, "getWebhookInfo");
 }
 
-/** Nachricht senden — wird in Session 4 für Replies aus Admin gebraucht */
+/** Nachricht senden mit optionalem Inline-Keyboard. */
 export async function sendMessage(token: string, chat_id: number | string, text: string, options?: {
   reply_to_message_id?: number;
   parse_mode?: "Markdown" | "HTML";
+  reply_markup?: InlineKeyboardMarkup;
+  disable_web_page_preview?: boolean;
 }): Promise<TelegramMessage> {
   return callApi<TelegramMessage>(token, "sendMessage", { chat_id, text, ...options });
+}
+
+/** Bestehende Bot-Message updaten (z.B. nach Button-Klick). */
+export async function editMessageText(token: string, chat_id: number | string, message_id: number, text: string, options?: {
+  parse_mode?: "Markdown" | "HTML";
+  reply_markup?: InlineKeyboardMarkup;
+  disable_web_page_preview?: boolean;
+}): Promise<TelegramMessage | boolean> {
+  return callApi<TelegramMessage | boolean>(token, "editMessageText", {
+    chat_id, message_id, text, ...options,
+  });
+}
+
+/** Callback-Query bestätigen (verhindert Lade-Spinner auf Inline-Button).
+ *  Optional Toast-Text (kurz, max 200 Zeichen). */
+export async function answerCallbackQuery(token: string, callback_query_id: string, options?: {
+  text?:       string;
+  show_alert?: boolean;
+}): Promise<boolean> {
+  return callApi<boolean>(token, "answerCallbackQuery", { callback_query_id, ...options });
+}
+
+/** Telegram-Client-Menü (das „/" Menü) füllen. Aufgerufen direkt nach
+ *  setWebhook in der Admin-Bot-Verbindung. Telegram cached das ~24h. */
+export interface BotCommand { command: string; description: string }
+export async function setMyCommands(token: string, commands: BotCommand[]): Promise<boolean> {
+  return callApi<boolean>(token, "setMyCommands", { commands });
 }
 
 /**

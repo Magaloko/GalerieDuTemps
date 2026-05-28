@@ -4,7 +4,10 @@ import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { query } from "@/lib/db";
 import { requireAdminSession } from "@/lib/auth/config";
-import { getBotInfo, setWebhook, deleteWebhook, getWebhookInfo } from "@/lib/telegram/client";
+import {
+  getBotInfo, setWebhook, deleteWebhook, getWebhookInfo, setMyCommands,
+} from "@/lib/telegram/client";
+import { getSiteUrl } from "@/lib/site-url";
 
 export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
 
@@ -68,17 +71,39 @@ export async function telegramVerbindenAction(
     ]
   );
 
-  // Webhook bei Telegram registrieren
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://galerie.apps.dadakaev.tech";
-  const webhookUrl = `${baseUrl.replace(/\/$/, "")}/api/telegram/webhook/${webhookSecret}`;
+  // Webhook bei Telegram registrieren — Base-URL aus getSiteUrl()
+  // (zieht aus NEXT_PUBLIC_SITE_URL bzw NEXTAUTH_URL bzw VERCEL_URL,
+  // mit konsistentem Fallback). Das war vorher inkonsistent verstreut.
+  const webhookUrl = `${getSiteUrl()}/api/telegram/webhook/${webhookSecret}`;
   try {
     await setWebhook(token, webhookUrl, webhookSecret);
   } catch (err) {
     return { ok: false, error: `Регистрация webhook не удалась: ${err instanceof Error ? err.message : "неизвестно"}` };
   }
 
+  // setMyCommands: füllt das „/" Menü im Telegram-Client. Best-effort —
+  // wenn das fehlschlägt, ist der Bot trotzdem nutzbar, nur ohne Auto-
+  // Vorschläge in der Client-UI.
+  await setMyCommands(token, [
+    { command: "start",    description: "Запустить бота" },
+    { command: "menu",     description: "Главное меню" },
+    { command: "katalog",  description: "Каталог товаров" },
+    { command: "orders",   description: "Мои заказы" },
+    { command: "status",   description: "Детали заказа: /status GDT-0042" },
+    { command: "wishlist", description: "Избранное" },
+    { command: "kontakt",  description: "Связаться с куратором" },
+    { command: "help",     description: "Помощь и команды" },
+    { command: "unlink",   description: "Отвязать аккаунт" },
+  ]).catch(err => console.warn("[telegram setMyCommands]", err));
+
   revalidatePath("/admin/einstellungen/telegram");
-  return { ok: true, message: `Бот @${bot.username} подключён, webhook активен.` };
+  return {
+    ok: true,
+    message:
+      `Бот @${bot.username} подключён.\n` +
+      `Webhook: ${webhookUrl}\n` +
+      `Меню команд установлено.`,
+  };
 }
 
 export async function telegramTrennenAction(): Promise<ActionResult> {
@@ -121,13 +146,73 @@ export async function telegramWebhookCheckAction(): Promise<ActionResult> {
     const info = await getWebhookInfo(token);
     const lines = [
       `URL: ${info.url || "(не задан)"}`,
-      `Pending Updates: ${info.pending_update_count}`,
+      `Ожидающих апдейтов: ${info.pending_update_count}`,
     ];
     if (info.last_error_message) {
-      lines.push(`⚠ Последняя ошибка: ${info.last_error_message}${info.last_error_date ? ` (${new Date(info.last_error_date * 1000).toLocaleString("ru-RU")})` : ""}`);
+      lines.push(
+        `⚠ Последняя ошибка: ${info.last_error_message}` +
+        (info.last_error_date
+          ? ` (${new Date(info.last_error_date * 1000).toLocaleString("ru-RU")})`
+          : "")
+      );
+      lines.push(
+        `\nЕсли ошибка повторяется — нажмите «Перерегистрировать webhook».`
+      );
+    } else {
+      lines.push(`✓ Ошибок нет, бот работает.`);
     }
     return { ok: true, message: lines.join("\n") };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Проверка не удалась" };
   }
+}
+
+/**
+ * Re-registriert den Webhook unter der AKTUELLEN Site-URL + setzt
+ * setMyCommands neu. Nützlich nach Domain-Wechsel oder wenn Telegram
+ * den Webhook aus irgendeinem Grund (Cert-Probleme, Timeout-Spam etc.)
+ * auf der Server-Seite verworfen hat.
+ */
+export async function telegramWebhookNeuRegistrierenAction(): Promise<ActionResult> {
+  const session = await requireAdminSession();
+  if (!session) return { ok: false, error: "Нет прав" };
+
+  const konto = await findeTelegramKonto();
+  if (!konto) return { ok: false, error: "Аккаунт не подключён" };
+  if (!konto.webhook_verify_token) return { ok: false, error: "Webhook-Token отсутствует — переподключите бота" };
+
+  const tokRes = await query<{ access_token: string }>(
+    `SELECT access_token FROM sebo.kanal_konten WHERE id = $1`,
+    [konto.id]
+  );
+  const token = tokRes.rows[0]?.access_token;
+  if (!token) return { ok: false, error: "Токен отсутствует" };
+
+  const webhookUrl = `${getSiteUrl()}/api/telegram/webhook/${konto.webhook_verify_token}`;
+  try {
+    await setWebhook(token, webhookUrl, konto.webhook_verify_token);
+  } catch (err) {
+    return {
+      ok: false,
+      error: `Регистрация не удалась: ${err instanceof Error ? err.message : "неизвестно"}`,
+    };
+  }
+
+  await setMyCommands(token, [
+    { command: "start",    description: "Запустить бота" },
+    { command: "menu",     description: "Главное меню" },
+    { command: "katalog",  description: "Каталог товаров" },
+    { command: "orders",   description: "Мои заказы" },
+    { command: "status",   description: "Детали заказа: /status GDT-0042" },
+    { command: "wishlist", description: "Избранное" },
+    { command: "kontakt",  description: "Связаться с куратором" },
+    { command: "help",     description: "Помощь и команды" },
+    { command: "unlink",   description: "Отвязать аккаунт" },
+  ]).catch(err => console.warn("[telegram setMyCommands]", err));
+
+  revalidatePath("/admin/einstellungen/telegram");
+  return {
+    ok: true,
+    message: `Webhook перерегистрирован: ${webhookUrl}\nМеню команд обновлено.`,
+  };
 }
