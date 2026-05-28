@@ -5,6 +5,11 @@ import { revalidatePath } from "next/cache";
 import { query } from "@/lib/db";
 import { requireAdminSession } from "@/lib/auth/config";
 import {
+  adminTelegramTokenGenerieren,
+  adminTelegramLoesen,
+  adminGetTelegramStatus,
+} from "@/lib/db/admin-telegram";
+import {
   getBotInfo, setWebhook, deleteWebhook, getWebhookInfo, setMyCommands,
   setChatMenuButton, resetChatMenuButton,
 } from "@/lib/telegram/client";
@@ -254,6 +259,65 @@ export async function telegramMiniAppDeaktivierenAction(): Promise<ActionResult>
   try {
     await resetChatMenuButton(token);
     return { ok: true, message: "Кнопка «Магазин» убрана. Теперь в чате будет показано меню команд." };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Не удалось" };
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Persönliche Admin-Telegram-Verknüpfung (für Notifications + Admin-Mini-App)
+ * ────────────────────────────────────────────────────────────────────────── */
+
+export type AdminLinkResult =
+  | { ok: true; deepLink: string }
+  | { ok: false; error: string };
+
+/** Generiert OTP-Token + baut Deep-Link zum Bot für den eingeloggten Admin. */
+export async function adminTelegramLinkGenerierenAction(): Promise<AdminLinkResult> {
+  const session = await requireAdminSession();
+  if (!session?.user?.id) return { ok: false, error: "Нет прав" };
+
+  const konto = await findeTelegramKonto();
+  if (!konto?.username) {
+    return { ok: false, error: "Сначала подключите бота (токен выше)." };
+  }
+
+  try {
+    const token    = await adminTelegramTokenGenerieren(session.user.id);
+    const botUser  = konto.username.replace(/^@/, "");
+    const deepLink = `https://t.me/${botUser}?start=${token}`;
+    return { ok: true, deepLink };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Не удалось";
+    // Häufigste Ursache: Migration 037 nicht angewendet
+    if (msg.includes("telegram_link_token") || msg.includes("column")) {
+      return { ok: false, error: "Примените миграцию 037_admin_telegram.sql." };
+    }
+    return { ok: false, error: msg };
+  }
+}
+
+/** Status (verknüpft? welcher Username?) für die UI. */
+export async function adminTelegramStatusAction(): Promise<{
+  verknuepft: boolean; username: string | null;
+}> {
+  const session = await requireAdminSession();
+  if (!session?.user?.id) return { verknuepft: false, username: null };
+  try {
+    const s = await adminGetTelegramStatus(session.user.id);
+    return { verknuepft: !!s.chat_id, username: s.username };
+  } catch {
+    return { verknuepft: false, username: null };
+  }
+}
+
+/** Eigene Telegram-Verknüpfung lösen. */
+export async function adminTelegramTrennenAction(): Promise<ActionResult> {
+  const session = await requireAdminSession();
+  if (!session?.user?.id) return { ok: false, error: "Нет прав" };
+  try {
+    await adminTelegramLoesen(session.user.id);
+    return { ok: true, message: "Ваш Telegram отвязан." };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Не удалось" };
   }

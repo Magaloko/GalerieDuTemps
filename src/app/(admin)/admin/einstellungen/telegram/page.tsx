@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { query } from "@/lib/db";
 import { TelegramSetupClient } from "./client";
+import { AdminSelfLink } from "./self-link-client";
 import { ChevronLeft, Send } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -67,6 +68,9 @@ export default async function TelegramSetupPage() {
         username={konto?.username ?? null}
         webhookUrl={webhookUrl}
       />
+
+      {/* Persönliche Admin-Verknüpfung — Notifications + Admin-Mini-App */}
+      {konto?.aktiv && <AdminSelfLink />}
     </div>
   );
 }
