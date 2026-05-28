@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Trash2, ChevronLeft } from "lucide-react";
 import { useCart } from "@/lib/cart";
+import { useCartSync } from "@/hooks/use-cart-sync";
 import { formatPreis } from "@/lib/utils/preis";
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -19,6 +20,13 @@ import { formatPreis } from "@/lib/utils/preis";
  * Bei leerem Cart wird MainButton versteckt.
  * ────────────────────────────────────────────────────────────────────────── */
 export function CartClient() {
+  // Mini-App Cart synchronisiert mit Server-Cart bei linked Customer.
+  // Polling alle 8s aktiv — wenn der User parallel auf Web etwas in den
+  // Cart legt und dann zurück in den Bot wechselt, ist es da. (Telegram
+  // pausiert WebView wenn der User wegswitcht, daher reicht 8s polling
+  // statt SSE/WebSocket.)
+  useCartSync({ pollMs: 8000 });
+
   const items     = useCart(s => s.items);
   const entfernen = useCart(s => s.entfernen);
   const leeren    = useCart(s => s.leeren);

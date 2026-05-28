@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useCart, berechneCart } from "@/lib/cart";
 import { useWunschliste } from "@/hooks/use-wunschliste";
+import { useCartSync } from "@/hooks/use-cart-sync";
 import { formatPreis } from "@/lib/utils/preis";
 
 export interface CartLabels {
@@ -39,6 +40,11 @@ const FREE_SHIPPING_THRESHOLD_CENTS = 50_000_00;
  * Mobile: 1-Col, Summary unter Items, Sticky-Bottom-Bar mit Total + CTA.
  * ────────────────────────────────────────────────────────────────────────── */
 export function WarenkorbClient({ labels }: { labels: CartLabels }) {
+  // Sync mit /api/cart bei eingeloggtem Customer — Anonymous bleibt auf
+  // localStorage (silent 401). Polling für Web ist standardmäßig aus weil
+  // unwahrscheinlich dass User parallel Cart in 2 Browser-Tabs ändert.
+  useCartSync();
+
   const items         = useCart(s => s.items);
   const coupon_code   = useCart(s => s.coupon_code);
   const mengeAendern  = useCart(s => s.mengeAendern);
