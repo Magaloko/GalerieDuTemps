@@ -1,18 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * TelegramAuthGate
  *
- * Wird im Mini-App-Browser geöffnet. Erst-Aktion:
- *  1. window.Telegram.WebApp ready() + theme sync
- *  2. initData zu /api/telegram/auth POSTen → setzt Session-Cookie
- *  3. Wenn OK: children rendern
- *  4. Wenn Fehler: Fehler-Screen mit Retry
+ * 1. Erkennt window.Telegram.WebApp + initData
+ * 2. POSTet zu /api/telegram/auth → setzt Session-Cookie
+ * 3. Bei OK: rendert children
+ * 4. Bei Fehler: zeigt diagnostische Fehler-UI mit Retry-Button
  *
- * Fallback: Wenn nicht in Telegram geöffnet (kein window.Telegram), zeige
- * Hinweis und Deep-Link zum Bot.
+ * 15-Sek-Timeout via AbortController. Detailliertes Logging in console
+ * damit der Owner via DevTools im Telegram-Desktop debuggen kann.
+ *
+ * Fallback: kein window.Telegram (z.B. im normalen Browser auf URL /tg
+ * navigiert) → Hinweis-Screen mit Hint zum Bot.
  * ────────────────────────────────────────────────────────────────────────── */
 
 declare global {
@@ -32,19 +34,27 @@ declare global {
   }
 }
 
+const AUTH_TIMEOUT_MS = 15_000;
+
 type State =
   | { kind: "init" }
   | { kind: "no-telegram" }
   | { kind: "authing" }
-  | { kind: "auth-error"; msg: string }
+  | { kind: "auth-error"; msg: string; status?: number; detail?: string }
   | { kind: "ready"; customerName: string };
 
 export function TelegramAuthGate({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<State>({ kind: "init" });
+  const [state, setState]   = useState<State>({ kind: "init" });
+  const [attempt, setAttempt] = useState(0);
 
-  useEffect(() => {
+  const runAuth = useCallback(async () => {
     const tg = window.Telegram?.WebApp;
     if (!tg || !tg.initData) {
+      console.warn("[TgAuth] no Telegram.WebApp.initData", {
+        hasTelegram: !!window.Telegram,
+        hasWebApp:   !!tg,
+        initDataLen: tg?.initData?.length ?? 0,
+      });
       setState({ kind: "no-telegram" });
       return;
     }
@@ -53,35 +63,71 @@ export function TelegramAuthGate({ children }: { children: React.ReactNode }) {
     tg.expand();
 
     setState({ kind: "authing" });
-    fetch("/api/telegram/auth", {
-      method:      "POST",
-      headers:     { "Content-Type": "application/json" },
-      body:        JSON.stringify({ initData: tg.initData }),
-      credentials: "include",
-    })
-      .then(async r => {
-        if (!r.ok) {
-          const j = await r.json().catch(() => ({}));
-          throw new Error(j.error ?? `HTTP ${r.status}`);
-        }
-        return r.json();
-      })
-      .then((j: { customer: { vorname: string | null; email: string } }) => {
-        setState({
-          kind: "ready",
-          customerName: j.customer.vorname || j.customer.email,
-        });
-      })
-      .catch(err => {
-        setState({ kind: "auth-error", msg: String(err.message ?? err) });
+    console.log("[TgAuth] sending auth POST", {
+      initDataLen: tg.initData.length,
+      user:        tg.initDataUnsafe?.user,
+    });
+
+    const abortCtl = new AbortController();
+    const timeout  = setTimeout(() => abortCtl.abort(), AUTH_TIMEOUT_MS);
+
+    try {
+      const r = await fetch("/api/telegram/auth", {
+        method:      "POST",
+        headers:     { "Content-Type": "application/json" },
+        body:        JSON.stringify({ initData: tg.initData }),
+        credentials: "include",
+        signal:      abortCtl.signal,
       });
+      clearTimeout(timeout);
+
+      console.log("[TgAuth] response", { status: r.status, ok: r.ok });
+
+      if (!r.ok) {
+        let detail = "";
+        try {
+          const j = await r.json();
+          detail = j?.error ?? "";
+        } catch { /* not JSON */ }
+        setState({
+          kind:   "auth-error",
+          msg:    detail || `Сервер вернул HTTP ${r.status}`,
+          status: r.status,
+          detail,
+        });
+        return;
+      }
+
+      const j = await r.json() as {
+        customer?: { vorname: string | null; email: string };
+      };
+      setState({
+        kind:         "ready",
+        customerName: j.customer?.vorname || j.customer?.email || "Гость",
+      });
+    } catch (err) {
+      clearTimeout(timeout);
+      const msg = err instanceof Error ? err.message : String(err);
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      console.error("[TgAuth] fetch error", err);
+      setState({
+        kind:   "auth-error",
+        msg:    isAbort
+          ? `Сервер не ответил за ${AUTH_TIMEOUT_MS / 1000} сек.`
+          : msg,
+        detail: isAbort ? "timeout" : "network",
+      });
+    }
   }, []);
+
+  useEffect(() => { runAuth(); }, [runAuth, attempt]);
 
   if (state.kind === "init" || state.kind === "authing") {
     return (
-      <div className="min-h-[50vh] flex items-center justify-center p-8">
+      <div className="min-h-[50vh] flex flex-col items-center justify-center gap-3 p-8">
+        <Spinner />
         <p
-          className="text-[12px] uppercase font-medium"
+          className="text-[11px] uppercase font-medium"
           style={{ letterSpacing: "0.22em", color: "var(--color-ink-mute)" }}
         >
           Подключение…
@@ -116,8 +162,8 @@ export function TelegramAuthGate({ children }: { children: React.ReactNode }) {
             color:      "var(--color-ink-soft)",
           }}
         >
-          Эта страница работает внутри Telegram-приложения. Открой бот @GalerieDuTempsBot
-          и нажми кнопку «Магазин».
+          Эта страница работает внутри Telegram. Открой нашего бота
+          и нажми «🛍 Магазин».
         </p>
       </div>
     );
@@ -125,19 +171,66 @@ export function TelegramAuthGate({ children }: { children: React.ReactNode }) {
 
   if (state.kind === "auth-error") {
     return (
-      <div className="min-h-[40vh] flex flex-col items-center justify-center p-8 text-center gap-3">
+      <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center gap-3">
         <p
           className="text-[11px] uppercase font-medium"
-          style={{ letterSpacing: "0.22em", color: "var(--color-coral-deep)" }}
+          style={{ letterSpacing: "0.22em", color: "var(--color-coral-deep, #A53E26)" }}
         >
-          Ошибка авторизации
+          ✕ Ошибка авторизации
         </p>
-        <p className="text-sm" style={{ color: "var(--color-ink-soft)" }}>
+        <p
+          className="text-sm max-w-xs"
+          style={{ color: "var(--color-ink-soft)" }}
+        >
           {state.msg}
+        </p>
+        {state.status && (
+          <p
+            className="font-mono text-[10px]"
+            style={{ color: "var(--color-ink-mute)" }}
+          >
+            HTTP {state.status} {state.detail ? `· ${state.detail}` : ""}
+          </p>
+        )}
+        <button
+          type="button"
+          onClick={() => setAttempt(n => n + 1)}
+          className="mt-4 px-5 py-2 text-[11px] uppercase font-medium"
+          style={{
+            letterSpacing: "0.22em",
+            background:    "var(--color-coral)",
+            color:         "#fff",
+            touchAction:   "manipulation",
+          }}
+        >
+          Повторить
+        </button>
+        <p
+          className="text-[10px] mt-2"
+          style={{ color: "var(--color-ink-mute)" }}
+        >
+          Если ошибка повторяется — напишите в @galeriediutemps_bot.
         </p>
       </div>
     );
   }
 
   return <>{children}</>;
+}
+
+function Spinner() {
+  return (
+    <div
+      aria-hidden
+      className="w-6 h-6"
+      style={{
+        border:       "2px solid var(--color-line)",
+        borderTop:    "2px solid var(--color-coral)",
+        borderRadius: "50%",
+        animation:    "tg-spin 0.8s linear infinite",
+      }}
+    >
+      <style>{`@keyframes tg-spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
 }
