@@ -65,6 +65,18 @@ function clearCache(): void {
   cache = null;
 }
 
+/**
+ * Default-Flags (alle an) — wendet aber IMMER den ENV-Notfall-Kill-Switch an.
+ * Wird sowohl als Basis in loadAll() als auch im DB-Fehler-Fallback genutzt,
+ * damit EMERGENCY_SHOP_DISABLE auch bei DB-Ausfall greift (UI/Cart, nicht nur
+ * der fail-closed Order/Payment-Pfad).
+ */
+function defaultsMitEnv(): Record<FeatureKey, boolean> {
+  const map = Object.fromEntries(ALL_FEATURE_KEYS.map(k => [k, true])) as Record<FeatureKey, boolean>;
+  if (process.env.EMERGENCY_SHOP_DISABLE === "true") map.kaufen_aktiv = false;
+  return map;
+}
+
 async function loadAll(): Promise<Record<FeatureKey, boolean>> {
   const r = await query<{ schluessel: string; aktiviert: boolean }>(
     `SELECT schluessel, aktiviert FROM sebo.feature_flags`,
@@ -106,11 +118,10 @@ export async function getAllFeatures(): Promise<Record<FeatureKey, boolean>> {
     return data;
   } catch (err) {
     // Falls Migration noch nicht angewendet ist (Tabelle existiert nicht):
-    // Default auf alle-an, damit nichts blockiert.
+    // Default auf alle-an — ABER der ENV-Notfall-Kill-Switch greift trotzdem,
+    // damit EMERGENCY_SHOP_DISABLE auch bei DB-Ausfall die UI/Cart sperrt.
     console.warn("[feature-flags] DB-Lookup fehlgeschlagen, Defaults:", err);
-    return Object.fromEntries(
-      ALL_FEATURE_KEYS.map(k => [k, true]),
-    ) as Record<FeatureKey, boolean>;
+    return defaultsMitEnv();
   }
 }
 
