@@ -4,7 +4,9 @@ import { AdminBack, AdminNotAllowed } from "../../_ui";
 import { produktById } from "@/lib/db/produkte";
 import { bilderFuerProdukt } from "@/lib/db/bilder";
 import { alleKategorienAdmin } from "@/lib/db/kategorien";
+import { instagramPostsAlle } from "@/lib/db/instagram-archive";
 import { ProduktEditor } from "./editor-client";
+import { ProduktInstagramPanel } from "./instagram-panel";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Редактор товара", robots: { index: false, follow: false } };
@@ -19,10 +21,11 @@ export default async function TgAdminProduktEdit({
   }
   const { id } = await params;
 
-  const [p, bilder, kategorien] = await Promise.all([
+  const [p, bilder, kategorien, igPosts] = await Promise.all([
     produktById(id),
     bilderFuerProdukt(id).catch(() => []),
     alleKategorienAdmin().catch(() => []),
+    instagramPostsAlle().catch(() => []),
   ]);
 
   if (!p) {
@@ -62,6 +65,18 @@ export default async function TgAdminProduktEdit({
           }}
           bilder={bilder.map(b => ({ id: b.id, url: b.url_thumb ?? b.url, urlFull: b.url, ist_hauptbild: b.ist_hauptbild }))}
           kategorien={kategorien.map(k => ({ id: k.id, name: k.name }))}
+        />
+
+        <ProduktInstagramPanel
+          produktId={p.id}
+          allePosts={igPosts.map(ig => ({
+            id:             ig.id,
+            shortcode:      ig.shortcode,
+            typ:            ig.typ,
+            titel:          ig.titel,
+            kategorie_name: ig.kategorie_name ?? null,
+            produkt_id:     ig.produkt_id,
+          }))}
         />
       </main>
     </TelegramAuthGate>
