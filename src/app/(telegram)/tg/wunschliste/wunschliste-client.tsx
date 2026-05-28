@@ -272,7 +272,7 @@ export function WunschlisteClient() {
                   </span>
                 ) : (
                   <Link
-                    href={`/tg/kontakt?produkt=${p.id}&name=${encodeURIComponent(p.name)}`}
+                    href={`/tg/kontakt?produkt=${p.id}&slug=${p.slug}&name=${encodeURIComponent(p.name)}`}
                     className="mt-1 flex items-center justify-center gap-1 py-1.5 text-[11px] uppercase font-medium"
                     style={{
                       letterSpacing: "0.18em",

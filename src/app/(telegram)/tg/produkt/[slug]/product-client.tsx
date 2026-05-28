@@ -73,7 +73,7 @@ export function ProductMiniClient({
       main.show();
       const onAsk = () => {
         haptic("medium");
-        router.push(`/tg/kontakt?produkt=${produktId}&name=${encodeURIComponent(name)}`);
+        router.push(`/tg/kontakt?produkt=${produktId}&slug=${slug}&name=${encodeURIComponent(name)}`);
       };
       main.onClick(onAsk);
       return () => {

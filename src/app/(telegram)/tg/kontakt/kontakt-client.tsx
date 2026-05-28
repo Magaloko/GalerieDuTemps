@@ -9,9 +9,19 @@ import {
 interface Props {
   produktId:   string | null;
   produktName: string | null;
+  /** Slug für korrekte Produkt-Links (Route ist /tg/produkt/[slug], NICHT id). */
+  produktSlug?: string | null;
   /** "reserve" → Reservierungs-Anfrage (anderer Titel + vorbelegte Nachricht). */
   intent?:     string | null;
 }
+
+/* Vorschläge zum schnellen Antippen — werden an die Nachricht angehängt. */
+const QUICK_REPLIES = [
+  "Возможен ли торг?",
+  "Есть дополнительные фото?",
+  "Какие размеры и состояние?",
+  "Возможна ли доставка?",
+];
 
 /* ──────────────────────────────────────────────────────────────────────────
  * KontaktClient — Direkt-Nachricht aus Mini-App.
@@ -25,8 +35,10 @@ interface Props {
  *
  * Charakter-Counter zeigt verbleibende Zeichen, wird coral bei <100.
  * ────────────────────────────────────────────────────────────────────────── */
-export function KontaktClient({ produktId, produktName, intent }: Props) {
+export function KontaktClient({ produktId, produktName, produktSlug, intent }: Props) {
   const istReserve = intent === "reserve";
+  // Produkt-Link nur, wenn der Slug bekannt ist (Route = /tg/produkt/[slug]).
+  const produktHref = produktSlug ? `/tg/produkt/${produktSlug}` : null;
   const [text,   setText]   = useState(
     istReserve && produktName ? `Хочу зарезервировать: ${produktName}. ` : "",
   );
@@ -36,6 +48,14 @@ export function KontaktClient({ produktId, produktName, intent }: Props) {
 
   const MAX = 2000;
   const remaining = MAX - text.length;
+
+  // Vorschlag anhängen (mit Leerzeichen-Trenner), Cap auf MAX.
+  const chipAnhaengen = (phrase: string) => {
+    setText(prev => {
+      const sep = prev.trim().length > 0 && !prev.endsWith(" ") ? " " : "";
+      return (prev + sep + phrase).slice(0, MAX);
+    });
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,9 +166,9 @@ export function KontaktClient({ produktId, produktName, intent }: Props) {
           >
             К каталогу
           </Link>
-          {produktId && (
+          {produktHref && (
             <Link
-              href={`/tg/produkt/${produktId}`}
+              href={produktHref}
               className="px-4 py-2 text-[11px] uppercase font-medium"
               style={{
                 letterSpacing: "0.22em",
@@ -170,7 +190,7 @@ export function KontaktClient({ produktId, produktName, intent }: Props) {
     <main className="p-4">
       {/* Back */}
       <Link
-        href={produktId ? `/tg/produkt/${produktId}` : "/tg"}
+        href={produktHref ?? "/tg"}
         className="inline-flex items-center gap-1 mb-4 text-[11px] uppercase font-medium"
         style={{
           letterSpacing: "0.18em",
@@ -281,6 +301,30 @@ export function KontaktClient({ produktId, produktName, intent }: Props) {
             {remaining} / {MAX}
           </p>
         </label>
+
+        {/* Schnell-Vorschläge (nur bei Produkt-Frage, nicht bei Reservierung) */}
+        {produktName && !istReserve && (
+          <div className="flex flex-wrap gap-1.5">
+            {QUICK_REPLIES.map(q => (
+              <button
+                key={q}
+                type="button"
+                onClick={() => chipAnhaengen(q)}
+                disabled={busy}
+                className="px-2.5 py-1 text-[11px] disabled:opacity-40"
+                style={{
+                  background:   "var(--tg-theme-section-bg-color, #fff)",
+                  border:       "1px solid var(--color-line)",
+                  color:        "var(--tg-theme-text-color, var(--color-ink-soft))",
+                  borderRadius: 999,
+                  touchAction:  "manipulation",
+                }}
+              >
+                + {q}
+              </button>
+            ))}
+          </div>
+        )}
 
         {error && status === "error" && (
           <div

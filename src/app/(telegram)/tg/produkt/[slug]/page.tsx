@@ -207,7 +207,7 @@ export default async function TelegramProduktPage({
 
           {/* „Спросить куратора" — Frage über dieses Produkt */}
           <Link
-            href={`/tg/kontakt?produkt=${produkt.id}&name=${encodeURIComponent(name)}`}
+            href={`/tg/kontakt?produkt=${produkt.id}&slug=${produkt.slug}&name=${encodeURIComponent(name)}`}
             className="mt-5 flex items-center justify-center gap-2 py-3 text-[11px] uppercase font-medium"
             style={{
               letterSpacing: "0.22em",
@@ -224,7 +224,7 @@ export default async function TelegramProduktPage({
           {/* „Зарезервировать" — Bron-Anfrage, nur wenn verfügbar & nicht reserviert */}
           {!reserviert && !produkt.verkauft && produkt.lagerbestand > 0 && (
             <Link
-              href={`/tg/kontakt?produkt=${produkt.id}&name=${encodeURIComponent(name)}&intent=reserve`}
+              href={`/tg/kontakt?produkt=${produkt.id}&slug=${produkt.slug}&name=${encodeURIComponent(name)}&intent=reserve`}
               className="mt-2 flex items-center justify-center gap-2 py-3 text-[11px] uppercase font-medium"
               style={{
                 letterSpacing: "0.22em",

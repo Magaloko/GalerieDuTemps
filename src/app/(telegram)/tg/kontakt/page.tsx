@@ -22,13 +22,14 @@ export const dynamic = "force-dynamic";
  * ────────────────────────────────────────────────────────────────────────── */
 export default async function TgKontaktPage({
   searchParams,
-}: { searchParams: Promise<{ produkt?: string; name?: string; intent?: string }> }) {
+}: { searchParams: Promise<{ produkt?: string; name?: string; slug?: string; intent?: string }> }) {
   const sp = await searchParams;
   return (
     <TelegramAuthGate>
       <KontaktClient
         produktId={sp.produkt ?? null}
         produktName={sp.name ?? null}
+        produktSlug={sp.slug ?? null}
         intent={sp.intent ?? null}
       />
     </TelegramAuthGate>
