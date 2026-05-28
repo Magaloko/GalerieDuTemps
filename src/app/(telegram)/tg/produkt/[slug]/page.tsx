@@ -185,7 +185,8 @@ export default async function TelegramProduktPage({
           name={name}
           bildUrl={produkt.hauptbild_url ?? produkt.bilder?.[0]?.url ?? null}
           preisCents={Math.round(produkt.preis * 100)}
-          lagerbestand={produkt.lagerbestand}
+          /* Schaufenster: exakten Bestand NICHT in den Client-Payload geben. */
+          lagerbestand={kaufenAktiv ? produkt.lagerbestand : (produkt.lagerbestand > 0 ? 1 : 0)}
           verkauft={produkt.verkauft}
           waehrung={(produkt.waehrung as "KZT"|"EUR"|"USD"|"RUB") ?? "KZT"}
           kaufenAktiv={kaufenAktiv}

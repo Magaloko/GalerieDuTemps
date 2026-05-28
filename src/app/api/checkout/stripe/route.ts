@@ -36,6 +36,13 @@ interface OrderItemRow {
 }
 
 export async function POST(req: NextRequest) {
+  // Schaufenster-Modus: bestehende pending Orders dürfen nicht mehr in eine
+  // Stripe-Session überführt werden (fail-closed).
+  const { kaufenGesperrt } = await import("@/lib/db/feature-flags");
+  if (await kaufenGesperrt()) {
+    return NextResponse.json({ error: "Оплата временно недоступна." }, { status: 403 });
+  }
+
   if (!stripeKonfiguriert()) {
     return NextResponse.json({ error: "Stripe не настроен. Обратитесь к администратору." }, { status: 503 });
   }

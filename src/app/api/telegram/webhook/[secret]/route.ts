@@ -139,6 +139,10 @@ export async function POST(
   const chat     = msg.chat;
   const username = from?.username ?? null;
 
+  // Shop/Schaufenster-Flag einmal laden (gecached) — steuert Menu-Labels &
+  // Welcome-Copy. fail-open für reine Anzeige.
+  const kaufenAktiv = await isFeatureEnabled("kaufen_aktiv").catch(() => true);
+
   // ── /start [<token>] ─────────────────────────────────────────────────────
   if (text.startsWith("/start")) {
     const param = text.slice("/start".length).trim().split(/\s+/)[0];
@@ -183,7 +187,7 @@ export async function POST(
           `Отвязать аккаунт в любой момент: /unlink`,
           {
             parse_mode: "HTML",
-            reply_markup: buildLinkedMainMenu(siteBase),
+            reply_markup: buildLinkedMainMenu(siteBase, kaufenAktiv),
           },
         ).catch(err => console.error("[tg send verify]", err));
       } else if (konto.access_token) {
@@ -233,17 +237,24 @@ export async function POST(
           `<b>✨ С возвращением!</b>\n\n` +
           `Рады видеть вас снова, <b>${escapeHtml(linkedCustomer.vorname ?? linkedCustomer.email)}</b>.\n` +
           `<i>Новые поступления каждую среду.</i>`;
-        menu = buildLinkedMainMenu(siteBase);
+        menu = buildLinkedMainMenu(siteBase, kaufenAktiv);
       } else {
-        welcomeText =
-          `<b>✨ Galerie du Temps</b>\n` +
-          `<i>Кураторская галерея винтажа в Алматы.</i>\n\n` +
-          `Откройте магазин одним касанием — украшения, посуда, винтаж ` +
-          `с историей и сертификатом подлинности.\n\n` +
-          `🛍 <b>Открыть Mini-App</b> · просматривайте, лайкайте, заказывайте\n` +
-          `💌 <b>Связаться</b> · куратор ответит лично\n` +
-          `📰 <b>Подписаться</b> · уведомления о новых поступлениях`;
-        menu = buildPublicMainMenu(siteBase);
+        welcomeText = kaufenAktiv
+          ? `<b>✨ Galerie du Temps</b>\n` +
+            `<i>Кураторская галерея винтажа в Алматы.</i>\n\n` +
+            `Откройте магазин одним касанием — украшения, посуда, винтаж ` +
+            `с историей и сертификатом подлинности.\n\n` +
+            `🛍 <b>Открыть Mini-App</b> · просматривайте, лайкайте, заказывайте\n` +
+            `💌 <b>Связаться</b> · куратор ответит лично\n` +
+            `📰 <b>Подписаться</b> · уведомления о новых поступлениях`
+          : `<b>✨ Galerie du Temps</b>\n` +
+            `<i>Кураторская галерея винтажа в Алматы.</i>\n\n` +
+            `Загляните в витрину одним касанием — украшения, посуда, винтаж ` +
+            `с историей и сертификатом подлинности.\n\n` +
+            `🛍 <b>Открыть Mini-App</b> · просматривайте, лайкайте, запрашивайте\n` +
+            `💌 <b>Связаться</b> · куратор ответит лично\n` +
+            `📰 <b>Подписаться</b> · уведомления о новых поступлениях`;
+        menu = buildPublicMainMenu(siteBase, kaufenAktiv);
       }
 
       // Hero-Photo zur Welcome-Message — Logo / Brand-Visual.
@@ -315,8 +326,8 @@ export async function POST(
         {
           parse_mode: "HTML",
           reply_markup: linked
-            ? buildLinkedMainMenu(siteBase)
-            : buildPublicMainMenu(siteBase),
+            ? buildLinkedMainMenu(siteBase, kaufenAktiv)
+            : buildPublicMainMenu(siteBase, kaufenAktiv),
         },
       ).catch(err => console.error("[tg send menu]", err));
     }
@@ -326,7 +337,6 @@ export async function POST(
   // ── /shop — Mini-App-Launcher (web_app-Button öffnet im Telegram-WebView) ─
   if (text === "/shop" || text === "/магазин") {
     if (konto.access_token) {
-      const kaufenAktiv = await isFeatureEnabled("kaufen_aktiv").catch(() => true);
       const shopText = kaufenAktiv
         ? `🛍 <b>Магазин в Telegram</b>\n\n` +
           `<i>Открой каталог прямо здесь — оплата, доставка, всё в одном окне.</i>`
@@ -424,7 +434,7 @@ export async function POST(
       `Я бот и не могу отвечать на свободные вопросы. Используйте /menu для команд ` +
       `или напишите куратору: bonjour@galeriedutemps.kz`,
       {
-        reply_markup: buildLinkedMainMenu(siteBase),
+        reply_markup: buildLinkedMainMenu(siteBase, kaufenAktiv),
       },
     ).catch(err => console.error("[tg send ack]", err));
     return NextResponse.json({ ok: true });
@@ -469,7 +479,7 @@ export async function POST(
           `✓ Получили ваше сообщение — куратор скоро ответит.\n\n` +
           `А пока — посмотрите каталог: /katalog`,
           {
-            reply_markup: buildPublicMainMenu(siteBase),
+            reply_markup: buildPublicMainMenu(siteBase, kaufenAktiv),
           },
         ).catch(err => console.error("[tg ack lead]", err));
       }
@@ -530,10 +540,13 @@ async function handleCallbackQuery(
   }
 
   if (data === "menu") {
-    const linked = await customerByTelegramChatId(chatId).catch(() => null);
+    const [linked, kaufenAktiv] = await Promise.all([
+      customerByTelegramChatId(chatId).catch(() => null),
+      isFeatureEnabled("kaufen_aktiv").catch(() => true),
+    ]);
     await sendMessage(botToken, chatId, `<b>Меню</b>`, {
       parse_mode:   "HTML",
-      reply_markup: linked ? buildLinkedMainMenu(siteBase) : buildPublicMainMenu(siteBase),
+      reply_markup: linked ? buildLinkedMainMenu(siteBase, kaufenAktiv) : buildPublicMainMenu(siteBase, kaufenAktiv),
     }).catch(err => console.error("[cb menu]", err));
     return;
   }
@@ -579,10 +592,10 @@ async function handleCallbackQuery(
  * Inline-Keyboard-Builder
  * ────────────────────────────────────────────────────────────────────────── */
 
-function buildPublicMainMenu(siteBase: string): InlineKeyboardMarkup {
+function buildPublicMainMenu(siteBase: string, kaufenAktiv = true): InlineKeyboardMarkup {
   return {
     inline_keyboard: [
-      [{ text: "🛍 Открыть магазин", web_app: { url: `${siteBase}/tg` } }],
+      [{ text: kaufenAktiv ? "🛍 Открыть магазин" : "🛍 Открыть витрину", web_app: { url: `${siteBase}/tg` } }],
       [
         { text: "📰 Журнал",  url: `${siteBase}/journal` },
         { text: "✉ Контакт", callback_data: "help" },
@@ -592,10 +605,10 @@ function buildPublicMainMenu(siteBase: string): InlineKeyboardMarkup {
   };
 }
 
-function buildLinkedMainMenu(siteBase: string): InlineKeyboardMarkup {
+function buildLinkedMainMenu(siteBase: string, kaufenAktiv = true): InlineKeyboardMarkup {
   return {
     inline_keyboard: [
-      [{ text: "🛍 Открыть магазин", web_app: { url: `${siteBase}/tg` } }],
+      [{ text: kaufenAktiv ? "🛍 Открыть магазин" : "🛍 Открыть витрину", web_app: { url: `${siteBase}/tg` } }],
       [{ text: "📋 Мои заказы", callback_data: "orders" }],
       [
         { text: "❤ Избранное", url: `${siteBase}/wunschliste` },

@@ -58,8 +58,16 @@ export async function GET(req: NextRequest) {
       [q]
     );
 
+    // Leak-Schutz: exakten Bestand NICHT serialisieren. Die Query filtert
+    // bereits auf lagerbestand>0 & verkauft=false → alle Treffer sind
+    // verfügbar. Nach außen nur binär `available`.
+    const items = result.rows.map(({ lagerbestand, relevanz, ...rest }) => {
+      void lagerbestand; void relevanz;
+      return { ...rest, available: true };
+    });
+
     return NextResponse.json({
-      items:  result.rows,
+      items,
       gesamt: result.rowCount ?? 0,
       query:  q,
     });

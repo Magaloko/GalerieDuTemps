@@ -31,13 +31,24 @@ async function getOrCreateToken(): Promise<string> {
 /** GET – Wunschliste laden */
 export async function GET() {
   try {
+    const { isFeatureEnabled } = await import("@/lib/db/feature-flags");
     const token   = await getOrCreateToken();
-    const produkte = await wunschlisteProdukte(token);
-    const ids      = await wunschlisteIds(token);
-    return NextResponse.json({ produkte, ids });
+    const [produkteRaw, ids, kaufenAktiv] = await Promise.all([
+      wunschlisteProdukte(token),
+      wunschlisteIds(token),
+      isFeatureEnabled("kaufen_aktiv").catch(() => true),
+    ]);
+
+    // Schaufenster-Modus: exakten Bestand NICHT an den Client geben — auf
+    // binär maskieren (0/1). Im Shop-Modus bleibt der echte Wert (für max_menge).
+    const produkte = kaufenAktiv
+      ? produkteRaw
+      : produkteRaw.map(p => ({ ...p, lagerbestand: p.lagerbestand > 0 ? 1 : 0 }));
+
+    return NextResponse.json({ produkte, ids, kaufenAktiv });
   } catch (err) {
     console.error("[API GET /wunschliste]", err);
-    return NextResponse.json({ produkte: [], ids: [] });
+    return NextResponse.json({ produkte: [], ids: [], kaufenAktiv: true });
   }
 }
 

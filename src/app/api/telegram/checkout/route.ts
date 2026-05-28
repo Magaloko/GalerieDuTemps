@@ -43,6 +43,15 @@ interface ValidatedItem {
 }
 
 export async function POST(req: NextRequest) {
+  // Schaufenster-Modus: kein Telegram-Payment/sendInvoice (fail-closed).
+  const { kaufenGesperrt } = await import("@/lib/db/feature-flags");
+  if (await kaufenGesperrt()) {
+    return NextResponse.json(
+      { error: "Покупка временно недоступна — напишите куратору." },
+      { status: 403 },
+    );
+  }
+
   const session = await getWebAppSession();
   if (!session) {
     return NextResponse.json({ error: "Не авторизовано" }, { status: 401 });

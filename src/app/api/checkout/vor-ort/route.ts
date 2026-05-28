@@ -24,6 +24,12 @@ export const dynamic = "force-dynamic";
 const Body = z.object({ order_id: z.string().uuid(), token: z.string().nullable().optional() });
 
 export async function POST(req: NextRequest) {
+  // Schaufenster-Modus: keine Vor-Ort-Reservierung mehr (fail-closed).
+  const { kaufenGesperrt } = await import("@/lib/db/feature-flags");
+  if (await kaufenGesperrt()) {
+    return NextResponse.json({ error: "Резервирование временно недоступно." }, { status: 403 });
+  }
+
   let body: unknown;
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }

@@ -31,8 +31,9 @@ const CheckoutSchema = z.object({
 export async function POST(req: NextRequest) {
   // Schaufenster-Modus: Checkout serverseitig sperren (Defense-in-Depth —
   // UI versteckt den Kauf bereits, aber direkte API-Calls hier abweisen).
-  const { isFeatureEnabled } = await import("@/lib/db/feature-flags");
-  if (!(await isFeatureEnabled("kaufen_aktiv").catch(() => true))) {
+  // fail-closed: bei DB-Fehler ebenfalls keine Order erzeugen.
+  const { kaufenGesperrt } = await import("@/lib/db/feature-flags");
+  if (await kaufenGesperrt()) {
     return NextResponse.json(
       { error: "Покупка временно недоступна — оформите запрос через сайт." },
       { status: 403 },

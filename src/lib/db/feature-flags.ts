@@ -106,6 +106,27 @@ export async function isFeatureEnabled(key: FeatureKey): Promise<boolean> {
   return all[key] ?? true;
 }
 
+/**
+ * Fail-CLOSED Check für kaufen_aktiv — NUR für Order-/Payment-erzeugende
+ * Routes (api/checkout*, kaspi, telegram-checkout, method-picker).
+ *
+ * Anders als isFeatureEnabled (fail-OPEN, gut für reine Anzeige) wird hier
+ * bei einem DB-Fehler der Kauf GESPERRT — Sicherheit vor Verfügbarkeit. So
+ * kann ein DB-Hiccup nicht versehentlich eine Order/Zahlung im Schaufenster-
+ * Modus durchlassen.
+ *
+ * @returns true = Kauf gesperrt (Schaufenster / DB nicht erreichbar)
+ */
+export async function kaufenGesperrt(): Promise<boolean> {
+  try {
+    const all = await loadAll();          // bewusst ohne fail-open-catch
+    return all.kaufen_aktiv === false;
+  } catch (err) {
+    console.warn("[feature-flags] kaufenGesperrt → fail-closed:", err);
+    return true;                          // DB-Fehler ⇒ sperren
+  }
+}
+
 /** Flag setzen (Admin-Action). Cache wird invalidiert. */
 export async function setFeature(
   key: FeatureKey,

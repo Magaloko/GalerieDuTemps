@@ -22,6 +22,16 @@ const CheckoutSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  // Schaufenster-Modus: Order-/Payment-Erstellung serverseitig sperren
+  // (fail-closed — bei DB-Fehler ebenfalls sperren).
+  const { kaufenGesperrt } = await import("@/lib/db/feature-flags");
+  if (await kaufenGesperrt()) {
+    return NextResponse.json(
+      { error: "Покупка временно недоступна — оформите запрос через сайт." },
+      { status: 403 },
+    );
+  }
+
   const ip = getClientIp(req);
   const rl = rateLimitPruefen(`kaspi-checkout:${ip}`, 10, 10 * 60 * 1000);
   if (!rl.erlaubt) return tooManyRequestsResponse(rl);
@@ -67,7 +77,8 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Produkt nicht verfügbar" }, { status: 400 });
       }
       if (reqItem.menge > p.lagerbestand) {
-        return NextResponse.json({ error: `Nur ${p.lagerbestand}x verfügbar` }, { status: 400 });
+        // Binär — kein exakter Bestand in der Fehlerantwort (Leak-Schutz).
+        return NextResponse.json({ error: "Товар недоступен в запрошенном количестве" }, { status: 400 });
       }
       cartItems.push({
         produkt_id:        p.id,

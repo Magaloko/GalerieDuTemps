@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, Loader2, ShoppingBag } from "lucide-react";
+import { Heart, Loader2, ShoppingBag, MessageCircle } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { formatPreis } from "@/lib/utils/preis";
 import type { ProduktListItem } from "@/types/produkt";
@@ -22,13 +22,18 @@ export function WunschlisteClient() {
   const [items,   setItems]   = useState<ProduktListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy,    setBusy]    = useState<string | null>(null);
+  const [kaufenAktiv, setKaufenAktiv] = useState(true);
   const hinzufuegen = useCart(s => s.hinzufuegen);
 
   useEffect(() => {
     let aborted = false;
     fetch("/api/wunschliste", { credentials: "include" })
       .then(r => r.json())
-      .then(d => { if (!aborted && Array.isArray(d.produkte)) setItems(d.produkte); })
+      .then(d => {
+        if (aborted) return;
+        if (Array.isArray(d.produkte)) setItems(d.produkte);
+        if (typeof d.kaufenAktiv === "boolean") setKaufenAktiv(d.kaufenAktiv);
+      })
       .catch(() => {})
       .finally(() => { if (!aborted) setLoading(false); });
     return () => { aborted = true; };
@@ -213,21 +218,45 @@ export function WunschlisteClient() {
               >
                 {formatPreis(Number(p.preis))}
               </p>
-              <button
-                type="button"
-                onClick={() => addToCart(p)}
-                disabled={p.verkauft || p.lagerbestand === 0}
-                className="mt-1 flex items-center justify-center gap-1 py-1.5 text-[11px] uppercase font-medium transition-opacity disabled:opacity-40"
-                style={{
-                  letterSpacing: "0.18em",
-                  background:    "var(--color-coral)",
-                  color:         "#fff",
-                  touchAction:   "manipulation",
-                }}
-              >
-                <ShoppingBag className="w-3 h-3" />
-                {p.verkauft || p.lagerbestand === 0 ? "Нет в наличии" : "В корзину"}
-              </button>
+              {kaufenAktiv ? (
+                <button
+                  type="button"
+                  onClick={() => addToCart(p)}
+                  disabled={p.verkauft || p.lagerbestand === 0}
+                  className="mt-1 flex items-center justify-center gap-1 py-1.5 text-[11px] uppercase font-medium transition-opacity disabled:opacity-40"
+                  style={{
+                    letterSpacing: "0.18em",
+                    background:    "var(--color-coral)",
+                    color:         "#fff",
+                    touchAction:   "manipulation",
+                  }}
+                >
+                  <ShoppingBag className="w-3 h-3" />
+                  {p.verkauft || p.lagerbestand === 0 ? "Нет в наличии" : "В корзину"}
+                </button>
+              ) : p.verkauft || p.lagerbestand === 0 ? (
+                <span
+                  className="mt-1 flex items-center justify-center gap-1 py-1.5 text-[11px] uppercase font-medium opacity-50"
+                  style={{ letterSpacing: "0.18em", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}
+                >
+                  Продано
+                </span>
+              ) : (
+                <Link
+                  href={`/tg/kontakt?produkt=${p.id}&name=${encodeURIComponent(p.name)}`}
+                  className="mt-1 flex items-center justify-center gap-1 py-1.5 text-[11px] uppercase font-medium"
+                  style={{
+                    letterSpacing: "0.18em",
+                    background:    "var(--tg-theme-section-bg-color, #fff)",
+                    border:        "1px solid var(--color-coral)",
+                    color:         "var(--color-coral)",
+                    touchAction:   "manipulation",
+                  }}
+                >
+                  <MessageCircle className="w-3 h-3" />
+                  Запросить
+                </Link>
+              )}
             </div>
           </li>
         ))}

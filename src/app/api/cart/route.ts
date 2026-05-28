@@ -37,6 +37,12 @@ async function resolveCustomerId(): Promise<string | null> {
   return null;
 }
 
+/** Schaufenster-Modus: kein Server-Cart-State. fail-open (Anzeige). */
+async function schaufenster(): Promise<boolean> {
+  const { isFeatureEnabled } = await import("@/lib/db/feature-flags");
+  return !(await isFeatureEnabled("kaufen_aktiv").catch(() => true));
+}
+
 // Validation für CartItem im Body (matches types/commerce.ts CartItem)
 const CartItemSchema = z.object({
   produkt_id:        z.string().uuid(),
@@ -60,6 +66,11 @@ export async function GET() {
   const customerId = await resolveCustomerId();
   if (!customerId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
+  // Schaufenster: nie Cart-Items ausliefern.
+  if (await schaufenster()) {
+    return NextResponse.json({ items: [], coupon_code: null, aktualisiert_am: null });
+  }
+
   const cart = await cartLaden(customerId);
   return NextResponse.json(cart ?? { items: [], coupon_code: null, aktualisiert_am: null });
 }
@@ -67,6 +78,11 @@ export async function GET() {
 export async function PUT(req: NextRequest) {
   const customerId = await resolveCustomerId();
   if (!customerId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+
+  // Schaufenster: keine Cart-Mutation.
+  if (await schaufenster()) {
+    return NextResponse.json({ error: "Корзина недоступна" }, { status: 403 });
+  }
 
   let body: unknown;
   try { body = await req.json(); }
@@ -93,6 +109,11 @@ export async function POST(req: NextRequest) {
   // Server soll und potenziell vorhandene Server-Items dabei bleiben.
   const customerId = await resolveCustomerId();
   if (!customerId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+
+  // Schaufenster: kein Merge/keine Cart-Mutation.
+  if (await schaufenster()) {
+    return NextResponse.json({ error: "Корзина недоступна" }, { status: 403 });
+  }
 
   let body: unknown;
   try { body = await req.json(); }

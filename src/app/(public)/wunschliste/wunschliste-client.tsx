@@ -32,6 +32,7 @@ export function WunschlistePage() {
   const [produkte, setProdukte] = useState<ProduktListItem[]>([]);
   const [loading,  setLoading]  = useState(true);
   const [bulking,  setBulking]  = useState(false);
+  const [kaufenAktiv, setKaufenAktiv] = useState(true);
 
   // Initial-Load + Sync wenn ids ändern (toggle/remove)
   useEffect(() => {
@@ -42,14 +43,18 @@ export function WunschlistePage() {
       .then(d => {
         if (aborted) return;
         if (Array.isArray(d.produkte)) setProdukte(d.produkte);
+        if (typeof d.kaufenAktiv === "boolean") setKaufenAktiv(d.kaufenAktiv);
       })
       .catch(() => {})
       .finally(() => { if (!aborted) setLoading(false); });
     return () => { aborted = true; };
   }, [ids.length]); // re-fetch wenn user etwas entfernt
 
-  // Liste der noch verfügbaren Items für Bulk-Add (sold-out raus)
-  const kaufbar = produkte.filter(p => !p.verkauft && p.lagerbestand > 0);
+  // Liste der noch verfügbaren Items für Bulk-Add (sold-out raus).
+  // Im Schaufenster-Modus gibt es keinen Bulk-Add → leer.
+  const kaufbar = kaufenAktiv
+    ? produkte.filter(p => !p.verkauft && p.lagerbestand > 0)
+    : [];
   const summeKaufbarCents = kaufbar.reduce(
     (acc, p) => acc + Math.round(Number(p.preis) * 100),
     0,

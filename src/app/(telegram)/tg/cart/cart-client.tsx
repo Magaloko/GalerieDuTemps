@@ -87,7 +87,7 @@ export function CartClient() {
     };
     main.onClick(onClick);
 
-    return () => { main.hide(); };
+    return () => { main.offClick(onClick); main.hide(); };
   }, [items, totalCents, busy, router]);
 
   return (
