@@ -1,8 +1,7 @@
-import { SiteHeader } from "@/components/layout/site-header";
-import { SiteFooter } from "@/components/layout/site-footer";
 import Link from "next/link";
+import { CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
 import { emailConfirmationEinloesen } from "@/lib/db/customer-auth";
-import { CheckCircle2, AlertCircle } from "lucide-react";
+import { AuthShell } from "@/components/auth/auth-shell";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "E-mail подтверждён" };
@@ -11,42 +10,65 @@ export const dynamic = "force-dynamic";
 export default async function BestaetigtPage({
   searchParams,
 }: { searchParams: Promise<{ token?: string }> }) {
-  const sp = await searchParams;
-  const token = sp.token;
+  const sp         = await searchParams;
+  const token      = sp.token;
   const customerId = token ? await emailConfirmationEinloesen(token).catch(() => null) : null;
-  const ok = !!customerId;
+  const ok         = !!customerId;
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <SiteHeader />
-      <main className="flex-1 flex items-center justify-center px-4 py-20">
-        <div className="max-w-md text-center">
-          <div className={`inline-flex p-4 border mb-6 ${ok ? "bg-vintage-sage/10 border-vintage-sage/30" : "bg-vintage-burgundy/10 border-vintage-burgundy/30"}`} style={{ borderRadius: "50%" }}>
-            {ok
-              ? <CheckCircle2 className="w-10 h-10 text-vintage-sage" />
-              : <AlertCircle className="w-10 h-10 text-vintage-burgundy" />
-            }
-          </div>
-          <p className="text-vintage-gold text-xs tracking-widest uppercase mb-2">✦</p>
-          <h1 className="font-serif text-3xl text-vintage-espresso mb-4">
-            {ok ? "E-mail подтверждён!" : "Ссылка недействительна"}
-          </h1>
-          <p className="text-vintage-dust font-sans text-sm leading-relaxed mb-8">
-            {ok
-              ? "Ваш аккаунт активирован. Теперь вы можете войти."
-              : "Ссылка подтверждения недействительна или истекла. Пожалуйста, зарегистрируйтесь снова."
-            }
-          </p>
-          <Link
-            href={ok ? "/kunde/anmelden" : "/kunde/registrieren"}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-vintage-espresso text-vintage-cream font-sans text-xs tracking-widest uppercase hover:bg-vintage-brown transition-colors"
-            style={{ borderRadius: "var(--radius-button)" }}
-          >
-            {ok ? "Войти" : "Зарегистрироваться снова"}
-          </Link>
+    <AuthShell
+      eyebrow={ok ? "Подтверждение" : "Ошибка"}
+      titel={ok ? "E-mail подтверждён!" : "Ссылка недействительна"}
+      footer={
+        <Link
+          href="/"
+          className="text-[11px] uppercase font-medium hover:opacity-80 transition-opacity"
+          style={{ letterSpacing: "0.22em", color: "var(--color-ink-mute)" }}
+        >
+          ← На главную
+        </Link>
+      }
+    >
+      <div className="text-center space-y-5">
+        <div
+          className="inline-flex items-center justify-center"
+          style={{
+            width:        64,
+            height:       64,
+            background:   ok ? "rgba(127,140,90,0.12)" : "rgba(232,112,58,0.08)",
+            border:       `1px solid ${ok ? "rgba(127,140,90,0.40)" : "rgba(232,112,58,0.40)"}`,
+            borderRadius: "50%",
+          }}
+        >
+          {ok ? (
+            <CheckCircle2 className="w-8 h-8" style={{ color: "#52663F" }} />
+          ) : (
+            <AlertCircle className="w-8 h-8" style={{ color: "var(--color-coral-deep, #A53E26)" }} />
+          )}
         </div>
-      </main>
-      <SiteFooter />
-    </div>
+
+        <p
+          className="text-sm"
+          style={{
+            fontFamily: "var(--font-italic)",
+            fontStyle:  "italic",
+            color:      "var(--color-ink-soft)",
+            lineHeight: 1.6,
+          }}
+        >
+          {ok
+            ? "Ваш аккаунт активирован. Теперь вы можете войти."
+            : "Ссылка подтверждения недействительна или истекла. Пожалуйста, зарегистрируйтесь снова или запросите новое письмо."
+          }
+        </p>
+
+        <Link
+          href={ok ? "/kunde/anmelden" : "/kunde/registrieren"}
+          className="btn-coral btn-coral-sm inline-flex items-center gap-2 mt-2"
+        >
+          {ok ? "Войти" : "Зарегистрироваться"} <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+    </AuthShell>
   );
 }

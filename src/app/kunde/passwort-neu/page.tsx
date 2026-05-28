@@ -3,9 +3,10 @@
 import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Input } from "@/components/ui/input";
+import { Input }  from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, AlertCircle, KeyRound } from "lucide-react";
+import { CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
+import { AuthShell } from "@/components/auth/auth-shell";
 import { passwortNeuSetzenAction } from "../passwort-vergessen/actions";
 
 export default function PasswortNeuPage() {
@@ -15,39 +16,101 @@ export default function PasswortNeuPage() {
 
   useEffect(() => { setToken(sp.get("token") ?? ""); }, [sp]);
 
-  return (
-    <main className="min-h-screen flex items-center justify-center bg-vintage-espresso texture-paper px-4">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <KeyRound className="w-6 h-6 text-vintage-gold mx-auto mb-2" />
-          <h1 className="font-serif text-3xl text-vintage-cream">Новый пароль</h1>
+  if (state?.ok) {
+    return (
+      <AuthShell eyebrow="Безопасность" titel="Пароль установлен">
+        <div className="text-center space-y-4">
+          <div
+            className="inline-flex items-center justify-center"
+            style={{
+              width:        56,
+              height:       56,
+              background:   "rgba(127,140,90,0.12)",
+              border:       "1px solid rgba(127,140,90,0.40)",
+              borderRadius: "50%",
+            }}
+          >
+            <CheckCircle2 className="w-7 h-7" style={{ color: "#52663F" }} />
+          </div>
+          <p
+            className="text-sm"
+            style={{
+              fontFamily: "var(--font-italic)",
+              fontStyle:  "italic",
+              color:      "var(--color-ink-soft)",
+            }}
+          >
+            Теперь вы можете войти с новым паролем.
+          </p>
+          <Link
+            href="/kunde/anmelden"
+            className="btn-coral btn-coral-sm inline-flex items-center gap-2"
+          >
+            Войти <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
+      </AuthShell>
+    );
+  }
 
-        <form action={formAction} className="bg-vintage-brown border border-vintage-sand/40 p-8 space-y-5" style={{ borderRadius: "var(--radius-card)" }}>
-          <input type="hidden" name="token" value={token} />
+  return (
+    <AuthShell eyebrow="Безопасность" titel="Новый пароль">
+      <form action={formAction} className="space-y-5">
+        <input type="hidden" name="token" value={token} />
 
-          {state?.ok ? (
-            <div className="text-center space-y-3">
-              <CheckCircle2 className="w-10 h-10 text-vintage-sage mx-auto" />
-              <p className="font-serif text-vintage-cream">Пароль установлен!</p>
-              <Link href="/kunde/anmelden" className="inline-block px-5 py-2.5 bg-vintage-espresso text-vintage-cream text-xs font-sans uppercase tracking-widest hover:bg-vintage-brown transition-colors" style={{ borderRadius: "var(--radius-button)" }}>
-                Войти
-              </Link>
-            </div>
-          ) : (
-            <>
-              {state?.fehler && (
-                <div className="flex items-center gap-2 p-3 bg-vintage-burgundy/10 border border-vintage-burgundy/30 text-vintage-burgundy text-sm font-sans" style={{ borderRadius: "var(--radius-vintage)" }}>
-                  <AlertCircle className="w-4 h-4" /> {state.fehler}
-                </div>
-              )}
-              <Input label="Новый пароль" name="neues_passwort" type="password" required autoComplete="new-password" hint="Минимум 8 символов" />
-              <Input label="Повторите" name="wdh" type="password" required autoComplete="new-password" />
-              <Button type="submit" loading={isPending} disabled={!token} className="w-full justify-center">Установить пароль</Button>
-            </>
-          )}
-        </form>
-      </div>
-    </main>
+        {state?.fehler && (
+          <div
+            className="flex items-center gap-2 p-3 text-sm"
+            style={{
+              background: "rgba(232,112,58,0.08)",
+              border:     "1px solid rgba(232,112,58,0.35)",
+              color:      "var(--color-coral-deep, #A53E26)",
+            }}
+          >
+            <AlertCircle className="w-4 h-4 shrink-0" /> {state.fehler}
+          </div>
+        )}
+
+        {!token && (
+          <div
+            className="flex items-center gap-2 p-3 text-sm"
+            style={{
+              background: "rgba(201,168,76,0.10)",
+              border:     "1px solid rgba(201,168,76,0.40)",
+              color:      "#8B6F47",
+            }}
+          >
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            Токен отсутствует в ссылке. Запросите новое письмо для сброса.
+          </div>
+        )}
+
+        <Input
+          label="Новый пароль"
+          name="neues_passwort"
+          type="password"
+          required
+          autoComplete="new-password"
+          hint="Минимум 8 символов"
+        />
+        <Input
+          label="Повторите"
+          name="wdh"
+          type="password"
+          required
+          autoComplete="new-password"
+        />
+
+        <Button
+          type="submit"
+          loading={isPending}
+          disabled={!token}
+          className="w-full justify-center"
+          size="lg"
+        >
+          Установить пароль
+        </Button>
+      </form>
+    </AuthShell>
   );
 }
