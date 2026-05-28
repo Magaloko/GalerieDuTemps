@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ordersFuerCustomer } from "@/lib/db/orders";
+import Image from "next/image";
+import { ordersFuerCustomerVorschau } from "@/lib/db/orders";
 import { customerById } from "@/lib/db/customers";
 import { getWebAppSession } from "@/lib/telegram/webapp-session";
 import { formatPreis } from "@/lib/utils/preis";
@@ -38,7 +39,7 @@ export default async function TgOrdersPage() {
   // webapp-Session-Cookie setzt. Beim nächsten Render ist customerId da.
   const session    = await getWebAppSession();
   const customer   = session?.customerId ? await customerById(session.customerId) : null;
-  const orders     = customer ? await ordersFuerCustomer(customer.id).catch(() => []) : [];
+  const orders     = customer ? await ordersFuerCustomerVorschau(customer.id).catch(() => []) : [];
 
   return (
     <TelegramAuthGate>
@@ -86,7 +87,7 @@ export default async function TgOrdersPage() {
                 <li key={o.id}>
                   <Link
                     href={`/tg/orders/${o.id}`}
-                    className="flex items-center justify-between gap-3 p-3"
+                    className="block p-3"
                     style={{
                       background: "var(--tg-theme-section-bg-color, #fff)",
                       border:     "1px solid var(--color-line)",
@@ -94,48 +95,73 @@ export default async function TgOrdersPage() {
                       touchAction: "manipulation",
                     }}
                   >
-                    <div className="min-w-0 flex-1">
-                      <p
-                        className="font-mono text-sm"
-                        style={{ color: "var(--tg-theme-text-color, var(--color-ink))" }}
-                      >
-                        GDT-{o.order_number}
-                      </p>
-                      <p
-                        className="text-[11px] mt-0.5"
-                        style={{ color: meta.color }}
-                      >
-                        {meta.label}
-                      </p>
-                      <p
-                        className="text-[10px] mt-0.5"
-                        style={{
-                          fontFamily: "var(--font-italic)",
-                          fontStyle:  "italic",
-                          color:      "var(--tg-theme-hint-color, var(--color-ink-mute))",
-                        }}
-                      >
-                        {new Date(o.erstellt_am).toLocaleDateString("ru-RU", {
-                          day: "numeric", month: "long", year: "numeric",
-                        })}
-                      </p>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className="font-mono text-sm"
+                          style={{ color: "var(--tg-theme-text-color, var(--color-ink))" }}
+                        >
+                          GDT-{o.order_number}
+                        </p>
+                        <p
+                          className="text-[11px] mt-0.5"
+                          style={{ color: meta.color }}
+                        >
+                          {meta.label}
+                        </p>
+                        <p
+                          className="text-[10px] mt-0.5"
+                          style={{
+                            fontFamily: "var(--font-italic)",
+                            fontStyle:  "italic",
+                            color:      "var(--tg-theme-hint-color, var(--color-ink-mute))",
+                          }}
+                        >
+                          {new Date(o.erstellt_am).toLocaleDateString("ru-RU", {
+                            day: "numeric", month: "long", year: "numeric",
+                          })} · {o.item_count} {pluralItem(o.item_count)}
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p
+                          className="font-mono tabular-nums"
+                          style={{
+                            fontFamily: "var(--font-display)",
+                            fontSize:   16,
+                            color:      "var(--tg-theme-text-color, var(--color-ink))",
+                          }}
+                        >
+                          {formatPreis(o.total_cents / 100)}
+                        </p>
+                        <ArrowRight
+                          className="w-3 h-3 inline opacity-40 mt-1"
+                          style={{ color: "var(--tg-theme-text-color, var(--color-ink))" }}
+                        />
+                      </div>
                     </div>
-                    <div className="text-right shrink-0">
-                      <p
-                        className="font-mono tabular-nums"
-                        style={{
-                          fontFamily: "var(--font-display)",
-                          fontSize:   16,
-                          color:      "var(--tg-theme-text-color, var(--color-ink))",
-                        }}
-                      >
-                        {formatPreis(o.total_cents / 100)}
-                      </p>
-                      <ArrowRight
-                        className="w-3 h-3 inline opacity-40 mt-1"
-                        style={{ color: "var(--tg-theme-text-color, var(--color-ink))" }}
-                      />
-                    </div>
+
+                    {/* Item-Thumbnails (max 4, +N-Overlay bei mehr) */}
+                    {o.vorschau_bilder.length > 0 && (
+                      <div className="flex gap-1.5 mt-2.5">
+                        {o.vorschau_bilder.slice(0, 4).map((url, i) => (
+                          <div
+                            key={i}
+                            className="relative overflow-hidden shrink-0"
+                            style={{ width: 44, height: 44, background: "var(--color-paper-warm)", borderRadius: 4 }}
+                          >
+                            <Image src={url} alt="" fill sizes="44px" className="object-cover" />
+                            {i === 3 && o.item_count > 4 && (
+                              <span
+                                className="absolute inset-0 flex items-center justify-center text-[11px] font-medium"
+                                style={{ background: "rgba(15,20,48,0.6)", color: "#fff" }}
+                              >
+                                +{o.item_count - 4}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </Link>
                 </li>
               );
@@ -238,4 +264,11 @@ function pluralOrder(n: number): string {
   if (m10 === 1 && m100 !== 11) return "заказ";
   if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return "заказа";
   return "заказов";
+}
+
+function pluralItem(n: number): string {
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return "товар";
+  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return "товара";
+  return "товаров";
 }

@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { customerById } from "@/lib/db/customers";
+import { ordersFuerCustomer } from "@/lib/db/orders";
 import { getWebAppSession } from "@/lib/telegram/webapp-session";
+import { formatPreis } from "@/lib/utils/preis";
 import { TelegramAuthGate } from "../auth-gate";
 import { ClaimInitForm } from "./claim-init-form";
 import {
-  User, Mail, Briefcase, Package, Heart, ExternalLink, ArrowRight, MessageCircle,
+  Mail, Briefcase, Package, Heart, ExternalLink, ArrowRight, MessageCircle,
 } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -42,6 +44,13 @@ const TYPE_COLOR: Record<string, string> = {
 export default async function TgProfilPage() {
   const session  = await getWebAppSession();
   const customer = session?.customerId ? await customerById(session.customerId) : null;
+
+  // Kunden-Statistik (nur eigene Orders — customer-scoped, kein Leak).
+  const orders = customer ? await ordersFuerCustomer(customer.id).catch(() => []) : [];
+  const bezahltStatus = new Set(["paid", "fulfilled", "completed"]);
+  const ausgegebenCents = orders
+    .filter(o => bezahltStatus.has(o.status))
+    .reduce((sum, o) => sum + o.total_cents, 0);
 
   if (!customer) {
     return (
@@ -191,6 +200,49 @@ export default async function TgProfilPage() {
             </p>
           </div>
         </header>
+
+        {/* ─ Statistik ───────────────────────────────────────── */}
+        <section className="grid grid-cols-2 gap-2">
+          <Link
+            href="/tg/orders"
+            className="p-3 text-center"
+            style={{
+              background:  "var(--tg-theme-section-bg-color, #fff)",
+              border:      "1px solid var(--color-line)",
+              touchAction: "manipulation",
+            }}
+          >
+            <p
+              className="tabular-nums"
+              style={{ fontFamily: "var(--font-display)", fontSize: 24, color: "var(--tg-theme-text-color, var(--color-ink))" }}
+            >
+              {orders.length}
+            </p>
+            <p
+              className="text-[10px] uppercase font-medium mt-0.5"
+              style={{ letterSpacing: "0.18em", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}
+            >
+              Заказов
+            </p>
+          </Link>
+          <div
+            className="p-3 text-center"
+            style={{ background: "var(--tg-theme-section-bg-color, #fff)", border: "1px solid var(--color-line)" }}
+          >
+            <p
+              className="tabular-nums truncate"
+              style={{ fontFamily: "var(--font-display)", fontSize: 20, color: "var(--tg-theme-text-color, var(--color-ink))" }}
+            >
+              {formatPreis(ausgegebenCents / 100, (orders[0]?.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT")}
+            </p>
+            <p
+              className="text-[10px] uppercase font-medium mt-0.5"
+              style={{ letterSpacing: "0.18em", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}
+            >
+              Потрачено
+            </p>
+          </div>
+        </section>
 
         {/* ─ Meta ────────────────────────────────────────────── */}
         <section className="space-y-2">

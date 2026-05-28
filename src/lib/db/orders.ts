@@ -324,6 +324,33 @@ export async function ordersFuerCustomer(customerId: string): Promise<Order[]> {
   return r.rows;
 }
 
+/** Orders eines Kunden inkl. kompakter Item-Vorschau (Anzahl + erste Bilder) —
+ *  für die Mini-App-Liste, vermeidet N+1 durch aggregierte Sub-Selects. */
+export type OrderMitVorschau = Order & { item_count: number; vorschau_bilder: string[] };
+
+export async function ordersFuerCustomerVorschau(customerId: string): Promise<OrderMitVorschau[]> {
+  const r = await query<OrderMitVorschau>(
+    `SELECT
+       o.*,
+       (SELECT COUNT(*)::int FROM sebo.order_items oi WHERE oi.order_id = o.id) AS item_count,
+       COALESCE((
+         SELECT json_agg(x.produkt_bild_url)
+         FROM (
+           SELECT oi.produkt_bild_url
+           FROM sebo.order_items oi
+           WHERE oi.order_id = o.id AND oi.produkt_bild_url IS NOT NULL
+           ORDER BY oi.erstellt_am
+           LIMIT 4
+         ) x
+       ), '[]') AS vorschau_bilder
+     FROM sebo.orders o
+     WHERE o.customer_id = $1
+     ORDER BY o.erstellt_am DESC`,
+    [customerId]
+  );
+  return r.rows;
+}
+
 // ---------------------------------------------------------------------------
 // Cron: abgelaufene pending-Orders canceln
 // ---------------------------------------------------------------------------
