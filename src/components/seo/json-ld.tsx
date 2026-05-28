@@ -22,9 +22,23 @@ export function JsonLd({ data, id }: JsonLdProps) {
         <script
           key={id ? `${id}-${i}` : i}
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(item) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(item) }}
         />
       ))}
     </>
   );
+}
+
+/**
+ * Sicheres JSON-LD-Encoding: `<`, `>`, `&` → \uXXXX. Verhindert
+ * `</script>`-Breakout (Stored-XSS) wenn ein Schema-Feld (Produktname/
+ * -beschreibung — künftig auch aus Instagram-Captions / Telegram-Erstellung,
+ * also weniger vertrauenswürdig) HTML-Markup enthält. Die Escapes sind
+ * valides JSON und ändern den geparsten Wert nicht.
+ */
+function safeJsonLd(item: object): string {
+  return JSON.stringify(item)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026");
 }
