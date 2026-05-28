@@ -154,3 +154,15 @@ export async function instagramPostAktualisieren(
 export async function instagramPostLoeschen(id: string): Promise<void> {
   await query(`DELETE FROM sebo.instagram_posts WHERE id = $1`, [id]);
 }
+
+/** Setzt die Sortierung anhand der übergebenen Reihenfolge (Index = sortierung). */
+export async function instagramPostsSortierungSetzen(orderedIds: string[]): Promise<void> {
+  if (orderedIds.length === 0) return;
+  await query(
+    `UPDATE sebo.instagram_posts AS p
+        SET sortierung = o.ord
+       FROM unnest($1::uuid[]) WITH ORDINALITY AS o(id, ord)
+      WHERE p.id = o.id`,
+    [orderedIds],
+  );
+}

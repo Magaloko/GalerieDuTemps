@@ -14,6 +14,7 @@ import {
   instagramPostErstellen,
   instagramPostAktualisieren,
   instagramPostLoeschen,
+  instagramPostsSortierungSetzen,
 } from "@/lib/db/instagram-archive";
 import { extractInstagramUrl, instagramShortcode, instagramTyp } from "@/lib/utils/instagram";
 import { auditLog } from "@/lib/db/audit-log";
@@ -415,6 +416,21 @@ export async function instagramPostDeleteAction(id: string): Promise<ActionRes> 
     return { ok: true, message: "Удалено" };
   } catch (err) {
     console.error("[instagramPostDelete]", err);
+    return { ok: false, error: "Ошибка БД" };
+  }
+}
+
+/* ── Instagram-Archiv: Reihenfolge speichern (Drag-Sortierung) ─────────────── */
+export async function instagramPostsReorderAction(orderedIds: string[]): Promise<ActionRes> {
+  if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
+  if (!Array.isArray(orderedIds) || orderedIds.length === 0) return { ok: false, error: "Пустой список" };
+  try {
+    await instagramPostsSortierungSetzen(orderedIds);
+    revalidatePath("/tg/admin/instagram");
+    revalidatePath("/tg/instagram");
+    return { ok: true };
+  } catch (err) {
+    console.error("[instagramPostsReorder]", err);
     return { ok: false, error: "Ошибка БД" };
   }
 }

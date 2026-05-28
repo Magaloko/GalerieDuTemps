@@ -97,10 +97,11 @@ export function Header({
   };
 
   const navLinks = [
-    { href: "/katalog", label: t.nav.katalog },
-    { href: "/journal", label: t.nav.journal },
-    { href: "/about",   label: t.nav.about   },
-    { href: "/kontakt", label: t.nav.kontakt },
+    { href: "/katalog",   label: t.nav.katalog },
+    { href: "/instagram", label: "Instagram"   },
+    { href: "/journal",   label: t.nav.journal },
+    { href: "/about",     label: t.nav.about   },
+    { href: "/kontakt",   label: t.nav.kontakt },
   ];
 
   // ── D2 (gescrollt, Paper-Bar) ───────────────────────────────────────────

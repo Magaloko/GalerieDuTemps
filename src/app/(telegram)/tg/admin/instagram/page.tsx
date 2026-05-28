@@ -4,7 +4,7 @@ import { AdminBack, AdminHeader, AdminEmpty, AdminNotAllowed } from "../_ui";
 import { instagramPostsAlle, instagramKategorienAlle } from "@/lib/db/instagram-archive";
 import { produkteListe } from "@/lib/db/produkte";
 import { InstagramCreate } from "./instagram-create";
-import { InstagramRow } from "./instagram-row";
+import { InstagramList } from "./instagram-list";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Instagram · Mini-App", robots: { index: false, follow: false } };
@@ -37,23 +37,19 @@ export default async function TgAdminInstagram() {
         {posts.length === 0 ? (
           <AdminEmpty text="Архив пуст. Вставьте embed-код поста выше." />
         ) : (
-          <div className="space-y-2">
-            {posts.map(p => (
-              <InstagramRow
-                key={p.id}
-                id={p.id}
-                permalink={p.permalink}
-                shortcode={p.shortcode}
-                typ={p.typ}
-                aktiv={p.aktiv}
-                kategorieId={p.kategorie_id}
-                produktId={p.produkt_id}
-                titel={p.titel}
-                kategorien={katOptions}
-                produkte={prodOptions}
-              />
-            ))}
-          </div>
+          <>
+            <p className="text-[10px] mb-2" style={{ fontStyle: "italic", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
+              Перетащите ⠿ для изменения порядка
+            </p>
+            <InstagramList
+              posts={posts.map(p => ({
+                id: p.id, permalink: p.permalink, shortcode: p.shortcode, typ: p.typ,
+                aktiv: p.aktiv, kategorie_id: p.kategorie_id, produkt_id: p.produkt_id, titel: p.titel,
+              }))}
+              kategorien={katOptions}
+              produkte={prodOptions}
+            />
+          </>
         )}
       </main>
     </TelegramAuthGate>
