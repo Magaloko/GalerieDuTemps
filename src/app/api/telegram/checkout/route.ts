@@ -116,13 +116,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Customer ohne Telegram-Verknüpfung" }, { status: 400 });
   }
 
-  // Payload: wird bei successful_payment zurückgeschickt → wir können daraus
-  // die Bestellung rekonstruieren. Max 128 bytes — packen wir minimal.
+  // Payload: wird bei successful_payment zurückgeschickt → wir rekonstruieren
+  // daraus die Bestellung. Telegram-LIMIT: 128 Bytes. Früher haben wir hart
+  // .slice(0,128) gemacht — das ZERSTÖRT das JSON bei mehreren Items (UUIDs
+  // sind je 36 Zeichen) → Zahlung erfolgreich, aber Payload nicht parsebar
+  // → „Geld da, Order failed". Jetzt: bauen, Größe prüfen, bei Überlauf
+  // HART abbrechen BEVOR eine Invoice rausgeht (kein Geld ohne Order).
   const payload = JSON.stringify({
     cid:   session.customerId,
-    items: validated.map(v => [v.produkt_id, v.menge]),  // tuple-array spart bytes
+    items: validated.map(v => [v.produkt_id, v.menge]),
     ts:    Math.floor(Date.now() / 1000),
-  }).slice(0, 128);
+  });
+  if (Buffer.byteLength(payload, "utf8") > 128) {
+    // Zu viele/zu lange Items für das Telegram-Payload-Limit. Bis der
+    // Draft-Storage-Flow steht (Order zuerst anlegen, nur order_id im
+    // Payload), lehnen wir solche Invoices sauber ab statt Geld zu riskieren.
+    console.warn("[tg-checkout] payload > 128B, Invoice abgebrochen:", payload.length);
+    return NextResponse.json({
+      error: "Слишком много позиций для оплаты через Telegram. Оформите заказ на сайте.",
+    }, { status: 422 });
+  }
 
   try {
     await sendInvoice(botToken, {

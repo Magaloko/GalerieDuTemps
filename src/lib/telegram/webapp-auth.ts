@@ -47,7 +47,11 @@ export interface ValidatedInitData {
   start_param?: string;
 }
 
-const DEFAULT_MAX_AGE_SECONDS = 24 * 60 * 60;
+// Replay-Fenster für abgefangenes initData. Die Mini-App re-authentifiziert
+// bei jedem Öffnen (AuthGate generiert frisches initData via Telegram), daher
+// reicht ein kurzes Fenster. 3h statt 24h verkleinert die Angriffsfläche
+// deutlich — gerade weil auch Admins über initData rein kommen.
+const DEFAULT_MAX_AGE_SECONDS = 3 * 60 * 60;
 
 /**
  * Validiert ein initData-Query-String und gibt die geparste user.id zurück
