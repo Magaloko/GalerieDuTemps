@@ -100,7 +100,9 @@ function StoryOverlay({
 }) {
   const [sel, setSel] = useState<number | null>(blocks.length ? 0 : null);
   const dragIndex = useRef<number | null>(null);
+  const [dragging, setDragging]   = useState<number | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
 
   const reorder = (from: number, to: number) => {
     if (from === to || from < 0 || to < 0) return;
@@ -112,6 +114,35 @@ function StoryOverlay({
       return arr;
     });
     setSel(to);
+  };
+
+  /** Block-Index unter einer Y-Position (für Pointer-Drag, touch-fähig). */
+  const blockIndexAtY = (y: number): number | null => {
+    const el = listRef.current;
+    if (!el) return null;
+    const kids = Array.from(el.querySelectorAll<HTMLElement>("[data-block-index]"));
+    for (const k of kids) {
+      if (y < k.getBoundingClientRect().bottom) return Number(k.dataset.blockIndex);
+    }
+    return kids.length ? Number(kids[kids.length - 1].dataset.blockIndex) : null;
+  };
+
+  // Pointer-Drag (Maus + Touch). Start am Grip-Handle.
+  const onGripDown = (i: number) => (e: React.PointerEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    dragIndex.current = i;
+    setDragging(i); setOverIndex(i);
+    try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId); } catch {/* ignore */}
+  };
+  const onGripMove = (e: React.PointerEvent) => {
+    if (dragIndex.current === null) return;
+    const idx = blockIndexAtY(e.clientY);
+    if (idx !== null && idx !== overIndex) setOverIndex(idx);
+  };
+  const onGripUp = (e: React.PointerEvent) => {
+    if (dragIndex.current !== null && overIndex !== null) reorder(dragIndex.current, overIndex);
+    dragIndex.current = null; setDragging(null); setOverIndex(null);
+    try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {/* ignore */}
   };
 
   const add = (t: ProduktBlockTyp) => {
@@ -170,7 +201,7 @@ function StoryOverlay({
 
         {/* Live-Vorschau */}
         <div className="overflow-y-auto p-4 md:p-8" style={{ background: "var(--color-bone)" }}>
-          <div className="max-w-2xl mx-auto space-y-4">
+          <div ref={listRef} className="max-w-2xl mx-auto space-y-4">
             {blocks.length === 0 ? (
               <p className="text-sm text-vintage-dust text-center py-16">
                 Слева добавьте блоки — текст, фото, цитату…
@@ -178,24 +209,29 @@ function StoryOverlay({
             ) : blocks.map((b, i) => (
               <div
                 key={i}
-                draggable
+                data-block-index={i}
                 onClick={() => setSel(i)}
-                onDragStart={(e) => { dragIndex.current = i; e.dataTransfer.effectAllowed = "move"; }}
-                onDragOver={(e) => { if (dragIndex.current !== null) { e.preventDefault(); if (overIndex !== i) setOverIndex(i); } }}
-                onDrop={(e) => { e.preventDefault(); const from = dragIndex.current; if (from !== null) reorder(from, i); dragIndex.current = null; setOverIndex(null); }}
-                onDragEnd={() => { dragIndex.current = null; setOverIndex(null); }}
-                className="relative cursor-grab active:cursor-grabbing transition-all"
+                className="relative cursor-pointer transition-all"
                 style={{
-                  outline:      overIndex === i ? "2px dashed var(--color-coral)" : sel === i ? "2px solid var(--color-coral)" : "1px dashed transparent",
+                  outline:      overIndex === i && dragging !== null ? "2px dashed var(--color-coral)" : sel === i ? "2px solid var(--color-coral)" : "1px dashed transparent",
                   outlineOffset: 4,
                   borderRadius:  4,
-                  opacity:      dragIndex.current === i ? 0.5 : 1,
+                  opacity:      dragging === i ? 0.4 : 1,
                 }}
               >
                 {/* Floating Controls (gewählt) */}
                 {sel === i && (
                   <div className="absolute -top-3 right-0 z-10 flex items-center gap-0.5 bg-vintage-white border border-vintage-sand p-0.5" style={{ borderRadius: "var(--radius-vintage)" }}>
-                    <span title="Перетащите для сортировки" className="px-1 text-vintage-dust cursor-grab"><GripVertical className="w-3.5 h-3.5" /></span>
+                    <span
+                      title="Перетащите для сортировки"
+                      className="px-1 text-vintage-dust cursor-grab active:cursor-grabbing touch-none"
+                      style={{ touchAction: "none" }}
+                      onClick={(e) => e.stopPropagation()}
+                      onPointerDown={onGripDown(i)}
+                      onPointerMove={onGripMove}
+                      onPointerUp={onGripUp}
+                      onPointerCancel={onGripUp}
+                    ><GripVertical className="w-3.5 h-3.5" /></span>
                     <Ctl title="Вверх"      onClick={(e) => { e.stopPropagation(); move(i, -1); }} disabled={i === 0}><ArrowUp className="w-3.5 h-3.5" /></Ctl>
                     <Ctl title="Вниз"       onClick={(e) => { e.stopPropagation(); move(i, 1); }}  disabled={i === blocks.length - 1}><ArrowDown className="w-3.5 h-3.5" /></Ctl>
                     <Ctl title="Дублировать" onClick={(e) => { e.stopPropagation(); dup(i); }}><Copy className="w-3.5 h-3.5" /></Ctl>
