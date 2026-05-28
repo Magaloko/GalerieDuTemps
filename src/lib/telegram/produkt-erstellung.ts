@@ -152,14 +152,17 @@ export async function produktAusFotoErstellen(opts: {
 export function buildErfolgsAntwort(r: ProduktAusFotoResult): {
   text: string; keyboard: InlineKeyboardMarkup;
 } {
+  const queueUrl = `${getSiteUrl()}/admin/produkte/entwuerfe`;
   const text =
     `✓ <b>Черновик создан</b>\n\n` +
     `📦 ${escapeHtml(r.name)}\n` +
     `<i>Цена не указана · скрыт от покупателей</i>\n\n` +
-    `Допишите цену, категорию и описание — товар появится в каталоге после публикации.`;
+    `Пришлите ещё фото — каждое станет черновиком. Затем в «Черновиках» ` +
+    `заполните ИИ/вручную и опубликуйте пачкой.`;
   const keyboard: InlineKeyboardMarkup = {
     inline_keyboard: [
-      [{ text: "✏️ Заполнить и опубликовать", url: r.editUrl }],
+      [{ text: "📥 Черновики (заполнить · ИИ)", url: queueUrl }],
+      [{ text: "✏️ Этот товар", url: r.editUrl }],
       [{ text: "🗑 Удалить черновик", callback_data: `delprod:${r.produktId}` }],
     ],
   };
