@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, Eye, EyeOff, Tag } from "lucide-react";
+import Link from "next/link";
+import { Check, Loader2, Eye, EyeOff, Tag, Pencil } from "lucide-react";
 import { formatPreis } from "@/lib/utils/preis";
 import { produktSchnellEditAction } from "../actions";
 import { haptic } from "../../fx";
@@ -116,6 +117,14 @@ export function ProduktRow(p: Props) {
               </button>
             )}
           </div>
+          {/* Voll-Editor öffnen */}
+          <Link
+            href={`/tg/admin/produkte/${p.id}`}
+            className="flex items-center justify-center gap-1.5 py-2 text-[11px] uppercase font-medium"
+            style={{ letterSpacing: "0.16em", background: "var(--color-bone)", color: "var(--color-ink)", border: "1px solid var(--color-line)" }}
+          >
+            <Pencil className="w-3.5 h-3.5" /> Полный редактор (фото, поля)
+          </Link>
           {ohnePreis && !p.aktiv && (
             <p className="text-[10px]" style={{ color: "var(--color-coral)", fontStyle: "italic" }}>
               Укажите цену, чтобы опубликовать.

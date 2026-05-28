@@ -6,6 +6,11 @@ import { query } from "@/lib/db";
 import { b2bFreischalten, b2bAblehnen } from "@/lib/db/customer-b2b";
 import { couponToggleAktiv } from "@/lib/db/coupons";
 import { auszahlungAlsBezahltMarkieren } from "@/lib/db/auszahlungen";
+import { produktAktualisieren } from "@/lib/db/produkte";
+import { kategorieErstellen } from "@/lib/db/kategorien";
+import { bildVerarbeiten } from "@/lib/storage/upload";
+import { bildEinfuegen, bildLoeschen, hauptbildSetzen } from "@/lib/db/bilder";
+import type { ProduktUpdateInput } from "@/lib/utils/validierung";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * Server-Actions für die Admin-Mini-App.
@@ -100,6 +105,103 @@ export async function auszahlungBezahltAction(id: string): Promise<ActionRes> {
     return { ok: true, message: "Отмечено как выплачено" };
   } catch (err) {
     console.error("[auszahlungBezahlt]", err);
+    return { ok: false, error: "Ошибка" };
+  }
+}
+
+/* ── Kategorie erstellen ───────────────────────────────────────────────────── */
+export async function kategorieErstellenAction(name: string, elternId?: number | null): Promise<ActionRes> {
+  if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
+  if (!name || name.trim().length < 2) return { ok: false, error: "Название слишком короткое" };
+  try {
+    await kategorieErstellen({ name: name.trim(), eltern_id: elternId ?? null, aktiv: true });
+    revalidatePath("/tg/admin/kategorien");
+    return { ok: true, message: "Категория создана" };
+  } catch (err) {
+    console.error("[kategorieErstellen]", err);
+    return { ok: false, error: "Ошибка при создании" };
+  }
+}
+
+/* ── Produkt: volle Bearbeitung aller Felder ───────────────────────────────── */
+export async function produktVollEditAction(
+  id: string,
+  fields: ProduktUpdateInput,
+): Promise<ActionRes> {
+  if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
+  try {
+    const p = await produktAktualisieren(id, fields);
+    if (!p) return { ok: false, error: "Товар не найден" };
+    revalidatePath(`/tg/admin/produkte/${id}`);
+    revalidatePath("/tg/admin/produkte");
+    return { ok: true, message: "Сохранено" };
+  } catch (err) {
+    console.error("[produktVollEdit]", err);
+    return { ok: false, error: err instanceof Error ? err.message : "Ошибка БД" };
+  }
+}
+
+/* ── Produkt-Bild: Upload (FormData mit File) ──────────────────────────────── */
+export async function produktBildUploadAction(formData: FormData): Promise<ActionRes> {
+  if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
+  const produktId = String(formData.get("produktId") ?? "");
+  const file      = formData.get("file");
+  if (!produktId || !(file instanceof File) || file.size === 0) {
+    return { ok: false, error: "Нет файла" };
+  }
+  try {
+    const bild = await bildVerarbeiten(file);
+    // Erstes Bild → automatisch Hauptbild
+    const vorhandene = await query<{ count: number }>(
+      `SELECT COUNT(*)::int AS count FROM sebo.produktbilder WHERE produkt_id = $1`, [produktId],
+    );
+    const istErstes = (vorhandene.rows[0]?.count ?? 0) === 0;
+    const neu = await bildEinfuegen({
+      produkt_id:    produktId,
+      url:           bild.url,
+      url_thumb:     bild.url_thumb,
+      url_medium:    bild.url_medium,
+      url_large:     bild.url_large,
+      format:        bild.format,
+      ist_hauptbild: istErstes,
+      dateigroesse:  bild.dateigroesse,
+      breite:        bild.breite,
+      hoehe:         bild.hoehe,
+    });
+    if (istErstes) {
+      await query(`UPDATE sebo.produkte SET hauptbild_url = $1 WHERE id = $2`, [bild.url, produktId]);
+    }
+    revalidatePath(`/tg/admin/produkte/${produktId}`);
+    return { ok: true, message: `Фото добавлено (#${neu.sortierung ?? ""})` };
+  } catch (err) {
+    console.error("[produktBildUpload]", err);
+    return { ok: false, error: err instanceof Error ? err.message : "Ошибка загрузки" };
+  }
+}
+
+/* ── Produkt-Bild: löschen ─────────────────────────────────────────────────── */
+export async function produktBildLoeschenAction(bildId: string, produktId: string): Promise<ActionRes> {
+  if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
+  try {
+    await bildLoeschen(bildId);
+    revalidatePath(`/tg/admin/produkte/${produktId}`);
+    return { ok: true, message: "Удалено" };
+  } catch (err) {
+    console.error("[produktBildLoeschen]", err);
+    return { ok: false, error: "Ошибка" };
+  }
+}
+
+/* ── Produkt-Bild: als Hauptbild setzen ────────────────────────────────────── */
+export async function produktHauptbildAction(bildId: string, produktId: string, url: string): Promise<ActionRes> {
+  if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
+  try {
+    await hauptbildSetzen(bildId, produktId);
+    await query(`UPDATE sebo.produkte SET hauptbild_url = $1 WHERE id = $2`, [url, produktId]);
+    revalidatePath(`/tg/admin/produkte/${produktId}`);
+    return { ok: true, message: "Главное фото обновлено" };
+  } catch (err) {
+    console.error("[produktHauptbild]", err);
     return { ok: false, error: "Ошибка" };
   }
 }

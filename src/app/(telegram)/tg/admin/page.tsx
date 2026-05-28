@@ -67,8 +67,8 @@ export default async function TgAdminHome() {
       title: "Каталог",
       items: [
         { href: "/tg/admin/produkte",  label: "Товары",     icon: Package, kind: "native" },
+        { href: "/tg/admin/kategorien", label: "Категории", icon: Tag,    kind: "native" },
         { href: "/tg/admin/coupons",   label: "Промокоды",  icon: Ticket,  kind: "native" },
-        { href: "/admin/kategorien",   label: "Категории",  icon: Tag,     kind: "web" },
       ],
     },
     {
