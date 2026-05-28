@@ -7,6 +7,7 @@ import { couponNutzungVerbuchen } from "@/lib/db/coupons";
 import { webhookEventReserve, webhookEventLinkOrder } from "@/lib/db/webhook-events";
 import { sendEmail } from "@/lib/email";
 import { formatPreis } from "@/lib/utils/preis";
+import { escapeHtml } from "@/lib/utils/escape-html";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +30,13 @@ export async function POST(req: NextRequest) {
 
   // Idempotenz: doppelte Stripe-Events (z.B. via Retry) ignorieren —
   // event.id ist global eindeutig pro Stripe-Account.
-  const isFresh = await webhookEventReserve("stripe", event.id, event.type, event);
+  let isFresh: boolean;
+  try {
+    isFresh = await webhookEventReserve("stripe", event.id, event.type, event);
+  } catch {
+    // Ledger nicht erreichbar → 503, Stripe retryt später (fail-closed).
+    return NextResponse.json({ error: "ledger unavailable, retry" }, { status: 503 });
+  }
   if (!isFresh) {
     console.log("[Stripe Webhook] Duplicate-Event übersprungen:", event.id);
     return NextResponse.json({ received: true, duplicate: true });
@@ -158,13 +165,13 @@ function bestellungBestaetigungMail(order: Awaited<ReturnType<typeof orderById>>
   if (!order) return "";
   const items = (order.items ?? []).map(i => `
     <tr>
-      <td style="padding: 12px 0; color: #4A2C1A;">${i.menge}× ${i.produkt_name}</td>
+      <td style="padding: 12px 0; color: #4A2C1A;">${i.menge}× ${escapeHtml(i.produkt_name)}</td>
       <td style="padding: 12px 0; text-align: right; color: #4A2C1A;">${formatPreis(i.zeile_total_cents / 100)}</td>
     </tr>
   `).join("");
 
   const anrede = order.customer_name
-    ? `Здравствуйте, ${order.customer_name}!`
+    ? `Здравствуйте, ${escapeHtml(order.customer_name)}!`
     : "Здравствуйте!";
 
   return `

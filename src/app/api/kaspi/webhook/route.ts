@@ -35,7 +35,12 @@ export async function POST(req: NextRequest) {
   // Idempotenz: Kaspi schickt keinen eindeutigen event-Wrapper,
   // (type + payment_id) ist die natürliche Achse.
   const kaspiEventId = `${event.type}:${event.data.payment_id}`;
-  const isFresh = await webhookEventReserve("kaspi", kaspiEventId, event.type, event);
+  let isFresh: boolean;
+  try {
+    isFresh = await webhookEventReserve("kaspi", kaspiEventId, event.type, event);
+  } catch {
+    return NextResponse.json({ error: "ledger unavailable, retry" }, { status: 503 });
+  }
   if (!isFresh) {
     console.log("[Kaspi Webhook] Duplicate-Event übersprungen:", kaspiEventId);
     return NextResponse.json({ received: true, duplicate: true });

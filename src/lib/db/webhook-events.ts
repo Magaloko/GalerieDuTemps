@@ -44,12 +44,18 @@ export async function webhookEventReserve(
     );
     return (r.rowCount ?? 0) > 0;
   } catch (err) {
-    // Bei DB-Ausfall: hart loggen + true zurückgeben damit Caller Effects
-    // ausführt. Lieber im seltenen DB-Down-Fall doppelt processen als
-    // Zahlung verlieren.
-    console.error("[webhookEventReserve] DB-Fehler — fall through:", err);
-    return true;
+    // FAIL-CLOSED: bei DB-Ausfall NICHT blind fortfahren. Wir werfen →
+    // Caller antwortet 503 → Stripe/Kaspi retryen das Event später (Tage).
+    // Zahlung geht NICHT verloren UND wird nicht doppelt verarbeitet
+    // (keine doppelten Mails / Coupon-Verbuchungen / Status-Updates).
+    console.error("[webhookEventReserve] DB-Fehler — fail-closed (503 + Retry):", err);
+    throw new WebhookLedgerError(err instanceof Error ? err.message : String(err));
   }
+}
+
+/** Idempotenz-Ledger nicht erreichbar → Caller soll 503 + Provider-Retry. */
+export class WebhookLedgerError extends Error {
+  constructor(msg: string) { super(msg); this.name = "WebhookLedgerError"; }
 }
 
 /**
