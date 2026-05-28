@@ -108,6 +108,39 @@ export async function customerAusTelegramErstellen(input: {
   return r.rows[0];
 }
 
+/**
+ * Fügt einem (Telegram-first-) Konto eine E-Mail hinzu, wenn sie noch frei ist.
+ * - frei      → email gesetzt (unbestätigt), { ok: true }
+ * - vergeben  → { ok: false, reason: "taken" } (Caller leitet in Claim-Flow)
+ * Die E-Mail bleibt unbestätigt (email_bestaetigt_am = NULL); Login/Notifications
+ * laufen weiter über Telegram.
+ */
+export async function customerEmailHinzufuegen(
+  customerId: string,
+  email:      string,
+): Promise<{ ok: true } | { ok: false; reason: "taken" | "db-error" }> {
+  const lc = email.trim().toLowerCase();
+  try {
+    const other = await query(
+      `SELECT 1 FROM sebo.customers WHERE email = $1 AND id <> $2 LIMIT 1`,
+      [lc, customerId],
+    );
+    if ((other.rowCount ?? 0) > 0) return { ok: false, reason: "taken" };
+
+    await query(
+      `UPDATE sebo.customers SET email = $1, email_bestaetigt_am = NULL WHERE id = $2`,
+      [lc, customerId],
+    );
+    return { ok: true };
+  } catch (err) {
+    // Unique-Race → taken; sonst db-error
+    const msg = err instanceof Error ? err.message : String(err);
+    if (/unique|duplicate/i.test(msg)) return { ok: false, reason: "taken" };
+    console.error("[customerEmailHinzufuegen]", err);
+    return { ok: false, reason: "db-error" };
+  }
+}
+
 /** Verknüpfung lösen (Customer im Profile oder Admin) */
 export async function customerTelegramLoesen(customerId: string): Promise<void> {
   await query(

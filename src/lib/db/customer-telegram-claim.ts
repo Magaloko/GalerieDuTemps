@@ -1,5 +1,5 @@
 import { randomBytes } from "crypto";
-import { query } from "./index";
+import { query, withTransaction } from "./index";
 import type { Customer } from "@/types/commerce";
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -58,13 +58,16 @@ export async function claimInitiieren(
     }
 
     // 3. Ist diese chat_id bereits an einen ANDEREN Customer gebunden?
-    //    (z.B. User hat früher mal mit anderer E-Mail verknüpft)
-    const busyRes = await query<{ id: string }>(
-      `SELECT id FROM sebo.customers
+    //    Ausnahme: ein E-MAIL-LOSES Telegram-first-Konto (Wegwerf-Konto) — das
+    //    wird beim Bestätigen in dieses Konto gemerged (chat_id wandert mit).
+    //    Nur ein ECHTES anderes Konto (mit E-Mail) blockiert den Claim.
+    const busyRes = await query<{ id: string; email: string | null }>(
+      `SELECT id, email FROM sebo.customers
        WHERE telegram_chat_id = $1 AND id <> $2 LIMIT 1`,
       [chatId, customer.id],
     );
-    if (busyRes.rows.length > 0) {
+    const busy = busyRes.rows[0];
+    if (busy && busy.email != null) {
       return { ok: false, error: "chat-id-busy" };
     }
 
@@ -140,31 +143,63 @@ export async function claimPruefen(token: string): Promise<ClaimPreview | null> 
 export async function claimBestaetigen(token: string): Promise<string | null> {
   if (!token || token.length < 16) return null;
   try {
-    const r = await query<{ id: string }>(
-      `UPDATE sebo.customers
-         SET telegram_chat_id            = telegram_claim_chat_id,
-             telegram_username           = telegram_claim_username,
-             telegram_verknuepft_am      = now(),
-             telegram_notifications_aktiv = COALESCE(telegram_notifications_aktiv, true),
-             telegram_claim_token        = NULL,
-             telegram_claim_chat_id      = NULL,
-             telegram_claim_username     = NULL,
-             telegram_claim_expires_at   = NULL
-       WHERE telegram_claim_token       = $1
-         AND telegram_claim_expires_at  > now()
-         -- Dieser Customer darf noch NICHT verknüpft sein
-         AND telegram_chat_id IS NULL
-         -- und die beanspruchte chat_id darf nicht inzwischen bei einem
-         -- ANDEREN Customer gelandet sein (Race zwischen Claim-Init + Confirm)
-         AND NOT EXISTS (
-           SELECT 1 FROM sebo.customers c2
-           WHERE c2.telegram_chat_id = sebo.customers.telegram_claim_chat_id
-             AND c2.id <> sebo.customers.id
-         )
-       RETURNING id`,
-      [token],
-    );
-    return r.rows[0]?.id ?? null;
+    return await withTransaction(async (client) => {
+      // 1. Ziel-Account (per Token, gültig, noch nicht verknüpft) laden.
+      const tRes = await client.query<{ id: string; chat_id: number | null; username: string | null }>(
+        `SELECT id,
+                telegram_claim_chat_id  AS chat_id,
+                telegram_claim_username AS username
+           FROM sebo.customers
+          WHERE telegram_claim_token      = $1
+            AND telegram_claim_expires_at > now()
+            AND telegram_chat_id IS NULL
+          LIMIT 1
+          FOR UPDATE`,
+        [token],
+      );
+      const target = tRes.rows[0];
+      if (!target || target.chat_id == null) return null;
+
+      // 2. Hält bereits ein anderes Konto diese chat_id?
+      const twRes = await client.query<{ id: string; email: string | null }>(
+        `SELECT id, email FROM sebo.customers
+          WHERE telegram_chat_id = $1 AND id <> $2 LIMIT 1 FOR UPDATE`,
+        [target.chat_id, target.id],
+      );
+      const throwaway = twRes.rows[0];
+      if (throwaway) {
+        // Echtes anderes Konto (mit E-Mail) → kein stiller Merge, Abbruch.
+        if (throwaway.email != null) return null;
+
+        // E-Mail-loses Wegwerf-Konto → chat_id freigeben + Daten umhängen.
+        await client.query(
+          `UPDATE sebo.customers
+              SET telegram_chat_id = NULL, telegram_username = NULL,
+                  telegram_notifications_aktiv = false
+            WHERE id = $1`,
+          [throwaway.id],
+        );
+        await client.query(`UPDATE sebo.orders SET customer_id = $1 WHERE customer_id = $2`, [target.id, throwaway.id]);
+        await client.query(`UPDATE sebo.leads  SET customer_id = $1 WHERE customer_id = $2`, [target.id, throwaway.id]);
+      }
+
+      // 3. Ziel-Account verknüpfen + Claim-Felder leeren.
+      const up = await client.query<{ id: string }>(
+        `UPDATE sebo.customers
+            SET telegram_chat_id             = telegram_claim_chat_id,
+                telegram_username            = telegram_claim_username,
+                telegram_verknuepft_am       = now(),
+                telegram_notifications_aktiv = COALESCE(telegram_notifications_aktiv, true),
+                telegram_claim_token         = NULL,
+                telegram_claim_chat_id       = NULL,
+                telegram_claim_username      = NULL,
+                telegram_claim_expires_at    = NULL
+          WHERE id = $1 AND telegram_chat_id IS NULL
+          RETURNING id`,
+        [target.id],
+      );
+      return up.rows[0]?.id ?? null;
+    });
   } catch (err) {
     console.error("[claimBestaetigen]", err);
     return null;

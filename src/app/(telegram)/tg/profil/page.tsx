@@ -6,6 +6,7 @@ import { formatPreis } from "@/lib/utils/preis";
 import { TelegramAuthGate } from "../auth-gate";
 import { ClaimInitForm } from "./claim-init-form";
 import { AccountCreateForm } from "./account-create-form";
+import { EmailAddForm } from "./email-add-form";
 import { KontaktEdit } from "./kontakt-edit";
 import {
   Mail, Briefcase, Package, Heart, ExternalLink, ArrowRight, MessageCircle,
@@ -257,11 +258,13 @@ export default async function TgProfilPage() {
 
         {/* ─ Meta ────────────────────────────────────────────── */}
         <section className="space-y-2">
-          <MetaRow
-            icon={Mail}
-            label="E-mail"
-            value={customer.email ?? "не указан"}
-          />
+          {customer.email ? (
+            <MetaRow icon={Mail} label="E-mail" value={customer.email} />
+          ) : (
+            <div className="p-3" style={{ background: "var(--tg-theme-section-bg-color, #fff)", border: "1px solid var(--color-line)" }}>
+              <EmailAddForm />
+            </div>
+          )}
           <MetaRow
             icon={Briefcase}
             label="Статус"
