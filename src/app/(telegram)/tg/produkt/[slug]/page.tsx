@@ -6,6 +6,7 @@ import { oeffentlichesProduktBySlug } from "@/lib/db/produkte-public";
 import { TelegramAuthGate } from "../../auth-gate";
 import { ProductMiniClient } from "./product-client";
 import { HeartToggle } from "../../heart-toggle";
+import { ProduktStory } from "@/components/produkte/produkt-story";
 import { i18nOr } from "@/lib/utils/i18n-text";
 import { getLocale } from "@/i18n";
 import type { Metadata } from "next";
@@ -39,6 +40,14 @@ export default async function TelegramProduktPage({
   const kurz = i18nOr(produkt.kurzbeschreibung_i18n, locale, produkt.kurzbeschreibung);
   const reserviert = !!produkt.reserviert_bis && new Date(produkt.reserviert_bis) > new Date() && !produkt.verkauft;
 
+  // Galerie: alle Bilder (sortiert), Fallback auf Hauptbild.
+  const galerie = (() => {
+    const urls = (produkt.bilder ?? []).map(b => b.url).filter(Boolean);
+    if (urls.length) return urls;
+    return produkt.hauptbild_url ? [produkt.hauptbild_url] : [];
+  })();
+  const hatStory = (produkt.inhalt_blocks?.length ?? 0) > 0;
+
   return (
     <TelegramAuthGate>
       <main className="pb-32">
@@ -57,20 +66,31 @@ export default async function TelegramProduktPage({
           </Link>
         </div>
 
-        {/* Bild */}
-        <div
-          className="relative w-full"
-          style={{ aspectRatio: "4/5", background: "var(--color-paper-warm)" }}
-        >
-          {produkt.hauptbild_url && (
-            <Image
-              src={produkt.hauptbild_url}
-              alt={name}
-              fill
-              sizes="100vw"
-              className="object-cover"
-              priority
-            />
+        {/* Bild-Galerie: horizontal swipebar (scroll-snap), Foto-Zähler */}
+        <div className="relative">
+          <div
+            className="flex overflow-x-auto snap-x snap-mandatory"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {galerie.length > 0 ? galerie.map((url, i) => (
+              <div
+                key={i}
+                className="relative w-full shrink-0 snap-center"
+                style={{ aspectRatio: "4/5", background: "var(--color-paper-warm)" }}
+              >
+                <Image src={url} alt={name} fill sizes="100vw" className="object-cover" priority={i === 0} />
+              </div>
+            )) : (
+              <div className="relative w-full shrink-0" style={{ aspectRatio: "4/5", background: "var(--color-paper-warm)" }} />
+            )}
+          </div>
+          {galerie.length > 1 && (
+            <span
+              className="absolute top-3 right-3 px-2 py-0.5 text-[10px] font-medium"
+              style={{ background: "rgba(15,20,48,0.7)", color: "#fff", borderRadius: 999, backdropFilter: "blur(4px)" }}
+            >
+              📷 {galerie.length}
+            </span>
           )}
         </div>
 
@@ -168,6 +188,13 @@ export default async function TelegramProduktPage({
             >
               {kurz}
             </p>
+          )}
+
+          {/* Editorial-Story (block-basiert) — wie auf der Web-Detailseite */}
+          {hatStory && (
+            <div className="mt-6">
+              <ProduktStory blocks={produkt.inhalt_blocks} locale={locale} />
+            </div>
           )}
 
           {/* „Спросить куратора" — Frage über dieses Produkt */}
