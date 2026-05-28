@@ -88,12 +88,25 @@ export function ProduktFormular({
   // Bildern (aktualisiert sich nach Upload beim Reload).
   const [pvName, setPvName] = useState(produkt?.name ?? "");
   const [pvPreis, setPvPreis] = useState<number>(Number(produkt?.preis ?? 0));
+  const [pvKatId, setPvKatId] = useState<string>(String(produkt?.kategorie_id ?? ""));
+  const [pvZustand, setPvZustand] = useState<string>(produkt?.zustand ?? "gut");
+  const [pvEra, setPvEra] = useState<string>(produkt?.era ?? "");
   const pvWaehrung = (produkt?.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT";
+  const pvKatName = kategorien.find(k => String(k.id) === pvKatId)?.name ?? null;
   const pvBild =
     initialBilder.find(b => b.ist_hauptbild)?.url ??
     initialBilder[0]?.url ??
     produkt?.hauptbild_url ??
     null;
+
+  // Zustand-Anzeige (Label + Farbe, wie in ProduktKarte).
+  const ZUSTAND_PV: Record<string, { label: string; color: string }> = {
+    sehr_gut:    { label: "Отличное",       color: "#7A8B6F" },
+    gut:         { label: "Хорошее",        color: "#B08D57" },
+    akzeptabel:  { label: "Приемлемое",     color: "#C9956B" },
+    restauriert: { label: "Реставрировано", color: "#8B6F47" },
+  };
+  const pvZ = ZUSTAND_PV[pvZustand];
 
   return (
     <form action={formAction} className="space-y-8">
@@ -191,6 +204,7 @@ export function ProduktFormular({
             options={kategorieOptions}
             defaultValue={String(produkt?.kategorie_id ?? "")}
             error={e("kategorie_id")}
+            onChange={(ev) => setPvKatId((ev.target as HTMLSelectElement).value)}
           />
           <Select
             label="Состояние"
@@ -199,6 +213,7 @@ export function ProduktFormular({
             options={ZUSTAND_OPTIONS}
             defaultValue={produkt?.zustand ?? "gut"}
             error={e("zustand")}
+            onChange={(ev) => setPvZustand((ev.target as HTMLSelectElement).value)}
           />
         </div>
 
@@ -304,6 +319,7 @@ export function ProduktFormular({
             name="era"
             defaultValue={produkt?.era ?? ""}
             placeholder="напр. 1920-е, ар-деко"
+            onChange={(ev) => setPvEra((ev.target as HTMLInputElement).value)}
           />
           <Input
             label="Происхождение"
@@ -552,15 +568,34 @@ export function ProduktFormular({
               )}
             </div>
             <div className="p-3">
-              <p className="text-[10px] uppercase tracking-widest text-vintage-dust mb-1 flex items-center gap-1">
+              <p className="text-[10px] uppercase tracking-widest text-vintage-dust mb-1.5 flex items-center gap-1">
                 <Eye className="w-3 h-3" /> Предпросмотр
               </p>
-              <p className="font-serif text-base text-vintage-ink line-clamp-2">
+              {pvKatName && (
+                <p className="text-[10px] uppercase font-medium truncate" style={{ letterSpacing: "0.18em", color: "var(--color-coral)" }}>
+                  {pvKatName}
+                </p>
+              )}
+              <p className="font-serif text-base text-vintage-ink line-clamp-2 mt-0.5">
                 {pvName || "Без названия"}
               </p>
               <p className="font-serif text-lg text-vintage-ink mt-1">
                 {pvPreis > 0 ? formatPreis(pvPreis, pvWaehrung) : "—"}
               </p>
+              {/* Zustand + Эпоха (wie im Footer der ProduktKarte) */}
+              <div className="mt-2 pt-2 flex items-center justify-between gap-2" style={{ borderTop: "1px dashed rgba(176,141,87,0.25)" }}>
+                {pvZ && (
+                  <span className="flex items-center gap-1.5 text-[11px]" style={{ color: pvZ.color }}>
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: pvZ.color }} />
+                    {pvZ.label}
+                  </span>
+                )}
+                {pvEra.trim() && (
+                  <span className="text-[11px] truncate" style={{ color: "var(--color-ink-mute, #998)" }}>
+                    {pvEra}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           <p className="text-[11px] text-vintage-dust px-1 leading-snug">
