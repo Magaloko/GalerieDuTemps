@@ -30,10 +30,22 @@ export const dynamic = "force-dynamic";
  * ────────────────────────────────────────────────────────────────────────── */
 export default async function ErfolgPage({
   params,
-}: { params: Promise<{ id: string }> }) {
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ session_id?: string }>;
+}) {
   const { id } = await params;
+  const sp = await searchParams;
   const [order, { t }] = await Promise.all([orderById(id), getDictionary()]);
   if (!order) notFound();
+
+  // IDOR-Schutz: Erfolg-Seite zeigt E-Mail + Items. Zugriff via Checkout-
+  // Cookie, eingeloggtem Eigentümer ODER Stripe-session_id (beweist echten
+  // Käufer nach dem Stripe-Redirect).
+  const { darfCheckoutBearbeiten } = await import("@/lib/checkout/access");
+  const darf = await darfCheckoutBearbeiten(order, { stripeSessionId: sp.session_id ?? null });
+  if (!darf) notFound();
 
   return (
     <div

@@ -4,7 +4,7 @@ import { getStripeServer, getStripeWebhookSecret } from "@/lib/stripe-server";
 import { orderByStripeSession, orderStatusUpdate, orderById } from "@/lib/db/orders";
 import { orderSetPaymentStatus } from "@/lib/db/order-payment";
 import { couponNutzungVerbuchen } from "@/lib/db/coupons";
-import { webhookEventReserve, webhookEventLinkOrder } from "@/lib/db/webhook-events";
+import { webhookEventReserve, webhookEventLinkOrder, webhookEventMarkProcessed } from "@/lib/db/webhook-events";
 import { sendEmail } from "@/lib/email";
 import { formatPreis } from "@/lib/utils/preis";
 import { escapeHtml } from "@/lib/utils/escape-html";
@@ -151,9 +151,13 @@ export async function POST(req: NextRequest) {
         break;
     }
 
+    // Erst NACH erfolgreichem Handling als final verarbeitet markieren.
+    // Crash davor → status bleibt 'processing' → Stripe-Retry verarbeitet neu.
+    await webhookEventMarkProcessed("stripe", event.id);
     return NextResponse.json({ received: true });
   } catch (err) {
     console.error("[Stripe Webhook] Handler-Fehler:", err);
+    // status bleibt 'processing' → Retry erlaubt. 500 → Stripe retryt.
     return NextResponse.json({ error: "Handler-Fehler" }, { status: 500 });
   }
 }

@@ -39,10 +39,10 @@ export default async function ZahlungsmethodePage({
   if (!order) redirect("/warenkorb");
   if (order.status !== "pending") redirect(`/checkout/erfolg/${order.id}`);
 
-  // IDOR-Schutz: Token aus URL muss zur Order passen (oder eingeloggter
-  // Customer ist Eigentümer). Sonst zurück zum Warenkorb.
+  // IDOR-Schutz: Checkout-Cookie (oder eingeloggter Eigentümer). ?t= nur
+  // noch Übergangs-Fallback für alte Links.
   const { darfCheckoutBearbeiten } = await import("@/lib/checkout/access");
-  const darf = await darfCheckoutBearbeiten(order, sp.t ?? null);
+  const darf = await darfCheckoutBearbeiten(order, { legacyToken: sp.t ?? null });
   if (!darf) redirect("/warenkorb");
 
   const shippingCountry = (order.shipping_address as { land?: string })?.land?.toUpperCase();
@@ -91,7 +91,6 @@ export default async function ZahlungsmethodePage({
 
         <MethodPicker
           orderId={order.id}
-          checkoutToken={sp.t ?? null}
           totalCents={order.total_cents}
           waehrung={order.waehrung ?? "KZT"}
           methods={available.map(m => ({

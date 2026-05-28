@@ -90,7 +90,7 @@ export async function notifyOrderPlaced(orderId: string): Promise<void> {
     const text =
       `🧾 Заказ принят\n\n` +
       `${ctx.bestellnummer} · ${fmtSumme(ctx.total_cents)}\n\n` +
-      `${ctx.customerVorname ? `Спасибо, ${ctx.customerVorname}! ` : ""}` +
+      `${ctx.customerVorname ? `Спасибо, ${escapeHtml(ctx.customerVorname)}! ` : ""}` +
       `Мы получили твой заказ. После оплаты пришлём подтверждение и упакуем для отправки.\n\n` +
       `Детали: ${ctx.orderUrl}`;
     await sendMessage(ctx.botToken, ctx.chatId, text, { parse_mode: "HTML" })

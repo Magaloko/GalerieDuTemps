@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Bestellung ist nicht mehr zahlbar" }, { status: 409 });
   }
   const { darfCheckoutBearbeiten } = await import("@/lib/checkout/access");
-  if (!(await darfCheckoutBearbeiten(order, parsed.data.token))) {
+  if (!(await darfCheckoutBearbeiten(order, { legacyToken: parsed.data.token }))) {
     return NextResponse.json({ error: "Нет доступа к заказу" }, { status: 403 });
   }
 

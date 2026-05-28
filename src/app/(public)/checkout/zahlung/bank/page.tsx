@@ -37,6 +37,10 @@ export default async function BankZahlungPage({
   const order = await orderById(sp.order);
   if (!order) redirect("/warenkorb");
 
+  // IDOR-Schutz: Bank-Details (Betrag/Referenz) nur dem Besteller zeigen.
+  const { darfCheckoutBearbeiten } = await import("@/lib/checkout/access");
+  if (!(await darfCheckoutBearbeiten(order))) redirect("/warenkorb");
+
   const locale = await getLocale();
   const ms = await getMarketingStrings([
     "payment.bank.kontoinhaber",

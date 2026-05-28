@@ -36,10 +36,18 @@ export async function webhookEventReserve(
   payload:   unknown,
 ): Promise<boolean> {
   try {
+    // Zwei-Phasen-Idempotenz: INSERT 'processing'. Bei Konflikt nur dann
+    // „reclaimen" (DO UPDATE), wenn das Event NOCH NICHT 'processed' ist —
+    // dann gibt RETURNING eine Zeile → Caller verarbeitet (true). Ist es
+    // schon 'processed' → WHERE schlägt fehl → keine Zeile → skip (false).
+    // Atomar in einem Statement, kein Read-then-Write-Race.
     const r = await query(
-      `INSERT INTO sebo.webhook_events (provider, event_id, event_type, payload)
-       VALUES ($1, $2, $3, $4::jsonb)
-       ON CONFLICT (provider, event_id) DO NOTHING`,
+      `INSERT INTO sebo.webhook_events (provider, event_id, event_type, payload, status)
+       VALUES ($1, $2, $3, $4::jsonb, 'processing')
+       ON CONFLICT (provider, event_id) DO UPDATE
+         SET status = 'processing', verarbeitet_am = NULL
+         WHERE sebo.webhook_events.status <> 'processed'
+       RETURNING id`,
       [provider, eventId, eventType, JSON.stringify(payload ?? {})],
     );
     return (r.rowCount ?? 0) > 0;
@@ -56,6 +64,24 @@ export async function webhookEventReserve(
 /** Idempotenz-Ledger nicht erreichbar → Caller soll 503 + Provider-Retry. */
 export class WebhookLedgerError extends Error {
   constructor(msg: string) { super(msg); this.name = "WebhookLedgerError"; }
+}
+
+/**
+ * Markiert ein Event als final verarbeitet (status='processed'). NACH allen
+ * Side-Effects (Status-Update, Mail, Coupon) aufrufen. Erst danach gilt ein
+ * Provider-Retry als Duplikat und wird übersprungen — vorher (status=
+ * 'processing') darf erneut verarbeitet werden (Crash-Recovery).
+ */
+export async function webhookEventMarkProcessed(
+  provider: WebhookProvider,
+  eventId:  string,
+): Promise<void> {
+  await query(
+    `UPDATE sebo.webhook_events
+       SET status = 'processed', verarbeitet_am = now()
+     WHERE provider = $1 AND event_id = $2`,
+    [provider, eventId],
+  ).catch(err => console.warn("[webhookEventMarkProcessed]", err));
 }
 
 /**

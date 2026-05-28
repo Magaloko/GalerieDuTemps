@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
   }
   // IDOR-Schutz: Token oder Customer-Ownership
   const { darfCheckoutBearbeiten } = await import("@/lib/checkout/access");
-  if (!(await darfCheckoutBearbeiten(order, parsed.data.token))) {
+  if (!(await darfCheckoutBearbeiten(order, { legacyToken: parsed.data.token }))) {
     return NextResponse.json({ error: "Нет доступа к заказу" }, { status: 403 });
   }
 

@@ -1,6 +1,7 @@
 import { query } from "@/lib/db";
 import { sendMessage, type InlineKeyboardMarkup } from "@/lib/telegram/client";
 import { getSiteUrl } from "@/lib/site-url";
+import { escapeHtml } from "@/lib/utils/escape-html";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * Admin-Telegram-Notifications
@@ -124,8 +125,10 @@ export async function notifyAdminsCritical(
 ): Promise<void> {
   const meta = ALERT_META[typ];
   const siteBase = getSiteUrl();
+  // detail kann dynamische Daten enthalten (B2B-Firma/Kontakt, Produktname) →
+  // escapen, sonst kann < & das HTML-Markup brechen.
   const text =
-    `${meta.emoji} <b>${meta.label}</b>\n\n${detail}`;
+    `${meta.emoji} <b>${meta.label}</b>\n\n${escapeHtml(detail)}`;
   const keyboard: InlineKeyboardMarkup | undefined = link
     ? { inline_keyboard: [[{ text: "Открыть", url: link.startsWith("http") ? link : `${siteBase}${link}` }]] }
     : undefined;

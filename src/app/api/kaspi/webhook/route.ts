@@ -3,7 +3,7 @@ import { query } from "@/lib/db";
 import { orderStatusUpdate, orderById } from "@/lib/db/orders";
 import { orderSetPaymentStatus } from "@/lib/db/order-payment";
 import { verifyKaspiWebhook } from "@/lib/payment/kaspi";
-import { webhookEventReserve, webhookEventLinkOrder } from "@/lib/db/webhook-events";
+import { webhookEventReserve, webhookEventLinkOrder, webhookEventMarkProcessed } from "@/lib/db/webhook-events";
 import { sendEmail } from "@/lib/email";
 import { formatPreis } from "@/lib/utils/preis";
 
@@ -124,5 +124,7 @@ export async function POST(req: NextRequest) {
       console.log("[Kaspi Webhook] Ignored event:", event.type);
   }
 
+  // Erst nach erfolgreichem Handling final markieren (Crash-Recovery via Retry).
+  await webhookEventMarkProcessed("kaspi", kaspiEventId);
   return NextResponse.json({ ok: true });
 }

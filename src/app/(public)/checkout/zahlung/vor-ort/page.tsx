@@ -33,6 +33,10 @@ export default async function VorOrtZahlungPage({
   const order = await orderById(sp.order);
   if (!order) redirect("/warenkorb");
 
+  // IDOR-Schutz: Reservierungsdaten nur dem Besteller zeigen.
+  const { darfCheckoutBearbeiten } = await import("@/lib/checkout/access");
+  if (!(await darfCheckoutBearbeiten(order))) redirect("/warenkorb");
+
   const locale = await getLocale();
   const ms = await getMarketingStrings([
     "payment.vor_ort.adresse",
