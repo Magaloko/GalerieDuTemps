@@ -7,10 +7,11 @@ export async function wunschlisteProdukte(
 ): Promise<ProduktListItem[]> {
   const result = await query<ProduktListItem>(
     `SELECT
-       p.id, p.name, p.slug, p.preis, p.originalpreis,
+       p.id, p.name, p.slug, p.preis, p.originalpreis, p.waehrung,
        k.name AS kategorie_name,
        p.zustand, p.lagerbestand, p.verkauft, p.featured,
        p.erstellt_am,
+       (p.reserviert_bis IS NOT NULL AND p.reserviert_bis > now() AND p.verkauft = false) AS reserviert,
        (SELECT pb.url FROM sebo.produktbilder pb
         WHERE pb.produkt_id = p.id AND pb.ist_hauptbild = true LIMIT 1)
         AS hauptbild_url

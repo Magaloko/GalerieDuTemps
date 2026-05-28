@@ -179,6 +179,19 @@ export function WunschlisteClient() {
                   className="object-cover"
                 />
               )}
+              {(p.verkauft || p.reserviert) && (
+                <span
+                  className="absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[9px] uppercase font-medium"
+                  style={{
+                    letterSpacing: "0.14em",
+                    background:    p.verkauft ? "rgba(15,20,48,0.82)" : "rgba(201,168,76,0.92)",
+                    color:         p.verkauft ? "var(--color-gold, #C9A84C)" : "#1a1410",
+                    backdropFilter:"blur(4px)",
+                  }}
+                >
+                  {p.verkauft ? "Продано" : "Зарезервировано"}
+                </span>
+              )}
               <button
                 type="button"
                 onClick={(e) => { e.preventDefault(); entfernen(p.id); }}
@@ -216,47 +229,64 @@ export function WunschlisteClient() {
                   color:      "var(--tg-theme-text-color, var(--color-ink))",
                 }}
               >
-                {formatPreis(Number(p.preis))}
+                {formatPreis(Number(p.preis), (p.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT")}
               </p>
-              {kaufenAktiv ? (
-                <button
-                  type="button"
-                  onClick={() => addToCart(p)}
-                  disabled={p.verkauft || p.lagerbestand === 0}
-                  className="mt-1 flex items-center justify-center gap-1 py-1.5 text-[11px] uppercase font-medium transition-opacity disabled:opacity-40"
-                  style={{
-                    letterSpacing: "0.18em",
-                    background:    "var(--color-coral)",
-                    color:         "#fff",
-                    touchAction:   "manipulation",
-                  }}
-                >
-                  <ShoppingBag className="w-3 h-3" />
-                  {p.verkauft || p.lagerbestand === 0 ? "Нет в наличии" : "В корзину"}
-                </button>
-              ) : p.verkauft || p.lagerbestand === 0 ? (
-                <span
-                  className="mt-1 flex items-center justify-center gap-1 py-1.5 text-[11px] uppercase font-medium opacity-50"
-                  style={{ letterSpacing: "0.18em", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}
-                >
-                  Продано
-                </span>
-              ) : (
-                <Link
-                  href={`/tg/kontakt?produkt=${p.id}&name=${encodeURIComponent(p.name)}`}
-                  className="mt-1 flex items-center justify-center gap-1 py-1.5 text-[11px] uppercase font-medium"
-                  style={{
-                    letterSpacing: "0.18em",
-                    background:    "var(--tg-theme-section-bg-color, #fff)",
-                    border:        "1px solid var(--color-coral)",
-                    color:         "var(--color-coral)",
-                    touchAction:   "manipulation",
-                  }}
-                >
-                  <MessageCircle className="w-3 h-3" />
-                  Запросить
-                </Link>
-              )}
+              {(() => {
+                const nichtVerfuegbar = p.verkauft || p.lagerbestand === 0 || !!p.reserviert;
+                const statusLabel = p.verkauft ? "Продано" : p.reserviert ? "Зарезервировано" : "Нет в наличии";
+
+                // Shop-Modus: kaufbar → „В корзину", sonst Status-Label.
+                if (kaufenAktiv) {
+                  return nichtVerfuegbar ? (
+                    <span
+                      className="mt-1 flex items-center justify-center gap-1 py-1.5 text-[11px] uppercase font-medium opacity-50"
+                      style={{ letterSpacing: "0.18em", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}
+                    >
+                      {statusLabel}
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => addToCart(p)}
+                      className="mt-1 flex items-center justify-center gap-1 py-1.5 text-[11px] uppercase font-medium"
+                      style={{
+                        letterSpacing: "0.18em",
+                        background:    "var(--color-coral)",
+                        color:         "#fff",
+                        touchAction:   "manipulation",
+                      }}
+                    >
+                      <ShoppingBag className="w-3 h-3" />
+                      В корзину
+                    </button>
+                  );
+                }
+
+                // Schaufenster-Modus: verfügbar → „Запросить", sonst Status-Label.
+                return nichtVerfuegbar ? (
+                  <span
+                    className="mt-1 flex items-center justify-center gap-1 py-1.5 text-[11px] uppercase font-medium opacity-50"
+                    style={{ letterSpacing: "0.18em", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}
+                  >
+                    {statusLabel}
+                  </span>
+                ) : (
+                  <Link
+                    href={`/tg/kontakt?produkt=${p.id}&name=${encodeURIComponent(p.name)}`}
+                    className="mt-1 flex items-center justify-center gap-1 py-1.5 text-[11px] uppercase font-medium"
+                    style={{
+                      letterSpacing: "0.18em",
+                      background:    "var(--tg-theme-section-bg-color, #fff)",
+                      border:        "1px solid var(--color-coral)",
+                      color:         "var(--color-coral)",
+                      touchAction:   "manipulation",
+                    }}
+                  >
+                    <MessageCircle className="w-3 h-3" />
+                    Запросить
+                  </Link>
+                );
+              })()}
             </div>
           </li>
         ))}
