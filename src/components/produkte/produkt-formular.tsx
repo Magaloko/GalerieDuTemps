@@ -316,10 +316,11 @@ export function ProduktFormular({
           <p className="text-xs font-sans text-vintage-dust">Опционально · блоки: текст, фото, цитата</p>
         </div>
         <p className="text-xs text-vintage-dust font-sans">
-          Соберите страницу товара из блоков (как рассылку). Если оставить пустым —
-          показывается обычное описание выше.
+          Соберите страницу товара из блоков (как рассылку): палитра, живой
+          предпросмотр, свойства. Если оставить пустым — показывается обычное
+          описание выше.
         </p>
-        <ProduktStoryEditor initial={produkt?.inhalt_blocks ?? []} />
+        <ProduktStoryEditor initial={produkt?.inhalt_blocks ?? []} galerie={initialBilder} />
       </section>
 
       {/* ─── Details ──────────────────────────────────────────────── */}

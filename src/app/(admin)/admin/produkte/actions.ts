@@ -113,6 +113,27 @@ function parseProduktFormData(formData: FormData) {
 }
 
 // ---------------------------------------------------------------------------
+// Story-Bild-Upload: Datei → verarbeitet → URL (ohne Galerie-Insert).
+// Für Inline-Bilder in der Block-Story.
+// ---------------------------------------------------------------------------
+export async function storyBildUploadAction(
+  formData: FormData,
+): Promise<{ ok: boolean; url?: string; error?: string }> {
+  const session = await requireAdminSession();
+  if (!session) return { ok: false, error: "Нет прав" };
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return { ok: false, error: "Нет файла" };
+  try {
+    const { bildVerarbeiten } = await import("@/lib/storage/upload");
+    const bild = await bildVerarbeiten(file);
+    return { ok: true, url: bild.url };
+  } catch (err) {
+    console.error("[storyBildUpload]", err);
+    return { ok: false, error: err instanceof Error ? err.message : "Ошибка загрузки" };
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Foto-first-Anlegen: Draft erzeugen und direkt in den Editor springen
 // ---------------------------------------------------------------------------
 export async function produktEntwurfStartenAction(): Promise<void> {

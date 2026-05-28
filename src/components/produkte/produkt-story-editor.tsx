@@ -1,21 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import {
   Heading2, Type, Image as ImageIcon, Lightbulb, Quote,
-  ArrowUp, ArrowDown, Copy, Trash2, Eye, Pencil, Plus,
+  ArrowUp, ArrowDown, Copy, Trash2, X, Upload, LayoutPanelTop, Loader2,
 } from "lucide-react";
-import type { ProduktBlock, ProduktBlockTyp } from "@/types/produkt";
+import { storyBildUploadAction } from "@/app/(admin)/admin/produkte/actions";
+import type { ProduktBlock, ProduktBlockTyp, Produktbild } from "@/types/produkt";
 
 /* ──────────────────────────────────────────────────────────────────────────
- * ProduktStoryEditor — block-basierter Editor für die Produktbeschreibung.
+ * ProduktStoryEditor — Voll-3-Pane Block-Editor für die Produkt-Story.
  *
- * Inspiriert vom Newsletter-Editor: Palette zum Hinzufügen, Block-Liste mit
- * Inline-Bearbeitung + Controls (hoch/runter/duplizieren/löschen) und ein
- * Vorschau-Umschalter. Serialisiert nach JSON in ein Hidden-Input (FormData).
- *
- * Hinweis (MVP): Story-Blöcke sind einsprachig (Primär-Sprache). Die kurzen/
- * SEO-Felder bleiben mehrsprachig.
+ * Im Formular nur ein Hidden-Input + Button. Klick öffnet ein Vollbild-Overlay
+ * im Newsletter-Editor-Stil:
+ *   ┌──────────┬───────────────────────┬───────────────┐
+ *   │ Palette  │   Live-Vorschau       │ Eigenschaften │
+ *   │ (Blöcke) │  (Block wählen →)     │ (gewählt)     │
+ *   └──────────┴───────────────────────┴───────────────┘
+ * Bild-Blöcke: Direkt-Upload ODER Auswahl aus der Produkt-Galerie.
  * ────────────────────────────────────────────────────────────────────────── */
 
 const PALETTE: { type: ProduktBlockTyp; label: string; icon: React.ElementType; sub: string }[] = [
@@ -34,163 +36,262 @@ const NEU: Record<ProduktBlockTyp, ProduktBlock> = {
   quote:     { type: "quote",     text: "", caption: "" },
 };
 
-const inputCls = "w-full px-3 py-2 text-sm bg-vintage-parchment border border-vintage-sand text-vintage-ink";
+const labelFor = (t: ProduktBlockTyp) => PALETTE.find(p => p.type === t)?.label ?? t;
 
 export function ProduktStoryEditor({
   name = "inhalt_blocks",
   initial = [],
+  galerie = [],
 }: {
   name?:    string;
   initial?: ProduktBlock[];
+  galerie?: Produktbild[];
 }) {
   const [blocks, setBlocks] = useState<ProduktBlock[]>(initial);
-  const [preview, setPreview] = useState(false);
+  const [open, setOpen]     = useState(false);
 
-  const add    = (t: ProduktBlockTyp) => setBlocks(b => [...b, { ...NEU[t] }]);
-  const remove = (i: number) => setBlocks(b => b.filter((_, idx) => idx !== i));
+  return (
+    <>
+      <input type="hidden" name={name} value={JSON.stringify(blocks)} />
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-sans border border-vintage-sand text-vintage-ink hover:bg-vintage-parchment transition-colors"
+        style={{ borderRadius: "var(--radius-vintage)" }}
+      >
+        <LayoutPanelTop className="w-4 h-4 text-vintage-gold" />
+        Открыть редактор истории
+        <span className="text-xs text-vintage-dust">· {blocks.length} блок(ов)</span>
+      </button>
+
+      {open && (
+        <StoryOverlay
+          blocks={blocks}
+          setBlocks={setBlocks}
+          galerie={galerie}
+          onClose={() => setOpen(false)}
+        />
+      )}
+    </>
+  );
+}
+
+/* ── Vollbild-3-Pane-Overlay ──────────────────────────────────────────────── */
+function StoryOverlay({
+  blocks, setBlocks, galerie, onClose,
+}: {
+  blocks:    ProduktBlock[];
+  setBlocks: React.Dispatch<React.SetStateAction<ProduktBlock[]>>;
+  galerie:   Produktbild[];
+  onClose:   () => void;
+}) {
+  const [sel, setSel] = useState<number | null>(blocks.length ? 0 : null);
+
+  const add = (t: ProduktBlockTyp) => {
+    setBlocks(b => { const next = [...b, { ...NEU[t] }]; setSel(next.length - 1); return next; });
+  };
+  const remove = (i: number) => setBlocks(b => { const n = b.filter((_, idx) => idx !== i); setSel(s => (s === null ? null : Math.max(0, Math.min(s, n.length - 1)))); return n; });
   const dup    = (i: number) => setBlocks(b => [...b.slice(0, i + 1), { ...b[i] }, ...b.slice(i + 1)]);
-  const patch  = (i: number, p: Partial<ProduktBlock>) =>
-    setBlocks(b => b.map((blk, idx) => (idx === i ? { ...blk, ...p } : blk)));
+  const patch  = (i: number, p: Partial<ProduktBlock>) => setBlocks(b => b.map((blk, idx) => (idx === i ? { ...blk, ...p } : blk)));
   const move   = (i: number, d: number) => setBlocks(b => {
-    const j = i + d;
-    if (j < 0 || j >= b.length) return b;
-    const arr = [...b];
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-    return arr;
+    const j = i + d; if (j < 0 || j >= b.length) return b;
+    const arr = [...b]; [arr[i], arr[j]] = [arr[j], arr[i]]; setSel(j); return arr;
   });
 
   return (
-    <div className="space-y-4">
-      {/* Hidden-Input für FormData */}
-      <input type="hidden" name={name} value={JSON.stringify(blocks)} />
-
-      {/* Kopfzeile: Block-Anzahl + Vorschau-Umschalter */}
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-sans text-vintage-dust">{blocks.length} блок(ов)</span>
+    <div className="fixed inset-0 z-[60] flex flex-col" style={{ background: "var(--color-paper, #FDFAF5)" }}>
+      {/* Top-Bar */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-vintage-sand bg-vintage-white">
+        <div className="flex items-center gap-2">
+          <LayoutPanelTop className="w-4 h-4 text-vintage-gold" />
+          <span className="font-serif text-base text-vintage-espresso">Редактор истории</span>
+          <span className="text-xs text-vintage-dust">· {blocks.length} блок(ов)</span>
+        </div>
         <button
           type="button"
-          onClick={() => setPreview(p => !p)}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] uppercase font-medium border border-vintage-sand text-vintage-ink hover:bg-vintage-parchment transition-colors"
-          style={{ borderRadius: "var(--radius-vintage)", letterSpacing: "0.12em" }}
+          onClick={onClose}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] uppercase font-medium"
+          style={{ letterSpacing: "0.14em", background: "var(--color-coral)", color: "#fff", borderRadius: "var(--radius-vintage)" }}
         >
-          {preview ? <><Pencil className="w-3 h-3" /> Редактировать</> : <><Eye className="w-3 h-3" /> Просмотр</>}
+          <X className="w-3.5 h-3.5" /> Готово
         </button>
       </div>
 
-      {/* Palette */}
-      {!preview && (
-        <div className="flex flex-wrap gap-2">
-          {PALETTE.map(p => (
-            <button
-              key={p.type}
-              type="button"
-              onClick={() => add(p.type)}
-              title={p.sub}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs border border-vintage-sand text-vintage-ink hover:bg-vintage-parchment transition-colors"
-              style={{ borderRadius: "var(--radius-vintage)" }}
-            >
-              <p.icon className="w-3.5 h-3.5 text-vintage-gold" /> {p.label}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Block-Liste */}
-      {blocks.length === 0 ? (
-        <div className="flex items-center gap-2 p-4 text-sm text-vintage-dust border border-dashed border-vintage-sand" style={{ borderRadius: "var(--radius-card)" }}>
-          <Plus className="w-4 h-4" /> Добавьте блоки выше — текст, фото, цитату…
-        </div>
-      ) : preview ? (
-        <StoryPreview blocks={blocks} />
-      ) : (
-        <div className="space-y-3">
-          {blocks.map((b, i) => (
-            <div key={i} className="border border-vintage-sand bg-vintage-white p-3" style={{ borderRadius: "var(--radius-card)" }}>
-              {/* Controls */}
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] uppercase tracking-widest text-vintage-gold/80">
-                  {PALETTE.find(p => p.type === b.type)?.label ?? b.type}
+      {/* 3 Panes */}
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[210px_1fr_320px]">
+        {/* Palette */}
+        <div className="border-r border-vintage-sand bg-vintage-white p-3 overflow-y-auto">
+          <p className="text-[10px] uppercase tracking-widest text-vintage-dust mb-2">Блоки</p>
+          <div className="flex lg:flex-col gap-2 flex-wrap">
+            {PALETTE.map(p => (
+              <button
+                key={p.type}
+                type="button"
+                onClick={() => add(p.type)}
+                className="flex items-center gap-2 px-3 py-2 text-sm border border-vintage-sand text-vintage-ink hover:bg-vintage-parchment transition-colors w-full text-left"
+                style={{ borderRadius: "var(--radius-vintage)" }}
+              >
+                <p.icon className="w-4 h-4 text-vintage-gold shrink-0" />
+                <span className="min-w-0">
+                  <span className="block leading-tight">{p.label}</span>
+                  <span className="block text-[10px] text-vintage-dust">{p.sub}</span>
                 </span>
-                <div className="flex items-center gap-1">
-                  <IconBtn title="Вверх"      onClick={() => move(i, -1)} disabled={i === 0}><ArrowUp className="w-3.5 h-3.5" /></IconBtn>
-                  <IconBtn title="Вниз"       onClick={() => move(i, 1)}  disabled={i === blocks.length - 1}><ArrowDown className="w-3.5 h-3.5" /></IconBtn>
-                  <IconBtn title="Дублировать" onClick={() => dup(i)}><Copy className="w-3.5 h-3.5" /></IconBtn>
-                  <IconBtn title="Удалить"    onClick={() => remove(i)} danger><Trash2 className="w-3.5 h-3.5" /></IconBtn>
-                </div>
-              </div>
-
-              {/* Felder je Typ */}
-              {b.type === "heading" && (
-                <input className={inputCls} value={b.text ?? ""} placeholder="Подзаголовок" onChange={e => patch(i, { text: e.target.value })} />
-              )}
-              {(b.type === "text" || b.type === "highlight") && (
-                <textarea className={inputCls} rows={b.type === "text" ? 5 : 3} value={b.text ?? ""} placeholder={b.type === "text" ? "Текст абзаца… (пустая строка = новый абзац)" : "Выделенная подсказка…"} onChange={e => patch(i, { text: e.target.value })} />
-              )}
-              {b.type === "quote" && (
-                <div className="space-y-2">
-                  <textarea className={inputCls} rows={2} value={b.text ?? ""} placeholder="Цитата…" onChange={e => patch(i, { text: e.target.value })} />
-                  <input className={inputCls} value={b.caption ?? ""} placeholder="Автор / источник" onChange={e => patch(i, { caption: e.target.value })} />
-                </div>
-              )}
-              {b.type === "image" && (
-                <div className="space-y-2">
-                  <input className={inputCls} value={b.bild_url ?? ""} placeholder="URL изображения (можно вставить из галереи выше)" onChange={e => patch(i, { bild_url: e.target.value })} />
-                  <input className={inputCls} value={b.caption ?? ""} placeholder="Подпись (необязательно)" onChange={e => patch(i, { caption: e.target.value })} />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  {b.bild_url && <img src={b.bild_url} alt="" className="w-full max-h-48 object-cover" style={{ borderRadius: "var(--radius-vintage)" }} />}
-                </div>
-              )}
-            </div>
-          ))}
+              </button>
+            ))}
+          </div>
         </div>
-      )}
+
+        {/* Live-Vorschau */}
+        <div className="overflow-y-auto p-4 md:p-8" style={{ background: "var(--color-bone)" }}>
+          <div className="max-w-2xl mx-auto space-y-4">
+            {blocks.length === 0 ? (
+              <p className="text-sm text-vintage-dust text-center py-16">
+                Слева добавьте блоки — текст, фото, цитату…
+              </p>
+            ) : blocks.map((b, i) => (
+              <div
+                key={i}
+                onClick={() => setSel(i)}
+                className="relative cursor-pointer transition-all"
+                style={{ outline: sel === i ? "2px solid var(--color-coral)" : "1px dashed transparent", outlineOffset: 4, borderRadius: 4 }}
+              >
+                {/* Floating Controls (gewählt) */}
+                {sel === i && (
+                  <div className="absolute -top-3 right-0 z-10 flex items-center gap-0.5 bg-vintage-white border border-vintage-sand p-0.5" style={{ borderRadius: "var(--radius-vintage)" }}>
+                    <Ctl title="Вверх"      onClick={(e) => { e.stopPropagation(); move(i, -1); }} disabled={i === 0}><ArrowUp className="w-3.5 h-3.5" /></Ctl>
+                    <Ctl title="Вниз"       onClick={(e) => { e.stopPropagation(); move(i, 1); }}  disabled={i === blocks.length - 1}><ArrowDown className="w-3.5 h-3.5" /></Ctl>
+                    <Ctl title="Дублировать" onClick={(e) => { e.stopPropagation(); dup(i); }}><Copy className="w-3.5 h-3.5" /></Ctl>
+                    <Ctl title="Удалить"    onClick={(e) => { e.stopPropagation(); remove(i); }} danger><Trash2 className="w-3.5 h-3.5" /></Ctl>
+                  </div>
+                )}
+                <BlockPreview block={b} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Eigenschaften */}
+        <div className="border-l border-vintage-sand bg-vintage-white p-4 overflow-y-auto">
+          <p className="text-[10px] uppercase tracking-widest text-vintage-dust mb-3">Свойства</p>
+          {sel === null || !blocks[sel] ? (
+            <p className="text-sm text-vintage-dust">Выберите блок в предпросмотре.</p>
+          ) : (
+            <BlockProps
+              block={blocks[sel]}
+              galerie={galerie}
+              onPatch={(p) => patch(sel, p)}
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 }
 
-function IconBtn({ children, onClick, title, disabled, danger }: {
-  children: React.ReactNode; onClick: () => void; title: string; disabled?: boolean; danger?: boolean;
+function Ctl({ children, onClick, title, disabled, danger }: {
+  children: React.ReactNode; onClick: (e: React.MouseEvent) => void; title: string; disabled?: boolean; danger?: boolean;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      className={`p-1.5 border border-vintage-sand transition-colors disabled:opacity-30 ${danger ? "text-vintage-burgundy hover:bg-vintage-burgundy/10" : "text-vintage-ink hover:bg-vintage-parchment"}`}
-      style={{ borderRadius: "var(--radius-vintage)" }}
-    >
+    <button type="button" onClick={onClick} disabled={disabled} title={title}
+      className={`p-1.5 transition-colors disabled:opacity-30 ${danger ? "text-vintage-burgundy hover:bg-vintage-burgundy/10" : "text-vintage-ink hover:bg-vintage-parchment"}`}
+      style={{ borderRadius: "var(--radius-vintage)" }}>
       {children}
     </button>
   );
 }
 
-/** Leichte Client-Vorschau (markenkonform, ohne next/image). */
-function StoryPreview({ blocks }: { blocks: ProduktBlock[] }) {
+/* ── Block-Vorschau (markenkonform) ───────────────────────────────────────── */
+function BlockPreview({ block: b }: { block: ProduktBlock }) {
+  if (b.type === "heading") return <h3 className="font-serif text-xl text-vintage-espresso">{b.text || <em className="text-vintage-dust">Подзаголовок…</em>}</h3>;
+  if (b.type === "text") return (
+    <div className="space-y-2 text-sm text-vintage-ink" style={{ lineHeight: 1.7 }}>
+      {(b.text ?? "").trim()
+        ? (b.text ?? "").split(/\n{2,}/).filter(Boolean).map((p, j) => <p key={j}>{p}</p>)
+        : <p className="text-vintage-dust italic">Текст абзаца…</p>}
+    </div>
+  );
+  if (b.type === "highlight") return <div className="p-3 text-sm text-vintage-ink" style={{ background: "rgba(201,168,76,0.10)", borderLeft: "3px solid var(--color-gold,#C9A84C)" }}>{b.text || <span className="text-vintage-dust italic">Подсказка…</span>}</div>;
+  if (b.type === "quote") return (
+    <blockquote className="pl-3 italic text-vintage-ink" style={{ borderLeft: "2px solid var(--color-coral)" }}>
+      “{b.text || "Цитата…"}”{b.caption && <cite className="block mt-1 not-italic text-xs text-vintage-dust">— {b.caption}</cite>}
+    </blockquote>
+  );
+  if (b.type === "image") return b.bild_url
+    ? (<figure>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={b.bild_url} alt={b.caption ?? ""} className="w-full object-cover" style={{ borderRadius: "var(--radius-vintage)" }} />{b.caption && <figcaption className="text-xs italic text-vintage-dust mt-1">{b.caption}</figcaption>}</figure>)
+    : (<div className="flex items-center justify-center gap-2 py-10 text-vintage-dust border border-dashed border-vintage-sand"><ImageIcon className="w-5 h-5" /> Изображение не выбрано</div>);
+  return null;
+}
+
+/* ── Eigenschaften-Panel (je Block-Typ) ───────────────────────────────────── */
+const fieldCls = "w-full px-3 py-2 text-sm bg-vintage-parchment border border-vintage-sand text-vintage-ink";
+
+function BlockProps({ block: b, galerie, onPatch }: {
+  block: ProduktBlock; galerie: Produktbild[]; onPatch: (p: Partial<ProduktBlock>) => void;
+}) {
+  const [busy, start] = useTransition();
+
+  const upload = (file: File) => {
+    const fd = new FormData(); fd.append("file", file);
+    start(async () => {
+      const r = await storyBildUploadAction(fd);
+      if (r.ok && r.url) onPatch({ bild_url: r.url });
+      else alert(r.error ?? "Ошибка загрузки");
+    });
+  };
+
   return (
-    <div className="space-y-5 p-4 bg-vintage-white border border-vintage-sand" style={{ borderRadius: "var(--radius-card)" }}>
-      {blocks.map((b, i) => {
-        if (b.type === "heading") return <h3 key={i} className="font-serif text-xl text-vintage-espresso">{b.text}</h3>;
-        if (b.type === "text") return (
-          <div key={i} className="space-y-2 text-sm text-vintage-ink" style={{ lineHeight: 1.7 }}>
-            {(b.text ?? "").split(/\n{2,}/).filter(Boolean).map((p, j) => <p key={j}>{p}</p>)}
-          </div>
-        );
-        if (b.type === "highlight") return <div key={i} className="p-3 text-sm text-vintage-ink" style={{ background: "rgba(201,168,76,0.10)", borderLeft: "3px solid var(--color-gold,#C9A84C)" }}>{b.text}</div>;
-        if (b.type === "quote") return (
-          <blockquote key={i} className="pl-3 italic text-vintage-ink" style={{ borderLeft: "2px solid var(--color-coral)" }}>
-            “{b.text}”{b.caption && <cite className="block mt-1 not-italic text-xs text-vintage-dust">— {b.caption}</cite>}
-          </blockquote>
-        );
-        if (b.type === "image" && b.bild_url) return (
-          <figure key={i}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={b.bild_url} alt={b.caption ?? ""} className="w-full object-cover" style={{ borderRadius: "var(--radius-vintage)" }} />
-            {b.caption && <figcaption className="text-xs italic text-vintage-dust mt-1">{b.caption}</figcaption>}
-          </figure>
-        );
-        return null;
-      })}
+    <div className="space-y-3">
+      <p className="text-[11px] uppercase tracking-widest text-vintage-gold/80">{labelFor(b.type)}</p>
+
+      {b.type === "heading" && (
+        <input className={fieldCls} value={b.text ?? ""} placeholder="Подзаголовок" onChange={e => onPatch({ text: e.target.value })} />
+      )}
+      {(b.type === "text" || b.type === "highlight") && (
+        <textarea className={fieldCls} rows={b.type === "text" ? 8 : 4} value={b.text ?? ""} placeholder={b.type === "text" ? "Текст… (пустая строка = новый абзац)" : "Подсказка…"} onChange={e => onPatch({ text: e.target.value })} />
+      )}
+      {b.type === "quote" && (
+        <>
+          <textarea className={fieldCls} rows={3} value={b.text ?? ""} placeholder="Цитата…" onChange={e => onPatch({ text: e.target.value })} />
+          <input className={fieldCls} value={b.caption ?? ""} placeholder="Автор / источник" onChange={e => onPatch({ caption: e.target.value })} />
+        </>
+      )}
+      {b.type === "image" && (
+        <div className="space-y-3">
+          {/* Direkt-Upload */}
+          <label
+            className="flex items-center justify-center gap-2 py-2.5 text-sm border border-vintage-sand text-vintage-ink hover:bg-vintage-parchment cursor-pointer transition-colors"
+            style={{ borderRadius: "var(--radius-vintage)" }}
+          >
+            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4 text-vintage-gold" />}
+            {busy ? "Загрузка…" : "Загрузить фото"}
+            <input type="file" accept="image/*" className="hidden" disabled={busy}
+              onChange={e => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
+          </label>
+
+          {/* Galerie-Picker */}
+          {galerie.length > 0 && (
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-vintage-dust mb-1.5">Из галереи</p>
+              <div className="grid grid-cols-3 gap-1.5">
+                {galerie.map(g => (
+                  <button
+                    key={g.id}
+                    type="button"
+                    onClick={() => onPatch({ bild_url: g.url })}
+                    className="relative aspect-square overflow-hidden border transition-all"
+                    style={{ borderColor: b.bild_url === g.url ? "var(--color-coral)" : "var(--color-line)", borderWidth: b.bild_url === g.url ? 2 : 1 }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={g.url_thumb ?? g.url} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <input className={fieldCls} value={b.caption ?? ""} placeholder="Подпись (необязательно)" onChange={e => onPatch({ caption: e.target.value })} />
+        </div>
+      )}
     </div>
   );
 }
