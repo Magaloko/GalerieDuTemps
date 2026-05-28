@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       const cust = await customerById(session.user.id);
       if (cust) {
         customer_type  = cust.customer_type;
-        customer_email = cust.email;
+        customer_email = cust.email ?? undefined;
       }
     }
 

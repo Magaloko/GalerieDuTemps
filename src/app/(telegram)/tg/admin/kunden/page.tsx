@@ -49,8 +49,8 @@ export default async function TgAdminKunden({
               <AdminListRow
                 key={c.id}
                 href={`/admin/kunden/${c.id}`}
-                title={[c.vorname, c.nachname].filter(Boolean).join(" ") || c.email}
-                sub={`${c.email}${c.company_name ? ` · ${c.company_name}` : ""}`}
+                title={[c.vorname, c.nachname].filter(Boolean).join(" ") || c.email || c.telegram_username || "Гость"}
+                sub={`${c.email ?? (c.telegram_username ? `@${c.telegram_username}` : "Telegram")}${c.company_name ? ` · ${c.company_name}` : ""}`}
                 badge={TYP_BADGE[c.customer_type] ?? null}
               />
             ))}

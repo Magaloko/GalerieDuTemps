@@ -47,7 +47,7 @@ export function ProfilFormular({ customer }: { customer: Customer }) {
           <Input label="Имя"     name="vorname"  defaultValue={customer.vorname ?? ""}  required error={e("vorname")} />
           <Input label="Фамилия" name="nachname" defaultValue={customer.nachname ?? ""} required error={e("nachname")} />
         </div>
-        <Input label="E-mail" value={customer.email} disabled hint="E-mail изменить нельзя" />
+        <Input label="E-mail" value={customer.email ?? ""} disabled hint="E-mail изменить нельзя" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input label="Телефон" name="telefon" defaultValue={customer.telefon ?? ""} placeholder="+7 700 000 00 00" />
           <Input label="Дата рождения" name="geburtsdatum" type="date" defaultValue={customer.geburtsdatum ?? ""} hint="Для промокода ко дню рождения" />

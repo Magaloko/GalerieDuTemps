@@ -81,6 +81,33 @@ export async function customerByTelegramChatId(
   return r.rows[0] ?? null;
 }
 
+/**
+ * Legt ein Telegram-first-Konto an (Identität = telegram_chat_id, KEINE E-Mail).
+ * Idempotent: existiert bereits ein Konto mit dieser chat_id, wird es 1:1
+ * zurückgegeben (kein Duplikat). Voraussetzung: Migration 050 (email nullable).
+ *
+ * agb_akzeptiert_am wird gesetzt — der 1-Tap-„Profil anlegen" ist die Zustimmung.
+ */
+export async function customerAusTelegramErstellen(input: {
+  chatId:   number;
+  username: string | null;
+  vorname:  string | null;
+}): Promise<Customer> {
+  const bestehend = await customerByTelegramChatId(input.chatId);
+  if (bestehend) return bestehend;
+
+  const r = await query<Customer>(
+    `INSERT INTO sebo.customers
+       (email, passwort_hash, vorname, customer_type,
+        telegram_chat_id, telegram_username, telegram_verknuepft_am,
+        telegram_notifications_aktiv, agb_akzeptiert_am)
+     VALUES (NULL, NULL, $1, 'b2c', $2, $3, now(), true, now())
+     RETURNING *`,
+    [input.vorname, input.chatId, input.username],
+  );
+  return r.rows[0];
+}
+
 /** Verknüpfung lösen (Customer im Profile oder Admin) */
 export async function customerTelegramLoesen(customerId: string): Promise<void> {
   await query(

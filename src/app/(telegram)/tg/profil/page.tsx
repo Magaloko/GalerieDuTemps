@@ -5,6 +5,7 @@ import { getWebAppSession } from "@/lib/telegram/webapp-session";
 import { formatPreis } from "@/lib/utils/preis";
 import { TelegramAuthGate } from "../auth-gate";
 import { ClaimInitForm } from "./claim-init-form";
+import { AccountCreateForm } from "./account-create-form";
 import { KontaktEdit } from "./kontakt-edit";
 import {
   Mail, Briefcase, Package, Heart, ExternalLink, ArrowRight, MessageCircle,
@@ -73,7 +74,7 @@ export default async function TgProfilPage() {
                 color:      "var(--tg-theme-text-color, var(--color-ink))",
               }}
             >
-              Привязать аккаунт
+              Ваш профиль
             </h1>
             <p
               className="text-sm max-w-sm mx-auto"
@@ -84,14 +85,22 @@ export default async function TgProfilPage() {
                 lineHeight: 1.5,
               }}
             >
-              Введите e-mail вашего аккаунта на сайте. Мы пришлём ссылку
-              для подтверждения — после клика вы увидите свои заказы
-              прямо здесь.
+              Создайте профиль за один тап — заказы, избранное и история
+              будут прямо здесь, привязанные к вашему Telegram.
             </p>
           </header>
 
-          {/* Claim-Form (Client-Component, läuft initData-Auth-POST) */}
-          <ClaimInitForm />
+          {/* 1-Tap-Konto (primär, ohne E-Mail) */}
+          <AccountCreateForm />
+
+          {/* Sekundär: bestehenden Web-Account verknüpfen */}
+          <div className="pt-2">
+            <p className="text-[10px] uppercase font-medium mb-2 text-center"
+              style={{ letterSpacing: "0.22em", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
+              Уже есть аккаунт на сайте?
+            </p>
+            <ClaimInitForm />
+          </div>
 
           {/* Kontakt-Link für Gäste — auch ohne Account erreichbar */}
           <Link
@@ -170,7 +179,7 @@ export default async function TgProfilPage() {
               borderRadius: "50%",
             }}
           >
-            {(customer.vorname ?? customer.email).charAt(0).toUpperCase()}
+            {(customer.vorname ?? customer.email ?? "К").charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
             <p
@@ -251,7 +260,7 @@ export default async function TgProfilPage() {
           <MetaRow
             icon={Mail}
             label="E-mail"
-            value={customer.email}
+            value={customer.email ?? "не указан"}
           />
           <MetaRow
             icon={Briefcase}

@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
       const cust = await customerById(session.user.id);
       if (cust) {
         customer_id    = cust.id;
-        customer_email = cust.email;
+        customer_email = cust.email ?? undefined;
         customer_name  = [cust.vorname, cust.nachname].filter(Boolean).join(" ");
         customer_type  = cust.customer_type;
         ust_id         = cust.ust_id ?? undefined;

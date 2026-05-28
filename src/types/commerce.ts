@@ -33,7 +33,8 @@ export interface Address {
 
 export interface Customer {
   id:                 string;
-  email:              string;
+  /** Optional: NULL bei Telegram-first-Accounts (Identität = telegram_chat_id). */
+  email:              string | null;
   customer_number:    number;
   vorname:            string | null;
   nachname:           string | null;

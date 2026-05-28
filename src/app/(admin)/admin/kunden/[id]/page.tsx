@@ -70,7 +70,7 @@ export default async function KundenDetailPage({
         <div className="flex items-start gap-5">
           <div className="w-16 h-16 bg-vintage-parchment border border-vintage-sand flex items-center justify-center flex-shrink-0" style={{ borderRadius: "var(--radius-card)" }}>
             <span className="text-vintage-brown text-2xl font-serif">
-              {(customer.vorname ?? customer.email)[0].toUpperCase()}
+              {(customer.vorname ?? customer.email ?? "?")[0].toUpperCase()}
             </span>
           </div>
           <div className="flex-1 min-w-0">

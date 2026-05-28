@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
     ? `@${valid.user.username}`
     : `tg:${valid.user.id}`;
   const kontaktName = customer
-    ? [customer.vorname, customer.nachname].filter(Boolean).join(" ") || customer.email
+    ? [customer.vorname, customer.nachname].filter(Boolean).join(" ") || customer.email || kontaktHandle
     : [valid.user.first_name, valid.user.last_name].filter(Boolean).join(" ") || kontaktHandle;
   const kontaktEmail = customer?.email ?? null;
 

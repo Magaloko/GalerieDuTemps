@@ -19,7 +19,7 @@ export async function b2bFreischaltenAction(
   await b2bFreischalten(customerId);
 
   const cust = await customerById(customerId);
-  if (cust) {
+  if (cust?.email) {
     sendEmail({
       to:      [{ email: cust.email, name: `${cust.vorname ?? ""} ${cust.nachname ?? ""}` }],
       subject: "B2B-Account freigeschaltet – Galerie du Temps",
@@ -47,7 +47,7 @@ export async function b2bAblehnenAction(
   await b2bAblehnen(customerId, grund);
 
   const cust = await customerById(customerId);
-  if (cust) {
+  if (cust?.email) {
     sendEmail({
       to:      [{ email: cust.email, name: `${cust.vorname ?? ""} ${cust.nachname ?? ""}` }],
       subject: "B2B-Antrag abgelehnt – Galerie du Temps",

@@ -80,7 +80,7 @@ export async function claimInitiieren(
       [token, chatId, username, customer.id],
     );
 
-    return { ok: true, token, emailMasked: maskEmail(customer.email) };
+    return { ok: true, token, emailMasked: maskEmail(customer.email ?? "") };
   } catch (err) {
     console.error("[claimInitiieren]", err);
     return { ok: false, error: "db-error" };

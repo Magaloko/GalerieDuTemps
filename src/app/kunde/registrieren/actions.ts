@@ -89,7 +89,7 @@ export async function customerRegistrierenAction(
   const token = await emailConfirmationTokenSetzen(customer.id);
   const url   = siteUrl(`/kunde/bestaetigt?token=${token}`);
   sendEmail({
-    to: [{ email: customer.email, name: `${customer.vorname} ${customer.nachname}` }],
+    to: [{ email: customer.email!, name: `${customer.vorname} ${customer.nachname}` }],
     subject: "Подтвердите ваш e-mail · Galerie du Temps",
     htmlContent: emailBestaetigungMail(customer.vorname ?? "", url),
     tags: ["customer-confirm"],
@@ -98,7 +98,7 @@ export async function customerRegistrierenAction(
   // Bei B2B zusätzlich Welcome-Mail + Admin-Critical-Alert
   if (isB2B && data.company_name) {
     sendEmail({
-      to: [{ email: customer.email, name: `${customer.vorname} ${customer.nachname}` }],
+      to: [{ email: customer.email!, name: `${customer.vorname} ${customer.nachname}` }],
       subject: "B2B-заявка принята · Galerie du Temps",
       htmlContent: b2bWelcomeMail(customer.vorname ?? "", data.company_name),
       tags: ["b2b-pending"],

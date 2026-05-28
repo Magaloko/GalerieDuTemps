@@ -178,7 +178,7 @@ export async function POST(
           konto.access_token,
           chat.id,
           `✓ <b>Аккаунт привязан</b>\n\n` +
-          `Привет, ${escapeHtml(customer.vorname ?? customer.email)}! ` +
+          `Привет, ${escapeHtml(customer.vorname ?? customer.email ?? "друг")}! ` +
           `Теперь вы будете получать сюда подтверждения заказов, статусы доставки и важные обновления.\n\n` +
           `Команды бота:\n` +
           `/orders — последние заказы\n` +
@@ -238,7 +238,7 @@ export async function POST(
       } else if (linkedCustomer) {
         welcomeText =
           `<b>✨ С возвращением!</b>\n\n` +
-          `Рады видеть вас снова, <b>${escapeHtml(linkedCustomer.vorname ?? linkedCustomer.email)}</b>.\n` +
+          `Рады видеть вас снова, <b>${escapeHtml(linkedCustomer.vorname ?? linkedCustomer.email ?? "друг")}</b>.\n` +
           `<i>Новые поступления каждую среду.</i>`;
         menu = buildLinkedMainMenu(siteBase, kaufenAktiv);
       } else {
