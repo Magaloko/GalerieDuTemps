@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
-import { leadAusKanalErstellen } from "@/lib/db/leads";
+import { leadAusKanalErstellen, leadKonvertierenZuCustomer } from "@/lib/db/leads";
 import { notifyNewLead } from "@/lib/notifications/lead-notify";
 import {
   customerTelegramVerknuepfen,
@@ -444,13 +444,46 @@ export async function POST(
       return NextResponse.json({ ok: true });
     }
 
-    // Nicht-Command → Ack + bietet Menü
+    // Nicht-Command Freitext eines verknüpften Kunden → als Lead in die Inbox
+    // (sonst ginge die Nachricht verloren!) + Customer verknüpfen + Admins
+    // benachrichtigen + freundlicher Ack. Spiegelt den Unbekannt-Absender-Pfad.
+    const cExterne = `tg:${chat.id}:${msg.message_id}`;
+    const cHandle  = username ? `@${username}` : `tg:${chat.id}`;
+    const cName    = [linkedCustomer.vorname, linkedCustomer.nachname].filter(Boolean).join(" ") || cHandle;
+    try {
+      const { id: leadId, created } = await leadAusKanalErstellen({
+        quelle:         "telegram",
+        kanal_konto_id: konto.id,
+        externe_id:     cExterne,
+        kontakt_handle: cHandle,
+        kontakt_name:   cName,
+        kontakt_email:  linkedCustomer.email ?? undefined,
+        text,
+        vorschau:       text.slice(0, 240),
+        raw_payload:    update,
+      });
+      if (created) {
+        await leadKonvertierenZuCustomer(leadId, linkedCustomer.id).catch(() => {});
+        notifyNewLead({
+          id:             leadId,
+          quelle:         "telegram",
+          kontakt_name:   cName,
+          kontakt_email:  linkedCustomer.email ?? null,
+          kontakt_handle: cHandle,
+          betreff:        null,
+          vorschau:       text.slice(0, 240),
+          produkt_id:     null,
+        }).catch(err => console.error("[notify]", err));
+      }
+    } catch (err) {
+      console.error("[telegram-webhook customer-lead]", err);
+    }
+
     await sendMessage(
       konto.access_token,
       chat.id,
-      `Спасибо за сообщение, ${escapeHtml(linkedCustomer.vorname ?? "—")}!\n\n` +
-      `Я бот и не могу отвечать на свободные вопросы. Используйте /menu для команд ` +
-      `или напишите куратору: bonjour@galeriedutemps.kz`,
+      `✓ Спасибо, ${escapeHtml(linkedCustomer.vorname ?? "—")}! ` +
+      `Передал ваше сообщение куратору — скоро ответим.`,
       {
         reply_markup: buildLinkedMainMenu(siteBase, kaufenAktiv),
       },
