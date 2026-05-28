@@ -19,6 +19,7 @@ import type { Metadata } from "next";
 import { getDictionary, getLocale } from "@/i18n";
 import { siteUrl } from "@/lib/site-url";
 import { isFeatureEnabled } from "@/lib/db/feature-flags";
+import { maskBestandListe } from "@/lib/utils/showcase-mask";
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -400,7 +401,8 @@ export default async function ProduktDetailPage({ params }: Props) {
                 originalpreis: produkt.originalpreis,
                 waehrung,
                 verkauft:      produkt.verkauft,
-                lagerbestand:  produkt.lagerbestand,
+                /* Schaufenster: exakten Bestand nicht in den Client-Payload geben. */
+                lagerbestand:  kaufenAktiv ? produkt.lagerbestand : (produkt.lagerbestand > 0 ? 1 : 0),
                 hauptbildUrl:  bilder[0]?.url ?? null,
                 b2c_mode:      produkt.b2c_mode,
               }}
@@ -576,7 +578,7 @@ export default async function ProduktDetailPage({ params }: Props) {
           >
             {t.produkt.aehnlich}
           </h2>
-          <ProduktGrid produkte={aehnliche} prioCount={0} />
+          <ProduktGrid produkte={maskBestandListe(aehnliche, kaufenAktiv)} prioCount={0} />
         </section>
       )}
 

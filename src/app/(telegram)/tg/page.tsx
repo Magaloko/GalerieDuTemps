@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 import { katalogProdukte } from "@/lib/db/produkte-public";
+import { isFeatureEnabled } from "@/lib/db/feature-flags";
+import { maskBestandListe } from "@/lib/utils/showcase-mask";
 import { TelegramAuthGate } from "./auth-gate";
 import { TelegramCatalogClient } from "./catalog-client";
 import type { Metadata } from "next";
@@ -24,14 +26,17 @@ export const dynamic = "force-dynamic";
  * Session-Cookie serverseitig.
  * ────────────────────────────────────────────────────────────────────────── */
 export default async function TelegramMiniAppHome() {
-  const data = await katalogProdukte({ seite: 1, sortierung: "neu" }).catch(() => ({
-    items: [], gesamt: 0, seite: 1, seiten: 0,
-  }));
+  const [data, kaufenAktiv] = await Promise.all([
+    katalogProdukte({ seite: 1, sortierung: "neu" }).catch(() => ({
+      items: [], gesamt: 0, seite: 1, seiten: 0,
+    })),
+    isFeatureEnabled("kaufen_aktiv").catch(() => true),
+  ]);
 
   return (
     <TelegramAuthGate>
       <Suspense fallback={<div className="p-6">…</div>}>
-        <TelegramCatalogClient produkte={data.items} />
+        <TelegramCatalogClient produkte={maskBestandListe(data.items, kaufenAktiv)} />
       </Suspense>
     </TelegramAuthGate>
   );

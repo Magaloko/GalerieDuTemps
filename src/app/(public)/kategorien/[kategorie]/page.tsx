@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { alleKategorien } from "@/lib/db/kategorien";
 import { katalogProdukte } from "@/lib/db/produkte-public";
+import { isFeatureEnabled } from "@/lib/db/feature-flags";
+import { maskBestandListe } from "@/lib/utils/showcase-mask";
 import { ProduktGrid } from "@/components/produkte/produkt-grid";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
@@ -27,7 +29,11 @@ export default async function KategoriePage({ params }: Props) {
   const kat  = alle.find(k => k.slug === kategorie);
   if (!kat) notFound();
 
-  const daten = await katalogProdukte({ kategorie, limit: 48 });
+  const [daten, kaufenAktiv] = await Promise.all([
+    katalogProdukte({ kategorie, limit: 48 }),
+    isFeatureEnabled("kaufen_aktiv").catch(() => true),
+  ]);
+  const items = maskBestandListe(daten.items, kaufenAktiv);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
@@ -65,7 +71,7 @@ export default async function KategoriePage({ params }: Props) {
       </div>
 
       <ProduktGrid
-        produkte={daten.items}
+        produkte={items}
         leerText={`Нет товаров в категории «${kat.name}»`}
         leerUntertext="Загляните в другие категории"
       />

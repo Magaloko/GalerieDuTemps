@@ -1,5 +1,7 @@
 import { katalogProdukte } from "@/lib/db/produkte-public";
 import { alleKategorien } from "@/lib/db/kategorien";
+import { isFeatureEnabled } from "@/lib/db/feature-flags";
+import { maskBestandListe } from "@/lib/utils/showcase-mask";
 import { ProduktGrid } from "@/components/produkte/produkt-grid";
 import { FilterGroup } from "@/components/catalog/filter-group";
 import Link from "next/link";
@@ -41,10 +43,14 @@ export default async function KatalogPage({ searchParams }: Props) {
     sortierung: sp.sortierung ?? "neu",
   };
 
-  const [daten, kategorien] = await Promise.all([
+  const [daten, kategorien, kaufenAktiv] = await Promise.all([
     katalogProdukte(params),
     alleKategorien(),
+    isFeatureEnabled("kaufen_aktiv").catch(() => true),
   ]);
+
+  // Schaufenster: exakten Bestand nicht in den Client-Payload geben.
+  const items = maskBestandListe(daten.items, kaufenAktiv);
 
   const hatFilter = !!(params.suche || params.kategorie || params.zustand || params.era || params.min_preis || params.max_preis);
 
@@ -252,7 +258,7 @@ export default async function KatalogPage({ searchParams }: Props) {
 
           {/* Grid */}
           <ProduktGrid
-            produkte={daten.items}
+            produkte={items}
             leerText={t.katalog.keine_ergebnisse}
             leerUntertext={hatFilter ? t.katalog.versuche : t.home.leer_text}
             prioCount={4}

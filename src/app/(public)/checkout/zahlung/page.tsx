@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { orderById } from "@/lib/db/orders";
+import { isFeatureEnabled } from "@/lib/db/feature-flags";
 import { getLocale } from "@/i18n";
 import { PAYMENT_METHODS, isMethodAvailable, providerEnvOk } from "@/lib/payment/methods";
 import { MethodPicker } from "./method-picker";
@@ -31,6 +32,11 @@ export default async function ZahlungsmethodePage({
 }) {
   const sp = await searchParams;
   if (!sp.order) redirect("/warenkorb");
+
+  // Schaufenster: keine Zahlungs-UI — zurück zum Korb-/Anfrage-Hinweis.
+  if (!(await isFeatureEnabled("kaufen_aktiv").catch(() => true))) {
+    redirect("/warenkorb");
+  }
 
   const [order, locale] = await Promise.all([
     orderById(sp.order),

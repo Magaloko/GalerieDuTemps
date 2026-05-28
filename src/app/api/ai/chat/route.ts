@@ -5,6 +5,7 @@ import { vintageMarketTools, SYSTEM_PROMPT } from "@/lib/ai/tools";
 import { executeTool } from "@/lib/ai/tool-handler";
 import { rateLimitPruefen, getClientIp, tooManyRequestsResponse } from "@/lib/utils/rate-limit";
 import { isFeatureEnabled } from "@/lib/db/feature-flags";
+import { maskBestandListe } from "@/lib/utils/showcase-mask";
 import type { ProduktListItem } from "@/types/produkt";
 
 export const dynamic = "force-dynamic";
@@ -50,6 +51,9 @@ export async function POST(req: NextRequest) {
   // Alle Produkt-Referenzen aus Tool-Calls dieser Konversationsrunde
   const alleReferenzen: ProduktListItem[] = [];
   const genutzteTools: string[]            = [];
+
+  // Schaufenster: Bestand in Produkt-Referenzen maskieren (kein exakter Count).
+  const kaufenAktiv = await isFeatureEnabled("kaufen_aktiv").catch(() => true);
 
   let client: OpenAI;
   try {
@@ -120,7 +124,7 @@ export async function POST(req: NextRequest) {
       nachricht: {
         rolle:         "assistant",
         inhalt,
-        referenzen:    uniqRef,
+        referenzen:    maskBestandListe(uniqRef, kaufenAktiv),
         tools_genutzt: genutzteTools,
         zeitstempel:   Date.now(),
       },
@@ -133,7 +137,7 @@ export async function POST(req: NextRequest) {
     nachricht: {
       rolle:       "assistant",
       inhalt:      "Entschuldigung, das war komplexer als erwartet. Bitte versuche es etwas spezifischer.",
-      referenzen:  alleReferenzen,
+      referenzen:  maskBestandListe(alleReferenzen, kaufenAktiv),
       zeitstempel: Date.now(),
     },
     verlauf: verlauf.filter(m => m.role !== "system"),

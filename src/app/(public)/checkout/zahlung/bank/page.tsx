@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { orderById } from "@/lib/db/orders";
+import { isFeatureEnabled } from "@/lib/db/feature-flags";
 import { getMarketingStrings } from "@/lib/db/marketing-strings";
 import { getLocale } from "@/i18n";
 import { formatPreis } from "@/lib/utils/preis";
@@ -33,6 +34,11 @@ export default async function BankZahlungPage({
 }) {
   const sp = await searchParams;
   if (!sp.order) redirect("/warenkorb");
+
+  // Schaufenster: keine Zahlungs-UI.
+  if (!(await isFeatureEnabled("kaufen_aktiv").catch(() => true))) {
+    redirect("/warenkorb");
+  }
 
   const order = await orderById(sp.order);
   if (!order) redirect("/warenkorb");
