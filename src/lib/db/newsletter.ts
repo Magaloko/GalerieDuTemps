@@ -186,7 +186,8 @@ export async function newsletterEmpfaengerSammeln(segmentId?: string): Promise<V
        (SELECT c.email, c.vorname, COALESCE(s.unsubscribe_token, c.dnc_token), s.id AS subscriber_id, c.id AS customer_id
         FROM sebo.customers c
         LEFT JOIN sebo.newsletter_subscribers s ON s.email = c.email
-        WHERE c.newsletter_aktiv = true AND c.dnc_aktiv = false)`
+        WHERE c.newsletter_aktiv = true AND c.dnc_aktiv = false
+          AND c.email IS NOT NULL)`
     );
     return r.rows;
   }
