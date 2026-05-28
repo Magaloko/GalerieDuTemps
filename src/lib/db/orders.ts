@@ -36,6 +36,10 @@ export async function orderErstellen(data: {
   ust_id?:          string;
   kunden_notiz?:    string;
   stripe_session_id?: string;
+  /** Setzt den Payment-Intent/Charge schon bei der Erstellung — so greift die
+   *  Idempotenz-Prüfung (stripe_payment_intent) auch nach einem Crash zwischen
+   *  Order-Insert und Status-Update (verhindert doppelte Orders beim Retry). */
+  stripe_payment_intent?: string;
 }): Promise<Order> {
   const order = await withTransaction(async (client) => {
     // Order erstellen
@@ -46,13 +50,13 @@ export async function orderErstellen(data: {
           billing_address, shipping_address, versandart,
           coupon_id, coupon_code_snapshot,
           customer_type_snapshot, reverse_charge, ust_id_snapshot,
-          kunden_notiz, stripe_session_id)
+          kunden_notiz, stripe_session_id, stripe_payment_intent)
        VALUES ($1,$2,$3,'pending',
                $4,$5,$6,$7,$8,
                $9::jsonb,$10::jsonb,$11,
                $12,$13,
                $14,$15,$16,
-               $17,$18)
+               $17,$18,$19)
        RETURNING *`,
       [
         data.customer_id ?? null,
@@ -73,6 +77,7 @@ export async function orderErstellen(data: {
         data.ust_id ?? null,
         data.kunden_notiz ?? null,
         data.stripe_session_id ?? null,
+        data.stripe_payment_intent ?? null,
       ]
     );
     const order = orderRes.rows[0];

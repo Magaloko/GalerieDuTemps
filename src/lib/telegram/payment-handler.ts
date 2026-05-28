@@ -31,11 +31,18 @@ interface MinimalPayload {
   items: [string, number][];
 }
 
+/**
+ * @returns true  = final verarbeitet (Order erstellt ODER nicht-behebbarer Fall
+ *                  wie kaputter Payload / fehlender Customer) → Ledger als
+ *                  'processed' markieren, kein Retry.
+ *          false = transienter Fehler (Order-Erstellung schlug fehl) → Ledger
+ *                  NICHT als processed markieren, Telegram-Retry erwünscht.
+ */
 export async function handleSuccessfulPayment(
   payment: TelegramSuccessfulPayment,
   chatId:  number,
   botToken: string,
-): Promise<void> {
+): Promise<boolean> {
   let payload: MinimalPayload;
   try {
     payload = JSON.parse(payment.invoice_payload);
@@ -46,12 +53,13 @@ export async function handleSuccessfulPayment(
       `Оплата получена (${payment.telegram_payment_charge_id}), но не удалось ` +
       `создать заказ автоматически. Свяжись с нами: bonjour@galeriedutemps.kz`,
     ).catch(() => {});
-    return;
+    return true; // Payload ändert sich beim Retry nicht → nicht erneut versuchen.
   }
 
-  // Customer + E-Mail laden
+  // Customer + E-Mail laden. email kann NULL sein (Telegram-first-Account ohne
+  // E-Mail) — für den Order-Snapshot brauchen wir aber einen stabilen String.
   const custRes = await query<{
-    id: string; email: string; vorname: string | null; nachname: string | null;
+    id: string; email: string | null; vorname: string | null; nachname: string | null;
     customer_type: string;
   }>(
     `SELECT id, email, vorname, nachname, customer_type FROM sebo.customers WHERE id = $1`,
@@ -60,8 +68,11 @@ export async function handleSuccessfulPayment(
   const customer = custRes.rows[0];
   if (!customer) {
     console.error("[payment-handler] customer not found:", payload.cid);
-    return;
+    return true; // Customer fehlt → Retry hilft nicht.
   }
+  // Order braucht eine non-null E-Mail. Telegram-first-Konten ohne E-Mail
+  // bekommen eine stabile, eindeutige Platzhalter-Adresse (nie versendbar).
+  const orderEmail = customer.email ?? `tg-${chatId}@telegram.galeriedutemps.local`;
 
   const existingPaid = await query<{ id: string; order_number: number }>(
     `SELECT id, order_number
@@ -77,7 +88,7 @@ export async function handleSuccessfulPayment(
       `✓ Платёж уже обработан. Заказ ${bestellnr}.\n\n` +
       `Детали: ${BASE_URL}/kunde/bestellungen/${existing.id}`,
     ).catch(() => {});
-    return;
+    return true; // bereits verarbeitet (idempotent).
   }
 
   // Produkte laden (mit aktuellen Preisen)
@@ -127,7 +138,7 @@ export async function handleSuccessfulPayment(
   try {
     const order = await orderErstellen({
       customer_id:      customer.id,
-      customer_email:   customer.email,
+      customer_email:   orderEmail,
       customer_name:    payment.order_info?.name ?? [customer.vorname, customer.nachname].filter(Boolean).join(" "),
       items,
       subtotal_cents,
@@ -137,6 +148,8 @@ export async function handleSuccessfulPayment(
       shipping_address,
       customer_type:    customer.customer_type,
       kunden_notiz:     `Bezahlt über Telegram-Payments (charge: ${payment.telegram_payment_charge_id})`,
+      // Idempotenz-Anker schon bei Erstellung — siehe orderErstellen-Doc.
+      stripe_payment_intent: payment.provider_payment_charge_id,
     });
 
     // Sofort auf 'paid' setzen — Geld ist via Telegram-Provider schon
@@ -167,11 +180,13 @@ export async function handleSuccessfulPayment(
       `Платёж: ${payment.telegram_payment_charge_id.slice(0, 12)}…\n\n` +
       `Детали: ${BASE_URL}/kunde/bestellungen/${order.id}`,
     ).catch(() => {});
+    return true; // Order erfolgreich erstellt.
   } catch (err) {
     console.error("[payment-handler] order create failed:", err);
     await sendMessage(botToken, chatId,
       `⚠ Оплата прошла (${payment.telegram_payment_charge_id}), но при ` +
       `создании заказа произошла ошибка. Мы свяжемся с тобой в течение часа.`,
     ).catch(() => {});
+    return false; // transient → Retry erwünscht (Ledger bleibt 'processing').
   }
 }

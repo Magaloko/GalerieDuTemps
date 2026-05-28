@@ -19,6 +19,7 @@ import {
 } from "@/lib/telegram/client";
 import { handleCustomerCommand } from "@/lib/telegram/customer-commands";
 import { handleSuccessfulPayment } from "@/lib/telegram/payment-handler";
+import { webhookEventReserve, webhookEventMarkProcessed } from "@/lib/db/webhook-events";
 import { getSiteUrl } from "@/lib/site-url";
 import type { TelegramUpdate } from "@/lib/telegram/client";
 
@@ -87,12 +88,37 @@ export async function POST(
     return NextResponse.json({ ok: true });
   }
   if (update.message?.successful_payment && konto.access_token) {
-    await handleSuccessfulPayment(
-      update.message.successful_payment,
-      update.message.chat.id,
-      konto.access_token,
-    ).catch(err => console.error("[tg successful_payment]", err));
-    return NextResponse.json({ ok: true });
+    const sp      = update.message.successful_payment;
+    const eventId = `payment:${sp.telegram_payment_charge_id}`;
+
+    // Idempotenz-Ledger ZUERST (vor Side-Effects). Bei DB-Ausfall fail-closed:
+    // 503 → Telegram stellt das Update später erneut zu (Geld geht nicht verloren).
+    let fresh: boolean;
+    try {
+      fresh = await webhookEventReserve("telegram", eventId, "successful_payment", sp);
+    } catch (err) {
+      console.error("[tg successful_payment] ledger unreachable — 503:", err);
+      return NextResponse.json({ error: "ledger-unavailable" }, { status: 503 });
+    }
+    if (!fresh) {
+      // Schon final verarbeitet → keine Side-Effects erneut auslösen.
+      return NextResponse.json({ ok: true, duplicate: true });
+    }
+
+    let verarbeitet = false;
+    try {
+      verarbeitet = await handleSuccessfulPayment(sp, update.message.chat.id, konto.access_token);
+    } catch (err) {
+      console.error("[tg successful_payment]", err);
+      verarbeitet = false;
+    }
+
+    if (verarbeitet) {
+      await webhookEventMarkProcessed("telegram", eventId);
+      return NextResponse.json({ ok: true });
+    }
+    // Transienter Fehler: Ledger bleibt 'processing' → kontrollierter Retry.
+    return NextResponse.json({ error: "handler-failed" }, { status: 500 });
   }
 
   // ── Callback-Query (Inline-Button-Klick) ───────────────────────────────
