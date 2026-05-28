@@ -4,8 +4,8 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, X, Loader2, Sparkles, SlidersHorizontal } from "lucide-react";
-import { formatPreis } from "@/lib/utils/preis";
+import { Search, X, Loader2, Sparkles, SlidersHorizontal, Star } from "lucide-react";
+import { formatPreis, rabattProzent } from "@/lib/utils/preis";
 import { HeartToggle } from "./heart-toggle";
 import type { ProduktListItem } from "@/types/produkt";
 
@@ -445,79 +445,183 @@ function NeuheitCard({ produkt }: { produkt: ProduktListItem & { era?: string | 
   );
 }
 
+/* ──────────────────────────────────────────────────────────────────────────
+ * MiniCard — 1:1 wie ProduktKarte (website), adaptiert für die Mini-App.
+ * Unterschiede: /tg/-Links, HeartToggle statt useWunschliste, kein Hover.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+const ZUSTAND_INFO: Record<string, { label: string; color: string }> = {
+  sehr_gut:    { label: "Отличное",       color: "#7A8B6F" },
+  gut:         { label: "Хорошее",        color: "#B08D57" },
+  akzeptabel:  { label: "Приемлемое",     color: "#C9956B" },
+  restauriert: { label: "Реставрировано", color: "#8B6F47" },
+};
+
 function MiniCard({ produkt }: { produkt: ProduktListItem & { era?: string | null } }) {
-  const waehrung = (produkt.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT";
+  const waehrung   = (produkt.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT";
+  const zustandInfo = ZUSTAND_INFO[produkt.zustand];
+  const rabatt      = produkt.originalpreis ? rabattProzent(produkt.preis, produkt.originalpreis) : 0;
+  const ausverkauft = produkt.lagerbestand === 0 && !produkt.verkauft;
+  const keyDetail   = produkt.material || produkt.era || produkt.herkunft || null;
+
   return (
-    <Link
-      href={`/tg/produkt/${produkt.slug}`}
-      className="block group"
-      style={{ touchAction: "manipulation" }}
-    >
-      <div
-        className="relative w-full overflow-hidden"
-        style={{
-          aspectRatio: "4/5",
-          background:  "var(--color-paper-warm)",
-        }}
-      >
-        {produkt.hauptbild_url && (
-          <Image
-            src={produkt.hauptbild_url}
-            alt={produkt.name}
-            fill
-            sizes="(max-width:768px) 50vw, 200px"
-            className="object-cover"
-          />
+    <article className="relative" style={{ touchAction: "manipulation" }}>
+      {/* Gold-Corners */}
+      <TgGoldCorners />
+
+      {/* Bild */}
+      <Link href={`/tg/produkt/${produkt.slug}`} className="block relative overflow-hidden"
+        style={{ aspectRatio: "4/5", background: "var(--color-paper-warm)" }}>
+        {produkt.hauptbild_url ? (
+          <Image src={produkt.hauptbild_url} alt={produkt.name} fill
+            sizes="(max-width:768px) 50vw, 200px" className="object-cover" />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center"
+            style={{ background: "linear-gradient(135deg, var(--color-paper-warm), var(--color-bone))" }}>
+            <Sparkles className="w-5 h-5 opacity-25" style={{ color: "var(--color-ink-mute)" }} />
+          </div>
         )}
-        <HeartToggle produktId={produkt.id} overlay size={16} />
-        {(produkt.verkauft || produkt.reserviert) && (
-          <span
-            className="absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[9px] uppercase font-medium"
-            style={{
-              letterSpacing: "0.14em",
-              background:    produkt.verkauft ? "rgba(15,20,48,0.82)" : "rgba(201,168,76,0.92)",
-              color:         produkt.verkauft ? "var(--color-gold, #C9A84C)" : "#1a1410",
-              backdropFilter:"blur(4px)",
-            }}
-          >
-            {produkt.verkauft ? "Продано" : "Зарезервировано"}
-          </span>
+
+        {/* Badges top-left */}
+        <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
+          {produkt.verkauft ? (
+            <TgBadge label="Продано" tone="muted" />
+          ) : produkt.reserviert ? (
+            <TgBadge label="Бронь" tone="gold" />
+          ) : ausverkauft ? (
+            <TgBadge label="Нет в наличии" tone="warning" />
+          ) : produkt.ist_neu ? (
+            <TgBadge label="Новинка" tone="gold" />
+          ) : null}
+          {rabatt > 0 && !produkt.verkauft && (
+            <span className="px-1.5 py-0.5 text-[9px] uppercase font-medium"
+              style={{ letterSpacing: "0.16em", background: "var(--color-coral)", color: "#fff" }}>
+              −{rabatt}%
+            </span>
+          )}
+        </div>
+
+        {/* Featured-Badge: etwas tiefer als Heart (Heart ist top-2 right-2) */}
+        {produkt.featured && !produkt.verkauft && (
+          <div className="absolute z-10 flex items-center gap-0.5 px-1.5 py-0.5"
+            style={{ top: "2.25rem", right: "0.5rem", background: "rgba(15,20,48,0.88)",
+              color: "var(--color-gold, #C9A84C)", letterSpacing: "0.16em", fontSize: 9,
+              fontWeight: 500, textTransform: "uppercase" }}>
+            <Star className="w-2 h-2" fill="currentColor" />
+            Топ
+          </div>
         )}
+
+        {/* Heart (overlay — immer top-2 right-2) */}
+        <HeartToggle produktId={produkt.id} overlay size={14} />
+
+        {/* KeyDetail bottom-left */}
+        {keyDetail && !produkt.verkauft && (
+          <div className="absolute bottom-2 left-2 z-10 px-2 py-0.5"
+            style={{ background: "rgba(15,20,48,0.78)", backdropFilter: "blur(4px)",
+              color: "var(--color-gold, #C9A84C)", letterSpacing: "0.16em", fontSize: 9,
+              fontWeight: 500, textTransform: "uppercase" }}>
+            {keyDetail}
+          </div>
+        )}
+
+        {/* ImageCount-Dots bottom-right */}
+        {produkt.bilder_count && produkt.bilder_count > 1 && (
+          <div className="absolute bottom-2 right-2 z-10 flex items-center gap-1">
+            {Array.from({ length: Math.min(produkt.bilder_count, 5) }, (_, i) => (
+              <div key={i} className="rounded-full"
+                style={{ width: i === 0 ? 5 : 3.5, height: i === 0 ? 5 : 3.5,
+                  background: i === 0 ? "rgba(201,168,76,0.92)" : "rgba(201,168,76,0.45)" }} />
+            ))}
+          </div>
+        )}
+      </Link>
+
+      {/* Gold-Divider */}
+      <div className="flex items-center" style={{ padding: "5px 0 2px" }}>
+        <div className="flex-1 h-px" style={{ background: "rgba(201,168,76,0.25)" }} />
+        <span className="mx-1.5" style={{ fontSize: 6, color: "rgba(201,168,76,0.55)", lineHeight: 1 }}>◆</span>
+        <div className="flex-1 h-px" style={{ background: "rgba(201,168,76,0.25)" }} />
       </div>
-      <div className="pt-2">
-        {produkt.kategorie_name && (
-          <p
-            className="text-[9px] uppercase font-medium truncate"
-            style={{
-              letterSpacing: "0.18em",
-              color:         "var(--tg-theme-link-color, var(--color-coral))",
-            }}
-          >
-            {produkt.kategorie_name}
+
+      {/* Info */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          {produkt.kategorie_name && (
+            <p className="text-[9px] uppercase font-medium truncate mb-0.5"
+              style={{ letterSpacing: "0.2em", color: "var(--tg-theme-link-color, var(--color-coral))" }}>
+              {produkt.kategorie_name}
+            </p>
+          )}
+          <Link href={`/tg/produkt/${produkt.slug}`}>
+            <h3 className="line-clamp-2 leading-tight"
+              style={{ fontFamily: "var(--font-display)", fontSize: 17,
+                color: "var(--tg-theme-text-color, var(--color-ink))" }}>
+              {produkt.name}
+            </h3>
+          </Link>
+        </div>
+        {/* Price */}
+        <div className="text-right shrink-0">
+          <p style={{ fontFamily: "var(--font-display)", fontSize: 17, lineHeight: 1,
+            color: produkt.verkauft ? "var(--color-ink-mute)" : "var(--tg-theme-text-color, var(--color-ink))",
+            textDecoration: produkt.verkauft ? "line-through" : undefined }}>
+            {formatPreis(produkt.preis, waehrung, true)}
           </p>
-        )}
-        <h3
-          className="line-clamp-2 mt-0.5"
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize:   16,
-            lineHeight: 1.15,
-            color:      "var(--tg-theme-text-color, var(--color-ink))",
-          }}
-        >
-          {produkt.name}
-        </h3>
-        <p
-          className="mt-1"
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize:   15,
-            color:      "var(--tg-theme-text-color, var(--color-ink))",
-          }}
-        >
-          {formatPreis(produkt.preis, waehrung)}
-        </p>
+          {produkt.originalpreis && !produkt.verkauft && (
+            <p className="text-[10px] line-through mt-0.5" style={{ color: "var(--color-ink-mute)" }}>
+              {formatPreis(produkt.originalpreis, waehrung, true)}
+            </p>
+          )}
+        </div>
       </div>
-    </Link>
+
+      {/* Footer: Condition + Era */}
+      {(zustandInfo || produkt.era) && (
+        <div className="mt-1.5 pt-1.5 flex items-center justify-between"
+          style={{ borderTop: "1px dashed rgba(176,141,87,0.25)" }}>
+          {zustandInfo && (
+            <div className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: zustandInfo.color }} />
+              <span className="text-[9px]" style={{ color: zustandInfo.color, letterSpacing: "0.1em" }}>
+                {zustandInfo.label}
+              </span>
+            </div>
+          )}
+          {produkt.era && (
+            <span className="text-[9px]" style={{ color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
+              {produkt.era}
+            </span>
+          )}
+        </div>
+      )}
+    </article>
+  );
+}
+
+function TgGoldCorners() {
+  const s: React.CSSProperties = { position: "absolute", width: 12, height: 12, pointerEvents: "none", zIndex: 15 };
+  const g = "rgba(201,168,76,0.45)";
+  return (
+    <>
+      <div style={{ ...s, top: -1,  left: -1,  borderTop:    `1.5px solid ${g}`, borderLeft:  `1.5px solid ${g}` }} />
+      <div style={{ ...s, top: -1,  right: -1, borderTop:    `1.5px solid ${g}`, borderRight: `1.5px solid ${g}` }} />
+      <div style={{ ...s, bottom: -1, left: -1, borderBottom: `1.5px solid ${g}`, borderLeft:  `1.5px solid ${g}` }} />
+      <div style={{ ...s, bottom: -1, right: -1, borderBottom: `1.5px solid ${g}`, borderRight: `1.5px solid ${g}` }} />
+    </>
+  );
+}
+
+function TgBadge({ label, tone }: { label: string; tone: "muted" | "warning" | "gold" }) {
+  const bg = {
+    muted:   { background: "rgba(15,20,48,0.82)",  color: "var(--color-gold, #C9A84C)" },
+    warning: { background: "rgba(232,112,58,0.92)", color: "#fff" },
+    gold:    { background: "linear-gradient(135deg, rgba(201,168,76,0.92), rgba(176,141,87,0.92))", color: "#1a1410" },
+  }[tone];
+  return (
+    <span className="px-1.5 py-0.5 text-[9px] uppercase font-medium"
+      style={{ ...bg, letterSpacing: "0.18em", backdropFilter: "blur(4px)" }}>
+      {label}
+    </span>
   );
 }

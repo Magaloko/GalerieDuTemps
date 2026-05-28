@@ -17,23 +17,26 @@ const LOCALE_MAP: Record<Currency, string> = {
 
 const DEFAULT_CURRENCY = (process.env.NEXT_PUBLIC_DEFAULT_CURRENCY ?? "KZT") as Currency;
 
-/** Formatiert einen Preis mit Währung */
+/** Formatiert einen Preis mit Währung.
+ *  kompakt=true: Nachkommastellen weglassen wenn .00 (für Karten/Chips) */
 export function formatPreis(
   preis: number | string | null | undefined,
-  waehrung: Currency = DEFAULT_CURRENCY
+  waehrung: Currency = DEFAULT_CURRENCY,
+  kompakt = false,
 ): string {
   const num = typeof preis === "string" ? parseFloat(preis) : (preis ?? 0);
   if (isNaN(num)) return "–";
 
   // KZT: keine Nachkommastellen üblich (₸ ist große Einheit)
-  const minFracDigits = waehrung === "KZT" ? 0 : 2;
-  const maxFracDigits = waehrung === "KZT" ? 0 : 2;
+  const isRound      = num % 1 === 0;
+  const minFrac = (waehrung === "KZT" || (kompakt && isRound)) ? 0 : 2;
+  const maxFrac = waehrung === "KZT" ? 0 : 2;
 
   return num.toLocaleString(LOCALE_MAP[waehrung] ?? "ru-KZ", {
     style:                 "currency",
     currency:              waehrung,
-    minimumFractionDigits: minFracDigits,
-    maximumFractionDigits: maxFracDigits,
+    minimumFractionDigits: minFrac,
+    maximumFractionDigits: maxFrac,
   });
 }
 
