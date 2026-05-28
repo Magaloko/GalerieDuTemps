@@ -2,8 +2,8 @@ import Link from "next/link";
 import { getWebAppSession } from "@/lib/telegram/webapp-session";
 import { TelegramAuthGate } from "../../auth-gate";
 import { query } from "@/lib/db";
-import { formatPreis } from "@/lib/utils/preis";
-import { Package, ChevronLeft, ArrowRight } from "lucide-react";
+import { OrderRow } from "./order-row";
+import { Package, ChevronLeft } from "lucide-react";
 import type { Metadata } from "next";
 import type { OrderStatus } from "@/types/commerce";
 
@@ -142,63 +142,23 @@ export default async function TgAdminOrdersPage() {
             </p>
           </div>
         ) : (
-          <ul className="space-y-2">
+          <div className="space-y-2">
             {orders.map(o => {
               const meta = STATUS_META[o.status] ?? STATUS_META.pending;
               return (
-                <li key={o.id}>
-                  <a
-                    href={`/admin/bestellungen/${o.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between gap-3 p-3"
-                    style={{
-                      background:  "var(--tg-theme-section-bg-color, #fff)",
-                      border:      "1px solid var(--color-line)",
-                      borderLeft:  `3px solid ${meta.color}`,
-                      touchAction: "manipulation",
-                    }}
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <p
-                          className="font-mono text-xs"
-                          style={{ color: "var(--tg-theme-text-color, var(--color-ink))" }}
-                        >
-                          GDT-{o.order_number}
-                        </p>
-                        <span
-                          className="text-[9px] uppercase font-medium"
-                          style={{ letterSpacing: "0.18em", color: meta.color }}
-                        >
-                          {meta.label}
-                        </span>
-                      </div>
-                      <p
-                        className="text-[11px] mt-0.5 truncate"
-                        style={{
-                          fontFamily: "var(--font-italic)",
-                          fontStyle:  "italic",
-                          color:      "var(--tg-theme-hint-color, var(--color-ink-soft))",
-                        }}
-                      >
-                        {o.customer_name ?? o.customer_email ?? "—"}
-                      </p>
-                    </div>
-                    <div className="text-right shrink-0 flex items-center gap-2">
-                      <p
-                        className="font-mono tabular-nums text-sm"
-                        style={{ color: "var(--tg-theme-text-color, var(--color-ink))" }}
-                      >
-                        {formatPreis(o.total_cents / 100)}
-                      </p>
-                      <ArrowRight className="w-3.5 h-3.5 opacity-40" />
-                    </div>
-                  </a>
-                </li>
+                <OrderRow
+                  key={o.id}
+                  id={o.id}
+                  orderNumber={o.order_number}
+                  status={o.status === "paid" ? "paid" : "pending"}
+                  totalCents={o.total_cents}
+                  kunde={o.customer_name ?? o.customer_email ?? "—"}
+                  statusLabel={meta.label}
+                  statusColor={meta.color}
+                />
               );
             })}
-          </ul>
+          </div>
         )}
       </main>
     </TelegramAuthGate>

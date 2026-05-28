@@ -7,6 +7,7 @@ import { b2bFreischalten, b2bAblehnen } from "@/lib/db/customer-b2b";
 import { couponToggleAktiv } from "@/lib/db/coupons";
 import { auszahlungAlsBezahltMarkieren } from "@/lib/db/auszahlungen";
 import { produktAktualisieren, produktReservieren, produktReservierungAufheben, produktReservierungVerlaengern } from "@/lib/db/produkte";
+import { orderStatusUpdate } from "@/lib/db/orders";
 import { kategorieErstellen } from "@/lib/db/kategorien";
 import { auditLog } from "@/lib/db/audit-log";
 import { bildVerarbeiten } from "@/lib/storage/upload";
@@ -102,6 +103,45 @@ export async function produktReservierungVerlaengernTgAction(
     return { ok: true, message: "Продлено на 48ч" };
   } catch (err) {
     console.error("[produktReservierungVerlaengernTg]", err);
+    return { ok: false, error: "Ошибка БД" };
+  }
+}
+
+/* ── Order: als bezahlt markieren (pending → paid) ─────────────────────────── */
+export async function orderBezahltTgAction(orderId: string): Promise<ActionRes> {
+  if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
+  try {
+    await orderStatusUpdate(orderId, "paid", { bezahlt: true });
+    await auditLog({ action: "order_bezahlt", actorEmail: null, entity: orderId, neuWert: { via: "tg-admin" } });
+    revalidatePath("/tg/admin/orders");
+    return { ok: true, message: "Отмечен оплаченным" };
+  } catch (err) {
+    console.error("[orderBezahltTg]", err);
+    return { ok: false, error: "Ошибка БД" };
+  }
+}
+
+/* ── Order: als versendet markieren (+ optional Tracking) ──────────────────── */
+export async function orderVersendenTgAction(
+  orderId:  string,
+  tracking?: { nummer: string; url?: string },
+): Promise<ActionRes> {
+  if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
+  try {
+    const trk = tracking?.nummer?.trim()
+      ? { nummer: tracking.nummer.trim(), url: tracking.url?.trim() || undefined }
+      : undefined;
+    await orderStatusUpdate(orderId, "fulfilled", trk ? { tracking: trk } : undefined);
+    // Ohne Tracking setzt orderStatusUpdate kein versendet_am → hier nachziehen,
+    // damit die Order aus der „к обработке"-Queue verschwindet.
+    if (!trk) {
+      await query(`UPDATE sebo.orders SET versendet_am = COALESCE(versendet_am, now()) WHERE id = $1`, [orderId]);
+    }
+    await auditLog({ action: "order_versendet", actorEmail: null, entity: orderId, neuWert: { tracking: trk?.nummer ?? null, via: "tg-admin" } });
+    revalidatePath("/tg/admin/orders");
+    return { ok: true, message: "Отмечен отправленным" };
+  } catch (err) {
+    console.error("[orderVersendenTg]", err);
     return { ok: false, error: "Ошибка БД" };
   }
 }
