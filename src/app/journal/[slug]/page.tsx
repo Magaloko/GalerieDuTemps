@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { postBySlug, postAufrufenInkrement, aehnlichePosts } from "@/lib/db/journal";
 import { markdownToHtml } from "@/lib/utils/markdown";
+import { LandingBlocks } from "@/components/landing/landing-blocks";
+import { blockText } from "@/lib/utils/i18n-text";
 import { JournalPostCard } from "@/components/journal/post-card";
 import {
   ChevronLeft, Calendar, Eye, Clock, Share2,
@@ -46,15 +48,31 @@ export default async function JournalDetailPage({
   // View-Counter (best-effort, blocking nicht nötig)
   postAufrufenInkrement(slug).catch(() => {});
 
+  // Block-Builder hat Vorrang; nur Bestandsposts ohne Blocks fallen auf Markdown
+  // zurück (Abwärtskompatibilität).
+  const hatBlocks = Array.isArray(post.blocks) && post.blocks.length > 0;
+
   // Reading-Time-Schätzung (200 Wörter/Min für RU-Texte)
-  const wordCount = post.markdown.split(/\s+/).filter(Boolean).length;
+  const textZumZaehlen = hatBlocks
+    ? post.blocks
+        .map((b) =>
+          [
+            blockText(b.titel, locale), blockText(b.subtitel, locale), blockText(b.text, locale),
+            blockText(b.quote, locale), blockText(b.frage, locale), blockText(b.antwort, locale),
+            blockText(b.caption, locale),
+          ].join(" "),
+        )
+        .join(" ")
+    : post.markdown;
+  const wordCount = textZumZaehlen.split(/\s+/).filter(Boolean).length;
   const readMin   = Math.max(1, Math.round(wordCount / 200));
 
   // Related posts (gleicher Tag oder Fallback latest)
   const related = await aehnlichePosts(slug, post.tags, 3).catch(() => []);
 
-  // Markdown → sanitiziertes HTML (DOMPurify, kein XSS via stored content)
-  const html = markdownToHtml(post.markdown);
+  // Markdown → sanitiziertes HTML (DOMPurify, kein XSS via stored content) —
+  // nur als Fallback, wenn keine Blocks vorhanden sind.
+  const html = hatBlocks ? "" : markdownToHtml(post.markdown);
 
   return (
     <div
@@ -150,10 +168,14 @@ export default async function JournalDetailPage({
         )}
 
         {/* ─── Article Body ─────────────────────────────────── */}
-        <div
-          className="journal-prose"
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
+        {hatBlocks ? (
+          <LandingBlocks blocks={post.blocks} locale={locale} />
+        ) : (
+          <div
+            className="journal-prose"
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        )}
 
         {/* ─── Share Strip ──────────────────────────────────── */}
         <ShareStrip slug={post.slug} titel={post.titel} />

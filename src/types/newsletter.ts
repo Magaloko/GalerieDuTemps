@@ -1,3 +1,5 @@
+import type { LandingBlock } from "@/types/landing";
+
 export type NewsletterStatus = "entwurf" | "geplant" | "versendet" | "abgebrochen";
 
 export interface NewsletterSubscriber {
@@ -55,6 +57,8 @@ export interface JournalPost {
   excerpt:           string | null;
   cover_bild_url:    string | null;
   markdown:          string;
+  /** Block-Builder-Inhalt (analog Landing-Pages). Leer = Markdown-Fallback. */
+  blocks:            LandingBlock[];
   autor_name:        string | null;
   tags:              string[];
   seo_titel:         string | null;

@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/config";
-import { postErstellen, postAktualisieren, postLoeschen } from "@/lib/db/journal";
+import { postErstellen, postAktualisieren, postLoeschen, postById } from "@/lib/db/journal";
+import { storyBildUploadAction } from "@/app/(admin)/admin/produkte/actions";
+import type { LandingBlock } from "@/types/landing";
 
 async function adminCheck() {
   const session = await auth();
@@ -11,6 +13,15 @@ async function adminCheck() {
     throw new Error("Нет прав");
   }
   return session.user;
+}
+
+// Bild-Upload für Journal-Blöcke: dieselbe Bild-Pipeline + Admin-Guard wie
+// Produkt-Story / Landing-Blöcke wiederverwenden (dünner Wrapper, da in einer
+// "use server"-Datei nur async Funktionen exportiert werden dürfen).
+export async function journalBildUploadAction(
+  formData: FormData,
+): Promise<{ ok: boolean; url?: string; error?: string }> {
+  return storyBildUploadAction(formData);
 }
 
 export async function postCreateAction(
@@ -34,6 +45,7 @@ export async function postUpdateAction(id: string, data: {
   excerpt?:         string;
   cover_bild_url?:  string;
   markdown?:        string;
+  blocks?:          LandingBlock[];
   tags?:            string[];
   seo_titel?:       string;
   seo_beschreibung?: string;
@@ -42,6 +54,9 @@ export async function postUpdateAction(id: string, data: {
   await adminCheck();
   await postAktualisieren(id, data);
   revalidatePath(`/admin/journal/${id}/edit`);
+  revalidatePath("/journal");
+  const p = await postById(id).catch(() => null);
+  if (p) revalidatePath(`/journal/${p.slug}`);
   return { ok: true };
 }
 

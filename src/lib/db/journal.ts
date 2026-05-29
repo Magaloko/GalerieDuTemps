@@ -1,6 +1,7 @@
 import { query } from "./index";
 import { generateSlug, uniqueSlug } from "@/lib/utils/slug";
 import type { JournalPost } from "@/types/newsletter";
+import type { LandingBlock } from "@/types/landing";
 
 export async function veroeffentlichtePosts(limit = 20): Promise<JournalPost[]> {
   const r = await query<JournalPost>(
@@ -45,12 +46,20 @@ export async function aehnlichePosts(
   return r.rows;
 }
 
+/** Garantiert `blocks: []` statt undefined/null (z.B. wenn Migration 060
+ *  noch nicht angewendet wurde → Spalte fehlt → SELECT * liefert kein blocks). */
+function normalize(p: JournalPost | undefined): JournalPost | null {
+  if (!p) return null;
+  if (!Array.isArray(p.blocks)) p.blocks = [];
+  return p;
+}
+
 export async function postBySlug(slug: string): Promise<JournalPost | null> {
   const r = await query<JournalPost>(
     `SELECT * FROM sebo.journal_posts WHERE slug = $1`,
     [slug]
   );
-  return r.rows[0] ?? null;
+  return normalize(r.rows[0]);
 }
 
 export async function postAufrufenInkrement(slug: string): Promise<void> {
@@ -67,7 +76,7 @@ export async function allePostsAdmin(): Promise<JournalPost[]> {
 
 export async function postById(id: string): Promise<JournalPost | null> {
   const r = await query<JournalPost>(`SELECT * FROM sebo.journal_posts WHERE id = $1`, [id]);
-  return r.rows[0] ?? null;
+  return normalize(r.rows[0]);
 }
 
 export async function postErstellen(data: {
@@ -92,6 +101,7 @@ export async function postAktualisieren(id: string, data: {
   excerpt?:         string;
   cover_bild_url?:  string;
   markdown?:        string;
+  blocks?:          LandingBlock[];
   tags?:            string[];
   seo_titel?:       string;
   seo_beschreibung?: string;
@@ -106,6 +116,9 @@ export async function postAktualisieren(id: string, data: {
     if (key === "tags") {
       felder.push(`tags = $${idx++}::text[]`);
       werte.push(value);
+    } else if (key === "blocks") {
+      felder.push(`blocks = $${idx++}::jsonb`);
+      werte.push(JSON.stringify(value));
     } else if (key === "veroeffentlicht") {
       felder.push(`veroeffentlicht = $${idx++}`);
       werte.push(value);

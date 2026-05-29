@@ -1,29 +1,29 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Save, Trash2, Eye, EyeOff } from "lucide-react";
+import { Save, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { Button } from "@/components/ui/button";
-import { markdownToHtml } from "@/lib/utils/markdown";
-import { postUpdateAction, postDeleteAction } from "../../actions";
+import { BlockComposer } from "@/components/blocks/block-composer";
+import { postUpdateAction, postDeleteAction, journalBildUploadAction } from "../../actions";
 import type { JournalPost } from "@/types/newsletter";
+import type { LandingBlock } from "@/types/landing";
 
 export function JournalEditor({ post }: { post: JournalPost }) {
   const [titel,    setTitel]    = useState(post.titel);
   const [excerpt,  setExcerpt]  = useState(post.excerpt ?? "");
   const [cover,    setCover]    = useState(post.cover_bild_url ?? "");
-  const [markdown, setMarkdown] = useState(post.markdown);
+  const [blocks,   setBlocks]   = useState<LandingBlock[]>(post.blocks ?? []);
   const [tagsRaw,  setTagsRaw]  = useState(post.tags.join(", "));
   const [seoTitel, setSeoTitel] = useState(post.seo_titel ?? "");
   const [seoBesch, setSeoBesch] = useState(post.seo_beschreibung ?? "");
   const [veroeff,  setVeroeff]  = useState(post.veroeffentlicht);
-  const [vorschau, setVorschau] = useState(false);
   const [meldung,  setMeldung]  = useState("");
   const [pending, startTransition] = useTransition();
 
-  const html = markdownToHtml(markdown);
+  // Bestandsposts: haben Markdown, aber (noch) keine Blocks.
+  const istLegacyMarkdown = blocks.length === 0 && (post.markdown ?? "").trim().length > 0;
 
   const handleSpeichern = () => {
     setMeldung("Сохранение…");
@@ -32,7 +32,7 @@ export function JournalEditor({ post }: { post: JournalPost }) {
         titel,
         excerpt:         excerpt || undefined,
         cover_bild_url:  cover   || undefined,
-        markdown,
+        blocks,
         tags:            tagsRaw.split(",").map(t => t.trim()).filter(Boolean),
         seo_titel:       seoTitel || undefined,
         seo_beschreibung: seoBesch || undefined,
@@ -59,25 +59,20 @@ export function JournalEditor({ post }: { post: JournalPost }) {
         </section>
 
         <section className="bg-vintage-white border border-vintage-sand p-5 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
-          <div className="flex items-center justify-between">
-            <h2 className="font-serif text-lg text-vintage-espresso">Контент</h2>
-            <button onClick={() => setVorschau(v => !v)}
-              className="flex items-center gap-1 px-3 py-1.5 text-xs font-sans uppercase tracking-widest text-vintage-brown border border-vintage-sand hover:bg-vintage-parchment transition-colors"
-              style={{ borderRadius: "var(--radius-button)" }}>
-              {vorschau ? <><EyeOff className="w-3 h-3" /> Редактор</> : <><Eye className="w-3 h-3" /> Предпросмотр</>}
-            </button>
-          </div>
-          {vorschau ? (
-            <div className="prose max-w-none p-4 bg-vintage-parchment min-h-96 font-sans text-vintage-ink leading-relaxed prose-headings:font-serif prose-headings:text-vintage-espresso prose-a:text-vintage-brown"
-              style={{ borderRadius: "var(--radius-vintage)" }}
-              dangerouslySetInnerHTML={{ __html: html }} />
-          ) : (
-            <RichTextEditor
-              initialMarkdown={post.markdown}
-              onChange={setMarkdown}
-              placeholder="# Заголовок…  Текст статьи с форматированием."
-            />
+          <h2 className="font-serif text-lg text-vintage-espresso">Контент</h2>
+          {istLegacyMarkdown && (
+            <p className="text-xs font-sans text-vintage-brown bg-vintage-parchment border border-vintage-sand p-3" style={{ borderRadius: "var(--radius-vintage)" }}>
+              Эта публикация была написана в старом Markdown-редакторе. Пока вы не добавите блоки,
+              на сайте показывается прежний Markdown-текст. Добавьте блоки слева — после сохранения
+              статья будет отображаться через блоки.
+            </p>
           )}
+          <BlockComposer
+            blocks={blocks}
+            onChange={setBlocks}
+            uploadAction={journalBildUploadAction}
+            produktQuelleErlaubt={false}
+          />
         </section>
 
         <section className="bg-vintage-white border border-vintage-sand p-5 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
