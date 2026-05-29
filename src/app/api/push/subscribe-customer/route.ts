@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { query } from "@/lib/db";
+import { rateLimitAsync, getClientIp, tooManyRequestsResponse } from "@/lib/utils/rate-limit";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * /api/push/subscribe-customer — Web-Push-Subscription für SHOP-BESUCHER
@@ -21,6 +22,11 @@ export const dynamic = "force-dynamic";
 const NO_STORE = { "Cache-Control": "no-store" };
 
 export async function POST(req: NextRequest) {
+  // Rate-Limit: 20 Subscribe-Versuche / Stunde / IP — gegen DB-Spam mit
+  // toten/Fake-Endpoints.
+  const rl = await rateLimitAsync(`push-sub-customer:${getClientIp(req)}`, 20, 60 * 60 * 1000);
+  if (!rl.erlaubt) return tooManyRequestsResponse(rl);
+
   let body: unknown;
   try {
     body = await req.json();

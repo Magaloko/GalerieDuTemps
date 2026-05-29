@@ -36,6 +36,7 @@ export function InstagramArchiveClient({
   const [active, setActive] = useState<Post | null>(null);
 
   const navigate = (kat: string) => {
+    setActive(null);   // offenes Detail-Sheet schließen — der Post ist evtl. nicht in der neuen Kategorie
     const qs = kat ? `?kat=${encodeURIComponent(kat)}` : "";
     startTransition(() => router.push(`/tg/instagram${qs}`));
   };

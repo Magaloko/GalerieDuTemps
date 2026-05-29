@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, CreditCard, Truck, ExternalLink, Handshake } from "lucide-react";
 import { formatPreis } from "@/lib/utils/preis";
@@ -38,12 +38,19 @@ export function OrderRow(p: Props) {
   const [trkUrl, setTrkUrl] = useState("");
   const [pending, start]  = useTransition();
   const [flash, setFlash] = useState<string | null>(null);
+  const lock = useRef(false);   // Reentry-Sperre gegen Doppeltipp (pending wird erst verzögert true)
 
   const run = (fn: () => Promise<{ ok: boolean; error?: string }>) => {
+    if (lock.current) return;
+    lock.current = true;
     start(async () => {
-      const r = await fn();
-      if (r.ok) { haptic("success"); router.refresh(); }
-      else { haptic("error"); setFlash(r.error ?? "Ошибка"); setTimeout(() => setFlash(null), 2500); }
+      try {
+        const r = await fn();
+        if (r.ok) { haptic("success"); router.refresh(); }
+        else { haptic("error"); setFlash(r.error ?? "Ошибка"); setTimeout(() => setFlash(null), 2500); }
+      } finally {
+        lock.current = false;
+      }
     });
   };
 
