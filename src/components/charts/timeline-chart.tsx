@@ -25,7 +25,7 @@ export function TimelineChart({ data, label = "Produkte" }: TimelineChartProps) 
   // Datum formatieren (nur Tag.Monat)
   const formatted = data.map(d => ({
     ...d,
-    kurz: new Date(d.datum).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" }),
+    kurz: new Date(d.datum).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" }),
   }));
 
   return (

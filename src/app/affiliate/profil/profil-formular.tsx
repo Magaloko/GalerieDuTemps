@@ -197,7 +197,7 @@ export function ProfilFormular({ affiliate }: { affiliate: Affiliate }) {
           <label className="flex items-start gap-3 cursor-pointer">
             <input type="checkbox" name="ist_kleinunternehmer" defaultChecked={affiliate.ist_kleinunternehmer} className="mt-0.5 w-4 h-4 accent-vintage-gold" />
             <span className="text-sm font-sans text-vintage-cream">
-              Специальный налоговый режим / §19 UStG (EU) — без НДС
+              Специальный налоговый режим (без НДС)
             </span>
           </label>
         </div>

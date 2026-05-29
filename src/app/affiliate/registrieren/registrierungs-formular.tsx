@@ -28,56 +28,56 @@ export function RegistrierungsFormular({
       {/* Persönliche Daten */}
       <fieldset className="space-y-4">
         <legend className="font-serif text-lg text-vintage-cream pb-2 border-b border-vintage-sand/40 w-full">
-          Persönliche Daten
+          Личные данные
         </legend>
         <div className="grid grid-cols-2 gap-4">
-          <Input label="Vorname"  name="vorname"  required error={e("vorname")}  />
-          <Input label="Nachname" name="nachname" required error={e("nachname")} />
+          <Input label="Имя"      name="vorname"  required error={e("vorname")}  />
+          <Input label="Фамилия"  name="nachname" required error={e("nachname")} />
         </div>
-        <Input label="E-Mail" name="email" type="email" required error={e("email")} hint="Wird auch als Login verwendet" />
+        <Input label="E-mail" name="email" type="email" required error={e("email")} hint="Используется как логин" />
         <div className="grid grid-cols-2 gap-4">
-          <Input label="Passwort" name="passwort" type="password" required error={e("passwort")} hint="Min. 8 Zeichen" />
-          <Input label="Passwort wiederholen" name="passwort_wdh" type="password" required error={e("passwort_wdh")} />
+          <Input label="Пароль" name="passwort" type="password" required error={e("passwort")} hint="Минимум 8 символов" />
+          <Input label="Повторите пароль" name="passwort_wdh" type="password" required error={e("passwort_wdh")} />
         </div>
       </fieldset>
 
       {/* Sponsor */}
       <fieldset className="space-y-2">
         <legend className="font-serif text-lg text-vintage-cream pb-2 border-b border-vintage-sand/40 w-full">
-          Wer hat dich geworben? (optional)
+          Кто вас пригласил? (необязательно)
         </legend>
         <Input
-          label="Sponsor-Code"
+          label="Реферальный код"
           name="sponsor_code"
           defaultValue={sponsorCodeVorbelegt}
           error={e("sponsor_code")}
-          placeholder="z.B. ABC123XY"
-          hint="Wenn dich jemand empfohlen hat, gib hier dessen Code ein"
+          placeholder="например, ABC123XY"
+          hint="Если вас кто-то порекомендовал, введите здесь его код"
         />
       </fieldset>
 
       {/* Steuerstatus */}
       <fieldset className="space-y-3">
         <legend className="font-serif text-lg text-vintage-cream pb-2 border-b border-vintage-sand/40 w-full">
-          Steuer-Status (Pflicht)
+          Налоговый статус (обязательно)
         </legend>
         <div className="flex items-start gap-3 p-4 bg-vintage-gold/5 border border-vintage-gold/30 text-vintage-cream/80 text-xs font-sans" style={{ borderRadius: "var(--radius-vintage)" }}>
           <Info className="w-4 h-4 text-vintage-gold flex-shrink-0 mt-0.5" />
           <p>
-            Provisionen sind steuerpflichtige Einnahmen. Du musst entweder ein Gewerbe
-            angemeldet haben oder die Kleinunternehmer-Regelung (§19 UStG) nutzen.
+            Вознаграждение облагается налогом. Вы должны быть зарегистрированы
+            как ИП или ТОО в Казахстане.
           </p>
         </div>
         <label className="flex items-start gap-3 cursor-pointer">
           <input type="checkbox" name="ist_kleinunternehmer" className="mt-0.5 w-4 h-4 accent-vintage-gold" />
           <span className="text-sm font-sans text-vintage-cream">
-            Ich nutze die <strong>Kleinunternehmer-Regelung</strong> (§19 UStG)
+            Я применяю <strong>специальный налоговый режим</strong> (без НДС)
           </span>
         </label>
         <label className="flex items-start gap-3 cursor-pointer">
           <input type="checkbox" name="gewerbe_angemeldet" className="mt-0.5 w-4 h-4 accent-vintage-gold" />
           <span className="text-sm font-sans text-vintage-cream">
-            Ich habe ein <strong>Gewerbe</strong> angemeldet
+            Я зарегистрирован как <strong>ИП или ТОО</strong>
           </span>
         </label>
         {e("gewerbe_angemeldet") && (
@@ -88,12 +88,12 @@ export function RegistrierungsFormular({
       {/* Rechtliches */}
       <fieldset className="space-y-3">
         <legend className="font-serif text-lg text-vintage-cream pb-2 border-b border-vintage-sand/40 w-full">
-          Rechtliches
+          Юридическое
         </legend>
         <label className="flex items-start gap-3 cursor-pointer">
           <input type="checkbox" name="agb_akzeptiert" required className="mt-0.5 w-4 h-4 accent-vintage-gold" />
           <span className="text-sm font-sans text-vintage-cream">
-            Ich akzeptiere die <a href="/affiliate/agb" target="_blank" className="text-vintage-cream/80 underline">Partner-AGB</a>
+            Я принимаю <a href="/affiliate/agb" target="_blank" className="text-vintage-cream/80 underline">Партнёрское соглашение</a>
           </span>
         </label>
         {e("agb_akzeptiert") && <p className="text-xs text-vintage-burgundy font-sans">{e("agb_akzeptiert")}</p>}
@@ -101,14 +101,14 @@ export function RegistrierungsFormular({
         <label className="flex items-start gap-3 cursor-pointer">
           <input type="checkbox" name="datenschutz_akzeptiert" required className="mt-0.5 w-4 h-4 accent-vintage-gold" />
           <span className="text-sm font-sans text-vintage-cream">
-            Ich akzeptiere die <a href="/datenschutz" target="_blank" className="text-vintage-cream/80 underline">Datenschutzerklärung</a>
+            Я принимаю <a href="/datenschutz" target="_blank" className="text-vintage-cream/80 underline">Политику конфиденциальности</a>
           </span>
         </label>
         {e("datenschutz_akzeptiert") && <p className="text-xs text-vintage-burgundy font-sans">{e("datenschutz_akzeptiert")}</p>}
       </fieldset>
 
       <Button type="submit" loading={isPending} className="w-full justify-center" size="lg">
-        Account erstellen
+        Создать аккаунт
       </Button>
     </form>
   );

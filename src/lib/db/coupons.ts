@@ -38,7 +38,7 @@ export async function couponValidieren(opts: {
 
   if (opts.subtotal_cents < coupon.min_bestellwert_cent) {
     const eur = (coupon.min_bestellwert_cent / 100).toFixed(2).replace(".", ",");
-    return { ok: false, fehler: `Mindestbestellwert ${eur} € nicht erreicht` };
+    return { ok: false, fehler: `Минимальная сумма заказа ${eur} ₸ не достигнута` };
   }
 
   if (coupon.nur_b2b && !opts.customer_type.startsWith("b2b")) {

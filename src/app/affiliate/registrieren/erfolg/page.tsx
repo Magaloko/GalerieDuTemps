@@ -4,7 +4,7 @@ import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Registrierung erfolgreich" };
+export const metadata: Metadata = { title: "Регистрация завершена" };
 
 export default function ErfolgPage() {
   return (
@@ -17,19 +17,19 @@ export default function ErfolgPage() {
           </div>
           <p className="text-vintage-gold text-xs tracking-widest uppercase mb-2">✦</p>
           <h1 className="font-serif text-3xl text-vintage-espresso mb-4">
-            Registrierung erfolgreich!
+            Регистрация завершена!
           </h1>
           <p className="text-vintage-dust font-sans mb-8 leading-relaxed">
-            Dein Account wurde erstellt. Wir prüfen deine Anmeldung und schalten dich
-            in der Regel innerhalb von 1–2 Werktagen frei. Du erhältst eine E-Mail,
-            sobald es soweit ist.
+            Ваш аккаунт создан. Мы проверим заявку и активируем доступ, как правило,
+            в течение 1–2 рабочих дней. Вы получите письмо на e-mail, как только всё
+            будет готово.
           </p>
           <Link
             href="/affiliate/anmelden"
             className="inline-flex items-center gap-2 px-6 py-3 bg-vintage-espresso text-vintage-cream font-sans text-xs tracking-widest uppercase hover:bg-vintage-brown transition-colors"
             style={{ borderRadius: "var(--radius-button)" }}
           >
-            Zur Anmeldung
+            Перейти ко входу
           </Link>
         </div>
       </main>

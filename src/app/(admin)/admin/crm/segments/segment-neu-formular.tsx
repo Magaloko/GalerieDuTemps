@@ -55,7 +55,7 @@ export function SegmentNeuFormular({ stages }: { stages: PipelineStage[] }) {
           <div>
             <label className="text-xs font-sans uppercase tracking-widest text-vintage-brown mb-1.5 block">Newsletter</label>
             <select name="newsletter" className="w-full px-3 py-2 bg-vintage-cream border border-vintage-sand text-sm font-sans focus:outline-none focus:border-vintage-brown" style={{ borderRadius: "var(--radius-vintage)" }}>
-              <option value="">Egal</option>
+              <option value="">Любое</option>
               <option value="yes">Подписан</option>
               <option value="no">Не подписан</option>
             </select>
@@ -64,7 +64,7 @@ export function SegmentNeuFormular({ stages }: { stages: PipelineStage[] }) {
 
         <div className="grid grid-cols-2 gap-4">
           <Input label="Мин. заказов" name="min_orders" type="number" min="0" placeholder="0" />
-          <Input label="Мин. оборот (€)" name="min_summe_eur" type="number" step="0.01" min="0" placeholder="0" />
+          <Input label="Мин. оборот (₸)" name="min_summe_eur" type="number" step="0.01" min="0" placeholder="0" />
         </div>
 
         <div className="flex justify-end">

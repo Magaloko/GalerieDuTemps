@@ -64,10 +64,10 @@ export function EinstellungenFormular({ settings }: { settings: AffiliateEinstel
           <div className="flex items-start gap-3 p-4 bg-vintage-burgundy/10 border border-vintage-burgundy/30" style={{ borderRadius: "var(--radius-vintage)" }}>
             <AlertTriangle className="w-4 h-4 text-vintage-burgundy flex-shrink-0 mt-0.5" />
             <p className="text-xs text-vintage-burgundy font-sans">
-              <strong>Юридическое примечание:</strong> 3+ уровня комиссий в Германии
-              могут классифицироваться как финансовая пирамида (§16 UWG). Убедитесь, что
-              комиссии привязаны только к реальным продажам товаров и никогда
-              не начисляются за одно лишь привлечение.
+              <strong>Юридическое примечание:</strong> многоуровневые комиссии (3+ уровня)
+              могут подпадать под ограничения местного законодательства — проконсультируйтесь
+              с юристом. Убедитесь, что комиссии привязаны только к реальным продажам товаров
+              и никогда не начисляются за одно лишь привлечение.
             </p>
           </div>
         )}
@@ -87,7 +87,7 @@ export function EinstellungenFormular({ settings }: { settings: AffiliateEinstel
             defaultValue={settings.cookie_ttl_tage}
           />
           <Input
-            label="Минимальная выплата (€)"
+            label="Минимальная выплата (₸)"
             name="mindestauszahlung_eur"
             type="number"
             step="1"

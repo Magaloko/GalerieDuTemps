@@ -35,10 +35,10 @@ export function CouponNeuFormular() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Select label="Тип" name="typ" required options={[
             { value: "prozent", label: "Процент (%)" },
-            { value: "fest",    label: "Фиксированная сумма (€)" },
+            { value: "fest",    label: "Фиксированная сумма (₸)" },
           ]} />
           <Input label="Значение" name="wert" type="number" step="0.01" required placeholder="20" />
-          <Input label="Мин. сумма заказа (€)" name="min_bestellwert_eur" type="number" step="0.01" defaultValue="0" />
+          <Input label="Мин. сумма заказа (₸)" name="min_bestellwert_eur" type="number" step="0.01" defaultValue="0" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Input label="Макс. использований всего" name="nutzungen_max" type="number" placeholder="100" hint="пусто = без ограничений" />

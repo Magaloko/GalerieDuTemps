@@ -216,7 +216,7 @@ export async function preisHistogramm(): Promise<PreisBucket[]> {
     return {
       von,
       bis,
-      label:  `${Math.round(von)}–${Math.round(bis)} €`,
+      label:  `${Math.round(von)}–${Math.round(bis)} ₸`,
       anzahl: r.anzahl,
     };
   });

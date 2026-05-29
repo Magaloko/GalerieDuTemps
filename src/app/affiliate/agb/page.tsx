@@ -18,7 +18,7 @@ export default async function AgbPage() {
     affiliateEinstellungenLaden(),
   ]);
 
-  const stand = new Date().toLocaleDateString("de-DE", { year: "numeric", month: "long" });
+  const stand = new Date().toLocaleDateString("ru-RU", { year: "numeric", month: "long" });
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -27,9 +27,9 @@ export default async function AgbPage() {
 
         <div className="border-b border-vintage-sand/40 pb-6">
           <p className="text-vintage-gold text-xs tracking-widest uppercase mb-2">✦</p>
-          <h1 className="font-serif text-3xl text-vintage-cream">Partner-AGB</h1>
+          <h1 className="font-serif text-3xl text-vintage-cream">Партнёрское соглашение</h1>
           <p className="text-vintage-dust text-xs font-sans mt-2">
-            Version <strong>{aff.agb_aktuelle_version}</strong> · Stand {stand}
+            Версия <strong>{aff.agb_aktuelle_version}</strong> · Редакция {stand}
           </p>
         </div>
 
@@ -37,13 +37,14 @@ export default async function AgbPage() {
         <div className="flex items-start gap-3 p-5 bg-vintage-burgundy/10 border border-vintage-burgundy/30 text-vintage-burgundy" style={{ borderRadius: "var(--radius-card)" }}>
           <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
           <div className="text-sm font-sans space-y-2">
-            <p><strong>Vorlagen-Hinweis (vor Live-Gang entfernen):</strong></p>
-            <p>Diese AGB sind ein <strong>Template / Muster</strong> und keine Rechtsberatung.
-            Lasse den Text vor dem produktiven Einsatz von einem auf E-Commerce/Affiliate-Marketing
-            spezialisierten Rechtsanwalt prüfen und an dein Geschäftsmodell anpassen.</p>
-            <p>Insbesondere zu prüfen: Versionierung, Widerrufsbelehrung, Datenschutz-Verweise,
-            Steuerregelungen (Gutschriftverfahren §14 UStG), Schneeballsystem-Abgrenzung (§16 UWG)
-            bei MLM-Strukturen.</p>
+            <p><strong>Примечание к шаблону (удалить перед публикацией):</strong></p>
+            <p>Это соглашение является <strong>шаблоном / образцом</strong> и не является юридической
+            консультацией. Шаблон — перед публикацией проверить у юриста в Казахстане,
+            специализирующемся на электронной коммерции и партнёрском маркетинге, и адаптировать
+            под вашу бизнес-модель.</p>
+            <p>В частности, проверить: версионирование, условия возврата, ссылки на политику
+            конфиденциальности, налоговые положения и разграничение с финансовыми (сетевыми)
+            пирамидами при многоуровневых структурах в соответствии с законодательством РК.</p>
           </div>
         </div>
 
@@ -51,108 +52,118 @@ export default async function AgbPage() {
 
           {/* §1 */}
           <section>
-            <h2 className="font-serif text-xl text-vintage-cream">§ 1 Vertragspartner & Geltungsbereich</h2>
-            <p>(1) Diese Allgemeinen Geschäftsbedingungen gelten für die Teilnahme am Partner-Programm von:</p>
+            <h2 className="font-serif text-xl text-vintage-cream">1. Стороны и сфера действия</h2>
+            <p>(1) Настоящие условия регулируют участие в партнёрской программе:</p>
             <p className="ml-4 my-3 p-3 bg-vintage-brown/40 border border-vintage-sand/40 text-xs" style={{ borderRadius: "var(--radius-vintage)" }}>
               {sys.firma_name || "[Firmenname]"}<br/>
               {sys.firma_strasse || "[Straße]"}<br/>
               {sys.firma_plz} {sys.firma_ort || "[PLZ Ort]"}<br/>
-              {sys.firma_email && <>E-Mail: {sys.firma_email}<br/></>}
-              {sys.firma_handelsregister && <>Handelsregister: {sys.firma_handelsregister}<br/></>}
-              {sys.firma_ust_id && <>USt-IdNr.: {sys.firma_ust_id}</>}
+              {sys.firma_email && <>Эл. почта: {sys.firma_email}<br/></>}
+              {sys.firma_handelsregister && <>Рег. данные: {sys.firma_handelsregister}<br/></>}
+              {sys.firma_ust_id && <>БИН/ИИН: {sys.firma_ust_id}</>}
             </p>
-            <p>(2) Vertragspartner („Partner") sind ausschließlich Unternehmer i.S.d. § 14 BGB sowie
-            Kleinunternehmer i.S.d. § 19 UStG mit gewerblicher Anmeldung. Verbraucher sind ausgeschlossen.</p>
-            <p>(3) Es gelten ausschließlich diese AGB. Abweichende Bedingungen werden nicht anerkannt.</p>
+            <p>(2) Партнёрами могут быть исключительно индивидуальные предприниматели (ИП) или ТОО
+            с действующей регистрацией предпринимательской деятельности. Физические лица — потребители
+            к участию не допускаются.</p>
+            <p>(3) Применяются исключительно настоящие условия. Иные условия не признаются.</p>
           </section>
 
           {/* §2 */}
           <section>
-            <h2 className="font-serif text-xl text-vintage-cream">§ 2 Leistung des Partners</h2>
-            <p>(1) Der Partner bewirbt die Produkte des Vertragspartners auf eigenen Werbeflächen
-            (Website, Blog, Social Media, E-Mail an eigene Kontakte) und vermittelt potenzielle Käufer.</p>
-            <p>(2) Die Vermittlung erfolgt über personalisierte Empfehlungs-Links mit einem
-            Tracking-Code. Käufe, die innerhalb der Cookie-Laufzeit
-            ({aff.cookie_ttl_tage} Tage) zustande kommen, werden dem Partner zugeordnet (Last-Click).</p>
-            <p>(3) Der Partner verpflichtet sich, die werblichen Inhalte gemäß § 5a UWG eindeutig als
-            Werbung zu kennzeichnen („Werbung", „Anzeige", „#Werbung").</p>
+            <h2 className="font-serif text-xl text-vintage-cream">2. Услуги партнёра</h2>
+            <p>(1) Партнёр рекламирует товары компании на собственных рекламных площадках
+            (сайт, блог, социальные сети, рассылка по собственным контактам) и привлекает
+            потенциальных покупателей.</p>
+            <p>(2) Привлечение осуществляется через персонализированные реферальные ссылки с
+            трек-кодом. Покупки, совершённые в течение срока действия cookie
+            ({aff.cookie_ttl_tage} дней), засчитываются партнёру (по последнему клику).</p>
+            <p>(3) Партнёр обязуется чётко обозначать рекламные материалы как рекламу
+            («Реклама», «#реклама») в соответствии с требованиями законодательства РК о рекламе
+            и конкуренции.</p>
           </section>
 
           {/* §3 */}
           <section>
-            <h2 className="font-serif text-xl text-vintage-cream">§ 3 Provision</h2>
-            <p>(1) Für jeden erfolgreich vermittelten Verkauf erhält der Partner eine Provision in
-            Höhe von <strong>{aff.provision_ebene_1_prozent}%</strong> des Netto-Verkaufspreises (Ebene 1).</p>
-            <p>(2) Hat der Partner einen weiteren Partner geworben (Sponsor-Provision), erhält er für
-            Verkäufe dieses Sub-Partners <strong>{aff.provision_ebene_2_prozent}%</strong> (Ebene 2).
-            {aff.provision_ebene_3_prozent > 0 && <> Für die dritte Ebene werden <strong>{aff.provision_ebene_3_prozent}%</strong> vergütet.</>}</p>
-            <p>(3) <strong>Hinweis zur Schneeballsystem-Abgrenzung:</strong> Provisionen werden ausschließlich
-            für tatsächliche Produktverkäufe gezahlt. Es wird zu keinem Zeitpunkt Vergütung allein für
-            die Anwerbung neuer Partner gewährt.</p>
-            <p>(4) Die Provision entsteht bei manueller Bestätigung des Verkaufs durch den Vertragspartner
-            (Status „offen") und wird nach Ablauf der gesetzlichen Widerrufsfrist von
-            {" "}{aff.widerrufs_frist_tage} Tagen bestätigt.</p>
-            <p>(5) Bei Retoure, Stornierung oder Rückabwicklung erlischt der Provisionsanspruch.</p>
+            <h2 className="font-serif text-xl text-vintage-cream">3. Вознаграждение</h2>
+            <p>(1) За каждую успешно привлечённую продажу партнёр получает вознаграждение в
+            размере <strong>{aff.provision_ebene_1_prozent}%</strong> от чистой цены продажи (уровень 1).</p>
+            <p>(2) Если партнёр привлёк другого партнёра (спонсорское вознаграждение), он получает за
+            продажи этого суб-партнёра <strong>{aff.provision_ebene_2_prozent}%</strong> (уровень 2).
+            {aff.provision_ebene_3_prozent > 0 && <> За третий уровень выплачивается <strong>{aff.provision_ebene_3_prozent}%</strong>.</>}</p>
+            <p>(3) <strong>Разграничение с финансовыми (сетевыми) пирамидами:</strong> вознаграждение
+            выплачивается исключительно за фактические продажи товаров. Вознаграждение только за
+            привлечение новых партнёров не выплачивается ни при каких обстоятельствах.</p>
+            <p>(4) Право на вознаграждение возникает при ручном подтверждении продажи компанией
+            (статус «открыто») и подтверждается по истечении срока возврата согласно законодательству РК,
+            составляющего{" "}{aff.widerrufs_frist_tage} дней.</p>
+            <p>(5) При возврате, отмене или аннулировании сделки право на вознаграждение прекращается.</p>
           </section>
 
           {/* §4 */}
           <section>
-            <h2 className="font-serif text-xl text-vintage-cream">§ 4 Auszahlung</h2>
-            <p>(1) Die Auszahlung erfolgt monatlich, sofern der angesammelte Betrag den Mindestbetrag
-            von <strong>{(aff.mindestauszahlung_cent / 100).toFixed(2).replace(".", ",")} €</strong> erreicht.</p>
-            <p>(2) Auszahlungsmethoden: SEPA-Überweisung oder PayPal — wählbar im Partner-Profil.</p>
-            <p>(3) Bei Kleinunternehmern erfolgt die Auszahlung gemäß § 19 UStG ohne Umsatzsteuer-Ausweis.
-            Bei umsatzsteuerpflichtigen Partnern wird eine Gutschrift gemäß § 14 Abs. 2 Satz 2 UStG erstellt.</p>
-            <p>(4) Der Partner verpflichtet sich, korrekte Bankdaten / PayPal-Adresse sowie Steuer-ID im
-            Partner-Profil zu hinterlegen.</p>
+            <h2 className="font-serif text-xl text-vintage-cream">4. Выплата</h2>
+            <p>(1) Выплата производится ежемесячно при условии, что накопленная сумма достигает
+            минимального размера <strong>{(aff.mindestauszahlung_cent / 100).toFixed(2).replace(".", ",")} €</strong>.</p>
+            <p>(2) Способы выплаты: банковский перевод или электронные платёжные системы — выбираются
+            в профиле партнёра.</p>
+            <p>(3) Налогообложение выплат осуществляется в соответствии с налоговым законодательством
+            Республики Казахстан с учётом налогового статуса партнёра (ИП или ТОО).</p>
+            <p>(4) Партнёр обязуется указать в профиле корректные банковские реквизиты / платёжные
+            данные, а также БИН/ИИН.</p>
           </section>
 
           {/* §5 */}
           <section>
-            <h2 className="font-serif text-xl text-vintage-cream">§ 5 Pflichten des Partners</h2>
-            <p>(1) Der Partner garantiert, dass seine Werbung den geltenden Gesetzen entspricht
-            (UWG, Markenrecht, Urheberrecht, DSGVO).</p>
-            <p>(2) Verboten sind insbesondere:</p>
+            <h2 className="font-serif text-xl text-vintage-cream">5. Обязанности партнёра</h2>
+            <p>(1) Партнёр гарантирует, что его реклама соответствует действующему законодательству
+            Республики Казахстан (о рекламе и конкуренции, о товарных знаках, об авторском праве,
+            о персональных данных).</p>
+            <p>(2) В частности, запрещены:</p>
             <ul className="list-disc ml-6 space-y-1">
-              <li>Spam, unaufgeforderte E-Mails / DMs</li>
-              <li>Brand-Bidding (Werbung auf Markennamen des Vertragspartners)</li>
-              <li>Cookie-Stuffing, Adware, Cookie-Manipulation</li>
-              <li>Self-Purchase (Vermittlung an die eigene Person — wird automatisch blockiert)</li>
-              <li>Irreführende oder rechtswidrige Werbeaussagen</li>
+              <li>спам, незапрошенные письма / сообщения</li>
+              <li>брендовый биддинг (реклама по товарным знакам компании)</li>
+              <li>cookie-stuffing, рекламное ПО, манипуляции с cookie</li>
+              <li>покупки в свою пользу (привлечение самого себя — блокируется автоматически)</li>
+              <li>вводящие в заблуждение или противоправные рекламные заявления</li>
             </ul>
-            <p>(3) Verstöße führen zur sofortigen Sperrung und ggf. Schadensersatzforderung.</p>
+            <p>(3) Нарушения влекут немедленную блокировку и, при необходимости, требование о
+            возмещении убытков.</p>
           </section>
 
           {/* §6 */}
           <section>
-            <h2 className="font-serif text-xl text-vintage-cream">§ 6 Vertragslaufzeit / Kündigung</h2>
-            <p>(1) Das Vertragsverhältnis beginnt mit Freischaltung des Partner-Accounts durch den
-            Vertragspartner und läuft auf unbestimmte Zeit.</p>
-            <p>(2) Beide Parteien können jederzeit ohne Angabe von Gründen kündigen.</p>
-            <p>(3) Bei Kündigung werden bereits entstandene, bestätigte Provisionen wie üblich ausgezahlt.</p>
+            <h2 className="font-serif text-xl text-vintage-cream">6. Срок действия / расторжение</h2>
+            <p>(1) Договорные отношения начинаются с момента активации партнёрского аккаунта компанией
+            и заключаются на неопределённый срок.</p>
+            <p>(2) Обе стороны вправе расторгнуть соглашение в любое время без указания причин.</p>
+            <p>(3) При расторжении уже возникшие и подтверждённые вознаграждения выплачиваются в
+            обычном порядке.</p>
           </section>
 
           {/* §7 */}
           <section>
-            <h2 className="font-serif text-xl text-vintage-cream">§ 7 Datenschutz</h2>
-            <p>Die Verarbeitung personenbezogener Daten erfolgt gemäß DSGVO und unserer
-            <a href="/datenschutz" className="text-vintage-cream/80 underline ml-1">Datenschutzerklärung</a>.
-            Tracking-Cookies werden nur mit ausdrücklicher Einwilligung des Besuchers gesetzt.</p>
+            <h2 className="font-serif text-xl text-vintage-cream">7. Защита персональных данных</h2>
+            <p>Обработка персональных данных осуществляется в соответствии с законодательством РК о
+            персональных данных и нашей
+            <a href="/datenschutz" className="text-vintage-cream/80 underline ml-1">Политикой конфиденциальности</a>.
+            Файлы cookie для отслеживания устанавливаются только с явного согласия посетителя.</p>
           </section>
 
           {/* §8 */}
           <section>
-            <h2 className="font-serif text-xl text-vintage-cream">§ 8 Schlussbestimmungen</h2>
-            <p>(1) Es gilt deutsches Recht. Erfüllungsort und Gerichtsstand ist
-            {sys.firma_ort ? ` ${sys.firma_ort}` : " der Sitz des Vertragspartners"}, soweit gesetzlich zulässig.</p>
-            <p>(2) Sollten einzelne Bestimmungen unwirksam sein, bleibt die Wirksamkeit der übrigen unberührt
-            (salvatorische Klausel).</p>
-            <p>(3) Änderungen der AGB werden mindestens 30 Tage vor Inkrafttreten per E-Mail mitgeteilt.
-            Widerspricht der Partner nicht innerhalb dieser Frist, gelten die neuen AGB als akzeptiert.</p>
+            <h2 className="font-serif text-xl text-vintage-cream">8. Заключительные положения</h2>
+            <p>(1) Применяется законодательство Республики Казахстан. Местом исполнения и подсудности
+            является{sys.firma_ort ? ` ${sys.firma_ort}` : " место нахождения компании"}, насколько это
+            допускается законом.</p>
+            <p>(2) Если отдельные положения окажутся недействительными, действительность остальных
+            положений сохраняется (положение о делимости).</p>
+            <p>(3) Изменения соглашения сообщаются не менее чем за 30 дней до вступления в силу по
+            электронной почте. Если партнёр не возражает в течение этого срока, новая редакция
+            считается принятой.</p>
           </section>
 
           <p className="text-vintage-dust text-xs italic pt-6 border-t border-vintage-sand/40">
-            Stand: {stand} · AGB-Version {aff.agb_aktuelle_version}
+            Редакция: {stand} · Версия соглашения {aff.agb_aktuelle_version}
           </p>
         </article>
       </main>

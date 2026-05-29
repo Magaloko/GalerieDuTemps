@@ -64,7 +64,7 @@ export function LinkGenerator({ referralCode, baseUrl, produkte }: Props) {
       setTimeout(() => setKopiert(false), 2000);
     } catch {
       // Fallback: window.prompt
-      window.prompt("Link kopieren (Ctrl+C):", url);
+      window.prompt("Скопировать ссылку (Ctrl+C):", url);
     }
   };
 
@@ -74,12 +74,12 @@ export function LinkGenerator({ referralCode, baseUrl, produkte }: Props) {
       <div className="lg:col-span-3 space-y-5">
         {/* Ziel-Auswahl */}
         <section className="bg-vintage-brown border border-vintage-sand/40 p-5 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
-          <h2 className="font-serif text-base text-vintage-cream">1. Wohin soll der Link führen?</h2>
+          <h2 className="font-serif text-base text-vintage-cream">1. Куда должна вести ссылка?</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {[
-              { value: "home",    label: "Hauptseite", icon: Sparkles },
-              { value: "katalog", label: "Katalog",    icon: ImageIcon },
-              { value: "produkt", label: "Produkt",    icon: Link2 },
+              { value: "home",    label: "Главная", icon: Sparkles },
+              { value: "katalog", label: "Каталог", icon: ImageIcon },
+              { value: "produkt", label: "Товар",   icon: Link2 },
             ].map(({ value, label, icon: Icon }) => (
               <button
                 key={value}
@@ -101,9 +101,9 @@ export function LinkGenerator({ referralCode, baseUrl, produkte }: Props) {
         {/* Produkt-Auswahl */}
         {ziel === "produkt" && (
           <section className="bg-vintage-brown border border-vintage-sand/40 p-5 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
-            <h2 className="font-serif text-base text-vintage-cream">2. Welches Produkt?</h2>
+            <h2 className="font-serif text-base text-vintage-cream">2. Какой товар?</h2>
             {produkte.length === 0 ? (
-              <p className="text-vintage-dust text-sm font-sans py-4 text-center">Keine Produkte verfügbar</p>
+              <p className="text-vintage-dust text-sm font-sans py-4 text-center">Нет доступных товаров</p>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-72 overflow-y-auto">
                 {produkte.map(p => (
@@ -134,7 +134,7 @@ export function LinkGenerator({ referralCode, baseUrl, produkte }: Props) {
 
         {/* Link-Typ */}
         <section className="bg-vintage-brown border border-vintage-sand/40 p-5 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
-          <h2 className="font-serif text-base text-vintage-cream">3. Link-Typ</h2>
+          <h2 className="font-serif text-base text-vintage-cream">3. Тип ссылки</h2>
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => setLinkType("short")}
@@ -143,9 +143,9 @@ export function LinkGenerator({ referralCode, baseUrl, produkte }: Props) {
               }`}
               style={{ borderRadius: "var(--radius-card)" }}
             >
-              <p className="font-sans text-sm text-vintage-cream">Kurzer Link</p>
+              <p className="font-sans text-sm text-vintage-cream">Короткая ссылка</p>
               <p className="text-xs text-vintage-dust font-mono mt-1">/r/{referralCode}</p>
-              <p className="text-xs text-vintage-dust font-sans mt-1">Übersichtlich für Social Media</p>
+              <p className="text-xs text-vintage-dust font-sans mt-1">Удобно для соцсетей</p>
             </button>
             <button
               onClick={() => setLinkType("full")}
@@ -154,9 +154,9 @@ export function LinkGenerator({ referralCode, baseUrl, produkte }: Props) {
               }`}
               style={{ borderRadius: "var(--radius-card)" }}
             >
-              <p className="font-sans text-sm text-vintage-cream">Voller Link</p>
+              <p className="font-sans text-sm text-vintage-cream">Полная ссылка</p>
               <p className="text-xs text-vintage-dust font-mono mt-1">?ref={referralCode}</p>
-              <p className="text-xs text-vintage-dust font-sans mt-1">Zeigt direkt das Ziel</p>
+              <p className="text-xs text-vintage-dust font-sans mt-1">Ведёт сразу на цель</p>
             </button>
           </div>
         </section>
@@ -165,7 +165,7 @@ export function LinkGenerator({ referralCode, baseUrl, produkte }: Props) {
       {/* Rechte Spalte: Ergebnis + QR */}
       <div className="lg:col-span-2 space-y-4">
         <div className="bg-vintage-espresso text-vintage-cream p-5 space-y-4" style={{ borderRadius: "var(--radius-card)" }}>
-          <p className="text-vintage-gold text-xs tracking-widest uppercase">Dein Link</p>
+          <p className="text-vintage-gold text-xs tracking-widest uppercase">Ваша ссылка</p>
           <div
             className="px-3 py-2 bg-white/10 break-all text-vintage-cream text-xs font-mono"
             style={{ borderRadius: "var(--radius-vintage)" }}
@@ -182,8 +182,8 @@ export function LinkGenerator({ referralCode, baseUrl, produkte }: Props) {
             style={{ borderRadius: "var(--radius-button)" }}
           >
             {kopiert
-              ? <><Check className="w-4 h-4" /> Kopiert!</>
-              : <><Copy  className="w-4 h-4" /> Link kopieren</>
+              ? <><Check className="w-4 h-4" /> Скопировано!</>
+              : <><Copy  className="w-4 h-4" /> Скопировать ссылку</>
             }
           </button>
         </div>
@@ -192,14 +192,14 @@ export function LinkGenerator({ referralCode, baseUrl, produkte }: Props) {
         {qrSvg && (
           <div className="bg-vintage-brown border border-vintage-sand/40 p-5 text-center" style={{ borderRadius: "var(--radius-card)" }}>
             <p className="text-vintage-dust text-xs uppercase tracking-widest font-sans mb-3 flex items-center justify-center gap-1">
-              <QrCode className="w-3.5 h-3.5" /> QR-Code
+              <QrCode className="w-3.5 h-3.5" /> QR-код
             </p>
             <div
               className="inline-block p-3 bg-vintage-espresso"
               style={{ borderRadius: "var(--radius-card)" }}
               dangerouslySetInnerHTML={{ __html: qrSvg }}
             />
-            <p className="text-xs text-vintage-dust font-sans mt-3">Für Druck oder Stories</p>
+            <p className="text-xs text-vintage-dust font-sans mt-3">Для печати или сторис</p>
           </div>
         )}
       </div>

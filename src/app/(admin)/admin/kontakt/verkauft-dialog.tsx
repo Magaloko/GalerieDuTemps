@@ -73,7 +73,7 @@ export function VerkauftDialog({ kontaktanfrageId, kontaktName, onClose }: Props
                   {state.provisionen_erstellt && state.provisionen_erstellt > 0
                     ? <>
                         Создано комиссий: <strong>{state.provisionen_erstellt}</strong>, сумма{" "}
-                        <strong>{state.provisionen_summe_eur?.toFixed(2).replace(".", ",")} €</strong>. Затронутые партнёры уведомлены.
+                        <strong>{state.provisionen_summe_eur?.toFixed(2).replace(".", ",")} ₸</strong>. Затронутые партнёры уведомлены.
                       </>
                     : "Для этой заявки нет партнёрской атрибуции — комиссии не созданы."
                   }
@@ -91,7 +91,7 @@ export function VerkauftDialog({ kontaktanfrageId, kontaktName, onClose }: Props
           /* Formular */
           <form action={formAction} className="space-y-4">
             <Input
-              label="Цена продажи (EUR)"
+              label="Цена продажи (₸)"
               name="preis_eur"
               type="number"
               step="0.01"

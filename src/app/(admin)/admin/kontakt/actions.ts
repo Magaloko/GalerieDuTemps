@@ -114,7 +114,7 @@ export async function alsVerkauftMarkierenAction(
     ergebnis.betroffene_affiliates.map(b =>
       sendEmail({
         to:      [{ email: b.email, name: b.name }],
-        subject: `Neue Provision: ${(b.betrag_cent / 100).toLocaleString("de-DE", { style: "currency", currency: "EUR" })}`,
+        subject: `Новая комиссия: ${Math.round(b.betrag_cent / 100).toLocaleString("ru-RU")} ₸`,
         htmlContent: neueProvisionMail({
           vorname:           b.name.split(" ")[0],
           betragCent:        b.betrag_cent,

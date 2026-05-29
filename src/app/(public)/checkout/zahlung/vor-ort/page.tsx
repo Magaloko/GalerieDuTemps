@@ -52,7 +52,7 @@ export default async function VorOrtZahlungPage({
   const reference = order.payment_reference ?? `GDT-${String(order.order_number).padStart(4, "0")}`;
   const meta      = (order.payment_meta ?? {}) as { reserve_bis?: string };
   const reserveBis = meta.reserve_bis
-    ? new Date(meta.reserve_bis).toLocaleString(locale === "ru" ? "ru-RU" : "de-DE", {
+    ? new Date(meta.reserve_bis).toLocaleString("ru-RU", {
         day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit",
       })
     : null;

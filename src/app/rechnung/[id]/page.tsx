@@ -58,7 +58,6 @@ export default async function RechnungsSeite({
     ? `СФ-${invoice.invoice_number.toString().padStart(4, "0")}`
     : `ПРЕД-GDT-${order.order_number}`;
   const adresse = order.billing_address;
-  const istKZ = (order.waehrung ?? "KZT").toUpperCase() === "KZT";
   const waehrung = order.waehrung as "KZT" | "EUR" | "USD" | "RUB" | undefined;
 
   // Kaspi-QR (sofern vom Webhook befüllt)
@@ -84,22 +83,20 @@ export default async function RechnungsSeite({
               {sys.firma_plz} {sys.firma_ort}<br/>
               {sys.firma_land}<br/>
               {sys.firma_email && <>{sys.firma_email}<br/></>}
-              {/* Wenn KZ-Setup: BIN als steuerliche ID, sonst USt-IdNr */}
-              {istKZ
-                ? (sys.firma_steuer_id && <>БИН: {sys.firma_steuer_id}</>)
-                : (sys.firma_ust_id && <>USt-IdNr.: {sys.firma_ust_id}</>)}
+              {/* Steuerliche ID (БИН) des Ausstellers */}
+              {sys.firma_steuer_id && <>БИН: {sys.firma_steuer_id}</>}
             </p>
           </div>
           <div className="text-right">
-            <h2 className="font-serif text-2xl text-black mb-1">{istKZ ? "Счёт-фактура" : "Rechnung"}</h2>
+            <h2 className="font-serif text-2xl text-black mb-1">Счёт-фактура</h2>
             <p className="text-sm text-black/70">
-              {istKZ ? "Номер счёта" : "Beleg-Nr."}: <strong>{belegNr}</strong>
+              Номер счёта: <strong>{belegNr}</strong>
             </p>
             <p className="text-sm text-black/70">
-              {istKZ ? "Номер заказа" : "Bestell-Nr."}: <strong>GDT-{order.order_number}</strong>
+              Номер заказа: <strong>GDT-{order.order_number}</strong>
             </p>
             <p className="text-sm text-black/70">
-              {istKZ ? "Дата" : "Datum"}: <strong>{new Date(invoice?.rechnungs_datum ?? order.erstellt_am).toLocaleDateString("ru-RU")}</strong>
+              Дата: <strong>{new Date(invoice?.rechnungs_datum ?? order.erstellt_am).toLocaleDateString("ru-RU")}</strong>
             </p>
           </div>
         </div>
@@ -107,7 +104,7 @@ export default async function RechnungsSeite({
         {/* Empfänger */}
         <div className="mb-10">
           <p className="text-xs uppercase tracking-widest text-black/50 mb-2">
-            {istKZ ? "Получатель" : "Rechnungsempfänger"}
+            Получатель
           </p>
           <p className="text-base text-black font-serif">{order.customer_name ?? order.customer_email}</p>
           {adresse.firma && <p className="text-sm text-black">{adresse.firma}</p>}
@@ -115,26 +112,20 @@ export default async function RechnungsSeite({
           {(adresse.plz || adresse.ort) && <p className="text-sm text-black/70">{adresse.plz} {adresse.ort}</p>}
           {adresse.land && <p className="text-sm text-black/70">{adresse.land}</p>}
           {/* ИИН / БИН Snapshot vom Bestellzeitpunkt */}
-          {istKZ ? (
-            <>
-              {order.iin_snapshot && <p className="text-sm text-black/70 mt-1">ИИН: {order.iin_snapshot}</p>}
-              {order.bin_snapshot && <p className="text-sm text-black/70">БИН: {order.bin_snapshot}</p>}
-            </>
-          ) : (
-            order.ust_id_snapshot && <p className="text-sm text-black/70 mt-1">USt-IdNr.: {order.ust_id_snapshot}</p>
-          )}
+          {order.iin_snapshot && <p className="text-sm text-black/70 mt-1">ИИН: {order.iin_snapshot}</p>}
+          {order.bin_snapshot && <p className="text-sm text-black/70">БИН: {order.bin_snapshot}</p>}
         </div>
 
         {/* Positionen */}
         <table className="w-full mb-8 border-collapse text-sm">
           <thead>
             <tr className="border-b-2 border-black">
-              <th className="text-left  py-2 text-xs uppercase tracking-widest font-normal">{istKZ ? "№" : "Pos."}</th>
-              <th className="text-left  py-2 text-xs uppercase tracking-widest font-normal">{istKZ ? "Наименование" : "Bezeichnung"}</th>
-              <th className="text-center py-2 text-xs uppercase tracking-widest font-normal">{istKZ ? "Кол-во" : "Menge"}</th>
-              <th className="text-right py-2 text-xs uppercase tracking-widest font-normal">{istKZ ? "Цена с НДС" : "EP brutto"}</th>
-              <th className="text-right py-2 text-xs uppercase tracking-widest font-normal">{istKZ ? "НДС" : "USt"}</th>
-              <th className="text-right py-2 text-xs uppercase tracking-widest font-normal">{istKZ ? "Сумма" : "Gesamt"}</th>
+              <th className="text-left  py-2 text-xs uppercase tracking-widest font-normal">№</th>
+              <th className="text-left  py-2 text-xs uppercase tracking-widest font-normal">Наименование</th>
+              <th className="text-center py-2 text-xs uppercase tracking-widest font-normal">Кол-во</th>
+              <th className="text-right py-2 text-xs uppercase tracking-widest font-normal">Цена с НДС</th>
+              <th className="text-right py-2 text-xs uppercase tracking-widest font-normal">НДС</th>
+              <th className="text-right py-2 text-xs uppercase tracking-widest font-normal">Сумма</th>
             </tr>
           </thead>
           <tbody>
@@ -153,7 +144,7 @@ export default async function RechnungsSeite({
             {order.rabatt_cents > 0 && (
               <tr>
                 <td colSpan={5} className="py-2 text-right">
-                  {istKZ ? "Скидка" : "Rabatt"} {order.coupon_code_snapshot && `(${order.coupon_code_snapshot})`}
+                  Скидка {order.coupon_code_snapshot && `(${order.coupon_code_snapshot})`}
                 </td>
                 <td className="py-2 text-right text-vintage-sage">− {formatPreis(order.rabatt_cents / 100, waehrung)}</td>
               </tr>
@@ -161,7 +152,7 @@ export default async function RechnungsSeite({
             {Array.from(taxByRate.entries()).map(([rate, sums]) => (
               <tr key={rate} className="text-xs text-black/60">
                 <td colSpan={4} className="py-1 text-right">
-                  {istKZ ? "НДС" : "USt"} {rate}% ({istKZ ? "от" : "auf"} {formatPreis(sums.netto / 100, waehrung)})
+                  НДС {rate}% (от {formatPreis(sums.netto / 100, waehrung)})
                 </td>
                 <td className="py-1 text-right">{rate}%</td>
                 <td className="py-1 text-right">{formatPreis(sums.tax / 100, waehrung)}</td>
@@ -169,7 +160,7 @@ export default async function RechnungsSeite({
             ))}
             <tr className="border-t-2 border-black">
               <td colSpan={5} className="py-3 text-right font-serif text-base">
-                {istKZ ? "Итого к оплате" : "Gesamt (brutto)"}
+                Итого к оплате
               </td>
               <td className="py-3 text-right font-serif text-xl">{formatPreis(order.total_cents / 100, waehrung)}</td>
             </tr>
@@ -178,20 +169,11 @@ export default async function RechnungsSeite({
 
         {/* Pflichtklauseln */}
         <div className="mb-8 p-4 border border-black/20 bg-black/5 text-xs text-black leading-relaxed space-y-2">
-          {istKZ && invoice?.kleinunternehmer && (
+          {invoice?.kleinunternehmer && (
             <p>
               <strong>Специальный налоговый режим:</strong> Поставщик применяет упрощённый
               налоговый режим в соответствии с Налоговым кодексом РК. НДС не выделяется.
             </p>
-          )}
-          {!istKZ && order.reverse_charge && (
-            <p><strong>Reverse-Charge-Verfahren:</strong> Die Steuerschuld geht gemäß § 13b UStG auf den Leistungsempfänger über. Es wird keine deutsche/österr. Umsatzsteuer ausgewiesen.</p>
-          )}
-          {!istKZ && invoice?.bildungsleistung && (
-            <p><strong>Bildungsleistung:</strong> Einzelne Positionen sind gemäß § 6 Abs. 1 Z 11 lit. a UStG (AT) bzw. § 4 Nr. 21 UStG (DE) von der Umsatzsteuer befreit.</p>
-          )}
-          {!istKZ && invoice?.kleinunternehmer && (
-            <p><strong>Kleinunternehmer:</strong> Gemäß § 19 Abs. 1 UStG wird keine Umsatzsteuer berechnet.</p>
           )}
         </div>
 
@@ -199,15 +181,15 @@ export default async function RechnungsSeite({
         <div className="grid grid-cols-2 gap-6 mb-12">
           <div>
             <p className="text-xs uppercase tracking-widest text-black/50 mb-2">
-              {istKZ ? "Способ оплаты" : "Zahlungsweise"}
+              Способ оплаты
             </p>
             {istBezahlt ? (
               <p className="text-vintage-sage font-serif">
-                ✓ {istKZ ? "Оплачено" : "Bezahlt"} {order.bezahlt_am && (istKZ ? "" : "am ") + new Date(order.bezahlt_am).toLocaleDateString(istKZ ? "ru-RU" : "de-DE")}
+                ✓ Оплачено {order.bezahlt_am && new Date(order.bezahlt_am).toLocaleDateString("ru-RU")}
               </p>
             ) : order.status === "cancelled" ? (
-              <p className="text-vintage-burgundy">{istKZ ? "Заказ отменён" : "Bestellung storniert"}</p>
-            ) : istKZ ? (
+              <p className="text-vintage-burgundy">Заказ отменён</p>
+            ) : (
               <>
                 <p className="text-sm text-black mb-2"><strong>Kaspi.kz Pay</strong> или банковский перевод</p>
                 {/* IIC/BIK des Verkäufers — wenn als Settings hinterlegt */}
@@ -222,22 +204,10 @@ export default async function RechnungsSeite({
                   </div>
                 )}
               </>
-            ) : (
-              <>
-                <p className="text-sm text-black">SEPA-Überweisung</p>
-                {sys.sepa_absender_iban && (
-                  <div className="mt-2 text-xs text-black/70 space-y-0.5">
-                    <p><strong>{sys.sepa_absender_name}</strong></p>
-                    <p>IBAN: {sys.sepa_absender_iban}</p>
-                    {sys.sepa_absender_bic && <p>BIC: {sys.sepa_absender_bic}</p>}
-                    <p>Verwendungszweck: <strong>GDT-{order.order_number}</strong></p>
-                  </div>
-                )}
-              </>
             )}
           </div>
-          {/* Kaspi-QR (falls vom Webhook befüllt) — nur RU/KZ */}
-          {istKZ && kaspiQrUrl && !istBezahlt && (
+          {/* Kaspi-QR (falls vom Webhook befüllt) */}
+          {kaspiQrUrl && !istBezahlt && (
             <div className="text-right">
               <p className="text-xs uppercase tracking-widest text-black/50 mb-2">Kaspi QR</p>
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -250,7 +220,7 @@ export default async function RechnungsSeite({
         <div className="border-t border-black/20 pt-6 text-xs text-black/50 leading-relaxed">
           <p>{sys.firma_name} · {sys.firma_strasse} · {sys.firma_plz} {sys.firma_ort}</p>
           {sys.firma_handelsregister && <p>{sys.firma_handelsregister}</p>}
-          <p>{istKZ ? "По вопросам" : "Bei Fragen"}: {sys.firma_email}</p>
+          <p>По вопросам: {sys.firma_email}</p>
         </div>
       </div>
 

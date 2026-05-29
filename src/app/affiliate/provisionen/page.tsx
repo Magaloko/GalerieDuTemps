@@ -7,22 +7,22 @@ import { Coins } from "lucide-react";
 import type { Metadata } from "next";
 import type { ProvisionStatus } from "@/types/affiliate";
 
-export const metadata: Metadata = { title: "Meine Provisionen" };
+export const metadata: Metadata = { title: "Мои комиссии" };
 export const dynamic = "force-dynamic";
 
 const STATUS_LABELS: Record<ProvisionStatus, { label: string; color: string }> = {
-  offen:       { label: "Offen",       color: "text-vintage-gold     bg-vintage-gold/10     border-vintage-gold/30"     },
-  bestaetigt:  { label: "Bestätigt",   color: "text-vintage-sage     bg-vintage-sage/10     border-vintage-sage/30"     },
-  ausgezahlt:  { label: "Ausgezahlt",  color: "text-vintage-forest   bg-vintage-forest/10   border-vintage-forest/30"   },
-  storniert:   { label: "Storniert",   color: "text-vintage-burgundy bg-vintage-burgundy/10 border-vintage-burgundy/30" },
+  offen:       { label: "Ожидает",     color: "text-vintage-gold     bg-vintage-gold/10     border-vintage-gold/30"     },
+  bestaetigt:  { label: "Подтверждено", color: "text-vintage-sage     bg-vintage-sage/10     border-vintage-sage/30"     },
+  ausgezahlt:  { label: "Выплачено",   color: "text-vintage-forest   bg-vintage-forest/10   border-vintage-forest/30"   },
+  storniert:   { label: "Отменено",    color: "text-vintage-burgundy bg-vintage-burgundy/10 border-vintage-burgundy/30" },
 };
 
 const FILTER: Array<{ value: ProvisionStatus | ""; label: string }> = [
-  { value: "",           label: "Alle"        },
-  { value: "offen",      label: "Offen"       },
-  { value: "bestaetigt", label: "Bestätigt"   },
-  { value: "ausgezahlt", label: "Ausgezahlt"  },
-  { value: "storniert",  label: "Storniert"   },
+  { value: "",           label: "Все"          },
+  { value: "offen",      label: "Ожидает"      },
+  { value: "bestaetigt", label: "Подтверждено" },
+  { value: "ausgezahlt", label: "Выплачено"    },
+  { value: "storniert",  label: "Отменено"     },
 ];
 
 export default async function ProvisionenPage({
@@ -47,9 +47,9 @@ export default async function ProvisionenPage({
     <div className="space-y-6 max-w-5xl">
       <div>
         <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-        <h1 className="font-serif text-3xl text-vintage-cream">Provisionen</h1>
+        <h1 className="font-serif text-3xl text-vintage-cream">Комиссии</h1>
         <p className="text-vintage-dust text-sm font-sans mt-1">
-          {daten.gesamt} {daten.gesamt === 1 ? "Provision" : "Provisionen"} insgesamt
+          Всего комиссий: {daten.gesamt}
         </p>
       </div>
 
@@ -75,9 +75,9 @@ export default async function ProvisionenPage({
       {daten.items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center bg-vintage-brown border border-vintage-sand/40" style={{ borderRadius: "var(--radius-card)" }}>
           <Coins className="w-10 h-10 text-vintage-sand mb-3" />
-          <p className="font-serif text-lg text-vintage-cream/80">Noch keine Provisionen</p>
+          <p className="font-serif text-lg text-vintage-cream/80">Комиссий пока нет</p>
           <p className="text-vintage-dust text-sm font-sans mt-1">
-            Sobald ein Verkauf über deinen Link zustande kommt, erscheint er hier.
+            Как только по вашей ссылке состоится продажа, она появится здесь.
           </p>
         </div>
       ) : (
@@ -86,12 +86,12 @@ export default async function ProvisionenPage({
             <table className="w-full text-sm font-sans">
               <thead className="bg-vintage-brown/40/50 border-b border-vintage-sand/40">
                 <tr>
-                  <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Datum</th>
-                  <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Produkt</th>
-                  <th className="text-center px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Ebene</th>
-                  <th className="text-right px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Verkaufspreis</th>
-                  <th className="text-right px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Provision</th>
-                  <th className="text-center px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Status</th>
+                  <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Дата</th>
+                  <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Товар</th>
+                  <th className="text-center px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Уровень</th>
+                  <th className="text-right px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Цена продажи</th>
+                  <th className="text-right px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Комиссия</th>
+                  <th className="text-center px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Статус</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-vintage-sand/40">

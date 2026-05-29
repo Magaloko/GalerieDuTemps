@@ -71,10 +71,10 @@ export function EinstellungenFormular({ settings, stripeSdkInstalled, stripeEnvS
           в банковскую программу для пакетных переводов.
         </p>
         <Input label="Имя плательщика" name="sepa_absender_name" defaultValue={settings.sepa_absender_name} required />
-        <Input label="IBAN отправителя"     name="sepa_absender_iban" defaultValue={settings.sepa_absender_iban} placeholder="DE89 3704 0044 0532 0130 00" />
+        <Input label="IBAN отправителя"     name="sepa_absender_iban" defaultValue={settings.sepa_absender_iban} placeholder="KZ86 125K ZT50 0410 0100" />
         <div className="grid grid-cols-2 gap-4">
-          <Input label="BIC (опционально)"  name="sepa_absender_bic" defaultValue={settings.sepa_absender_bic} placeholder="COBADEFFXXX" />
-          <Input label="Creditor ID (опционально)" name="sepa_creditor_id" defaultValue={settings.sepa_creditor_id} placeholder="DE98ZZZ09999999999" />
+          <Input label="BIC (опционально)"  name="sepa_absender_bic" defaultValue={settings.sepa_absender_bic} placeholder="(для РК обычно не требуется)" />
+          <Input label="Creditor ID (опционально)" name="sepa_creditor_id" defaultValue={settings.sepa_creditor_id} placeholder="(для РК обычно не требуется)" />
         </div>
         {!settings.sepa_absender_iban && (
           <div className="flex items-start gap-2 p-3 bg-vintage-gold/10 border border-vintage-gold/30 text-vintage-brown text-xs font-sans" style={{ borderRadius: "var(--radius-vintage)" }}>

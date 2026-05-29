@@ -5,7 +5,7 @@ import { katalogProdukte } from "@/lib/db/produkte-public";
 import { LinkGenerator } from "./link-generator";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Meine Links" };
+export const metadata: Metadata = { title: "Мои ссылки" };
 export const dynamic = "force-dynamic";
 
 export default async function LinksPage() {
@@ -22,9 +22,9 @@ export default async function LinksPage() {
     <div className="space-y-6 max-w-4xl">
       <div>
         <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-        <h1 className="font-serif text-3xl text-vintage-espresso">Meine Links</h1>
+        <h1 className="font-serif text-3xl text-vintage-espresso">Мои ссылки</h1>
         <p className="text-vintage-dust text-sm font-sans mt-1">
-          Erstelle Empfehlungs-Links zu beliebigen Produkten oder zur Hauptseite
+          Создавайте реферальные ссылки на любые товары или на главную страницу
         </p>
       </div>
 

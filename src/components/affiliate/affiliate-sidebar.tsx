@@ -101,7 +101,7 @@ export function AffiliateSidebar({ userName, userEmail, referralCode }: Props) {
             </span>
           </div>
           <div className="min-w-0">
-            <p className="text-vintage-cream text-sm font-sans truncate">{userName ?? "Partner"}</p>
+            <p className="text-vintage-cream text-sm font-sans truncate">{userName ?? "Партнёр"}</p>
             <p className="text-vintage-dust text-xs truncate">{userEmail ?? ""}</p>
           </div>
         </div>
@@ -110,7 +110,7 @@ export function AffiliateSidebar({ userName, userEmail, referralCode }: Props) {
           className="w-full flex items-center gap-2 px-3 py-2 text-vintage-cream/60 hover:text-vintage-burgundy hover:bg-vintage-burgundy/10 text-xs font-sans tracking-wider uppercase transition-colors"
           style={{ borderRadius: "var(--radius-vintage)" }}
         >
-          <LogOut className="w-3.5 h-3.5" /> Abmelden
+          <LogOut className="w-3.5 h-3.5" /> Выйти
         </button>
       </div>
     </aside>
