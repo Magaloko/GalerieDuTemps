@@ -8,6 +8,7 @@ import {
   orderTrackingAktualisieren,
   orderCanceln,
 } from "@/lib/db/orders";
+import { orderSetPaymentStatus } from "@/lib/db/order-payment";
 import type { OrderStatus } from "@/types/commerce";
 
 export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
@@ -30,6 +31,31 @@ export async function statusAktualisierenAction(
   revalidatePath(`/admin/bestellungen/${orderId}`);
   revalidatePath("/admin/bestellungen");
   return { ok: true, message: "Статус обновлён." };
+}
+
+/* ── Anzahlung-Lebenszyklus (vor_ort_anzahlung) ────────────────────────────── */
+
+/** Anzahlung als erhalten bestätigen → payment_status='partial' (+ anzahlung_bezahlt_am). */
+export async function anzahlungErhaltenAction(orderId: string): Promise<ActionResult> {
+  const session = await requireAdminSession();
+  if (!session) return { ok: false, error: "Не авторизовано" };
+
+  await orderSetPaymentStatus(orderId, "partial");
+  revalidatePath(`/admin/bestellungen/${orderId}`);
+  revalidatePath("/admin/bestellungen");
+  return { ok: true, message: "Предоплата подтверждена." };
+}
+
+/** Voll bezahlt (z.B. Rest bei Abholung) → status='paid' + payment_status='paid'. */
+export async function vollBezahltAction(orderId: string): Promise<ActionResult> {
+  const session = await requireAdminSession();
+  if (!session) return { ok: false, error: "Не авторизовано" };
+
+  await orderStatusUpdate(orderId, "paid", { bezahlt: true });
+  await orderSetPaymentStatus(orderId, "paid").catch(() => {});
+  revalidatePath(`/admin/bestellungen/${orderId}`);
+  revalidatePath("/admin/bestellungen");
+  return { ok: true, message: "Заказ полностью оплачен." };
 }
 
 export async function notizenAktualisierenAction(

@@ -3,11 +3,33 @@ import Link from "next/link";
 import { orderById } from "@/lib/db/orders";
 import { formatPreis } from "@/lib/utils/preis";
 import { BestellungEditor } from "@/components/bestellungen/bestellung-editor";
+import { PaymentLifecycle } from "@/components/bestellungen/payment-lifecycle";
 import { ChevronLeft, Package, Mail, MapPin, CreditCard } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Детали заказа" };
 export const dynamic = "force-dynamic";
+
+const PAY_METHOD_LABEL: Record<string, string> = {
+  stripe_card:        "Карта (Stripe)",
+  stripe_sepa:        "SEPA (Stripe)",
+  paypal:             "PayPal",
+  crypto_nowpayments: "Криптовалюта",
+  bank_transfer:      "Банковский перевод",
+  vor_ort:            "Самовывоз — оплата на месте",
+  vor_ort_anzahlung:  "Самовывоз — с предоплатой",
+  telegram_payments:  "Telegram Payments",
+  kaspi:              "Kaspi.kz",
+};
+
+const PAY_STATUS_LABEL: Record<string, string> = {
+  unpaid:   "Не оплачен",
+  pending:  "Ожидает оплаты",
+  partial:  "Предоплата внесена",
+  paid:     "Оплачен полностью",
+  refunded: "Возврат",
+  failed:   "Ошибка оплаты",
+};
 
 export default async function BestellungDetailPage({
   params,
@@ -111,12 +133,37 @@ export default async function BestellungDetailPage({
               <CreditCard className="w-3.5 h-3.5 text-vintage-gold" /> Оплата
             </h3>
             <div className="text-sm font-sans text-vintage-brown space-y-1">
-              <p>Статус: <strong>{order.status}</strong></p>
+              {order.payment_method && (
+                <p>Способ: <strong>{PAY_METHOD_LABEL[order.payment_method] ?? order.payment_method}</strong></p>
+              )}
+              <p>Оплата: <strong>{PAY_STATUS_LABEL[order.payment_status ?? ""] ?? (order.payment_status || "—")}</strong></p>
+              <p className="text-xs text-vintage-dust">Статус заказа: {order.status}</p>
+              {(order.anzahlung_cents ?? 0) > 0 && (
+                <div className="text-xs text-vintage-dust pt-1 space-y-0.5">
+                  <p>Предоплата: {formatPreis((order.anzahlung_cents ?? 0) / 100)}
+                    {order.anzahlung_bezahlt_am ? " ✓" : " (ожидается)"}</p>
+                  <p>Остаток: {formatPreis((order.total_cents - (order.anzahlung_cents ?? 0)) / 100)}</p>
+                </div>
+              )}
+              {order.payment_reference && (
+                <p className="text-xs font-mono text-vintage-dust">Реф: {order.payment_reference}</p>
+              )}
               {order.bezahlt_am && <p className="text-xs text-vintage-dust">Оплачен: {new Date(order.bezahlt_am).toLocaleString("ru-RU")}</p>}
               {order.stripe_payment_intent && (
                 <p className="text-xs font-mono text-vintage-dust truncate">PI: {order.stripe_payment_intent}</p>
               )}
             </div>
+
+            {/* Anzahlung/Zahlungs-Lebenszyklus (nur solange nicht storniert/refundiert) */}
+            {order.status !== "cancelled" && order.status !== "refunded" && (
+              <PaymentLifecycle
+                orderId={order.id}
+                paymentMethod={order.payment_method ?? null}
+                paymentStatus={order.payment_status ?? null}
+                anzahlungCents={order.anzahlung_cents ?? null}
+                restCents={order.total_cents - (order.anzahlung_cents ?? 0)}
+              />
+            )}
           </section>
         </div>
       </div>
