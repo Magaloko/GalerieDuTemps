@@ -12,6 +12,7 @@
     "db:check:json": "node scripts/db-check.mjs --json",
     "db:admin": "node scripts/create-admin.mjs",
     "db:generate-secret": "node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\"",
+    "gen:icons": "node scripts/gen-pwa-icons.mjs",
     "affiliate:confirm": "node scripts/affiliate-confirm.mjs",
     "affiliate:cleanup": "node scripts/affiliate-cleanup.mjs",
     "test": "vitest run",

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Playfair_Display,
   Inter,
@@ -15,6 +15,7 @@ import { systemEinstellungenLaden } from "@/lib/db/system-einstellungen";
 import { kontaktKanaeleLaden, whatsappUrl, telegramUrl, instagramUrl } from "@/lib/db/kontakt-kanaele";
 import { renderThemeCssVars, getThemeBranding } from "@/lib/db/theme";
 import { LenisProvider } from "@/components/providers/lenis-provider";
+import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -118,6 +119,21 @@ export const metadata: Metadata = {
     icon:  [{ url: "/favicon.ico" }],
     apple: [{ url: "/apple-touch-icon.png" }],
   },
+  // PWA: iOS-Standalone-Verhalten („Zum Home-Bildschirm"). Das <link rel=manifest>
+  // generiert Next automatisch aus app/manifest.ts.
+  appleWebApp: {
+    capable:        true,
+    title:          "Galerie",
+    statusBarStyle: "black-translucent",
+  },
+};
+
+// themeColor/viewport: in Next 16 separater Export (nicht mehr in metadata).
+export const viewport: Viewport = {
+  themeColor:   "#1B2566",
+  colorScheme:  "light",
+  width:        "device-width",
+  initialScale: 1,
 };
 
 export default async function RootLayout({
@@ -165,6 +181,7 @@ export default async function RootLayout({
             funktioniert von überall, Cascade-Sieg über globals.css bleibt. */}
         {themeCss ? <style dangerouslySetInnerHTML={{ __html: themeCss }} /> : null}
         <JsonLd id="org-site" data={[orgJsonLd, siteJsonLd]} />
+        <ServiceWorkerRegister />
         <LenisProvider>{children}</LenisProvider>
       </body>
     </html>

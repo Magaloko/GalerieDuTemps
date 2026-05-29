@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Нет соединения · Galerie du Temps</title>
+  <style>
+    html,body{margin:0;height:100%}
+    body{
+      display:flex;align-items:center;justify-content:center;
+      background:#1B2566;color:#F5F1EA;
+      font-family:Georgia,'Times New Roman',serif;
+      text-align:center;padding:24px;box-sizing:border-box;
+    }
+    .wrap{max-width:340px}
+    img{width:96px;height:96px;border-radius:20px;margin-bottom:24px}
+    h1{font-size:24px;font-weight:400;margin:0 0 12px;line-height:1.2}
+    p{font-size:14px;line-height:1.6;color:rgba(245,241,234,.7);margin:0 0 24px;font-family:system-ui,sans-serif}
+    button{
+      background:#E8703A;color:#fff;border:0;padding:12px 28px;
+      font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+      font-family:system-ui,sans-serif;cursor:pointer;border-radius:4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <img src="/icons/icon-192.png" alt="Galerie du Temps" />
+    <h1>Нет соединения</h1>
+    <p>Похоже, вы офлайн. Проверьте интернет — мы снова покажем винтажные находки, как только связь вернётся.</p>
+    <button onclick="location.reload()">Повторить</button>
+  </div>
+</body>
+</html>
