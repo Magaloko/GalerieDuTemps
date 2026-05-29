@@ -4,7 +4,7 @@ import { landingPagesAlle } from "@/lib/db/landing-pages";
 import { NewLandingForm } from "./new-landing-form";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Лендинги" };
+export const metadata: Metadata = { title: "Pages" };
 export const dynamic = "force-dynamic";
 
 const STATUS_STYLE: Record<string, string> = {
@@ -28,8 +28,8 @@ export default async function LandingAdminPage() {
         <LayoutTemplate className="w-5 h-5 text-vintage-gold" />
         <div>
           <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-          <h1 className="font-serif text-2xl text-vintage-espresso">Лендинги</h1>
-          <p className="text-vintage-dust text-xs font-sans mt-0.5">{pages.length} страниц</p>
+          <h1 className="font-serif text-2xl text-vintage-espresso">Pages</h1>
+          <p className="text-vintage-dust text-xs font-sans mt-0.5">{pages.length} страниц · по странице на бренд</p>
         </div>
       </div>
 
@@ -38,7 +38,7 @@ export default async function LandingAdminPage() {
       {pages.length === 0 ? (
         <div className="text-center py-12 bg-vintage-white border border-vintage-sand" style={{ borderRadius: "var(--radius-card)" }}>
           <LayoutTemplate className="w-10 h-10 text-vintage-sand mx-auto mb-3" />
-          <p className="font-serif text-vintage-brown">Лендингов пока нет</p>
+          <p className="font-serif text-vintage-brown">Страниц пока нет</p>
         </div>
       ) : (
         <div className="space-y-2">

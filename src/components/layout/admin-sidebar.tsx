@@ -137,7 +137,7 @@ const NAV_GROUPS: NavGroup[] = [
     title: "Контент",
     items: [
       { href: "/admin/journal",    label: "Журнал",    icon: BookOpen },
-      { href: "/admin/landing",    label: "Лендинги",  icon: LayoutTemplate },
+      { href: "/admin/landing",    label: "Pages",     icon: LayoutTemplate },
       { href: "/admin/newsletter", label: "Рассылка",  icon: Send },
     ],
   },
