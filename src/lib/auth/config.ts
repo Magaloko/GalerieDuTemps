@@ -84,7 +84,10 @@ async function findeUser(email: string, password: string): Promise<AuthUser | nu
     console.error("[Auth] Affiliate-Lookup Fehler:", err);
   }
 
-  // 3. Customer in sebo.customers (E-Mail bestätigt + Passwort gesetzt)
+  // 3. Customer in sebo.customers — Login sobald ein Passwort gesetzt ist.
+  //    E-Mail-Bestätigung ist NICHT (mehr) erforderlich: Galerie ist Telegram-
+  //    first, E-Mail-Zustellung in KZ unzuverlässig — die Bestätigungs-Pflicht
+  //    hat Kunden ausgesperrt. Das Passwort ist der Sicherheitsfaktor.
   try {
     const custRes = await query<{
       id: string; email: string; vorname: string | null; nachname: string | null;
@@ -95,7 +98,7 @@ async function findeUser(email: string, password: string): Promise<AuthUser | nu
       [lcEmail]
     );
     const cust = custRes.rows[0];
-    if (cust && cust.passwort_hash && cust.email_bestaetigt_am) {
+    if (cust && cust.passwort_hash) {
       const ok = await bcrypt.compare(password, cust.passwort_hash);
       if (ok) {
         query(
