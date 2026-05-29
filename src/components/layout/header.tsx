@@ -290,24 +290,26 @@ export function Header({
 
             {/* Desktop: 3-col (nav | logo | actions) */}
             <div className="hidden md:grid grid-cols-[1fr_auto_1fr] items-center gap-6">
-              {/* left spacer — Navigation liegt jetzt in der Leiste darunter (Bar 3) */}
-              <div aria-hidden />
-
-              {/* Horizontal-Lockup center: Sanduhr + GALERIE + du Temps in einer Zeile.
-                  „du Temps" baseline-aligned direkt an GALERIE angesetzt. */}
+              {/* Sanduhr links als Marken-Icon */}
               <Link
                 href="/"
-                className="flex items-center gap-2.5"
+                className="justify-self-start"
                 aria-label="Galerie du Temps — Startseite"
               >
-                <Hourglass size={18} className="text-coral shrink-0" />
-                <span className="flex items-baseline gap-2 whitespace-nowrap">
-                  <span className="wordmark" style={{ fontSize: 24, letterSpacing: "0.14em" }}>
-                    GALERIE
-                  </span>
-                  <span className="wordmark-italic" style={{ fontSize: 14 }}>
-                    du Temps
-                  </span>
+                <Hourglass size={32} className="text-coral" />
+              </Link>
+
+              {/* Wortmarke zentriert — größer, Logo-Stil. „du Temps" baseline-italic. */}
+              <Link
+                href="/"
+                className="justify-self-center flex items-baseline gap-2.5 whitespace-nowrap"
+                aria-label="Galerie du Temps — Startseite"
+              >
+                <span className="wordmark" style={{ fontSize: 32, letterSpacing: "0.16em" }}>
+                  GALERIE
+                </span>
+                <span className="wordmark-italic" style={{ fontSize: 18 }}>
+                  du Temps
                 </span>
               </Link>
 
