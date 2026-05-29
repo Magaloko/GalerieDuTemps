@@ -66,7 +66,7 @@ export function CuratedEditions() {
 
         {/* Display Text */}
         <div className="mb-16">
-          {['Вещи с душой.', 'Дизайн, что endure.', 'Создано для поколений.'].map((line) => (
+          {['Вещи с душой.', 'Дизайн вне времени.', 'Создано для поколений.'].map((line) => (
             <h2
               key={line}
               data-animate-line

@@ -36,14 +36,14 @@ export function ManifestoSection() {
               className="text-base md:text-lg leading-relaxed mb-8"
               style={{ color: 'var(--color-ink-soft)' }}
             >
-              Galerie du Temps объединяет посуду, украшения и предметы интерьера от мастеров, чьи работы transcend эпохи. Основанная в 2015 году, мы ищем дизайн, который актуален сегодня так же, как десятилетия назад, и останется таким для будущих поколений. Наши кураторы путешествуют по Европе, чтобы открывать эти сокровища.
+              Galerie du Temps объединяет посуду, украшения и предметы интерьера от мастеров, чьи работы неподвластны времени. Основанная в 2015 году, мы ищем дизайн, который актуален сегодня так же, как десятилетия назад, и останется таким для будущих поколений. Наши кураторы путешествуют по Европе, чтобы открывать эти сокровища.
             </p>
             <p
               data-animate
               className="text-xl md:text-2xl italic mb-8"
               style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink)' }}
             >
-              &ldquo;Вещи с душой. Дизайн, что endure.&rdquo;
+              &ldquo;Вещи с душой. Дизайн вне времени.&rdquo;
             </p>
             <div data-animate>
               <ArrowLink href="/about">Наша история</ArrowLink>

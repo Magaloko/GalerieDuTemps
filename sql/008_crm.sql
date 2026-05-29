@@ -19,11 +19,11 @@ CREATE TABLE IF NOT EXISTS sebo.pipeline_stages (
 
 -- Standard-Stages
 INSERT INTO sebo.pipeline_stages (name, farbe, sortierung, ist_initial) VALUES
-    ('Lead',          '#C9A84C', 10, true),
-    ('Qualifiziert',  '#B87333', 20, false),
-    ('Kunde',         '#7A9E7E', 30, false),
-    ('VIP',           '#4A2C1A', 40, false),
-    ('Inaktiv',       '#9B9B9B', 90, false)
+    ('Лид',            '#C9A84C', 10, true),
+    ('Квалифицирован', '#B87333', 20, false),
+    ('Клиент',         '#7A9E7E', 30, false),
+    ('VIP',            '#4A2C1A', 40, false),
+    ('Неактивный',     '#9B9B9B', 90, false)
 ON CONFLICT DO NOTHING;
 
 -- Customer-Erweiterung
