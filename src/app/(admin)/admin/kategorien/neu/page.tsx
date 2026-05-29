@@ -5,7 +5,7 @@ import { KategorieFormular } from "@/components/kategorien/kategorie-formular";
 import { kategorieErstellenAction } from "../actions";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Neue Kategorie" };
+export const metadata: Metadata = { title: "Новая категория" };
 
 export default async function NeueKategoriePage() {
   const elternKandidaten = await alleKategorienAdmin();
@@ -14,15 +14,15 @@ export default async function NeueKategoriePage() {
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
         <Link href="/admin/kategorien" className="hover:text-vintage-brown transition-colors flex items-center gap-1">
-          <ChevronLeft className="w-3 h-3" /> Kategorien
+          <ChevronLeft className="w-3 h-3" /> Категории
         </Link>
         <span>/</span>
-        <span className="text-vintage-ink">Neu</span>
+        <span className="text-vintage-ink">Новая</span>
       </div>
 
       <div>
         <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-        <h1 className="font-serif text-2xl text-vintage-espresso">Neue Kategorie</h1>
+        <h1 className="font-serif text-2xl text-vintage-espresso">Новая категория</h1>
       </div>
 
       <KategorieFormular

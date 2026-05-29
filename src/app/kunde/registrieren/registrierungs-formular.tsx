@@ -134,7 +134,7 @@ export function RegistrierungsFormular({ initialTab }: { initialTab: "privat" | 
         <span className="text-sm" style={{ color: "var(--color-ink)" }}>
           Я принимаю{" "}
           <Link
-            href="/agb"
+            href="/impressum"
             target="_blank"
             style={{ color: "var(--color-coral)", textDecoration: "underline", textUnderlineOffset: 2 }}
           >

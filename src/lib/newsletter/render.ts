@@ -123,13 +123,13 @@ export function renderNewsletter(blocks: NewsletterBlock[], ctx: RenderContext):
         ${body}
         <tr>
           <td style="padding: 32px 30px; background: ${COLORS.parchment}; text-align: center; font-family: ${fontFamily()}; font-size: 11px; color: ${COLORS.dust};">
-            <p style="margin: 0 0 8px;">Galerie du Temps · Handverlesene Stücke mit Geschichte</p>
+            <p style="margin: 0 0 8px;">Galerie du Temps · Винтаж с историей</p>
             <p style="margin: 0;">
-              <a href="${baseUrl}" style="color: ${COLORS.brown}; text-decoration: none;">Zur Website</a>
+              <a href="${baseUrl}" style="color: ${COLORS.brown}; text-decoration: none;">На сайт</a>
               ·
-              <a href="${ctx.unsubscribe_url}" style="color: ${COLORS.brown}; text-decoration: none;">Abmelden</a>
+              <a href="${ctx.unsubscribe_url}" style="color: ${COLORS.brown}; text-decoration: none;">Отписаться</a>
               ·
-              <a href="${baseUrl}/impressum" style="color: ${COLORS.brown}; text-decoration: none;">Impressum</a>
+              <a href="${baseUrl}/impressum" style="color: ${COLORS.brown}; text-decoration: none;">Реквизиты</a>
             </p>
           </td>
         </tr>

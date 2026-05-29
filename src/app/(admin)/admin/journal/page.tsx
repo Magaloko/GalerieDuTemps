@@ -4,7 +4,7 @@ import { JournalNeuFormular } from "./journal-neu-formular";
 import { BookOpen, ExternalLink, CheckCircle2, Edit } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Journal" };
+export const metadata: Metadata = { title: "Журнал" };
 export const dynamic = "force-dynamic";
 
 export default async function JournalAdminPage() {
