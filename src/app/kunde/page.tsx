@@ -91,7 +91,7 @@ export default async function KundeDashboard() {
             className="font-mono not-italic text-xs"
             style={{ color: "var(--color-ink)" }}
           >
-            KD-{customer.customer_number.toString().padStart(4, "0")}
+            KD-{customer.customer_number != null ? customer.customer_number.toString().padStart(4, "0") : "—"}
           </span>
         </p>
       </header>

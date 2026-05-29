@@ -366,8 +366,17 @@ export async function staleOrdersCanceln(maxAlterStunden = 24): Promise<number> 
        AND erstellt_am < now() - ($1 || ' hours')::interval`,
     [maxAlterStunden]
   );
+  // Pro Order isoliert stornieren — ein Einzelfehler darf nicht den ganzen
+  // Cron-Lauf abbrechen (sonst bleiben alle folgenden Orders mit blockiertem
+  // Einzelstück-Bestand hängen). Gibt die Anzahl TATSÄCHLICH stornierter zurück.
+  let storniert = 0;
   for (const row of orders.rows) {
-    await orderCanceln(row.id, "Automatisch storniert: Zahlung nicht abgeschlossen");
+    try {
+      await orderCanceln(row.id, "Automatisch storniert: Zahlung nicht abgeschlossen");
+      storniert++;
+    } catch (err) {
+      console.error("[staleOrdersCanceln] Konnte Order nicht stornieren:", row.id, err);
+    }
   }
-  return orders.rowCount ?? 0;
+  return storniert;
 }

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { orderById } from "@/lib/db/orders";
-import { formatPreis } from "@/lib/utils/preis";
+import { formatPreis as formatPreisBase, type Currency } from "@/lib/utils/preis";
 import {
   CheckCircle2, ArrowRight, Package, Mail, MessageCircle, Receipt,
 } from "lucide-react";
@@ -46,6 +46,7 @@ export default async function ErfolgPage({
   const { darfCheckoutBearbeiten } = await import("@/lib/checkout/access");
   const darf = await darfCheckoutBearbeiten(order, { stripeSessionId: sp.session_id ?? null });
   if (!darf) notFound();
+  const fmt = (v: number) => formatPreisBase(v, (order.waehrung as Currency) ?? "KZT");
 
   return (
     <div
@@ -184,14 +185,14 @@ export default async function ErfolgPage({
                       color:      "var(--color-ink-mute)",
                     }}
                   >
-                    {item.menge} × {formatPreis(item.einzelpreis_cents / 100)}
+                    {item.menge} × {fmt(item.einzelpreis_cents / 100)}
                   </p>
                 </div>
                 <p
                   className="font-mono text-sm tabular-nums"
                   style={{ color: "var(--color-ink)" }}
                 >
-                  {formatPreis(item.zeile_total_cents / 100)}
+                  {fmt(item.zeile_total_cents / 100)}
                 </p>
               </li>
             ))}
@@ -199,17 +200,17 @@ export default async function ErfolgPage({
 
           {/* Totals */}
           <div className="space-y-1.5 text-sm">
-            <Row label={t.cart.zwischensumme} value={formatPreis(order.subtotal_cents / 100)} />
+            <Row label={t.cart.zwischensumme} value={fmt(order.subtotal_cents / 100)} />
             {order.rabatt_cents > 0 && (
               <Row
                 label={t.cart.rabatt}
-                value={`− ${formatPreis(order.rabatt_cents / 100)}`}
+                value={`− ${fmt(order.rabatt_cents / 100)}`}
                 color="var(--color-coral)"
               />
             )}
             <Row
               label={t.cart.inkl_ust}
-              value={formatPreis(order.tax_total_cents / 100)}
+              value={fmt(order.tax_total_cents / 100)}
               muted
             />
 
@@ -231,7 +232,7 @@ export default async function ErfolgPage({
                   lineHeight: 1,
                 }}
               >
-                {formatPreis(order.total_cents / 100)}
+                {fmt(order.total_cents / 100)}
               </span>
             </div>
           </div>

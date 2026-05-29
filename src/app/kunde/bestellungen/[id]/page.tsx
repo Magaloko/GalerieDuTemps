@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth/config";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { orderById } from "@/lib/db/orders";
-import { formatPreis } from "@/lib/utils/preis";
+import { formatPreis as formatPreisBase, type Currency } from "@/lib/utils/preis";
 import {
   ChevronLeft, Package, FileText, Truck, ExternalLink, Calendar,
 } from "lucide-react";
@@ -33,6 +33,7 @@ export default async function BestelldetailPage({
   if (order.customer_id !== session.user.id) notFound();  // Ownership-Check
 
   const meta = STATUS_META[order.status] ?? { label: order.status, color: "var(--color-ink-mute)" };
+  const fmt = (v: number) => formatPreisBase(v, (order.waehrung as Currency) ?? "KZT");
 
   return (
     <div className="max-w-5xl space-y-6">
@@ -163,14 +164,14 @@ export default async function BestelldetailPage({
                       color:      "var(--color-ink-mute)",
                     }}
                   >
-                    {item.menge} × {formatPreis(item.einzelpreis_cents / 100)}
+                    {item.menge} × {fmt(item.einzelpreis_cents / 100)}
                   </p>
                 </div>
                 <p
                   className="font-mono tabular-nums text-sm shrink-0"
                   style={{ color: "var(--color-ink)" }}
                 >
-                  {formatPreis(item.zeile_total_cents / 100)}
+                  {fmt(item.zeile_total_cents / 100)}
                 </p>
               </li>
             ))}
@@ -178,11 +179,11 @@ export default async function BestelldetailPage({
 
           {/* Totals */}
           <div className="space-y-1.5 text-sm pt-4 mt-2" style={{ borderTop: "1px solid var(--color-line)" }}>
-            <Row label="Промежуточная сумма" value={formatPreis(order.subtotal_cents / 100)} />
+            <Row label="Промежуточная сумма" value={fmt(order.subtotal_cents / 100)} />
             {order.rabatt_cents > 0 && (
-              <Row label="Скидка" value={`− ${formatPreis(order.rabatt_cents / 100)}`} color="var(--color-coral)" />
+              <Row label="Скидка" value={`− ${fmt(order.rabatt_cents / 100)}`} color="var(--color-coral)" />
             )}
-            <Row label="включая НДС" value={formatPreis(order.tax_total_cents / 100)} muted />
+            <Row label="включая НДС" value={fmt(order.tax_total_cents / 100)} muted />
 
             <div
               className="flex items-baseline justify-between pt-3 mt-2"
@@ -202,7 +203,7 @@ export default async function BestelldetailPage({
                   lineHeight: 1,
                 }}
               >
-                {formatPreis(order.total_cents / 100)}
+                {fmt(order.total_cents / 100)}
               </span>
             </div>
           </div>

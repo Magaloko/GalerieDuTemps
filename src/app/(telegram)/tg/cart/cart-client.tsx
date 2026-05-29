@@ -52,8 +52,8 @@ export function CartClient() {
     main.show();
 
     const onClick = async () => {
-      if (ref.current || busy) return;
-      ref.current = true;
+      if (ref.current) return;   // Reentry-Sperre via Ref — verhindert Doppel-
+      ref.current = true;        // Checkout auch bei (auf Alt-Clients) gestapelten Listenern.
       setBusy(true);
       setErr(null);
       try {
@@ -89,7 +89,11 @@ export function CartClient() {
     main.onClick(onClick);
 
     return () => { mainButtonOffClick(main, onClick); main.hide(); };
-  }, [items, totalCents, busy, router]);
+    // busy/router bewusst NICHT in den Deps: sonst re-registriert der Effect den
+    // MainButton-Listener bei jedem busy-Toggle/Poll → auf Alt-Clients (<6.1 ohne
+    // offClick) gestapelte Listener. Reentry wird über `ref` abgesichert.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, totalCents]);
 
   return (
     <main className="p-4 pb-32">

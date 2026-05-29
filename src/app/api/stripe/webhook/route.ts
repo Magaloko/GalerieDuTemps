@@ -139,18 +139,38 @@ export async function POST(req: NextRequest) {
         const pi = typeof charge.payment_intent === "string" ? charge.payment_intent : null;
         if (pi) {
           const { query } = await import("@/lib/db");
-          const r = await query<{ id: string }>(
-            `UPDATE sebo.orders
-             SET status = 'refunded', payment_status = 'refunded'
-             WHERE stripe_payment_intent = $1
-             RETURNING id`,
-            [pi]
-          );
-          for (const row of r.rows) {
-            await orderSetPaymentStatus(row.id, "refunded", {
-              stripe_payment_intent: pi,
-              refunded_at:           new Date().toISOString(),
-            });
+          // Stripe feuert charge.refunded auch bei TEIL-Erstattungen. Nur eine
+          // Voll-Erstattung darf die Order auf 'refunded' setzen — sonst würde
+          // eine teilerstattete (noch gültige) Bestellung fälschlich als komplett
+          // storniert angezeigt.
+          const istVoll = (charge.amount_refunded ?? 0) >= (charge.amount ?? 0);
+          if (istVoll) {
+            const r = await query<{ id: string }>(
+              `UPDATE sebo.orders
+               SET status = 'refunded', payment_status = 'refunded'
+               WHERE stripe_payment_intent = $1
+               RETURNING id`,
+              [pi]
+            );
+            for (const row of r.rows) {
+              await orderSetPaymentStatus(row.id, "refunded", {
+                stripe_payment_intent: pi,
+                refunded_at:           new Date().toISOString(),
+              });
+            }
+          } else {
+            // Teil-Erstattung: Order bleibt bezahlt/aktiv, nur Meta vermerken.
+            const r = await query<{ id: string }>(
+              `SELECT id FROM sebo.orders WHERE stripe_payment_intent = $1`,
+              [pi]
+            );
+            for (const row of r.rows) {
+              await orderSetPaymentStatus(row.id, "paid", {
+                stripe_payment_intent: pi,
+                partial_refund_cents:  charge.amount_refunded,
+                partial_refund_at:     new Date().toISOString(),
+              });
+            }
           }
         }
         break;
