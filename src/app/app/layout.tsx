@@ -17,13 +17,15 @@ export const metadata: Metadata = {
  * teils hier (Сегодня, Меню), teils verlinken sie in die /admin-Seiten.
  * ────────────────────────────────────────────────────────────────────────── */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  // Gleiche App + gleiches Icon für alle: /app ist der Operator-Einstieg
+  // (Kacheln). Wer KEIN Admin ist, wird nicht auf einen Operator-Login
+  // geschickt, sondern auf die passende Heimat — Gäste/Kunden → Shop,
+  // Affiliates → Partner-Bereich. So startet dieselbe installierte PWA für
+  // jeden sinnvoll.
   const session = await auth();
-  if (!session) redirect("/login");
-  const rolle = session.user?.role;
-  if (rolle !== "admin" && rolle !== "superadmin") {
-    if (rolle === "customer")  redirect("/kunde");
-    if (rolle === "affiliate") redirect("/affiliate");
-    redirect("/login");
+  if (!session || (session.user?.role !== "admin" && session.user?.role !== "superadmin")) {
+    if (session?.user?.role === "affiliate") redirect("/affiliate");
+    redirect("/");
   }
 
   return (
