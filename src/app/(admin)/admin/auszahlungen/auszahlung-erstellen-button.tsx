@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { Wallet } from "lucide-react";
 import { auszahlungErstellenAction } from "./actions";
 import { formatPreis } from "@/lib/utils/preis";
+import { useToast } from "@/components/ui/toast-provider";
 
 export function AuszahlungErstellenButton({
   affiliateId,
@@ -17,6 +18,7 @@ export function AuszahlungErstellenButton({
   affiliateName: string;
 }) {
   const [pending, startTransition] = useTransition();
+  const toast = useToast();
 
   const handle = () => {
     if (!confirm(
@@ -26,7 +28,7 @@ export function AuszahlungErstellenButton({
 
     startTransition(async () => {
       const result = await auszahlungErstellenAction(affiliateId, methode);
-      if (result.fehler) alert(result.fehler);
+      if (result.fehler) toast.error(result.fehler);
     });
   };
 

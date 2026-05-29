@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { newsletterUpdateAction, newsletterTestAction, newsletterVersendenAction, newsletterDeleteAction } from "../../actions";
 import type { Newsletter, NewsletterBlock, NewsletterBlockType } from "@/types/newsletter";
 import type { Segment } from "@/types/crm";
+import { useToast } from "@/components/ui/toast-provider";
 
 const NEUE_BLOCKS: Record<NewsletterBlockType, NewsletterBlock> = {
   hero:         { type: "hero",     titel: "Заголовок", subtitel: "Подзаголовок", cta_label: "Смотреть подробнее", cta_url: "/katalog" },
@@ -32,6 +33,7 @@ export function NewsletterEditor({
   const [testEmail, setTestEmail] = useState("");
   const [meldung,  setMeldung]  = useState("");
   const [pending, startTransition] = useTransition();
+  const toast = useToast();
 
   const istVersendet = newsletter.status === "versendet";
 
@@ -60,12 +62,13 @@ export function NewsletterEditor({
   };
 
   const handleTest = () => {
-    if (!testEmail || !testEmail.includes("@")) { alert("Введите e-mail"); return; }
+    if (!testEmail || !testEmail.includes("@")) { toast.error("Введите e-mail"); return; }
     startTransition(async () => {
       // Erst speichern
       await newsletterUpdateAction(newsletter.id, { titel, betreff, preheader, blocks, segment_id: segmentId || null });
       const r = await newsletterTestAction(newsletter.id, testEmail);
-      alert(r.ok ? `Тестовое письмо отправлено на ${testEmail}` : `Ошибка: ${r.fehler}`);
+      if (r.ok) toast.success(`Тестовое письмо отправлено на ${testEmail}`);
+      else toast.error(`Ошибка: ${r.fehler}`);
     });
   };
 
@@ -74,8 +77,8 @@ export function NewsletterEditor({
     startTransition(async () => {
       await newsletterUpdateAction(newsletter.id, { titel, betreff, preheader, blocks, segment_id: segmentId || null });
       const r = await newsletterVersendenAction(newsletter.id);
-      if (r.ok) alert(`✓ Рассылка отправлена получателям: ${r.anzahl}`);
-      else      alert(`Ошибка: ${r.fehler}`);
+      if (r.ok) toast.success(`✓ Рассылка отправлена получателям: ${r.anzahl}`);
+      else      toast.error(`Ошибка: ${r.fehler}`);
     });
   };
 

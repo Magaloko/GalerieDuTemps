@@ -16,6 +16,7 @@ import { kontaktKanaeleLaden, whatsappUrl, telegramUrl, instagramUrl } from "@/l
 import { renderThemeCssVars, getThemeBranding } from "@/lib/db/theme";
 import { LenisProvider } from "@/components/providers/lenis-provider";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
+import { ToastProvider } from "@/components/ui/toast-provider";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -182,7 +183,9 @@ export default async function RootLayout({
         {themeCss ? <style dangerouslySetInnerHTML={{ __html: themeCss }} /> : null}
         <JsonLd id="org-site" data={[orgJsonLd, siteJsonLd]} />
         <ServiceWorkerRegister />
-        <LenisProvider>{children}</LenisProvider>
+        <ToastProvider>
+          <LenisProvider>{children}</LenisProvider>
+        </ToastProvider>
       </body>
     </html>
   );

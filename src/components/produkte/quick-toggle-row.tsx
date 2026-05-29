@@ -8,6 +8,7 @@ import {
   produktReservierungAufhebenAction,
   produktInKanalAction,
 } from "@/app/(admin)/admin/produkte/actions";
+import { useToast } from "@/components/ui/toast-provider";
 
 interface Props {
   id:           string;
@@ -28,6 +29,7 @@ export function QuickToggleRow({ id, aktiv, featured, verkauft, lagerbestand, re
   const [optimistic, setOptimistic] = useState({ aktiv, featured, verkauft });
   const [reserviertState, setReserviert] = useState(reserviert);
   const [pending, start] = useTransition();
+  const toast = useToast();
 
   const toggle = (feld: "aktiv" | "featured" | "verkauft") => {
     const next = !optimistic[feld];
@@ -37,7 +39,7 @@ export function QuickToggleRow({ id, aktiv, featured, verkauft, lagerbestand, re
       if (!r.ok) {
         // Revert bei Fehler
         setOptimistic(o => ({ ...o, [feld]: !next }));
-        alert(r.error ?? "Ошибка");
+        toast.error(r.error ?? "Ошибка");
       }
     });
   };
@@ -51,7 +53,7 @@ export function QuickToggleRow({ id, aktiv, featured, verkauft, lagerbestand, re
         : await produktReservierungAufhebenAction(id);
       if (!r.ok) {
         setReserviert(!willReserve);   // revert
-        alert(r.error ?? "Ошибка");
+        toast.error(r.error ?? "Ошибка");
       }
     });
   };
@@ -60,7 +62,8 @@ export function QuickToggleRow({ id, aktiv, featured, verkauft, lagerbestand, re
     if (!confirm("Опубликовать этот товар в Telegram-канал как новинку?")) return;
     start(async () => {
       const r = await produktInKanalAction(id);
-      alert(r.ok ? "Опубликовано в канал ✓" : (r.error ?? "Ошибка"));
+      if (r.ok) toast.success("Опубликовано в канал ✓");
+      else toast.error(r.error ?? "Ошибка");
     });
   };
 

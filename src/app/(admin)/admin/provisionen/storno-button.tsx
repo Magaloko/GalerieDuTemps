@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { Ban } from "lucide-react";
 import { provisionenStornierenAction } from "./actions";
+import { useToast } from "@/components/ui/toast-provider";
 
 export function StornoButton({
   kontaktanfrageId,
@@ -12,6 +13,7 @@ export function StornoButton({
   produktName:      string | null;
 }) {
   const [pending, startTransition] = useTransition();
+  const toast = useToast();
 
   const handle = () => {
     const grund = prompt(
@@ -24,7 +26,8 @@ export function StornoButton({
 
     startTransition(async () => {
       const result = await provisionenStornierenAction(kontaktanfrageId, grund);
-      if (result.fehler) alert(result.fehler);
+      if (result.fehler) toast.error(result.fehler);
+      else toast.success("Сторнировано");
     });
   };
 

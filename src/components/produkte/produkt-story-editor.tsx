@@ -7,6 +7,7 @@ import {
   Minus, MousePointerClick, Columns2, LayoutGrid, Film, GripVertical,
 } from "lucide-react";
 import { storyBildUploadAction } from "@/app/(admin)/admin/produkte/actions";
+import { useToast } from "@/components/ui/toast-provider";
 import { STORY_BG, storyBgCss } from "./story-bg";
 import { blockText } from "@/lib/utils/i18n-text";
 import type { ProduktBlock, ProduktBlockTyp, Produktbild, I18nText } from "@/types/produkt";
@@ -384,13 +385,14 @@ function BlockProps({ block: b, galerie, onPatch }: {
   block: ProduktBlock; galerie: Produktbild[]; onPatch: (p: Partial<ProduktBlock>) => void;
 }) {
   const [busy, start] = useTransition();
+  const toast = useToast();
 
   const upload = (file: File) => {
     const fd = new FormData(); fd.append("file", file);
     start(async () => {
       const r = await storyBildUploadAction(fd);
       if (r.ok && r.url) onPatch({ bild_url: r.url });
-      else alert(r.error ?? "Ошибка загрузки");
+      else toast.error(r.error ?? "Ошибка загрузки");
     });
   };
 
@@ -400,7 +402,7 @@ function BlockProps({ block: b, galerie, onPatch }: {
     start(async () => {
       const r = await storyBildUploadAction(fd);
       if (r.ok && r.url) onPatch({ bilder: [...(b.bilder ?? []), r.url] });
-      else alert(r.error ?? "Ошибка загрузки");
+      else toast.error(r.error ?? "Ошибка загрузки");
     });
   };
 
