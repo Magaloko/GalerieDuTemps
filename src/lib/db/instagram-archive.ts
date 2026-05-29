@@ -26,6 +26,7 @@ export interface InstagramPost {
   typ:               "p" | "reel" | "tv";
   kategorie_id:      number | null;
   produkt_id:        string | null;
+  brand_id:          string | null;
   titel:             string | null;
   sortierung:        number;
   aktiv:             boolean;
@@ -114,7 +115,7 @@ export async function instagramKategorieErstellen(name: string): Promise<Instagr
 
 export async function instagramPostsAlle(): Promise<InstagramPost[]> {
   const r = await query<InstagramPost>(
-    `SELECT p.id, p.permalink, p.shortcode, p.typ, p.kategorie_id, p.produkt_id,
+    `SELECT p.id, p.permalink, p.shortcode, p.typ, p.kategorie_id, p.produkt_id, p.brand_id,
             p.titel, p.sortierung, p.aktiv, p.erstellt_am, p.kanal_gepostet_am,
             k.name AS kategorie_name, k.slug AS kategorie_slug,
             pr.slug AS produkt_slug, pr.name AS produkt_name,
@@ -175,27 +176,29 @@ export async function instagramPostErstellen(input: {
   typ:         "p" | "reel" | "tv";
   kategorieId?:  number | null;
   produktId?:    string | null;
+  brandId?:      string | null;
   titel?:        string | null;
   thumbnailUrl?: string | null;
 }): Promise<InstagramPost> {
   const r = await query<InstagramPost>(
-    `INSERT INTO sebo.instagram_posts (permalink, shortcode, typ, kategorie_id, produkt_id, titel, thumbnail_url)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
-     RETURNING id, permalink, shortcode, typ, kategorie_id, produkt_id, titel, sortierung, aktiv, erstellt_am, kanal_gepostet_am, thumbnail_url`,
-    [input.permalink, input.shortcode, input.typ, input.kategorieId ?? null, input.produktId ?? null, input.titel?.trim() || null, input.thumbnailUrl?.trim() || null],
+    `INSERT INTO sebo.instagram_posts (permalink, shortcode, typ, kategorie_id, produkt_id, brand_id, titel, thumbnail_url)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+     RETURNING id, permalink, shortcode, typ, kategorie_id, produkt_id, brand_id, titel, sortierung, aktiv, erstellt_am, kanal_gepostet_am, thumbnail_url`,
+    [input.permalink, input.shortcode, input.typ, input.kategorieId ?? null, input.produktId ?? null, input.brandId ?? null, input.titel?.trim() || null, input.thumbnailUrl?.trim() || null],
   );
   return r.rows[0];
 }
 
 export async function instagramPostAktualisieren(
   id: string,
-  input: { kategorieId?: number | null; produktId?: string | null; titel?: string | null; aktiv?: boolean; sortierung?: number; thumbnailUrl?: string | null },
+  input: { kategorieId?: number | null; produktId?: string | null; brandId?: string | null; titel?: string | null; aktiv?: boolean; sortierung?: number; thumbnailUrl?: string | null },
 ): Promise<void> {
   const sets: string[] = [];
   const vals: unknown[] = [];
   let idx = 1;
   if (input.kategorieId !== undefined) { sets.push(`kategorie_id = $${idx++}`); vals.push(input.kategorieId); }
   if (input.produktId   !== undefined) { sets.push(`produkt_id = $${idx++}`);   vals.push(input.produktId); }
+  if (input.brandId     !== undefined) { sets.push(`brand_id = $${idx++}`);     vals.push(input.brandId); }
   if (input.titel       !== undefined) { sets.push(`titel = $${idx++}`);        vals.push(input.titel?.trim() || null); }
   if (input.aktiv       !== undefined) { sets.push(`aktiv = $${idx++}`);        vals.push(input.aktiv); }
   if (input.sortierung  !== undefined) { sets.push(`sortierung = $${idx++}`);   vals.push(input.sortierung); }

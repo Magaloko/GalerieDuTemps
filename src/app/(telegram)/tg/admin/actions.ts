@@ -428,6 +428,7 @@ export async function instagramPostCreateAction(input: {
   embedOderUrl: string;
   kategorieId?: number | null;
   produktId?:   string | null;
+  brandId?:     string | null;
   titel?:       string | null;
   thumbnailUrl?: string | null;
 }): Promise<ActionRes> {
@@ -444,6 +445,7 @@ export async function instagramPostCreateAction(input: {
       permalink, shortcode, typ,
       kategorieId: input.kategorieId ?? null,
       produktId:   input.produktId ?? null,
+      brandId:     input.brandId ?? null,
       titel:       input.titel ?? null,
       thumbnailUrl: input.thumbnailUrl ?? null,
     });
@@ -463,7 +465,7 @@ export async function instagramPostCreateAction(input: {
 /* ── Instagram-Archiv: Post bearbeiten (Kategorie/Produkt/aktiv/Titel) ─────── */
 export async function instagramPostUpdateAction(
   id: string,
-  input: { kategorieId?: number | null; produktId?: string | null; titel?: string | null; aktiv?: boolean; sortierung?: number; thumbnailUrl?: string | null },
+  input: { kategorieId?: number | null; produktId?: string | null; brandId?: string | null; titel?: string | null; aktiv?: boolean; sortierung?: number; thumbnailUrl?: string | null },
 ): Promise<ActionRes> {
   if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
   try {

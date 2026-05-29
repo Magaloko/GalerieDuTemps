@@ -278,13 +278,13 @@ export async function produktErstellen(
         aktiv, b2c_mode, seo_titel, seo_beschreibung, tags,
         hauptbild_url, rueckbild_url, video_url, abmessungen,
         name_i18n, kurzbeschreibung_i18n, beschreibung_i18n,
-        instagram_urls,
+        instagram_urls, brand_id,
         veroeffentlicht_am)
      VALUES
        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,
         $24,$25,$26,$27::jsonb,
         $28::jsonb, $29::jsonb, $30::jsonb,
-        $31,
+        $31, $32,
         now())
      RETURNING id`,
     [
@@ -320,6 +320,7 @@ export async function produktErstellen(
       JSON.stringify(input.beschreibung_i18n     ?? {}),
       // Postgres TEXT[]-Literal — Werte in doppelte Quotes für safety
       `{${(input.instagram_urls ?? []).map(u => `"${u.replace(/"/g, '\\"')}"`).join(",")}}`,
+      input.brand_id ?? null,
     ]
   );
 
@@ -351,6 +352,7 @@ export async function produktAktualisieren(
     ["b2b_preis",        "b2b_preis"],
     ["waehrung",         "waehrung"],
     ["kategorie_id",     "kategorie_id"],
+    ["brand_id",         "brand_id"],
     ["zustand",          "zustand"],
     ["era",              "era"],
     ["herkunft",         "herkunft"],

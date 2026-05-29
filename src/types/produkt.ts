@@ -88,6 +88,8 @@ export interface Produkt {
   kategorie_id:       number | null;
   kategorie_name?:    string | null;
   kategorie_slug?:    string | null;
+  brand_id:           string | null;
+  brand_name?:        string | null;
   zustand:            Zustand;
   era:                string | null;
   herkunft:           string | null;

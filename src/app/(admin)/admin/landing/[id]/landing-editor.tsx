@@ -10,7 +10,9 @@ import {
 } from "../actions";
 import { useToast } from "@/components/ui/toast-provider";
 import { BlockComposer } from "@/components/blocks/block-composer";
+import { BrandSelect } from "@/components/brands/brand-select";
 import type { LandingPage, LandingBlock, LandingStatus } from "@/types/landing";
+import type { BrandOption } from "@/types/brand";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * LandingEditor — Meta-Kopf + wiederverwendbarer BlockComposer.
@@ -27,12 +29,13 @@ const STATUS_INFO: { code: LandingStatus; label: string; icon: React.ElementType
   { code: "archiviert",      label: "В архив",     icon: Archive },
 ];
 
-export function LandingEditor({ page }: { page: LandingPage }) {
+export function LandingEditor({ page, brands = [] }: { page: LandingPage; brands?: BrandOption[] }) {
   const [blocks, setBlocks]   = useState<LandingBlock[]>(page.blocks ?? []);
   const [titel, setTitel]     = useState(page.titel);
   const [slug, setSlug]       = useState(page.slug);
   const [seoT, setSeoT]       = useState(page.seo_titel ?? "");
   const [seoB, setSeoB]       = useState(page.seo_beschreibung ?? "");
+  const [brandId, setBrandId] = useState(page.brand_id ?? "");
   const [status, setStatus]   = useState<LandingStatus>(page.status);
   const [istHome, setIstHome] = useState(page.ist_startseite);
   const [pending, start]      = useTransition();
@@ -44,13 +47,14 @@ export function LandingEditor({ page }: { page: LandingPage }) {
       await landingSpeichernAction(page.id, {
         titel, slug, blocks,
         seo_titel: seoT || null, seo_beschreibung: seoB || null,
+        brand_id: brandId || null,
       });
       toast.success("Сохранено ✓");
     });
   };
   const setzeStatus = (s: LandingStatus) => {
     start(async () => {
-      await landingSpeichernAction(page.id, { titel, slug, blocks, seo_titel: seoT || null, seo_beschreibung: seoB || null });
+      await landingSpeichernAction(page.id, { titel, slug, blocks, seo_titel: seoT || null, seo_beschreibung: seoB || null, brand_id: brandId || null });
       await landingStatusAction(page.id, s);
       setStatus(s);
       toast.success("Статус обновлён");
@@ -93,6 +97,7 @@ export function LandingEditor({ page }: { page: LandingPage }) {
             <span className="text-[10px] uppercase tracking-widest text-vintage-dust">SEO-описание</span>
             <input className={fieldCls} value={seoB} onChange={(e) => setSeoB(e.target.value)} />
           </label>
+          <BrandSelect brands={brands} value={brandId} onChange={setBrandId} />
         </div>
 
         <div className="flex flex-wrap items-center gap-2 pt-1">

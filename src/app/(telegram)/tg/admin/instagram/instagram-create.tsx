@@ -11,12 +11,13 @@ type Option = { value: string; label: string };
 /* Neuen Archiv-Post anlegen: Embed/URL einfügen → Kategorie + optional Produkt
  * + optional Titel. Inline „neue Kategorie". */
 export function InstagramCreate({
-  kategorien, produkte,
-}: { kategorien: Option[]; produkte: Option[] }) {
+  kategorien, produkte, brands,
+}: { kategorien: Option[]; produkte: Option[]; brands: Option[] }) {
   const router = useRouter();
   const [embed, setEmbed]       = useState("");
   const [kat, setKat]           = useState("");
   const [prod, setProd]         = useState("");
+  const [brand, setBrand]       = useState("");
   const [titel, setTitel]       = useState("");
   const [neueKat, setNeueKat]   = useState("");
   const [katOffen, setKatOffen] = useState(false);
@@ -44,13 +45,14 @@ export function InstagramCreate({
       embedOderUrl: embed,
       kategorieId:  kat ? parseInt(kat, 10) : null,
       produktId:    prod || null,
+      brandId:      brand || null,
       titel:        titel || null,
       thumbnailUrl: cover || null,
     });
     if (r.ok) {
       haptic("success");
       setFlash({ t: "ok", m: "Добавлено" });
-      setEmbed(""); setTitel(""); setProd(""); setCover("");
+      setEmbed(""); setTitel(""); setProd(""); setBrand(""); setCover("");
       setTimeout(() => { setFlash(null); router.refresh(); }, 900);
     } else {
       haptic("error");
@@ -107,6 +109,11 @@ export function InstagramCreate({
       <select value={prod} onChange={e => setProd(e.target.value)} className="w-full px-2.5 py-2 text-sm" style={inputStyle}>
         <option value="">— товар (необязательно) —</option>
         {produkte.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+      </select>
+
+      <select value={brand} onChange={e => setBrand(e.target.value)} className="w-full px-2.5 py-2 text-sm" style={inputStyle}>
+        <option value="">— бренд (необязательно) —</option>
+        {brands.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
       </select>
 
       {/* Cover-Bild (optional). Bei verknüpftem Produkt ist es optional — die

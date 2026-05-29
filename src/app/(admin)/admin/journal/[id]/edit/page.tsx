@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { postById } from "@/lib/db/journal";
+import { brandsAktiv } from "@/lib/db/brands";
 import { JournalEditor } from "./journal-editor";
 import { ChevronLeft, ExternalLink } from "lucide-react";
 import type { Metadata } from "next";
@@ -24,6 +25,8 @@ export default async function JournalEditPage({
   }
   if (!post) notFound();
 
+  const brands = await brandsAktiv().catch(() => []);
+
   return (
     <div className="space-y-6 max-w-5xl">
       <div className="flex items-center justify-between">
@@ -42,7 +45,7 @@ export default async function JournalEditPage({
         )}
       </div>
 
-      <JournalEditor post={post} />
+      <JournalEditor post={post} brands={brands} />
     </div>
   );
 }

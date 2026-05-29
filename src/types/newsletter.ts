@@ -61,6 +61,7 @@ export interface JournalPost {
   blocks:            LandingBlock[];
   autor_name:        string | null;
   tags:              string[];
+  brand_id:          string | null;
   seo_titel:         string | null;
   seo_beschreibung:  string | null;
   veroeffentlicht:   boolean;

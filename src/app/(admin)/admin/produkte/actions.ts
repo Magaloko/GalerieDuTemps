@@ -82,6 +82,7 @@ function parseProduktFormData(formData: FormData) {
     b2b_preis:        formData.get("b2b_preis")      || undefined,
     waehrung:         (formData.get("waehrung") as string | null) || undefined,
     kategorie_id:     formData.get("kategorie_id")   || undefined,
+    brand_id:         (formData.get("brand_id") as string | null) || null,
     zustand:          formData.get("zustand"),
     era:              formData.get("era")            || undefined,
     herkunft:         formData.get("herkunft")       || undefined,

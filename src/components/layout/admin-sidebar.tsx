@@ -104,6 +104,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/admin/produkte",   label: "Товары",    icon: Package },
       { href: "/admin/kategorien", label: "Категории", icon: Tag },
+      { href: "/admin/brands",     label: "Бренды",    icon: Briefcase },
       { href: "/admin/coupons",    label: "Промокоды", icon: Ticket },
     ],
   },

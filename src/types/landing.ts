@@ -90,6 +90,7 @@ export interface LandingPage {
   ist_startseite: boolean;
   seo_titel: string | null;
   seo_beschreibung: string | null;
+  brand_id: string | null;
   erstellt_am?: string;
   aktualisiert_am?: string;
 }

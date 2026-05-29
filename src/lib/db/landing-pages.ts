@@ -9,7 +9,7 @@ import type { ProduktListItem } from "@/types/produkt";
 
 const COLS = `
   id, slug, titel, status, blocks, ist_startseite,
-  seo_titel, seo_beschreibung, erstellt_am, aktualisiert_am
+  seo_titel, seo_beschreibung, brand_id, erstellt_am, aktualisiert_am
 `;
 
 /** Alle Landing-Pages (Admin-Liste, neueste zuerst). */
@@ -92,6 +92,7 @@ export async function landingPageAktualisieren(
     status?: LandingStatus;
     seo_titel?: string | null;
     seo_beschreibung?: string | null;
+    brand_id?: string | null;
   },
 ): Promise<void> {
   const felder: string[] = [];
@@ -122,6 +123,10 @@ export async function landingPageAktualisieren(
   if (data.seo_beschreibung !== undefined) {
     felder.push(`seo_beschreibung = $${idx++}`);
     werte.push(data.seo_beschreibung);
+  }
+  if (data.brand_id !== undefined) {
+    felder.push(`brand_id = $${idx++}`);
+    werte.push(data.brand_id);
   }
 
   felder.push(`aktualisiert_am = now()`);

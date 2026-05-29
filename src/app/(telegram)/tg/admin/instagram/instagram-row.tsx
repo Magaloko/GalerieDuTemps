@@ -16,10 +16,12 @@ interface Props {
   aktiv:             boolean;
   kategorieId:       number | null;
   produktId:         string | null;
+  brandId:           string | null;
   titel:             string | null;
   kanalGepostetAm:   string | null;
   kategorien:        Option[];
   produkte:          Option[];
+  brands:            Option[];
 }
 
 /* Eine Archiv-Zeile: Embed-Permalink + Kategorie/Produkt umhängen, aktiv-Toggle, в канал, löschen. */
@@ -96,6 +98,15 @@ export function InstagramRow(p: Props) {
           {p.produkte.map(pr => <option key={pr.value} value={pr.value}>{pr.label}</option>)}
         </select>
       </div>
+
+      <select
+        value={p.brandId ?? ""}
+        onChange={e => run(() => instagramPostUpdateAction(p.id, { brandId: e.target.value || null }))}
+        className="w-full px-2 py-1.5 text-xs" style={inputStyle}
+      >
+        <option value="">— бренд —</option>
+        {p.brands.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
+      </select>
 
       <div className="flex gap-2">
         {/* Aktiv-Toggle */}

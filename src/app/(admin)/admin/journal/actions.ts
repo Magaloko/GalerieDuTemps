@@ -47,6 +47,7 @@ export async function postUpdateAction(id: string, data: {
   markdown?:        string;
   blocks?:          LandingBlock[];
   tags?:            string[];
+  brand_id?:        string | null;
   seo_titel?:       string;
   seo_beschreibung?: string;
   veroeffentlicht?: boolean;

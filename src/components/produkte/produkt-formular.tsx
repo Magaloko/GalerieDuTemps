@@ -19,11 +19,14 @@ import Image from "next/image";
 import { formatPreis } from "@/lib/utils/preis";
 import type { Produkt, Produktbild } from "@/types/produkt";
 import type { Kategorie } from "@/types/produkt";
+import type { BrandOption } from "@/types/brand";
 import type { FormState } from "@/app/(admin)/admin/produkte/actions";
 
 interface ProduktFormularProps {
   produkt?:    Produkt;
   kategorien:  Kategorie[];
+  /** Aktive Marken (für Brand-Select). */
+  brands?:     BrandOption[];
   /** Bestehende Bilder aus produktbilder-Tabelle (nur bei Edit relevant) */
   initialBilder?: Produktbild[];
   action:      (prev: FormState, formData: FormData) => Promise<FormState>;
@@ -40,6 +43,7 @@ const ZUSTAND_OPTIONS = [
 export function ProduktFormular({
   produkt,
   kategorien,
+  brands = [],
   initialBilder = [],
   action,
   loeschenAction,
@@ -82,6 +86,11 @@ export function ProduktFormular({
   const kategorieOptions = [
     { value: "", label: "Без категории" },
     ...kategorien.map(k => ({ value: String(k.id), label: k.name })),
+  ];
+
+  const brandOptions = [
+    { value: "", label: "— Без бренда —" },
+    ...brands.map(b => ({ value: b.id, label: b.name })),
   ];
 
   // ── Live-Vorschau-State (wie im Newsletter-Editor) ───────────────────────
@@ -217,6 +226,13 @@ export function ProduktFormular({
             onChange={(ev) => setPvZustand((ev.target as HTMLSelectElement).value)}
           />
         </div>
+
+        <Select
+          label="Бренд"
+          name="brand_id"
+          options={brandOptions}
+          defaultValue={produkt?.brand_id ?? ""}
+        />
 
         <Input
           label="Количество на складе"

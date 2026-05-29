@@ -52,6 +52,7 @@ export async function landingSpeichernAction(
     blocks?: LandingBlock[];
     seo_titel?: string | null;
     seo_beschreibung?: string | null;
+    brand_id?: string | null;
   },
 ): Promise<{ ok: boolean }> {
   await guard();

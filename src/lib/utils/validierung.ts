@@ -47,6 +47,7 @@ export const ProduktCreateSchema = z.object({
   }).optional().nullable(),
   waehrung:        z.string().length(3).default("KZT"),
   kategorie_id:    z.coerce.number().int().positive().optional().nullable(),
+  brand_id:        z.string().uuid().optional().nullable(),
   zustand:         z.enum(["sehr_gut", "gut", "akzeptabel", "restauriert"]).default("gut"),
   era:             z.string().max(50).optional(),
   herkunft:        z.string().max(100).optional(),

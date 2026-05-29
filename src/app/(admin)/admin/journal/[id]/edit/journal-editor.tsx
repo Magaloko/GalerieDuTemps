@@ -6,11 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { BlockComposer } from "@/components/blocks/block-composer";
+import { BrandSelect } from "@/components/brands/brand-select";
 import { postUpdateAction, postDeleteAction, journalBildUploadAction } from "../../actions";
 import type { JournalPost } from "@/types/newsletter";
 import type { LandingBlock } from "@/types/landing";
+import type { BrandOption } from "@/types/brand";
 
-export function JournalEditor({ post }: { post: JournalPost }) {
+export function JournalEditor({ post, brands = [] }: { post: JournalPost; brands?: BrandOption[] }) {
   const [titel,    setTitel]    = useState(post.titel);
   const [excerpt,  setExcerpt]  = useState(post.excerpt ?? "");
   const [cover,    setCover]    = useState(post.cover_bild_url ?? "");
@@ -19,6 +21,7 @@ export function JournalEditor({ post }: { post: JournalPost }) {
   const [seoTitel, setSeoTitel] = useState(post.seo_titel ?? "");
   const [seoBesch, setSeoBesch] = useState(post.seo_beschreibung ?? "");
   const [veroeff,  setVeroeff]  = useState(post.veroeffentlicht);
+  const [brandId,  setBrandId]  = useState(post.brand_id ?? "");
   const [meldung,  setMeldung]  = useState("");
   const [pending, startTransition] = useTransition();
 
@@ -34,6 +37,7 @@ export function JournalEditor({ post }: { post: JournalPost }) {
         cover_bild_url:  cover   || undefined,
         blocks,
         tags:            tagsRaw.split(",").map(t => t.trim()).filter(Boolean),
+        brand_id:        brandId || null,
         seo_titel:       seoTitel || undefined,
         seo_beschreibung: seoBesch || undefined,
         veroeffentlicht: veroeff,
@@ -91,6 +95,7 @@ export function JournalEditor({ post }: { post: JournalPost }) {
             <input type="checkbox" checked={veroeff} onChange={(e) => setVeroeff(e.target.checked)} className="w-4 h-4 accent-vintage-gold" />
             <span className="text-sm font-sans text-vintage-ink">Опубликовано в Journal</span>
           </label>
+          <BrandSelect brands={brands} value={brandId} onChange={setBrandId} />
           <Button onClick={handleSpeichern} loading={pending} icon={<Save className="w-3.5 h-3.5" />} className="w-full justify-center">
             Сохранить
           </Button>

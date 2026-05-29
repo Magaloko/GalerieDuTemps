@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { landingPageById } from "@/lib/db/landing-pages";
+import { brandsAktiv } from "@/lib/db/brands";
 import { LandingEditor } from "./landing-editor";
 import type { Metadata } from "next";
 
@@ -14,7 +15,10 @@ export default async function LandingEditPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const page = await landingPageById(id);
+  const [page, brands] = await Promise.all([
+    landingPageById(id),
+    brandsAktiv().catch(() => []),
+  ]);
   if (!page) notFound();
 
   return (
@@ -27,7 +31,7 @@ export default async function LandingEditPage({
         <span className="text-vintage-ink truncate max-w-72">{page.titel}</span>
       </nav>
 
-      <LandingEditor page={page} />
+      <LandingEditor page={page} brands={brands} />
     </div>
   );
 }
