@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { Search, Heart, Menu, X, User } from "lucide-react";
+import { Search, Heart, Menu, X, User, ChevronDown } from "lucide-react";
 import { useWunschliste } from "@/hooks/use-wunschliste";
 import { CartBadge } from "./cart-badge";
 import { MobileDrawer } from "./mobile-drawer";
@@ -290,9 +290,14 @@ export function Header({
 
             {/* Desktop: 3-col (nav | logo | actions) */}
             <div className="hidden md:grid grid-cols-[1fr_auto_1fr] items-center gap-6">
-              {/* Nav left */}
+              {/* Nav left — „КАТАЛОГ" als Kategorien-Dropdown, Rest als Links */}
               <nav className="flex items-center gap-7">
-                {navLinks.map(({ href, label }) => {
+                <KatalogMenu
+                  kategorien={kategorien}
+                  label={t.nav.katalog}
+                  active={pathname.startsWith("/katalog") || pathname.startsWith("/kategorien")}
+                />
+                {navLinks.filter(l => l.href !== "/katalog").map(({ href, label }) => {
                   const active = pathname.startsWith(href);
                   return (
                     <Link
@@ -379,49 +384,7 @@ export function Header({
           </div>
         </div>
 
-        {/* ─ Bar 3: Sub (cobalt-deep) — Category Chips ─────────────────── */}
-        {kategorien.length > 0 && (
-          <div
-            className="hidden md:block border-t"
-            style={{
-              background:  "var(--color-cobalt)",
-              borderColor: "rgba(232,112,58,0.15)",
-            }}
-          >
-            <div className="max-w-[1440px] mx-auto px-14 py-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-5 overflow-x-auto">
-                {kategorien.slice(0, 8).map(k => (
-                  <Link
-                    key={k.id}
-                    href={`/kategorien/${k.slug}`}
-                    className="text-[11px] uppercase font-medium whitespace-nowrap hover:text-coral transition-colors"
-                    style={{
-                      letterSpacing: "var(--tracking-nav)",
-                      color:         "rgba(255,255,255,0.7)",
-                    }}
-                  >
-                    {k.name}
-                    {k.anzahl !== undefined && k.anzahl > 0 && (
-                      <span style={{ color: "rgba(255,255,255,0.4)", marginLeft: 6, fontSize: 10 }}>
-                        ({k.anzahl})
-                      </span>
-                    )}
-                  </Link>
-                ))}
-              </div>
-              <Link
-                href="/katalog?sort=neue"
-                className="text-[11px] uppercase font-medium whitespace-nowrap hover:opacity-80 transition-opacity"
-                style={{
-                  letterSpacing: "var(--tracking-nav)",
-                  color:         "var(--color-coral)",
-                }}
-              >
-                ★ Избранное недели →
-              </Link>
-            </div>
-          </div>
-        )}
+        {/* Kategorien sind jetzt im „КАТАЛОГ"-Dropdown integriert (keine eigene Bar 3). */}
 
         {/* ─ Such-Leiste (ausklappbar) ─────────────────────────────────── */}
         {sucheOffen && (
@@ -453,6 +416,84 @@ export function Header({
 }
 
 /* ── Sub-components ────────────────────────────────────────────────────── */
+
+/** „КАТАЛОГ"-Nav-Eintrag mit Kategorien-Dropdown (Desktop, Cobalt). */
+function KatalogMenu({
+  kategorien, label, active,
+}: { kategorien: Kategorie[]; label: string; active: boolean }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <Link
+        href="/katalog"
+        onClick={() => setOpen(false)}
+        aria-haspopup="true"
+        aria-expanded={open}
+        className={`flex items-center gap-1 text-[11px] uppercase font-medium transition-colors whitespace-nowrap ${active ? "text-coral" : "text-white/85 hover:text-coral"}`}
+        style={{
+          letterSpacing: "var(--tracking-nav)",
+          borderBottom:  active ? "1px solid var(--color-coral)" : "1px solid transparent",
+          paddingBottom: "6px",
+        }}
+      >
+        {label}
+        <ChevronDown
+          className="w-3 h-3"
+          style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .2s" }}
+        />
+      </Link>
+
+      {open && kategorien.length > 0 && (
+        // pt-3 = unsichtbare Hover-Brücke zum Panel (Cursor verliert den Hover nicht)
+        <div className="absolute left-0 top-full pt-3 z-50">
+          <div
+            className="w-[360px] p-5 shadow-2xl"
+            style={{ background: "var(--color-cobalt-dark)", border: "1px solid rgba(232,112,58,0.25)" }}
+          >
+            <p className="text-[10px] uppercase font-medium mb-3"
+               style={{ letterSpacing: "0.22em", color: "rgba(255,255,255,0.45)" }}>
+              Категории
+            </p>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-2.5">
+              {kategorien.slice(0, 10).map(k => (
+                <Link
+                  key={k.id}
+                  href={`/kategorien/${k.slug}`}
+                  className="text-[12px] transition-colors hover:text-coral whitespace-nowrap"
+                  style={{ color: "rgba(255,255,255,0.82)" }}
+                >
+                  {k.name}
+                  {k.anzahl !== undefined && k.anzahl > 0 && (
+                    <span style={{ color: "rgba(255,255,255,0.35)", marginLeft: 5, fontSize: 10 }}>
+                      ({k.anzahl})
+                    </span>
+                  )}
+                </Link>
+              ))}
+            </div>
+            <div className="flex items-center justify-between mt-4 pt-3"
+                 style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+              <Link href="/katalog"
+                className="text-[11px] uppercase font-medium hover:text-coral transition-colors"
+                style={{ letterSpacing: "var(--tracking-nav)", color: "rgba(255,255,255,0.85)" }}>
+                Все товары →
+              </Link>
+              <Link href="/katalog?sort=neue"
+                className="text-[11px] uppercase font-medium hover:opacity-80 transition-opacity"
+                style={{ letterSpacing: "var(--tracking-nav)", color: "var(--color-coral)" }}>
+                ★ Избранное
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function SearchBar({
   inputRef, value, onChange, onSubmit, placeholder, tone,
