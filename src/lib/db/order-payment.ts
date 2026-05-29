@@ -54,11 +54,14 @@ export async function orderSetPaymentStatus(
   metaPatch?: Record<string, unknown>,
 ): Promise<void> {
   await query(
+    // $1 explizit als text casten — sonst leitet Postgres aus
+    // `payment_status = $1` (varchar) UND `$1 = 'partial'` (text-Literal)
+    // widersprüchliche Typen ab: "inconsistent types deduced for parameter $1".
     `UPDATE sebo.orders
-       SET payment_status = $1,
+       SET payment_status = $1::text,
            payment_meta   = sebo.orders.payment_meta || COALESCE($2::jsonb, '{}'::jsonb),
            anzahlung_bezahlt_am = CASE
-             WHEN $1 = 'partial' AND sebo.orders.anzahlung_bezahlt_am IS NULL THEN now()
+             WHEN $1::text = 'partial' AND sebo.orders.anzahlung_bezahlt_am IS NULL THEN now()
              ELSE sebo.orders.anzahlung_bezahlt_am
            END
      WHERE id = $3`,
