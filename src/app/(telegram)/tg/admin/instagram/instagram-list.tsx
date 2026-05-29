@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { GripVertical } from "lucide-react";
+import { GripVertical, ChevronUp, ChevronDown } from "lucide-react";
 import { InstagramRow } from "./instagram-row";
 import { instagramPostsReorderAction } from "../actions";
 import { haptic } from "../../fx";
@@ -89,12 +89,31 @@ export function InstagramList({
     window.addEventListener("pointerup", up, { once: true });
   };
 
+  // Touch-sichere Alternative zum Drag: eine Position hoch/runter + sofort
+  // persistieren. Funktioniert zuverlässig in der Telegram-WebView.
+  const moveStep = (id: string, dir: -1 | 1) => {
+    setOrder(prev => {
+      const from = prev.findIndex(p => p.id === id);
+      const to   = from + dir;
+      if (from < 0 || to < 0 || to >= prev.length) return prev;
+      const next = prev.slice();
+      [next[from], next[to]] = [next[to], next[from]];
+      haptic("light");
+      start(async () => {
+        const r = await instagramPostsReorderAction(next.map(p => p.id));
+        if (r.ok) { haptic("success"); router.refresh(); }
+        else haptic("error");
+      });
+      return next;
+    });
+  };
+
   // Aufräumen, falls mitten im Drag unmountet wird.
   useEffect(() => () => { window.removeEventListener("pointermove", move); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
 
   return (
     <div className="space-y-2">
-      {order.map(p => (
+      {order.map((p, idx) => (
         <div
           key={p.id}
           ref={el => { if (el) rowRefs.current.set(p.id, el); else rowRefs.current.delete(p.id); }}
@@ -105,21 +124,30 @@ export function InstagramList({
             touchAction: dragId ? "none" : undefined,
           }}
         >
-          <button
-            type="button"
-            onPointerDown={down(p.id)}
-            className="shrink-0 flex items-center justify-center px-1"
-            aria-label="Перетащить"
-            style={{
-              touchAction: "none",
-              cursor:      "grab",
-              color:       "var(--tg-theme-hint-color, var(--color-ink-mute))",
-              background:  "var(--tg-theme-section-bg-color, #fff)",
-              border:      "1px solid var(--color-line)",
-            }}
-          >
-            <GripVertical className="w-4 h-4" />
-          </button>
+          {/* Sortier-Spalte: ▲ / Griff (Drag) / ▼ — Tap-Pfeile sind die
+              touch-sichere Alternative, der Griff erlaubt zusätzlich Drag. */}
+          <div className="shrink-0 flex flex-col items-stretch"
+            style={{ background: "var(--tg-theme-section-bg-color, #fff)", border: "1px solid var(--color-line)" }}>
+            <button type="button" onClick={() => moveStep(p.id, -1)} disabled={idx === 0}
+              className="flex items-center justify-center px-1 py-1 disabled:opacity-25"
+              aria-label="Вверх" style={{ touchAction: "manipulation", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
+              <ChevronUp className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onPointerDown={down(p.id)}
+              className="flex items-center justify-center px-1 py-0.5"
+              aria-label="Перетащить"
+              style={{ touchAction: "none", cursor: "grab", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}
+            >
+              <GripVertical className="w-4 h-4" />
+            </button>
+            <button type="button" onClick={() => moveStep(p.id, 1)} disabled={idx === order.length - 1}
+              className="flex items-center justify-center px-1 py-1 disabled:opacity-25"
+              aria-label="Вниз" style={{ touchAction: "manipulation", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
+              <ChevronDown className="w-4 h-4" />
+            </button>
+          </div>
           <div className="flex-1 min-w-0">
             <InstagramRow
               id={p.id}
