@@ -9,6 +9,10 @@ import * as Sentry from "@sentry/nextjs";
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
+    // ENV früh validieren — fehlende Pflicht-Variablen brechen den Boot ab
+    // (sichtbarer Fehler statt stiller 500er im Betrieb).
+    const { validateEnv } = await import("./lib/env");
+    validateEnv();
     await import("../sentry.server.config");
   }
 
