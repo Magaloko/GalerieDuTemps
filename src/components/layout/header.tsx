@@ -157,14 +157,14 @@ export function Header({
 
             {/* Desktop-Layout: nav | wordmark (absolute center) | actions */}
             <div className="hidden md:flex relative items-center justify-between gap-6 h-14">
-              <nav className="flex items-center gap-9">
+              <nav className="flex items-center gap-7">
                 {navLinks.map(({ href, label }) => {
                   const active = pathname.startsWith(href);
                   return (
                     <Link
                       key={href}
                       href={href}
-                      className="text-[11px] uppercase font-medium transition-colors"
+                      className="text-[11px] uppercase font-medium transition-colors whitespace-nowrap"
                       style={{
                         letterSpacing: "var(--tracking-nav)",
                         color:         active ? "var(--color-coral)" : "var(--color-ink)",
@@ -252,9 +252,10 @@ export function Header({
           className="hidden md:block"
           style={{ background: "var(--color-cobalt-dark)" }}
         >
-          <div className="max-w-[1440px] mx-auto px-14 py-2 flex items-center justify-between text-[10px] uppercase font-medium"
+          <div className="max-w-[1440px] mx-auto px-14 py-2 flex items-center justify-center gap-5 text-[10px] uppercase font-medium"
                style={{ letterSpacing: "0.22em", color: "rgba(255,255,255,0.7)" }}>
             <span>{promo?.links || "◆ Бесплатная доставка по Казахстану от ₸ 50 000"}</span>
+            <span aria-hidden style={{ color: "rgba(255,255,255,0.25)" }}>·</span>
             <span style={{ color: "var(--color-coral)" }}>
               {promo?.rechts || "Новые поступления каждую среду"}
             </span>
@@ -263,7 +264,7 @@ export function Header({
 
         {/* ─ Bar 2: Main (cobalt) ────────────────────────────────────────── */}
         <div style={{ background: "var(--color-cobalt)" }}>
-          <div className="max-w-[1440px] mx-auto px-5 md:px-14 py-3 md:py-6">
+          <div className="max-w-[1440px] mx-auto px-5 md:px-14 py-3 md:py-4">
             {/* Mobile: hamburger | wordmark | search */}
             <div className="flex md:hidden items-center justify-between h-9">
               <button
@@ -290,17 +291,16 @@ export function Header({
             {/* Desktop: 3-col (nav | logo | actions) */}
             <div className="hidden md:grid grid-cols-[1fr_auto_1fr] items-center gap-6">
               {/* Nav left */}
-              <nav className="flex items-center gap-9">
+              <nav className="flex items-center gap-7">
                 {navLinks.map(({ href, label }) => {
                   const active = pathname.startsWith(href);
                   return (
                     <Link
                       key={href}
                       href={href}
-                      className="text-[11px] uppercase font-medium transition-colors"
+                      className={`text-[11px] uppercase font-medium transition-colors whitespace-nowrap ${active ? "text-coral" : "text-white/85 hover:text-coral"}`}
                       style={{
                         letterSpacing: "var(--tracking-nav)",
-                        color:         active ? "var(--color-coral)" : "rgba(255,255,255,0.85)",
                         borderBottom:  active ? "1px solid var(--color-coral)" : "1px solid transparent",
                         paddingBottom: "6px",
                       }}
@@ -323,10 +323,10 @@ export function Header({
                 {/* Search input pseudo */}
                 <button
                   onClick={() => setSucheOffen(v => !v)}
-                  className="flex items-center gap-2 px-3 py-2 text-xs"
+                  className="flex items-center gap-2 px-1 py-2 text-xs transition-colors hover:text-coral"
                   style={{
-                    background:    "rgba(255,255,255,0.06)",
-                    border:        "1px solid rgba(255,255,255,0.18)",
+                    background:    "transparent",
+                    borderBottom:  "1px solid rgba(255,255,255,0.25)",
                     color:         "rgba(255,255,255,0.7)",
                     letterSpacing: "0.04em",
                     minWidth:      180,
@@ -373,11 +373,11 @@ export function Header({
           <div
             className="hidden md:block border-t"
             style={{
-              background:  "var(--color-cobalt-deep)",
+              background:  "var(--color-cobalt)",
               borderColor: "rgba(232,112,58,0.15)",
             }}
           >
-            <div className="max-w-[1440px] mx-auto px-14 py-3 flex items-center justify-between">
+            <div className="max-w-[1440px] mx-auto px-14 py-2.5 flex items-center justify-between">
               <div className="flex items-center gap-5 overflow-x-auto">
                 {kategorien.slice(0, 8).map(k => (
                   <Link
