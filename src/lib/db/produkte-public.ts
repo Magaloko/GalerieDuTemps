@@ -309,3 +309,24 @@ export const preisRange = unstable_cache(
   ["public-preis-range"],
   { tags: [PUBLIC_PRODUCTS_TAG], revalidate: PUBLIC_CATALOG_REVALIDATE_SECONDS },
 );
+
+/** Verfügbare Epochen (Era) mit Anzahl — für die Filter-Chips im Katalog.
+ *  Nur Epochen mit mind. 1 sichtbaren Produkt; absteigend nach Häufigkeit. */
+async function eraFacetsUncached(): Promise<{ era: string; anzahl: number }[]> {
+  const result = await query<{ era: string; anzahl: number }>(
+    `SELECT p.era AS era, COUNT(*)::int AS anzahl
+       FROM sebo.produkte p
+      WHERE ${BASE_FILTER}
+        AND p.era IS NOT NULL AND btrim(p.era) <> ''
+      GROUP BY p.era
+      ORDER BY anzahl DESC, p.era ASC
+      LIMIT 24`
+  );
+  return result.rows;
+}
+
+export const eraFacets = unstable_cache(
+  eraFacetsUncached,
+  ["public-era-facets"],
+  { tags: [PUBLIC_PRODUCTS_TAG], revalidate: PUBLIC_CATALOG_REVALIDATE_SECONDS },
+);
