@@ -41,7 +41,16 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
-const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
+const client = new pg.Client({
+  connectionString: process.env.DATABASE_URL,
+  // SSL für Supabase/Upstash bzw. Production (gespiegelt aus lib/db + db-check).
+  ssl:
+    process.env.DATABASE_URL.includes("supabase.co")
+    || process.env.DATABASE_URL.includes("upstash")
+    || process.env.NODE_ENV === "production"
+      ? { rejectUnauthorized: false }
+      : false,
+});
 await client.connect();
 
 console.log(`✦ galeriedutemps · DB-Migrationen ${dryRun ? "(DRY-RUN)" : ""}`);

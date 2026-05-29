@@ -80,6 +80,12 @@ COPY --from=builder /app/public                                    ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone    ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static        ./.next/static
 
+# Auto-Migrate beim Boot (opt-in via RUN_MIGRATIONS_ON_BOOT=true): der Migrations-
+# Runner + die SQL-Dateien sind im Standalone-Output NICHT enthalten → explizit
+# ins Runtime-Image kopieren. `pg` ist via App-Import bereits in node_modules.
+COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
+COPY --from=builder --chown=nextjs:nodejs /app/sql     ./sql
+
 # Entrypoint-Script (chownt Volume als root, dropt zu nextjs:nodejs).
 COPY --chmod=0755 docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
