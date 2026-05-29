@@ -119,7 +119,7 @@ export function ProduktKarte({ produkt, priority = false }: ProduktKarteProps) {
           <div className="absolute top-3 right-3 z-10 flex items-center gap-1 px-2 py-0.5 transition-all duration-300"
             style={{
               background:    "rgba(15,20,48,0.88)",
-              color:         "var(--color-gold, #C9A84C)",
+              color:         "var(--color-coral, #E8703A)",
               letterSpacing: "0.18em",
               fontSize:      10,
               fontWeight:    500,
@@ -164,7 +164,7 @@ export function ProduktKarte({ produkt, priority = false }: ProduktKarteProps) {
             style={{
               background:     "rgba(15, 20, 48, 0.78)",
               backdropFilter: "blur(4px)",
-              color:          "var(--color-gold, #C9A84C)",
+              color:          "var(--color-coral, #E8703A)",
               letterSpacing:  "0.18em",
               fontSize:       10,
               fontWeight:     500,
@@ -188,7 +188,7 @@ export function ProduktKarte({ produkt, priority = false }: ProduktKarteProps) {
               background: "linear-gradient(to top, rgba(15,20,48,0.85), transparent)",
             }}
           >
-            <Sparkles className="w-3 h-3 shrink-0" style={{ color: "var(--color-gold, #C9A84C)" }} />
+            <Sparkles className="w-3 h-3 shrink-0" style={{ color: "var(--color-coral, #E8703A)" }} />
             <span className="font-body text-[10px] tracking-wide text-white/90 truncate">
               {hoverSpecs.join(" · ")}
             </span>
@@ -264,7 +264,7 @@ export function ProduktKarte({ produkt, priority = false }: ProduktKarteProps) {
       {(zustandInfo || produkt.era) && (
         <div
           className="mt-2 pt-2 flex items-center justify-between"
-          style={{ borderTop: "1px dashed rgba(176, 141, 87, 0.25)" }}
+          style={{ borderTop: "1px dashed rgba(232, 112, 58, 0.22)" }}
         >
           {zustandInfo && <ConditionDot label={zustandInfo.label} color={zustandInfo.color} />}
           {produkt.era && (
@@ -293,7 +293,7 @@ function GoldCorners() {
     pointerEvents: "none",
     zIndex:        15,
   };
-  const gold = "rgba(201, 168, 76, 0.45)"; // var(--color-gold) at 45%
+  const gold = "rgba(232, 112, 58, 0.45)"; // coral at 45%
   return (
     <>
       <div style={{ ...corner, top: -1,   left: -1,  borderTop:    `1.5px solid ${gold}`, borderLeft:  `1.5px solid ${gold}` }} />
@@ -307,9 +307,9 @@ function GoldCorners() {
 function GoldDivider() {
   return (
     <div className="flex items-center mt-0" style={{ padding: "6px 0 2px" }}>
-      <div className="flex-1 h-px" style={{ background: "rgba(201,168,76,0.25)" }} />
-      <span className="mx-2" style={{ fontSize: 7, color: "rgba(201,168,76,0.55)", lineHeight: 1 }}>◆</span>
-      <div className="flex-1 h-px" style={{ background: "rgba(201,168,76,0.25)" }} />
+      <div className="flex-1 h-px" style={{ background: "rgba(232,112,58,0.22)" }} />
+      <span className="mx-2" style={{ fontSize: 7, color: "rgba(232,112,58,0.55)", lineHeight: 1 }}>◆</span>
+      <div className="flex-1 h-px" style={{ background: "rgba(232,112,58,0.22)" }} />
     </div>
   );
 }
@@ -318,15 +318,15 @@ function StatusBadge({ label, tone }: { label: string; tone: "muted" | "warning"
   const styles = {
     muted: {
       background: "rgba(15, 20, 48, 0.82)",
-      color:      "var(--color-gold, #C9A84C)",
+      color:      "var(--color-coral, #E8703A)",
     },
     warning: {
       background: "rgba(232, 112, 58, 0.92)",
       color:      "#fff",
     },
     gold: {
-      background: "linear-gradient(135deg, rgba(201,168,76,0.92), rgba(176,141,87,0.92))",
-      color:      "#1a1410",
+      background: "var(--color-coral)",
+      color:      "#fff",
     },
   }[tone];
 
@@ -364,12 +364,12 @@ function ImageCountDots({ count }: { count: number }) {
           style={{
             width:      i === 0 ? 6 : 4,
             height:     i === 0 ? 6 : 4,
-            background: i === 0 ? "rgba(201,168,76,0.92)" : "rgba(201,168,76,0.45)",
+            background: i === 0 ? "rgba(232,112,58,0.92)" : "rgba(232,112,58,0.45)",
           }}
         />
       ))}
       {count > 5 && (
-        <span className="font-body text-[9px] ml-0.5" style={{ color: "rgba(201,168,76,0.7)" }}>
+        <span className="font-body text-[9px] ml-0.5" style={{ color: "rgba(232,112,58,0.7)" }}>
           +{count - 5}
         </span>
       )}

@@ -612,8 +612,8 @@ function NeuheitCard({ produkt }: { produkt: ProduktListItem & { era?: string | 
             className="absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[9px] uppercase font-medium"
             style={{
               letterSpacing: "0.14em",
-              background:    produkt.verkauft ? "rgba(15,20,48,0.82)" : "rgba(201,168,76,0.92)",
-              color:         produkt.verkauft ? "var(--color-gold, #C9A84C)" : "#1a1410",
+              background:    produkt.verkauft ? "rgba(15,20,48,0.82)" : "rgba(232,112,58,0.92)",
+              color:         produkt.verkauft ? "var(--color-coral, #E8703A)" : "#fff",
               backdropFilter:"blur(4px)",
             }}
           >
@@ -706,7 +706,7 @@ function MiniCard({ produkt }: { produkt: ProduktListItem & { era?: string | nul
         {produkt.featured && !produkt.verkauft && (
           <div className="absolute z-10 flex items-center gap-0.5 px-1.5 py-0.5"
             style={{ top: "2.25rem", right: "0.5rem", background: "rgba(15,20,48,0.88)",
-              color: "var(--color-gold, #C9A84C)", letterSpacing: "0.16em", fontSize: 9,
+              color: "var(--color-coral, #E8703A)", letterSpacing: "0.16em", fontSize: 9,
               fontWeight: 500, textTransform: "uppercase" }}>
             <Star className="w-2 h-2" fill="currentColor" />
             Топ
@@ -720,7 +720,7 @@ function MiniCard({ produkt }: { produkt: ProduktListItem & { era?: string | nul
         {keyDetail && !produkt.verkauft && (
           <div className="absolute bottom-2 left-2 z-10 px-2 py-0.5"
             style={{ background: "rgba(15,20,48,0.78)", backdropFilter: "blur(4px)",
-              color: "var(--color-gold, #C9A84C)", letterSpacing: "0.16em", fontSize: 9,
+              color: "var(--color-coral, #E8703A)", letterSpacing: "0.16em", fontSize: 9,
               fontWeight: 500, textTransform: "uppercase" }}>
             {keyDetail}
           </div>
@@ -732,7 +732,7 @@ function MiniCard({ produkt }: { produkt: ProduktListItem & { era?: string | nul
             {Array.from({ length: Math.min(produkt.bilder_count, 5) }, (_, i) => (
               <div key={i} className="rounded-full"
                 style={{ width: i === 0 ? 5 : 3.5, height: i === 0 ? 5 : 3.5,
-                  background: i === 0 ? "rgba(201,168,76,0.92)" : "rgba(201,168,76,0.45)" }} />
+                  background: i === 0 ? "rgba(232,112,58,0.92)" : "rgba(232,112,58,0.45)" }} />
             ))}
           </div>
         )}
@@ -740,9 +740,9 @@ function MiniCard({ produkt }: { produkt: ProduktListItem & { era?: string | nul
 
       {/* Gold-Divider */}
       <div className="flex items-center" style={{ padding: "5px 0 2px" }}>
-        <div className="flex-1 h-px" style={{ background: "rgba(201,168,76,0.25)" }} />
-        <span className="mx-1.5" style={{ fontSize: 6, color: "rgba(201,168,76,0.55)", lineHeight: 1 }}>◆</span>
-        <div className="flex-1 h-px" style={{ background: "rgba(201,168,76,0.25)" }} />
+        <div className="flex-1 h-px" style={{ background: "rgba(232,112,58,0.22)" }} />
+        <span className="mx-1.5" style={{ fontSize: 6, color: "rgba(232,112,58,0.55)", lineHeight: 1 }}>◆</span>
+        <div className="flex-1 h-px" style={{ background: "rgba(232,112,58,0.22)" }} />
       </div>
 
       {/* Info */}
@@ -780,7 +780,7 @@ function MiniCard({ produkt }: { produkt: ProduktListItem & { era?: string | nul
       {/* Footer: Condition + Era */}
       {(zustandInfo || produkt.era) && (
         <div className="mt-1.5 pt-1.5 flex items-center justify-between"
-          style={{ borderTop: "1px dashed rgba(176,141,87,0.25)" }}>
+          style={{ borderTop: "1px dashed rgba(232,112,58,0.22)" }}>
           {zustandInfo && (
             <div className="flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: zustandInfo.color }} />
@@ -802,7 +802,7 @@ function MiniCard({ produkt }: { produkt: ProduktListItem & { era?: string | nul
 
 function TgGoldCorners() {
   const s: React.CSSProperties = { position: "absolute", width: 12, height: 12, pointerEvents: "none", zIndex: 15 };
-  const g = "rgba(201,168,76,0.45)";
+  const g = "rgba(232,112,58,0.45)";
   return (
     <>
       <div style={{ ...s, top: -1,  left: -1,  borderTop:    `1.5px solid ${g}`, borderLeft:  `1.5px solid ${g}` }} />
@@ -815,9 +815,9 @@ function TgGoldCorners() {
 
 function TgBadge({ label, tone }: { label: string; tone: "muted" | "warning" | "gold" }) {
   const bg = {
-    muted:   { background: "rgba(15,20,48,0.82)",  color: "var(--color-gold, #C9A84C)" },
+    muted:   { background: "rgba(15,20,48,0.82)",  color: "var(--color-coral, #E8703A)" },
     warning: { background: "rgba(232,112,58,0.92)", color: "#fff" },
-    gold:    { background: "linear-gradient(135deg, rgba(201,168,76,0.92), rgba(176,141,87,0.92))", color: "#1a1410" },
+    gold:    { background: "var(--color-coral)", color: "#fff" },
   }[tone];
   return (
     <span className="px-1.5 py-0.5 text-[9px] uppercase font-medium"
