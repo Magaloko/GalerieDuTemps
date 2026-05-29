@@ -47,7 +47,7 @@ export async function webhookEventReserve(
        ON CONFLICT (provider, event_id) DO UPDATE
          SET status = 'processing'
          WHERE sebo.webhook_events.status <> 'processed'
-       RETURNING id`,
+       RETURNING provider`,
       [provider, eventId, eventType, JSON.stringify(payload ?? {})],
     );
     return (r.rowCount ?? 0) > 0;
