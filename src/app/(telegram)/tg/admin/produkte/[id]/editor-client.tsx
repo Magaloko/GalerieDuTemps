@@ -252,12 +252,14 @@ export function ProduktEditor({
 
       {/* ── Атрибуты ── */}
       <Section title="Атрибуты">
-        <SelectField
-          label="Категория"
-          value={f.kategorie_id != null ? String(f.kategorie_id) : ""}
-          options={[{ v: "", l: "— не выбрана —" }, ...kategorien.map(k => ({ v: String(k.id), l: k.name }))]}
-          onChange={v => upd("kategorie_id", v ? parseInt(v, 10) : null)}
-        />
+        <div>
+          <span className="block mb-1 text-[10px] uppercase" style={{ letterSpacing: "0.16em", color: "var(--tg-theme-hint-color, var(--color-ink-soft))" }}>Категория</span>
+          <ChipGroup
+            options={kategorien.map(k => ({ v: String(k.id), l: k.name }))}
+            value={f.kategorie_id != null ? String(f.kategorie_id) : ""}
+            onPick={v => upd("kategorie_id", v === (f.kategorie_id != null ? String(f.kategorie_id) : "") ? null : parseInt(v, 10))}
+          />
+        </div>
         <Row>
           <Field label="Эпоха" value={f.era ?? ""} onChange={v => upd("era", v)} placeholder="1920-е" />
           <Field label="Происхождение" value={f.herkunft ?? ""} onChange={v => upd("herkunft", v)} placeholder="Германия" />
@@ -389,17 +391,6 @@ function Textarea({ label, value, onChange }: { label: string; value: string; on
       <span className="block mb-1 text-[10px] uppercase" style={{ letterSpacing: "0.16em", color: "var(--tg-theme-hint-color, var(--color-ink-soft))" }}>{label}</span>
       <textarea value={value} rows={4} onChange={e => onChange(e.target.value)}
         className="w-full px-2.5 py-2 text-sm resize-y" style={{ background: "var(--color-bone)", border: "1px solid var(--color-line)", color: "var(--tg-theme-text-color, var(--color-ink))", minHeight: 90 }} />
-    </label>
-  );
-}
-function SelectField({ label, value, options, onChange }: { label: string; value: string; options: { v: string; l: string }[]; onChange: (v: string) => void }) {
-  return (
-    <label className="block">
-      <span className="block mb-1 text-[10px] uppercase" style={{ letterSpacing: "0.16em", color: "var(--tg-theme-hint-color, var(--color-ink-soft))" }}>{label}</span>
-      <select value={value} onChange={e => onChange(e.target.value)}
-        className="w-full px-2.5 py-2 text-sm" style={{ background: "var(--color-bone)", border: "1px solid var(--color-line)", color: "var(--tg-theme-text-color, var(--color-ink))" }}>
-        {options.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
-      </select>
     </label>
   );
 }
