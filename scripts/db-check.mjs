@@ -179,12 +179,22 @@ if (!section || section === "schema") {
   }
 
   // 1.5 Erwartete Kern-Tabellen vorhanden
+  // Kern-Tabellen mit EXAKTEN Namen aus den Migrationen (sql/001, 003, 006, …).
   const erwarteteTabellen = [
-    "benutzer", "kategorien", "produkte", "bilder", "kontakte",
-    "affiliates", "affiliate_clicks", "affiliate_attributions", "affiliate_auszahlungen",
-    "customers", "orders", "order_items", "coupons",
-    "events", "subscribers", "journal_posts",
-    "marketing_strings", "theme_settings", "wechselkurse",
+    // Stammdaten / Katalog
+    "benutzer", "kategorien", "produkte", "produktbilder", "kontaktanfragen",
+    // Commerce
+    "customers", "orders", "order_items", "coupons", "coupon_nutzungen",
+    "stock_movements", "carts",
+    // Affiliate
+    "affiliates", "affiliate_klicks", "affiliate_attributionen", "provisionen", "auszahlungen",
+    // CRM / Leads
+    "pipeline_stages", "tasks", "notes", "crm_events", "leads", "lead_messages",
+    // Content / Einstellungen
+    "newsletter_subscribers", "journal_posts", "marketing_strings", "theme_settings",
+    "wechselkurse", "feature_flags",
+    // Infra
+    "webhook_events", "push_subscriptions", "audit_log",
   ];
   const { rows: tabRows } = await client.query(`
     SELECT table_name FROM information_schema.tables

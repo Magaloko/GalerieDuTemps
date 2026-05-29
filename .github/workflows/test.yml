@@ -122,14 +122,8 @@ jobs:
       - name: Apply all migrations (fresh DB)
         run: npm run db:migrate
 
-      # Verifiziert Schema-Integrität: alle Migrations getrackt, erwartete
-      # Tabellen + Indizes vorhanden, keine Hash-Drift. (Nur Schema — Daten-/
+      # Verifiziert Schema-Integrität (blockierend): alle Migrationen getrackt,
+      # keine SHA-Drift, alle Kern-Tabellen vorhanden. (Nur Schema — Daten-/
       # Stats-Checks sind auf der leeren CI-DB nicht aussagekräftig.)
-      #
-      # continue-on-error: zunächst informativ — db:check hat eine hartkodierte
-      # Erwartungsliste, die ggf. nachgezogen werden muss. Der harte Gate ist
-      # der db:migrate-Schritt oben (kaputtes SQL → roter Check). Sobald dieser
-      # Schema-Check einmal grün ist, kann continue-on-error entfernt werden.
-      - name: Schema-Integrity-Check (informativ)
+      - name: Schema-Integrity-Check
         run: npm run db:check -- --section schema
-        continue-on-error: true
