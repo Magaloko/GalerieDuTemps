@@ -33,6 +33,7 @@ import {
   Inbox,
   ChevronDown,
   ExternalLink,
+  LayoutTemplate,
 } from "lucide-react";
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -135,8 +136,9 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: "Контент",
     items: [
-      { href: "/admin/journal",    label: "Журнал",   icon: BookOpen },
-      { href: "/admin/newsletter", label: "Рассылка", icon: Send },
+      { href: "/admin/journal",    label: "Журнал",    icon: BookOpen },
+      { href: "/admin/landing",    label: "Лендинги",  icon: LayoutTemplate },
+      { href: "/admin/newsletter", label: "Рассылка",  icon: Send },
     ],
   },
 ];

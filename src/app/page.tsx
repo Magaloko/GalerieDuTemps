@@ -19,6 +19,8 @@ import { featuredProdukte } from "@/lib/db/produkte-public";
 import { getMarketingStrings } from "@/lib/db/marketing-strings";
 import { getDictionary, getLocale } from "@/i18n";
 import { formatPreis } from "@/lib/utils/preis";
+import { landingStartseite } from "@/lib/db/landing-pages";
+import { LandingBlocks } from "@/components/landing/landing-blocks";
 
 export const metadata: Metadata = {
   title:       "Galerie du Temps — Винтажные сокровища с историей",
@@ -45,6 +47,25 @@ export const revalidate = 3600;
  * ────────────────────────────────────────────────────────────────────────── */
 export default async function HomePage() {
   const locale = await getLocale();
+
+  // Block-basierte Startseite (Landing-Builder) hat Vorrang, falls eine
+  // veröffentlichte Page als ist_startseite markiert ist. Sonst Fallback auf
+  // die feste Editorial-Home unten. Fehler im Lookup → still Fallback.
+  const startseite = await landingStartseite().catch(() => null);
+  if (startseite && (startseite.blocks?.length ?? 0) > 0) {
+    return (
+      <div className="flex flex-col min-h-screen" style={{ background: "var(--color-paper)" }}>
+        <SiteHeader />
+        <main className="flex-1 pb-24 md:pb-0">
+          <LandingBlocks blocks={startseite.blocks} locale={locale} />
+        </main>
+        <SiteFooter />
+        <MobileTabBar t={(await getDictionary()).t} />
+        <ChatWidget />
+        <CookieBanner />
+      </div>
+    );
+  }
 
   const [produkte, dict, heroStrings] = await Promise.all([
     featuredProdukte(8).catch(() => []),
