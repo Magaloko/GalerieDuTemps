@@ -311,11 +311,22 @@ export function Header({
                 })}
               </nav>
 
-              {/* Stacked logo center */}
-              <Link href="/" className="flex flex-col items-center gap-1">
-                <Hourglass size={20} className="text-coral" />
-                <span className="wordmark mt-1" style={{ fontSize: 22 }}>GALERIE</span>
-                <span className="wordmark-italic" style={{ fontSize: 11, marginTop: 2 }}>du Temps</span>
+              {/* Horizontal-Lockup center: Sanduhr + GALERIE + du Temps in einer Zeile.
+                  „du Temps" baseline-aligned direkt an GALERIE angesetzt. */}
+              <Link
+                href="/"
+                className="flex items-center gap-2.5"
+                aria-label="Galerie du Temps — Startseite"
+              >
+                <Hourglass size={18} className="text-coral shrink-0" />
+                <span className="flex items-baseline gap-2 whitespace-nowrap">
+                  <span className="wordmark" style={{ fontSize: 24, letterSpacing: "0.14em" }}>
+                    GALERIE
+                  </span>
+                  <span className="wordmark-italic" style={{ fontSize: 14 }}>
+                    du Temps
+                  </span>
+                </span>
               </Link>
 
               {/* Actions right */}
