@@ -11,6 +11,7 @@ import type { ProduktListItem } from "@/types/produkt";
 
 type KatChip = { slug: string; name: string; anzahl: number };
 type EraFacet = { era: string; anzahl: number };
+type MaterialFacet = { material: string; anzahl: number };
 
 const SORT_OPTIONS: { value: string; label: string }[] = [
   { value: "neu",        label: "Новинки" },
@@ -51,6 +52,9 @@ export function TelegramCatalogClient({
   eras,
   aktiveEra,
   aktiverZustand,
+  materialien,
+  aktivesMaterial,
+  nurReduziert,
   waehrung,
 }: {
   produkte:        (ProduktListItem & { era?: string | null })[];
@@ -66,6 +70,9 @@ export function TelegramCatalogClient({
   eras:            EraFacet[];
   aktiveEra:       string;
   aktiverZustand:  string;
+  materialien:     MaterialFacet[];
+  aktivesMaterial: string;
+  nurReduziert:    boolean;
   waehrung:        "KZT" | "EUR" | "USD" | "RUB";
 }) {
   const router = useRouter();
@@ -76,15 +83,17 @@ export function TelegramCatalogClient({
   const [maxFeld, setMaxFeld] = useState(maxPreis !== null ? String(maxPreis) : "");
 
   // URL aus aktuellem Filter-State bauen und navigieren.
-  const navigate = (next: { q?: string; kat?: string; sort?: string; min?: string; max?: string; era?: string; zustand?: string }) => {
+  const navigate = (next: { q?: string; kat?: string; sort?: string; min?: string; max?: string; era?: string; zustand?: string; material?: string; sale?: boolean }) => {
     const params = new URLSearchParams();
     const q   = next.q   ?? term;
     const kat = next.kat ?? aktiveKategorie;
     const srt = next.sort ?? sortierung;
     const mn  = next.min  ?? (minPreis !== null ? String(minPreis) : "");
     const mx  = next.max  ?? (maxPreis !== null ? String(maxPreis) : "");
-    const er  = next.era     ?? aktiveEra;
-    const zu  = next.zustand ?? aktiverZustand;
+    const er  = next.era      ?? aktiveEra;
+    const zu  = next.zustand  ?? aktiverZustand;
+    const mat = next.material ?? aktivesMaterial;
+    const sale = next.sale    ?? nurReduziert;
     if (q.trim())          params.set("q", q.trim());
     if (kat)               params.set("kat", kat);
     if (srt && srt !== "neu") params.set("sort", srt);
@@ -92,6 +101,8 @@ export function TelegramCatalogClient({
     if (mx.trim() && Number(mx) >= 0) params.set("max", String(Math.ceil(Number(mx))));
     if (er)                params.set("era", er);
     if (zu)                params.set("zustand", zu);
+    if (mat)               params.set("material", mat);
+    if (sale)              params.set("sale", "1");
     const qs = params.toString();
     startTransition(() => router.push(qs ? `/tg?${qs}` : "/tg"));
   };
@@ -113,12 +124,12 @@ export function TelegramCatalogClient({
   useEffect(() => { setMaxFeld(maxPreis !== null ? String(maxPreis) : ""); }, [maxPreis]);
 
   const preisAktiv  = minPreis !== null || maxPreis !== null;
-  const detailAktiv = preisAktiv || !!aktiveEra || !!aktiverZustand;
+  const detailAktiv = preisAktiv || !!aktiveEra || !!aktiverZustand || !!aktivesMaterial || nurReduziert;
   const hatFilter   = !!suche || !!aktiveKategorie || detailAktiv;
 
   const alleZuruecksetzen = () => {
     setTerm(""); setMinFeld(""); setMaxFeld(""); setPreisOffen(false);
-    navigate({ q: "", kat: "", min: "", max: "", era: "", zustand: "" });
+    navigate({ q: "", kat: "", min: "", max: "", era: "", zustand: "", material: "", sale: false });
   };
 
   return (
@@ -290,6 +301,28 @@ export function TelegramCatalogClient({
             borderRadius: 12,
           }}
         >
+          {/* Nur reduziert (Sale) — prominenter Toggle */}
+          <button
+            type="button"
+            onClick={() => navigate({ sale: !nurReduziert })}
+            className="w-full flex items-center justify-between px-3 py-2.5"
+            style={{
+              borderRadius: 10, touchAction: "manipulation",
+              background: nurReduziert ? "var(--color-coral)" : "var(--color-bone)",
+              border:     `1px solid ${nurReduziert ? "var(--color-coral)" : "var(--color-line)"}`,
+            }}
+            aria-pressed={nurReduziert}
+          >
+            <span className="text-[12px] font-medium"
+              style={{ color: nurReduziert ? "#fff" : "var(--tg-theme-text-color, var(--color-ink))" }}>
+              🏷 Только со скидкой
+            </span>
+            <span className="text-[10px] uppercase font-medium"
+              style={{ letterSpacing: "0.14em", color: nurReduziert ? "#fff" : "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
+              {nurReduziert ? "вкл" : "выкл"}
+            </span>
+          </button>
+
           {/* Epoche (Era) — Chips aus verfügbaren Werten */}
           {eras.length > 0 && (
             <div>
@@ -311,6 +344,34 @@ export function TelegramCatalogClient({
                         border:     `1px solid ${aktiv ? "var(--color-coral)" : "var(--color-line)"}`,
                       }}>
                       {e.era}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Material — Chips aus verfügbaren Werten */}
+          {materialien.length > 0 && (
+            <div>
+              <p className="text-[10px] uppercase font-medium mb-2"
+                style={{ letterSpacing: "0.18em", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
+                Материал
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {materialien.map(m => {
+                  const aktiv = aktivesMaterial === m.material;
+                  return (
+                    <button key={m.material} type="button"
+                      onClick={() => navigate({ material: aktiv ? "" : m.material })}
+                      className="px-2.5 py-1 text-[11px] font-medium whitespace-nowrap"
+                      style={{
+                        borderRadius: 999, touchAction: "manipulation",
+                        background: aktiv ? "var(--color-coral)" : "var(--color-bone)",
+                        color:      aktiv ? "#fff" : "var(--tg-theme-text-color, var(--color-ink))",
+                        border:     `1px solid ${aktiv ? "var(--color-coral)" : "var(--color-line)"}`,
+                      }}>
+                      {m.material}
                     </button>
                   );
                 })}

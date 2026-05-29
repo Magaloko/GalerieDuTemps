@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { katalogProdukte, neuheitenProdukte, preisRange, eraFacets } from "@/lib/db/produkte-public";
+import { katalogProdukte, neuheitenProdukte, preisRange, eraFacets, materialFacets } from "@/lib/db/produkte-public";
 import { alleKategorien } from "@/lib/db/kategorien";
 import { isFeatureEnabled } from "@/lib/db/feature-flags";
 import { maskBestandListe } from "@/lib/utils/showcase-mask";
@@ -30,12 +30,14 @@ export const dynamic = "force-dynamic";
 export default async function TelegramMiniAppHome({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; kat?: string; sort?: string; min?: string; max?: string; era?: string; zustand?: string }>;
+  searchParams: Promise<{ q?: string; kat?: string; sort?: string; min?: string; max?: string; era?: string; zustand?: string; material?: string; sale?: string }>;
 }) {
-  const sp     = await searchParams;
-  const suche  = (sp.q ?? "").trim() || undefined;
-  const kat    = (sp.kat ?? "").trim() || undefined;
-  const era    = (sp.era ?? "").trim() || undefined;
+  const sp       = await searchParams;
+  const suche    = (sp.q ?? "").trim() || undefined;
+  const kat      = (sp.kat ?? "").trim() || undefined;
+  const era      = (sp.era ?? "").trim() || undefined;
+  const material = (sp.material ?? "").trim() || undefined;
+  const nurReduziert = sp.sale === "1";
   // zustand: nur erlaubte Enum-Werte übernehmen (sonst ignorieren).
   const ZUSTAND_OK = ["sehr_gut", "gut", "akzeptabel", "restauriert"];
   const zustand = ZUSTAND_OK.includes((sp.zustand ?? "").trim()) ? sp.zustand!.trim() : undefined;
@@ -50,12 +52,13 @@ export default async function TelegramMiniAppHome({
   const minPreis = parsePreis(sp.min);
   const maxPreis = parsePreis(sp.max);
 
-  const hatFilter = !!suche || !!kat || !!era || !!zustand || sort !== "neu" || minPreis !== undefined || maxPreis !== undefined;
+  const hatFilter = !!suche || !!kat || !!era || !!zustand || !!material || nurReduziert || sort !== "neu" || minPreis !== undefined || maxPreis !== undefined;
 
-  const [data, kategorien, neuheiten, range, eras, kaufenAktiv] = await Promise.all([
+  const [data, kategorien, neuheiten, range, eras, materials, kaufenAktiv] = await Promise.all([
     katalogProdukte({
       seite: 1, limit: 48, suche, kategorie: kat, sortierung: sort,
-      min_preis: minPreis, max_preis: maxPreis, era, zustand,
+      min_preis: minPreis, max_preis: maxPreis, era, zustand, material,
+      nur_reduziert: nurReduziert,
     }).catch(() => ({
       items: [], gesamt: 0, seite: 1, limit: 48, seiten: 0,
     })),
@@ -64,6 +67,7 @@ export default async function TelegramMiniAppHome({
     hatFilter ? Promise.resolve([]) : neuheitenProdukte(8).catch(() => []),
     preisRange().catch(() => ({ min: 0, max: 0 })),
     eraFacets().catch(() => []),
+    materialFacets().catch(() => []),
     isFeatureEnabled("kaufen_aktiv").catch(() => true),
   ]);
 
@@ -89,6 +93,9 @@ export default async function TelegramMiniAppHome({
           eras={eras.map(e => ({ era: e.era, anzahl: e.anzahl }))}
           aktiveEra={era ?? ""}
           aktiverZustand={zustand ?? ""}
+          materialien={materials.map(m => ({ material: m.material, anzahl: m.anzahl }))}
+          aktivesMaterial={material ?? ""}
+          nurReduziert={nurReduziert}
           waehrung={(data.items[0]?.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT"}
         />
       </Suspense>

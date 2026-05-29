@@ -110,6 +110,8 @@ async function katalogProdukteUncached(params: {
   kategorie_id?: number;
   zustand?:     string;
   era?:         string;
+  material?:    string;
+  nur_reduziert?: boolean;
   min_preis?:   number;
   max_preis?:   number;
   sortierung?:  string;
@@ -152,6 +154,14 @@ async function katalogProdukteUncached(params: {
   if (params.era) {
     conds.push(`p.era ILIKE $${idx++}`);
     vals.push(`%${params.era}%`);
+  }
+  if (params.material) {
+    conds.push(`p.material ILIKE $${idx++}`);
+    vals.push(`%${params.material}%`);
+  }
+  if (params.nur_reduziert) {
+    // Reduziert = es gibt einen (höheren) Originalpreis.
+    conds.push(`p.originalpreis IS NOT NULL AND p.originalpreis > p.preis`);
   }
   if (params.min_preis !== undefined) {
     conds.push(`p.preis >= $${idx++}`);
@@ -328,5 +338,26 @@ async function eraFacetsUncached(): Promise<{ era: string; anzahl: number }[]> {
 export const eraFacets = unstable_cache(
   eraFacetsUncached,
   ["public-era-facets"],
+  { tags: [PUBLIC_PRODUCTS_TAG], revalidate: PUBLIC_CATALOG_REVALIDATE_SECONDS },
+);
+
+/** Verfügbare Materialien mit Anzahl — für die Filter-Chips im Katalog.
+ *  Nur Materialien mit mind. 1 sichtbaren Produkt; absteigend nach Häufigkeit. */
+async function materialFacetsUncached(): Promise<{ material: string; anzahl: number }[]> {
+  const result = await query<{ material: string; anzahl: number }>(
+    `SELECT p.material AS material, COUNT(*)::int AS anzahl
+       FROM sebo.produkte p
+      WHERE ${BASE_FILTER}
+        AND p.material IS NOT NULL AND btrim(p.material) <> ''
+      GROUP BY p.material
+      ORDER BY anzahl DESC, p.material ASC
+      LIMIT 24`
+  );
+  return result.rows;
+}
+
+export const materialFacets = unstable_cache(
+  materialFacetsUncached,
+  ["public-material-facets"],
   { tags: [PUBLIC_PRODUCTS_TAG], revalidate: PUBLIC_CATALOG_REVALIDATE_SECONDS },
 );
