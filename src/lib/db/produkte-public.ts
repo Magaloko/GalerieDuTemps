@@ -243,7 +243,10 @@ async function oeffentlichesProduktBySlugUncached(slug: string): Promise<Produkt
      FROM sebo.produkte p
      LEFT JOIN sebo.kategorien k ON k.id = p.kategorie_id
      LEFT JOIN sebo.produktbilder pb ON pb.produkt_id = p.id
-     WHERE p.slug = $1 AND p.veroeffentlicht_am IS NOT NULL
+     WHERE p.slug = $1
+       AND p.veroeffentlicht_am IS NOT NULL
+       AND p.aktiv = true            -- Master-Schalter: aus = nirgends sichtbar (auch nicht per Direktlink)
+       AND p.b2c_mode != 'hidden'    -- explizit versteckt = nur Admin-Zugriff
      GROUP BY p.id, k.name`,
     [slug]
   );
