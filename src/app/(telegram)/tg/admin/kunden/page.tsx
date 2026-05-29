@@ -48,7 +48,7 @@ export default async function TgAdminKunden({
             {items.map(c => (
               <AdminListRow
                 key={c.id}
-                href={`/admin/kunden/${c.id}`}
+                href={`/tg/admin/kunden/${c.id}`}
                 title={[c.vorname, c.nachname].filter(Boolean).join(" ") || c.email || c.telegram_username || "Гость"}
                 sub={`${c.email ?? (c.telegram_username ? `@${c.telegram_username}` : "Telegram")}${c.company_name ? ` · ${c.company_name}` : ""}`}
                 badge={TYP_BADGE[c.customer_type] ?? null}
@@ -56,9 +56,6 @@ export default async function TgAdminKunden({
             ))}
           </div>
         )}
-        <p className="text-[10px] text-center mt-4" style={{ fontStyle: "italic", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
-          Карточка клиента откроется на сайте (↗).
-        </p>
       </main>
     </TelegramAuthGate>
   );
