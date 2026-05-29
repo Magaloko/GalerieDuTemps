@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { Search, Heart, Menu, X, User } from "lucide-react";
 import { useWunschliste } from "@/hooks/use-wunschliste";
 import { CartBadge } from "./cart-badge";
 import { MobileDrawer } from "./mobile-drawer";
-import { Hourglass } from "@/components/brand/hourglass";
 import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/types";
 import type { Kategorie } from "@/types/produkt";
@@ -288,45 +288,25 @@ export function Header({
               </button>
             </div>
 
-            {/* Desktop: 3-col (nav | logo | actions) */}
+            {/* Desktop: 3-col (spacer | logo | actions) — Nav ist jetzt in der Sub-Bar */}
             <div className="hidden md:grid grid-cols-[1fr_auto_1fr] items-center gap-6">
-              {/* Nav left */}
-              <nav className="flex items-center gap-7">
-                {navLinks.map(({ href, label }) => {
-                  const active = pathname.startsWith(href);
-                  return (
-                    <Link
-                      key={href}
-                      href={href}
-                      className={`text-[11px] uppercase font-medium transition-colors whitespace-nowrap ${active ? "text-coral" : "text-white/85 hover:text-coral"}`}
-                      style={{
-                        letterSpacing: "var(--tracking-nav)",
-                        borderBottom:  active ? "1px solid var(--color-coral)" : "1px solid transparent",
-                        paddingBottom: "6px",
-                      }}
-                    >
-                      {label}
-                    </Link>
-                  );
-                })}
-              </nav>
+              {/* left spacer (hält das Logo mittig) */}
+              <div aria-hidden />
 
-              {/* Horizontal-Lockup center: Sanduhr + GALERIE + du Temps in einer Zeile.
-                  „du Temps" baseline-aligned direkt an GALERIE angesetzt. */}
+              {/* Emblem-Logo center */}
               <Link
                 href="/"
-                className="flex items-center gap-2.5"
+                className="justify-self-center block"
                 aria-label="Galerie du Temps — Startseite"
               >
-                <Hourglass size={18} className="text-coral shrink-0" />
-                <span className="flex items-baseline gap-2 whitespace-nowrap">
-                  <span className="wordmark" style={{ fontSize: 24, letterSpacing: "0.14em" }}>
-                    GALERIE
-                  </span>
-                  <span className="wordmark-italic" style={{ fontSize: 14 }}>
-                    du Temps
-                  </span>
-                </span>
+                <Image
+                  src="/images/galerie-logo-red.png"
+                  alt="Galerie du Temps"
+                  width={64}
+                  height={64}
+                  priority
+                  className="block h-14 w-auto"
+                />
               </Link>
 
               {/* Actions right */}
@@ -379,49 +359,34 @@ export function Header({
           </div>
         </div>
 
-        {/* ─ Bar 3: Sub (cobalt-deep) — Category Chips ─────────────────── */}
-        {kategorien.length > 0 && (
-          <div
-            className="hidden md:block border-t"
-            style={{
-              background:  "var(--color-cobalt)",
-              borderColor: "rgba(232,112,58,0.15)",
-            }}
-          >
-            <div className="max-w-[1440px] mx-auto px-14 py-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-5 overflow-x-auto">
-                {kategorien.slice(0, 8).map(k => (
-                  <Link
-                    key={k.id}
-                    href={`/kategorien/${k.slug}`}
-                    className="text-[11px] uppercase font-medium whitespace-nowrap hover:text-coral transition-colors"
-                    style={{
-                      letterSpacing: "var(--tracking-nav)",
-                      color:         "rgba(255,255,255,0.7)",
-                    }}
-                  >
-                    {k.name}
-                    {k.anzahl !== undefined && k.anzahl > 0 && (
-                      <span style={{ color: "rgba(255,255,255,0.4)", marginLeft: 6, fontSize: 10 }}>
-                        ({k.anzahl})
-                      </span>
-                    )}
-                  </Link>
-                ))}
-              </div>
-              <Link
-                href="/katalog?sort=neue"
-                className="text-[11px] uppercase font-medium whitespace-nowrap hover:opacity-80 transition-opacity"
-                style={{
-                  letterSpacing: "var(--tracking-nav)",
-                  color:         "var(--color-coral)",
-                }}
-              >
-                ★ Избранное недели →
-              </Link>
-            </div>
-          </div>
-        )}
+        {/* ─ Bar 3: Sub (cobalt) — Haupt-Navigation (zentriert) ───────────── */}
+        <div
+          className="hidden md:block border-t"
+          style={{
+            background:  "var(--color-cobalt)",
+            borderColor: "rgba(232,112,58,0.15)",
+          }}
+        >
+          <nav className="max-w-[1440px] mx-auto px-14 py-2.5 flex items-center justify-center gap-8">
+            {navLinks.map(({ href, label }) => {
+              const active = pathname.startsWith(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`text-[11px] uppercase font-medium transition-colors whitespace-nowrap ${active ? "text-coral" : "text-white/85 hover:text-coral"}`}
+                  style={{
+                    letterSpacing: "var(--tracking-nav)",
+                    borderBottom:  active ? "1px solid var(--color-coral)" : "1px solid transparent",
+                    paddingBottom: "4px",
+                  }}
+                >
+                  {label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
 
         {/* ─ Such-Leiste (ausklappbar) ─────────────────────────────────── */}
         {sucheOffen && (
