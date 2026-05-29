@@ -32,6 +32,9 @@ const ZUSTAND_OPT: { v: Zustand; l: string }[] = [
   { v: "akzeptabel", l: "Приемлемое" }, { v: "restauriert", l: "Реставрировано" },
 ];
 
+// Häufige Epochen für Schnell-Tap (füllen das Epoche-Feld).
+const ERA_PRESETS = ["1920-е", "1930-е", "1950-е", "1960-е", "1970-е", "1980-е", "1990-е"];
+
 export function ProduktEditor({
   produkt, bilder: bilderInit, kategorien,
 }: {
@@ -72,18 +75,31 @@ export function ProduktEditor({
     else { haptic("error"); flashMsg("err", r.error); }
   });
 
+  const [uploadProg, setUploadProg] = useState<{ done: number; total: number } | null>(null);
+
+  // Mehrbild-Upload: alle gewählten Dateien nacheinander hochladen (die
+  // Upload-Action verarbeitet ein File pro Aufruf). Sequentiell, damit die
+  // erste-Bild-=-Hauptbild-Logik serverseitig deterministisch bleibt.
   const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    const fd = new FormData();
-    fd.set("produktId", f.id);
-    fd.set("file", file);
-    const r = await produktBildUploadAction(fd);
-    setUploading(false);
+    const files = Array.from(e.target.files ?? []);
     if (e.target) e.target.value = "";
-    if (r.ok) { haptic("success"); flashMsg("ok", "Фото добавлено"); router.refresh(); }
-    else { haptic("error"); flashMsg("err", r.error); }
+    if (files.length === 0) return;
+    setUploading(true);
+    let ok = 0, fail = 0;
+    for (let i = 0; i < files.length; i++) {
+      setUploadProg({ done: i, total: files.length });
+      const fd = new FormData();
+      fd.set("produktId", f.id);
+      fd.set("file", files[i]);
+      const r = await produktBildUploadAction(fd);
+      if (r.ok) ok++; else fail++;
+    }
+    setUploadProg(null);
+    setUploading(false);
+    if (ok > 0) haptic("success");
+    if (fail > 0) { haptic("error"); flashMsg("err", `${ok} добавлено, ${fail} с ошибкой`); }
+    else flashMsg("ok", ok === 1 ? "Фото добавлено" : `${ok} фото добавлено`);
+    router.refresh();
   };
 
   const delBild = (id: string) => start(async () => {
@@ -98,6 +114,14 @@ export function ProduktEditor({
   });
 
   const ohnePreis = f.preis <= 1;
+  // Pflicht-Führung: was fehlt noch zur Veröffentlichung?
+  const fehlt: string[] = [
+    bilder.length === 0      ? "Добавьте фото" : null,
+    ohnePreis                ? "Укажите цену"  : null,
+    f.kategorie_id == null   ? "Выберите категорию" : null,
+    !f.name.trim()           ? "Укажите название" : null,
+  ].filter(Boolean) as string[];
+  const bereitZuVeroeffentlichen = fehlt.length === 0;
 
   return (
     <div className="space-y-5">
@@ -136,7 +160,7 @@ export function ProduktEditor({
               )}
             </div>
           ))}
-          {/* Upload-Tile */}
+          {/* Upload-Tile (Mehrfachauswahl) */}
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
@@ -144,11 +168,21 @@ export function ProduktEditor({
             className="aspect-square flex flex-col items-center justify-center gap-1"
             style={{ background: "var(--color-bone)", border: "1px dashed var(--color-line)" }}
           >
-            {uploading ? <Loader2 className="w-5 h-5 animate-spin" style={{ color: "var(--color-coral)" }} />
-              : <><Plus className="w-5 h-5" style={{ color: "var(--color-coral)" }} /><span className="text-[9px] uppercase" style={{ color: "var(--color-ink-mute)" }}>добавить</span></>}
+            {uploading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" style={{ color: "var(--color-coral)" }} />
+                {uploadProg && (
+                  <span className="text-[9px]" style={{ color: "var(--color-ink-mute)" }}>
+                    {uploadProg.done + 1}/{uploadProg.total}
+                  </span>
+                )}
+              </>
+            ) : (
+              <><Plus className="w-5 h-5" style={{ color: "var(--color-coral)" }} /><span className="text-[9px] uppercase" style={{ color: "var(--color-ink-mute)" }}>добавить</span></>
+            )}
           </button>
         </div>
-        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFile} />
+        <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={onFile} />
       </Section>
 
       {/* ── Preis ── */}
@@ -157,10 +191,15 @@ export function ProduktEditor({
           <Field label="Цена ₸" type="number" value={f.preis > 1 ? String(f.preis) : ""} onChange={v => upd("preis", parseInt(v || "0", 10))} />
           <Field label="Старая ₸" type="number" value={f.originalpreis ? String(f.originalpreis) : ""} onChange={v => upd("originalpreis", v ? parseInt(v, 10) : null)} />
         </Row>
-        <Row>
-          <Field label="Остаток" type="number" value={String(f.lagerbestand)} onChange={v => upd("lagerbestand", parseInt(v || "0", 10))} />
-          <SelectField label="Состояние" value={f.zustand} options={ZUSTAND_OPT.map(o => ({ v: o.v, l: o.l }))} onChange={v => upd("zustand", v as Zustand)} />
-        </Row>
+        <Field label="Остаток" type="number" value={String(f.lagerbestand)} onChange={v => upd("lagerbestand", parseInt(v || "0", 10))} />
+        <div>
+          <span className="block mb-1 text-[10px] uppercase" style={{ letterSpacing: "0.16em", color: "var(--tg-theme-hint-color, var(--color-ink-soft))" }}>Состояние</span>
+          <ChipGroup
+            options={ZUSTAND_OPT.map(o => ({ v: o.v, l: o.l }))}
+            value={f.zustand}
+            onPick={v => upd("zustand", v as Zustand)}
+          />
+        </div>
       </Section>
 
       {/* ── Описание ── */}
@@ -181,6 +220,24 @@ export function ProduktEditor({
           <Field label="Эпоха" value={f.era ?? ""} onChange={v => upd("era", v)} placeholder="1920-е" />
           <Field label="Происхождение" value={f.herkunft ?? ""} onChange={v => upd("herkunft", v)} placeholder="Германия" />
         </Row>
+        {/* Schnell-Tap Epochen */}
+        <div className="flex flex-wrap gap-1.5">
+          {ERA_PRESETS.map(e => {
+            const aktiv = (f.era ?? "") === e;
+            return (
+              <button key={e} type="button" onClick={() => upd("era", aktiv ? "" : e)}
+                className="px-2.5 py-1 text-[11px] font-medium"
+                style={{
+                  borderRadius: 999, touchAction: "manipulation",
+                  background: aktiv ? "var(--color-coral)" : "var(--color-bone)",
+                  color:      aktiv ? "#fff" : "var(--tg-theme-text-color, var(--color-ink))",
+                  border:     `1px solid ${aktiv ? "var(--color-coral)" : "var(--color-line)"}`,
+                }}>
+                {e}
+              </button>
+            );
+          })}
+        </div>
         <Field label="Материал" value={f.material ?? ""} onChange={v => upd("material", v)} placeholder="Дуб, латунь" />
         <Field label="Теги (через запятую)" value={f.tags.join(", ")} onChange={v => upd("tags", v.split(",").map(s => s.trim()).filter(Boolean))} />
       </Section>
@@ -192,6 +249,20 @@ export function ProduktEditor({
           <input type="checkbox" checked={f.featured} onChange={e => upd("featured", e.target.checked)} style={{ width: 18, height: 18, accentColor: "var(--color-coral)" }} />
         </label>
       </Section>
+
+      {/* Pflicht-Führung: Checkliste was zur Veröffentlichung fehlt (nur Entwurf) */}
+      {!f.aktiv && fehlt.length > 0 && (
+        <div className="p-3 space-y-1" style={{ background: "rgba(232,112,58,0.06)", border: "1px solid rgba(232,112,58,0.30)" }}>
+          <p className="text-[10px] uppercase font-medium" style={{ letterSpacing: "0.18em", color: "var(--color-coral)" }}>
+            Для публикации не хватает:
+          </p>
+          {fehlt.map(x => (
+            <p key={x} className="flex items-center gap-1.5 text-[12px]" style={{ color: "var(--color-coral-deep, #A53E26)" }}>
+              <span style={{ width: 5, height: 5, borderRadius: 999, background: "var(--color-coral)" }} /> {x}
+            </p>
+          ))}
+        </div>
+      )}
 
       {/* Sticky actions */}
       <div className="sticky bottom-0 pt-2 space-y-2" style={{ background: "var(--tg-theme-bg-color, var(--color-paper))" }}>
@@ -210,13 +281,12 @@ export function ProduktEditor({
               <EyeOff className="w-4 h-4" />
             </button>
           ) : (
-            <button type="button" disabled={pending || ohnePreis} onClick={() => start(async () => { const r = await produktVollEditAction(f.id, { ...stripForPublish(f), aktiv: true, b2c_mode: "visible" }); if (r.ok) { upd("aktiv", true); haptic("success"); flashMsg("ok", "Опубликовано"); router.refresh(); } else flashMsg("err", r.error); })}
+            <button type="button" disabled={pending || !bereitZuVeroeffentlichen} onClick={() => start(async () => { const r = await produktVollEditAction(f.id, { ...stripForPublish(f), aktiv: true, b2c_mode: "visible" }); if (r.ok) { upd("aktiv", true); haptic("success"); flashMsg("ok", "Опубликовано"); router.refresh(); } else flashMsg("err", r.error); })}
               className="px-4 py-3 text-[12px] uppercase font-medium disabled:opacity-40" style={{ background: "var(--color-coral)", color: "#fff" }}>
               <Eye className="w-4 h-4" />
             </button>
           )}
         </div>
-        {ohnePreis && !f.aktiv && <p className="text-[10px]" style={{ color: "var(--color-coral)", fontStyle: "italic" }}>Укажите цену, чтобы опубликовать.</p>}
       </div>
     </div>
   );
@@ -227,6 +297,30 @@ function stripForPublish(f: ProduktData) {
 }
 
 /* ── Form-Bausteine ── */
+function ChipGroup({ options, value, onPick }: {
+  options: { v: string; l: string }[]; value: string; onPick: (v: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {options.map(o => {
+        const aktiv = value === o.v;
+        return (
+          <button key={o.v} type="button" onClick={() => onPick(o.v)}
+            className="px-2.5 py-1.5 text-[11px] font-medium"
+            style={{
+              borderRadius: 999, touchAction: "manipulation",
+              background: aktiv ? "var(--color-coral)" : "var(--color-bone)",
+              color:      aktiv ? "#fff" : "var(--tg-theme-text-color, var(--color-ink))",
+              border:     `1px solid ${aktiv ? "var(--color-coral)" : "var(--color-line)"}`,
+            }}>
+            {o.l}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="space-y-2">
