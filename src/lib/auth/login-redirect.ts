@@ -39,10 +39,10 @@ export async function loginWithRoleRedirect(
       redirectTo: `/post-login?fallback=${encodeURIComponent(fallback)}`,
     });
     // Unerreichbar — signIn wirft immer eine Redirect-Exception.
-    return { error: "Unerwarteter Zustand." };
+    return { error: "Непредвиденная ошибка. Попробуйте ещё раз." };
   } catch (err) {
     if (err instanceof AuthError) {
-      return { error: "E-Mail oder Passwort falsch — oder Account nicht freigeschaltet." };
+      return { error: "Неверный e-mail или пароль — либо аккаунт не активирован." };
     }
     // NEXT_REDIRECT-Errors müssen weiter-throwed werden, sonst geht der
     // Redirect verloren und der User landet wieder auf der Login-Page.
