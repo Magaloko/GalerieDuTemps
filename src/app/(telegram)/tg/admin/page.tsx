@@ -7,7 +7,7 @@ import { query } from "@/lib/db";
 import {
   Shield, Inbox, Package, Users, BarChart3, ShoppingBag, FileText,
   Tag, Ticket, Briefcase, Mail, UserCheck, Coins, Wallet, BookOpen,
-  Send, ArrowRight, ExternalLink, TrendingUp, Clock, Bell,
+  Send, ExternalLink, TrendingUp, Clock, Bell,
 } from "lucide-react";
 import { InstagramIcon } from "@/components/produkte/instagram-icon";
 import type { Metadata } from "next";
@@ -133,14 +133,16 @@ export default async function TgAdminHome() {
           <Kpi label="Заказов в работе" value={String(b.orders_pending)} coral={b.orders_pending>0} />
         </div>
 
-        {/* Grouped menu */}
+        {/* Grouped tile-grid menu (Facebook-Business-Suite-Stil) */}
         {groups.map(g => (
-          <section key={g.title} className="space-y-1.5">
+          <section key={g.title} className="space-y-2.5">
             <p className="text-[10px] uppercase font-medium px-1"
                style={{ letterSpacing: "0.24em", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
               {g.title}
             </p>
-            {g.items.map(it => <MenuRow key={it.href} item={it} />)}
+            <div className="grid grid-cols-3 gap-2.5">
+              {g.items.map(it => <MenuTile key={it.href} item={it} />)}
+            </div>
           </section>
         ))}
 
@@ -171,32 +173,56 @@ function Kpi({ label, value, coral }: { label: string; value: string; coral?: bo
   );
 }
 
-function MenuRow({ item }: { item: NavItem }) {
+function MenuTile({ item }: { item: NavItem }) {
   const Icon = item.icon;
   const inner = (
     <>
-      <Icon className="w-4 h-4 shrink-0" style={{ color: "var(--color-coral)" }} />
-      <span className="text-sm flex-1" style={{ fontFamily: "var(--font-display)", color: "var(--tg-theme-text-color, var(--color-ink))" }}>
+      {/* Icon-Quadrat */}
+      <div
+        className="relative w-full aspect-square flex items-center justify-center"
+        style={{
+          background:   "var(--tg-theme-section-bg-color, #fff)",
+          border:       "1px solid var(--color-line)",
+          borderRadius: 14,
+        }}
+      >
+        <Icon className="w-6 h-6" strokeWidth={1.6} style={{ color: "var(--color-coral)" }} />
+
+        {/* Badge (Zähler) oben rechts */}
+        {item.badge != null && item.badge > 0 && (
+          <span
+            className="absolute top-1.5 right-1.5 text-[10px] font-medium flex items-center justify-center"
+            style={{
+              background: "var(--color-coral)", color: "#fff", borderRadius: 999,
+              minWidth: 18, height: 18, padding: "0 5px", lineHeight: "18px",
+            }}
+          >
+            {item.badge > 99 ? "99+" : item.badge}
+          </span>
+        )}
+
+        {/* Extern-Indikator (öffnet auf der Website) unten rechts */}
+        {item.kind === "web" && (
+          <ExternalLink
+            className="absolute bottom-1.5 right-1.5 w-3 h-3 opacity-35"
+            style={{ color: "var(--tg-theme-text-color, var(--color-ink))" }}
+          />
+        )}
+      </div>
+
+      {/* Label */}
+      <span
+        className="text-[11px] text-center leading-tight"
+        style={{ color: "var(--tg-theme-text-color, var(--color-ink))", fontFamily: "var(--font-display)" }}
+      >
         {item.label}
       </span>
-      {item.badge != null && item.badge > 0 && (
-        <span className="text-[10px] font-medium px-1.5 py-0.5"
-              style={{ background: "var(--color-coral)", color: "#fff", borderRadius: 999, minWidth: 20, textAlign: "center" }}>
-          {item.badge > 99 ? "99+" : item.badge}
-        </span>
-      )}
-      {item.kind === "web"
-        ? <ExternalLink className="w-3.5 h-3.5 opacity-40 shrink-0" style={{ color: "var(--tg-theme-text-color, var(--color-ink))" }} />
-        : <ArrowRight   className="w-3.5 h-3.5 opacity-40 shrink-0" style={{ color: "var(--tg-theme-text-color, var(--color-ink))" }} />}
     </>
   );
-  const cls = "flex items-center gap-3 p-3";
-  const style: React.CSSProperties = {
-    background:  "var(--tg-theme-section-bg-color, #fff)",
-    border:      "1px solid var(--color-line)",
-    touchAction: "manipulation",
-    opacity:     item.kind === "web" ? 0.85 : 1,
-  };
+
+  const cls = "flex flex-col items-center gap-1.5";
+  const style: React.CSSProperties = { touchAction: "manipulation" };
+
   return item.kind === "native"
     ? <Link href={item.href} className={cls} style={style}>{inner}</Link>
     : <a href={item.href} target="_blank" rel="noopener noreferrer" className={cls} style={style}>{inner}</a>;
