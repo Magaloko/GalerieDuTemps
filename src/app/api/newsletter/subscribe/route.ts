@@ -3,6 +3,7 @@ import { z } from "zod";
 import { subscribePrepare } from "@/lib/db/newsletter";
 import { sendEmail } from "@/lib/email";
 import { rateLimitAsync, getClientIp, tooManyRequestsResponse } from "@/lib/utils/rate-limit";
+import { siteUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { token } = await subscribePrepare(parsed.data);
-    const url = `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/newsletter/bestaetigt?token=${token}`;
+    const url = siteUrl(`/newsletter/bestaetigt?token=${token}`);
 
     // Bestätigungs-Mail
     await sendEmail({

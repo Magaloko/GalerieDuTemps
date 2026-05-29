@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { customerErstellen, customerByEmail } from "@/lib/db/customers";
+import { customerErstellenWennNeu, customerByEmail } from "@/lib/db/customers";
 import { emailConfirmationTokenSetzen } from "@/lib/db/customer-auth";
 import { sendEmail } from "@/lib/email";
 import { emailBestaetigungMail, b2bWelcomeMail } from "@/lib/email/customer-templates";
@@ -67,13 +67,17 @@ export async function customerRegistrierenAction(
     company_name?: string; ust_id?: string; company_note?: string;
   };
 
+  // Schnelle, freundliche Vorabprüfung (UX) …
   const existing = await customerByEmail(data.email);
   if (existing) {
     return { fehler: "Этот e-mail уже зарегистрирован. Войдите или восстановите пароль." };
   }
 
   const passwortHash = await bcrypt.hash(data.passwort, 12);
-  const customer = await customerErstellen({
+  // … die eigentliche Race-Absicherung läuft atomar in der DB (ON CONFLICT DO
+  // NOTHING). Bei einem parallelen Zweit-Request → null, kein Überschreiben /
+  // kein Token-Reset des bestehenden Accounts.
+  const customer = await customerErstellenWennNeu({
     email:          data.email,
     passwort_hash:  passwortHash,
     vorname:        data.vorname,
@@ -84,6 +88,9 @@ export async function customerRegistrierenAction(
     company_note:   isB2B ? data.company_note  : undefined,
     agb_akzeptiert: true,
   });
+  if (!customer) {
+    return { fehler: "Этот e-mail уже зарегистрирован. Войдите или восстановите пароль." };
+  }
 
   // E-Mail-Bestätigungs-Mail
   const token = await emailConfirmationTokenSetzen(customer.id);

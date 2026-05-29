@@ -64,6 +64,50 @@ export async function customerErstellen(data: {
   return r.rows[0];
 }
 
+/**
+ * Race-sichere Anlage für die Selbst-Registrierung: legt NUR an, wenn die
+ * E-Mail noch nicht existiert. Bei Konflikt → null (KEIN Überschreiben des
+ * bestehenden Accounts, KEIN Reset eines offenen Bestätigungs-Tokens).
+ *
+ * Unterschied zu customerErstellen(): dort ist ON CONFLICT DO UPDATE (touch)
+ * gewollt für Admin-/Checkout-Flows; hier ist DO NOTHING korrekt, damit zwei
+ * parallele Registrierungen denselben Account nicht doppelt „anlegen".
+ */
+export async function customerErstellenWennNeu(data: {
+  email:          string;
+  passwort_hash?: string;
+  vorname?:       string;
+  nachname?:      string;
+  telefon?:       string;
+  customer_type?: CustomerType;
+  company_name?:  string;
+  ust_id?:        string;
+  company_note?:  string;
+  agb_akzeptiert: boolean;
+}): Promise<Customer | null> {
+  const r = await query<Customer>(
+    `INSERT INTO sebo.customers
+       (email, passwort_hash, vorname, nachname, telefon,
+        customer_type, company_name, ust_id, company_note, agb_akzeptiert_am)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9, CASE WHEN $10 THEN now() ELSE NULL END)
+     ON CONFLICT (email) DO NOTHING
+     RETURNING *`,
+    [
+      data.email.toLowerCase(),
+      data.passwort_hash ?? null,
+      data.vorname       ?? null,
+      data.nachname      ?? null,
+      data.telefon       ?? null,
+      data.customer_type ?? "b2c",
+      data.company_name  ?? null,
+      data.ust_id        ?? null,
+      data.company_note  ?? null,
+      data.agb_akzeptiert,
+    ]
+  );
+  return r.rows[0] ?? null;
+}
+
 /** Profil-Update */
 export async function customerProfilAktualisieren(
   id: string,

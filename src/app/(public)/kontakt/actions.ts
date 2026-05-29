@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { getDictionary } from "@/i18n";
+import { getSiteUrl } from "@/lib/site-url";
 
 const KontaktSchema = z.object({
   name:      z.string().min(2),
@@ -28,8 +29,7 @@ export async function kontaktSendenAction(
   if (!parsed.success) return { error: t.kontakt_seite.fehler };
 
   try {
-    const base = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
-    const res  = await fetch(`${base}/api/kontakt`, {
+    const res  = await fetch(`${getSiteUrl()}/api/kontakt`, {
       method:  "POST",
       headers: { "Content-Type": "application/json" },
       body:    JSON.stringify(parsed.data),

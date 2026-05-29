@@ -141,8 +141,13 @@ export function isMethodAvailable(
   info: PaymentMethodInfo,
   ctx:  { shippingCountry?: string; envCheck?: boolean },
 ): boolean {
-  if (info.requiresShippingCountry && ctx.shippingCountry) {
-    if (!info.requiresShippingCountry.includes(ctx.shippingCountry.toUpperCase())) return false;
+  if (info.requiresShippingCountry) {
+    // Methode erfordert ein bestimmtes Land → bei fehlendem/leerem Lieferland
+    // ablehnen, sonst würden z.B. Vor-Ort-Methoden bei unbekanntem Land
+    // fälschlich angeboten (und der API-Endpoint lehnt dann mit 400 ab).
+    if (!ctx.shippingCountry || !info.requiresShippingCountry.includes(ctx.shippingCountry.toUpperCase())) {
+      return false;
+    }
   }
   // envCheck wird vom Server gesetzt — true wenn Provider-Token konfiguriert
   if (ctx.envCheck === false) return false;
