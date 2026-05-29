@@ -174,9 +174,9 @@ export default async function TelegramProduktPage({
               className="mt-3 inline-flex items-center gap-1.5 px-2 py-1 text-[10px] uppercase font-medium"
               style={{
                 letterSpacing: "0.22em",
-                background:    "rgba(201,168,76,0.12)",
-                color:         "#9A7B1F",
-                border:        "1px solid rgba(201,168,76,0.40)",
+                background:    "rgba(232,112,58,0.10)",
+                color:         "var(--color-coral-deep, #A53E26)",
+                border:        "1px solid rgba(232,112,58,0.40)",
               }}
             >
               ⏳ Зарезервировано
@@ -235,14 +235,14 @@ export default async function TelegramProduktPage({
             href={`/tg/kontakt?produkt=${produkt.id}&slug=${produkt.slug}&name=${encodeURIComponent(name)}`}
             className="mt-5 flex items-center justify-center gap-2 py-3 text-[11px] uppercase font-medium"
             style={{
-              letterSpacing: "0.22em",
-              background:    "var(--tg-theme-section-bg-color, #fff)",
-              border:        "1px solid var(--color-line)",
-              color:         "var(--tg-theme-text-color, var(--color-ink))",
+              letterSpacing: "0.18em",
+              background:    "var(--color-coral)",
+              color:         "#fff",
+              borderRadius:  2,
               touchAction:   "manipulation",
             }}
           >
-            <MessageCircle className="w-3.5 h-3.5" style={{ color: "var(--color-coral)" }} />
+            <MessageCircle className="w-3.5 h-3.5" style={{ color: "#fff" }} />
             Спросить куратора
           </Link>
 

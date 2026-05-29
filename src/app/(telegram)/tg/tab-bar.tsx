@@ -128,7 +128,7 @@ export function MiniAppTabBar({ kaufenAktiv = true }: { kaufenAktiv?: boolean })
                 className="w-[22px] h-[22px]"
                 style={{
                   color: active
-                    ? "var(--tg-theme-link-color, var(--color-coral))"
+                    ? "var(--color-coral)"
                     : "var(--tg-theme-hint-color, var(--color-ink-mute))",
                 }}
               />
@@ -150,7 +150,7 @@ export function MiniAppTabBar({ kaufenAktiv = true }: { kaufenAktiv?: boolean })
               style={{
                 letterSpacing: "0.12em",
                 color: active
-                  ? "var(--tg-theme-link-color, var(--color-coral))"
+                  ? "var(--color-coral)"
                   : "var(--tg-theme-hint-color, var(--color-ink-mute))",
               }}
             >

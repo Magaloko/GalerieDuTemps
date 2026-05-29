@@ -147,15 +147,16 @@ export function TelegramCatalogClient({
         >
           Каталог
         </p>
-        <h1
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize:   28,
-            lineHeight: 1.05,
-            color:      "var(--tg-theme-text-color, var(--color-ink))",
-          }}
-        >
-          Galerie du Temps
+        <h1 className="flex items-baseline gap-2" style={{ lineHeight: 1.05 }}>
+          <span
+            className="wordmark"
+            style={{ fontSize: 22, color: "var(--tg-theme-text-color, var(--color-ink))" }}
+          >
+            GALERIE
+          </span>
+          <span className="wordmark-italic" style={{ fontSize: 14, color: "var(--color-coral)" }}>
+            du Temps
+          </span>
         </h1>
         <Link
           href="/tg/instagram"
@@ -172,7 +173,7 @@ export function TelegramCatalogClient({
         style={{
           background:   "var(--tg-theme-section-bg-color, #fff)",
           border:       "1px solid var(--color-line)",
-          borderRadius: 12,
+          borderRadius: 4,
         }}
       >
         <Search className="w-4 h-4 ml-3 shrink-0" style={{ color: "var(--color-coral)" }} />
@@ -347,7 +348,7 @@ export function TelegramCatalogClient({
           style={{
             background:   "var(--tg-theme-section-bg-color, #fff)",
             border:       "1px solid var(--color-line)",
-            borderRadius: 12,
+            borderRadius: 4,
           }}
         >
           {/* Nur reduziert (Sale) — prominenter Toggle */}
@@ -388,7 +389,7 @@ export function TelegramCatalogClient({
                       className="px-2.5 py-1 text-[11px] font-medium whitespace-nowrap"
                       style={{
                         borderRadius: 999, touchAction: "manipulation",
-                        background: aktiv ? "var(--color-coral)" : "var(--color-bone)",
+                        background: aktiv ? "var(--color-coral)" : "var(--tg-theme-section-bg-color, var(--color-bone))",
                         color:      aktiv ? "#fff" : "var(--tg-theme-text-color, var(--color-ink))",
                         border:     `1px solid ${aktiv ? "var(--color-coral)" : "var(--color-line)"}`,
                       }}>
@@ -416,7 +417,7 @@ export function TelegramCatalogClient({
                       className="px-2.5 py-1 text-[11px] font-medium whitespace-nowrap"
                       style={{
                         borderRadius: 999, touchAction: "manipulation",
-                        background: aktiv ? "var(--color-coral)" : "var(--color-bone)",
+                        background: aktiv ? "var(--color-coral)" : "var(--tg-theme-section-bg-color, var(--color-bone))",
                         color:      aktiv ? "#fff" : "var(--tg-theme-text-color, var(--color-ink))",
                         border:     `1px solid ${aktiv ? "var(--color-coral)" : "var(--color-line)"}`,
                       }}>
@@ -469,7 +470,7 @@ export function TelegramCatalogClient({
               onChange={e => setMinFeld(e.target.value)}
               placeholder={preisRange.min ? `от ${preisRange.min}` : "от"}
               className="w-full bg-transparent px-2 py-2 text-sm outline-none"
-              style={{ border: "1px solid var(--color-line)", borderRadius: 8, color: "var(--tg-theme-text-color, var(--color-ink))" }}
+              style={{ border: "1px solid var(--color-line)", borderRadius: 4, color: "var(--tg-theme-text-color, var(--color-ink))" }}
             />
             <span style={{ color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>—</span>
             <input
@@ -480,7 +481,7 @@ export function TelegramCatalogClient({
               onChange={e => setMaxFeld(e.target.value)}
               placeholder={preisRange.max ? `до ${preisRange.max}` : "до"}
               className="w-full bg-transparent px-2 py-2 text-sm outline-none"
-              style={{ border: "1px solid var(--color-line)", borderRadius: 8, color: "var(--tg-theme-text-color, var(--color-ink))" }}
+              style={{ border: "1px solid var(--color-line)", borderRadius: 4, color: "var(--tg-theme-text-color, var(--color-ink))" }}
             />
           </div>
           <div className="flex items-center gap-2 mt-3">
@@ -488,7 +489,7 @@ export function TelegramCatalogClient({
               type="button"
               onClick={() => navigate({ min: minFeld, max: maxFeld })}
               className="flex-1 py-2 text-[11px] uppercase font-medium"
-              style={{ letterSpacing: "0.18em", background: "var(--color-coral)", color: "#fff", borderRadius: 8, touchAction: "manipulation" }}
+              style={{ letterSpacing: "0.18em", background: "var(--color-coral)", color: "#fff", borderRadius: 4, touchAction: "manipulation" }}
             >
               Применить
             </button>
@@ -497,7 +498,7 @@ export function TelegramCatalogClient({
                 type="button"
                 onClick={() => { setMinFeld(""); setMaxFeld(""); navigate({ min: "", max: "" }); }}
                 className="py-2 px-3 text-[11px] uppercase font-medium"
-                style={{ letterSpacing: "0.14em", border: "1px solid var(--color-line)", color: "var(--tg-theme-text-color, var(--color-ink))", borderRadius: 8, touchAction: "manipulation" }}
+                style={{ letterSpacing: "0.14em", border: "1px solid var(--color-line)", color: "var(--tg-theme-text-color, var(--color-ink))", borderRadius: 4, touchAction: "manipulation" }}
               >
                 Сброс
               </button>
