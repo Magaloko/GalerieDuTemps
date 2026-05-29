@@ -81,11 +81,28 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "missing endpoint" }, { status: 400, headers: NO_STORE });
   }
 
+  // Identitäts-Bindung: ein eingeloggter Kunde darf nur SEINE eigene
+  // Subscription löschen; anonyme Gäste nur ungebundene (customer_id IS NULL).
+  // Verhindert, dass jemand mit bekanntem endpoint fremde (kunden-gebundene)
+  // Push-Abos löscht.
+  const session = await auth();
+  const customerId =
+    session?.user?.role === "customer" && session.user.id ? session.user.id : null;
+
   try {
-    await query(
-      `DELETE FROM sebo.push_subscriptions WHERE endpoint = $1 AND audience = 'customer'`,
-      [endpoint],
-    );
+    if (customerId) {
+      await query(
+        `DELETE FROM sebo.push_subscriptions
+           WHERE endpoint = $1 AND audience = 'customer' AND customer_id = $2`,
+        [endpoint, customerId],
+      );
+    } else {
+      await query(
+        `DELETE FROM sebo.push_subscriptions
+           WHERE endpoint = $1 AND audience = 'customer' AND customer_id IS NULL`,
+        [endpoint],
+      );
+    }
   } catch (err) {
     console.error("[push/subscribe-customer] DELETE-Fehler:", err);
     return NextResponse.json({ error: "db error" }, { status: 500, headers: NO_STORE });

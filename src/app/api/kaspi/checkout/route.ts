@@ -52,6 +52,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Validierungsfehler", details: parsed.error.flatten() }, { status: 422 });
   }
 
+  // Rollback-Anker: Order wird im try angelegt → bei JEDER Exception danach
+  // (UPDATE, Payment-Link, …) muss sie storniert werden, sonst Geisterbestellung
+  // mit blockiertem (Einzelstück-)Bestand.
+  let createdOrderId: string | null = null;
   try {
     // Produkte laden + validieren (analog zu Stripe-Checkout)
     const ids = parsed.data.items.map(i => i.produkt_id);
@@ -132,6 +136,8 @@ export async function POST(req: NextRequest) {
       customer_type:   "b2c",
     });
 
+    createdOrderId = order.id;
+
     // Markiere als kaspi-payment
     await query(
       `UPDATE sebo.orders SET payment_method = 'kaspi' WHERE id = $1`,
@@ -177,6 +183,13 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     console.error("[API Kaspi Checkout]", err);
+    // Order wurde evtl. schon angelegt → zurückrollen, sonst bleibt eine
+    // unbezahlbare Geisterbestellung mit blockiertem Bestand zurück.
+    if (createdOrderId) {
+      await orderCanceln(createdOrderId, "Kaspi-Checkout-Ausnahme").catch(e =>
+        console.error("[API Kaspi Checkout] Rollback fehlgeschlagen:", e),
+      );
+    }
     return NextResponse.json({ error: "Serverfehler" }, { status: 500 });
   }
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { getSiteUrl } from "@/lib/site-url";
+import { requireAdminSession } from "@/lib/auth/config";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,13 @@ export const dynamic = "force-dynamic";
  * Public-Endpoint (kein Auth). Gibt KEINE Tokens / IDs / sensitive Daten.
  * ────────────────────────────────────────────────────────────────────────── */
 export async function GET() {
+  // Admin-Gate: dieser Endpoint verrät Infrastruktur-Details (Bot-Username,
+  // gesetzte Secrets, Migrationsstatus) → nur für eingeloggte Admins.
+  const session = await requireAdminSession();
+  if (!session) {
+    return NextResponse.json({ error: "Не авторизовано" }, { status: 401, headers: { "Cache-Control": "no-store" } });
+  }
+
   const result: Record<string, unknown> = {
     site_url: getSiteUrl(),
     timestamp: new Date().toISOString(),

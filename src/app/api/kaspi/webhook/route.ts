@@ -17,12 +17,11 @@ export async function POST(req: NextRequest) {
   const signature = req.headers.get("x-kaspi-signature");
   const body      = await req.text();
 
+  // Signatur IMMER prüfen — kein NODE_ENV-Bypass. Ohne gültige HMAC-Signatur
+  // könnte sonst jeder per POST eine Order auf 'paid' setzen. Zum lokalen Testen
+  // KASPI_WEBHOOK_SECRET setzen und korrekt signieren.
   if (!signature || !verifyKaspiWebhook(body, signature)) {
-    // Im Stub: warnen aber durchlassen (für Tests)
-    if (process.env.NODE_ENV === "production") {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-    }
-    console.warn("[Kaspi Webhook] Signatur-Prüfung übersprungen (DEV)");
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
   let event: { type: string; data: { payment_id: string; status: string; amount?: number; paid_at?: string; order_id?: string } };
