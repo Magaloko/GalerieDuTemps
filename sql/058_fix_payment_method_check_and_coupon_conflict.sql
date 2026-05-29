@@ -14,8 +14,15 @@
 --    Payment-UPDATE im Checkout schlägt fehl.
 -- ─────────────────────────────────────────────────────────────────────────────
 
--- Legacy-Werte (aus 010) auf die neue Nomenklatur mappen, BEVOR die strengere
--- Constraint greift (ADD CONSTRAINT würde sonst an Bestandsdaten scheitern).
+-- REIHENFOLGE KRITISCH: Die enge 010-Constraint erlaubt 'stripe_card' NICHT.
+-- Sie muss ZUERST weg, sonst scheitert schon das Daten-Mapping unten.
+ALTER TABLE sebo.orders DROP CONSTRAINT IF EXISTS orders_payment_method_check;
+
+-- Default 'stripe' (aus 010) entfernen — orderErstellen setzt payment_method
+-- NICHT, neue Orders sollen NULL ("noch nicht entschieden") sein.
+ALTER TABLE sebo.orders ALTER COLUMN payment_method DROP DEFAULT;
+
+-- Legacy-Werte (aus 010) auf die neue Nomenklatur mappen.
 UPDATE sebo.orders SET payment_method = 'stripe_card' WHERE payment_method = 'stripe';
 UPDATE sebo.orders SET payment_method = 'stripe_sepa' WHERE payment_method = 'sepa';
 
@@ -28,12 +35,7 @@ UPDATE sebo.orders SET payment_method = NULL
      'bank_transfer','vor_ort','vor_ort_anzahlung','telegram_payments','kaspi'
    );
 
--- Default 'stripe' (aus 010) entfernen — orderErstellen setzt payment_method
--- NICHT, neue Orders sollen NULL ("noch nicht entschieden") sein.
-ALTER TABLE sebo.orders ALTER COLUMN payment_method DROP DEFAULT;
-
--- Enge Constraint durch die vollständige Methodenliste ersetzen.
-ALTER TABLE sebo.orders DROP CONSTRAINT IF EXISTS orders_payment_method_check;
+-- Jetzt die vollständige Methodenliste als neue Constraint setzen.
 ALTER TABLE sebo.orders ADD CONSTRAINT orders_payment_method_check
   CHECK (payment_method IS NULL OR payment_method IN (
     'stripe_card',
