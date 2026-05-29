@@ -136,4 +136,9 @@ export async function notifyAdminsCritical(
   await notifyAdminsTelegram(text, { keyboard }).catch(err =>
     console.error("[notifyAdminsCritical]", err),
   );
+
+  // Zusätzlich: Web-Push aufs Handy. notifyAdminsPush löst relative Links
+  // selbst absolut auf (via getSiteUrl). Best-Effort, non-blocking.
+  const { notifyAdminsPush } = await import("@/lib/push/notify");
+  notifyAdminsPush(meta.label, detail, link, `critical_${typ}`).catch(() => {});
 }

@@ -1,6 +1,7 @@
 import { query } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { notifyAdminsTelegram } from "@/lib/notifications/admin-telegram";
+import { notifyAdminsPush } from "@/lib/push/notify";
 import { getSiteUrl } from "@/lib/site-url";
 import type { Lead } from "@/lib/db/leads";
 
@@ -129,6 +130,13 @@ export async function notifyNewLead(lead: Pick<Lead,
         ]],
       },
     }).catch(err => console.error("[notifyNewLead tg]", err));
+
+    // Zusätzlich: Web-Push aufs Handy (installierte PWA). Best-Effort.
+    notifyAdminsPush(
+      `Новый лид · ${quelle}`,
+      contact + (lead.betreff ? ` · ${lead.betreff}` : ""),
+      `/admin/leads/${lead.id}`,
+    ).catch(() => {});
   } catch (err) {
     console.error("[notifyNewLead] unexpected", err);
   }

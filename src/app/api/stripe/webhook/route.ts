@@ -104,6 +104,16 @@ export async function POST(req: NextRequest) {
             htmlContent: bestellungBestaetigungMail(full),
             tags:    ["bestellung-bestaetigt"],
           }).catch(err => console.error("[Webhook] Mail-Fehler:", err));
+
+          // Operator-Alert: neue (bezahlte) Bestellung → Web-Push aufs Handy.
+          // Best-Effort, non-blocking (Webhook-Antwort darf nie daran hängen).
+          void import("@/lib/push/notify").then(({ notifyAdminsPush }) =>
+            notifyAdminsPush(
+              "Новый заказ",
+              `№ GDT-${full.order_number} · ${formatPreis(full.total_cents / 100)}`,
+              `/admin/bestellungen/${full.id}`,
+            ),
+          ).catch(() => {});
         }
         break;
       }

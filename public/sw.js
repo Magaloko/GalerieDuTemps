@@ -1,5 +1,5 @@
 /* ───────────────────────────────────────────────────────────────────────────
- * Galerie du Temps — Service Worker (PWA)  ·  v2
+ * Galerie du Temps — Service Worker (PWA)  ·  v3
  *
  * WICHTIG (v2-Fix): Navigationen werden NIE gecached → die installierte PWA
  * bekommt immer das frische HTML vom Server. Das verhindert, dass ein
@@ -15,7 +15,7 @@
  * Version im Cache-Namen → alte Caches (inkl. v1-Seiten-Cache) werden beim
  * activate gelöscht. skipWaiting + clients.claim → neuer SW übernimmt sofort.
  * ─────────────────────────────────────────────────────────────────────────── */
-const VERSION = "v2";
+const VERSION = "v3";
 const STATIC_CACHE = `gdt-static-${VERSION}`;
 const IMG_CACHE    = `gdt-img-${VERSION}`;
 const OFFLINE_URL  = "/offline.html";
@@ -93,4 +93,53 @@ self.addEventListener("fetch", (event) => {
       })
     );
   }
+});
+
+/* ───────────────────────────────────────────────────────────────────────────
+ * Web-Push (Operator-Alerts) — additiv zur Cache/Fetch-Logik oben.
+ *
+ * Payload (JSON vom Server): { title, body, url }
+ * ─────────────────────────────────────────────────────────────────────────── */
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    // Fallback: roher Text als Body, falls kein JSON.
+    data = { title: "Galerie du Temps", body: event.data ? event.data.text() : "" };
+  }
+  const title = data.title || "Galerie du Temps";
+  const body  = data.body || "";
+  const url   = data.url || "/";
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon:  "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      data:  { url },
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || "/";
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      // Bereits offenes Fenster mit der Ziel-URL fokussieren …
+      for (const client of clientList) {
+        if (client.url === url && "focus" in client) return client.focus();
+      }
+      // … sonst irgendein offenes Fenster fokussieren + navigieren …
+      for (const client of clientList) {
+        if ("focus" in client && "navigate" in client) {
+          return client.focus().then(() => client.navigate(url).catch(() => {}));
+        }
+      }
+      // … sonst neues Fenster öffnen.
+      if (self.clients.openWindow) return self.clients.openWindow(url);
+    })
+  );
 });
