@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Input }    from "./input";
 import { Textarea } from "./textarea";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
 
 const LOCALES: { code: "ru" | "en" | "de"; flag: string; label: string }[] = [
   { code: "ru", flag: "🇷🇺", label: "Русский" },
@@ -83,12 +84,14 @@ export function MultilingualInput({
 
       {/* Aktives Eingabefeld */}
       {variant === "markdown" ? (
-        <Textarea
-          value={values[active] ?? ""}
-          onChange={(e) => setValue(active, e.target.value)}
-          rows={rows ?? 10}
+        /* Rich-Text-Editor (Lexical) — Markdown rein/raus, pro Sprache.
+           key={active} → beim Sprachwechsel sauber mit dem Text der Sprache
+           neu laden. */
+        <RichTextEditor
+          key={active}
+          initialMarkdown={values[active] ?? ""}
+          onChange={(md) => setValue(active, md)}
           placeholder={placeholder}
-          hint="Markdown unterstützt: **жирный**, *курсив*, ## заголовки, - списки"
         />
       ) : variant === "textarea" ? (
         <Textarea
