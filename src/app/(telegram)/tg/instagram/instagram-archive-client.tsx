@@ -1,9 +1,9 @@
 "use client";
 
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Film, Image as ImageIcon, Tv, ArrowRight, Loader2, ExternalLink } from "lucide-react";
+import { Film, Image as ImageIcon, Tv, ArrowRight, Loader2, ExternalLink, ShoppingBag, X } from "lucide-react";
 import { InstagramIcon } from "@/components/produkte/instagram-icon";
 
 type Chip = { slug: string; name: string; anzahl: number };
@@ -20,22 +20,35 @@ type Post = {
 };
 
 /* ──────────────────────────────────────────────────────────────────────────
- * Instagram-Archiv (Mini-App) — native Karten statt Embeds.
+ * Instagram-Archiv (Mini-App) — IG-Galerie-Grid statt Embeds.
  *
- * Instagram embed.js wird in Telegramms WebView blockiert. Deshalb zeigen
- * wir marken-konforme Karten mit direktem Link zum Post — kein iframe, kein
- * externes Script. Funktioniert zuverlässig in allen Umgebungen.
+ * Instagram embed.js wird in Telegrams WebView blockiert. Statt iframes zeigen
+ * wir ein 2-spaltiges Raster quadratischer Cover-Kacheln (Instagram-Profil-Look).
+ * Tippen öffnet ein Detail-Sheet mit großem Bild, Titel, Kategorie und den
+ * Aktionen („Открыть в Instagram" + optional „К товару"). Kacheln mit
+ * verknüpftem Produkt tragen ein Coral-Shopping-Badge (shoppable feed).
  * ────────────────────────────────────────────────────────────────────────── */
 export function InstagramArchiveClient({
   posts, kategorien, aktiveKategorie,
 }: { posts: Post[]; kategorien: Chip[]; aktiveKategorie: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [active, setActive] = useState<Post | null>(null);
 
   const navigate = (kat: string) => {
     const qs = kat ? `?kat=${encodeURIComponent(kat)}` : "";
     startTransition(() => router.push(`/tg/instagram${qs}`));
   };
+
+  // Sheet schließen via Escape + Body-Scroll sperren solange offen.
+  useEffect(() => {
+    if (!active) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setActive(null); };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
+  }, [active]);
 
   return (
     <main className="p-4 pb-8">
@@ -71,10 +84,13 @@ export function InstagramArchiveClient({
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-3" style={{ opacity: pending ? 0.55 : 1 }}>
-          {posts.map(p => <PostCard key={p.id} post={p} />)}
+        <div className="grid grid-cols-2 gap-2" style={{ opacity: pending ? 0.55 : 1 }}>
+          {posts.map(p => <GridTile key={p.id} post={p} onOpen={() => setActive(p)} />)}
         </div>
       )}
+
+      {/* Detail-Sheet */}
+      {active && <DetailSheet post={active} onClose={() => setActive(null)} />}
     </main>
   );
 }
@@ -97,110 +113,178 @@ function Chip({ label, count, aktiv, onClick }: {
 }
 
 const TYP_LABEL: Record<string, string> = { reel: "Reel", tv: "IGTV", p: "Post" };
+function typIcon(typ: string) {
+  return typ === "reel" ? Film : typ === "tv" ? Tv : ImageIcon;
+}
 
-function PostCard({ post }: { post: Post }) {
-  const Icon = post.typ === "reel" ? Film : post.typ === "tv" ? Tv : ImageIcon;
-  const typLabel = TYP_LABEL[post.typ] ?? post.typ;
+/* ── Grid-Kachel (quadratisch, IG-Profil-Look) ── */
+function GridTile({ post, onOpen }: { post: Post; onOpen: () => void }) {
+  const Icon = typIcon(post.typ);
 
   return (
-    <div style={{
-      background: "var(--tg-theme-section-bg-color, #fff)",
-      border:     "1px solid var(--color-line)",
-      borderRadius: 6,
-      overflow: "hidden",
-    }}>
+    <button
+      type="button"
+      onClick={onOpen}
+      className="relative w-full block"
+      style={{
+        aspectRatio: "1/1", borderRadius: 6, overflow: "hidden", touchAction: "manipulation",
+        border: "1px solid var(--color-line)",
+        background: post.bild_url
+          ? "var(--color-paper-warm, #f5f0e8)"
+          : "linear-gradient(135deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)",
+      }}
+    >
       {post.bild_url ? (
-        /* ─ Großes Karten-Layout mit echtem Cover ─ */
         <>
-          <div className="relative w-full" style={{ aspectRatio: "4/5", background: "var(--color-paper-warm, #f5f0e8)" }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={post.bild_url} alt={post.titel ?? post.shortcode}
-              className="absolute inset-0 w-full h-full object-cover" />
-            {/* Typ-Badge oben rechts (IG-Gradient) */}
-            <span className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 text-[10px] uppercase font-medium"
-              style={{ borderRadius: 999, letterSpacing: "0.12em", color: "#fff",
-                background: "linear-gradient(135deg,#f09433,#dc2743,#bc1888)" }}>
-              <Icon className="w-3 h-3" /> {typLabel}
-            </span>
-            {/* Titel/Kategorie als Overlay unten */}
-            <div className="absolute inset-x-0 bottom-0 p-3"
-              style={{ background: "linear-gradient(to top, rgba(15,20,48,0.78), rgba(15,20,48,0))" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={post.bild_url} alt={post.titel ?? post.shortcode}
+            className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+          {/* Titel/Kategorie als dezentes Overlay unten */}
+          {(post.titel || post.kategorie_name) && (
+            <div className="absolute inset-x-0 bottom-0 p-2"
+              style={{ background: "linear-gradient(to top, rgba(15,20,48,0.72), rgba(15,20,48,0))" }}>
               {post.kategorie_name && (
-                <p className="text-[10px] uppercase font-medium mb-0.5"
-                  style={{ letterSpacing: "0.18em", color: "rgba(255,255,255,0.82)" }}>
+                <p className="text-[9px] uppercase font-medium mb-0.5 truncate"
+                  style={{ letterSpacing: "0.16em", color: "rgba(255,255,255,0.82)" }}>
                   {post.kategorie_name}
                 </p>
               )}
-              <p className="text-sm leading-snug"
-                style={{ fontFamily: "var(--font-display)", color: "#fff" }}>
-                {post.titel || post.shortcode}
-              </p>
+              {post.titel && (
+                <p className="text-[12px] leading-tight line-clamp-2"
+                  style={{ fontFamily: "var(--font-display)", color: "#fff" }}>
+                  {post.titel}
+                </p>
+              )}
             </div>
-          </div>
+          )}
         </>
       ) : (
-        /* ─ Fallback ohne Bild: Icon-Header ─ */
-        <div className="flex items-start gap-3 p-3">
-          <div className="shrink-0 flex items-center justify-center w-10 h-10 rounded-full"
-            style={{ background: "linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)" }}>
-            <InstagramIcon className="w-5 h-5" style={{ color: "#fff" }} />
-          </div>
-          <div className="flex-1 min-w-0 pt-0.5">
-            <div className="flex items-center gap-2 mb-0.5">
-              {post.kategorie_name && (
-                <span className="text-[10px] uppercase font-medium"
-                  style={{ letterSpacing: "0.18em", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
-                  {post.kategorie_name}
-                </span>
-              )}
-              <span className="flex items-center gap-1 text-[10px]"
-                style={{ color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
-                <Icon className="w-3 h-3" />
-                {typLabel}
-              </span>
-            </div>
-            <p className="text-sm leading-snug"
-              style={{ fontFamily: "var(--font-display)", color: "var(--tg-theme-text-color, var(--color-ink))" }}>
-              {post.titel || post.shortcode}
-            </p>
-          </div>
+        /* Kein Cover → IG-Gradient + Icon + Titel zentriert */
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-3 text-center">
+          <InstagramIcon className="w-7 h-7" style={{ color: "rgba(255,255,255,0.92)" }} />
+          <p className="text-[12px] leading-tight line-clamp-3"
+            style={{ fontFamily: "var(--font-display)", color: "#fff" }}>
+            {post.titel || post.shortcode}
+          </p>
         </div>
       )}
 
-      {/* Buttons */}
-      <div className="flex flex-col gap-0" style={{ borderTop: "1px solid var(--color-line)" }}>
-        {/* In Instagram öffnen */}
-        <a
-          href={post.permalink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 py-2.5 text-[11px] uppercase font-medium"
-          style={{
-            letterSpacing: "0.18em",
-            color: "var(--color-coral)",
-            touchAction: "manipulation",
-          }}>
-          <ExternalLink className="w-3.5 h-3.5" />
-          Открыть в Instagram
-        </a>
+      {/* Typ-Indikator oben links */}
+      <span className="absolute top-1.5 left-1.5 flex items-center justify-center w-6 h-6 rounded-full"
+        style={{ background: "rgba(15,20,48,0.55)", backdropFilter: "blur(2px)" }}>
+        <Icon className="w-3 h-3" style={{ color: "#fff" }} />
+      </span>
 
-        {/* Zum Produkt — wenn verknüpft */}
-        {post.produkt_slug && (
-          <Link
-            href={`/tg/produkt/${post.produkt_slug}`}
-            className="flex items-center justify-center gap-2 py-2.5 text-[11px] uppercase font-medium"
+      {/* Coral-Shopping-Badge oben rechts (kaufbar) */}
+      {post.produkt_slug && (
+        <span className="absolute top-1.5 right-1.5 flex items-center justify-center w-6 h-6 rounded-full shadow"
+          style={{ background: "var(--color-coral)" }}>
+          <ShoppingBag className="w-3 h-3" style={{ color: "#fff" }} />
+        </span>
+      )}
+    </button>
+  );
+}
+
+/* ── Detail-Sheet (Bottom-Sheet mit großem Bild + Aktionen) ── */
+function DetailSheet({ post, onClose }: { post: Post; onClose: () => void }) {
+  const Icon = typIcon(post.typ);
+  const typLabel = TYP_LABEL[post.typ] ?? post.typ;
+
+  return (
+    <div
+      className="fixed inset-0 z-[1000] flex items-end justify-center"
+      onClick={onClose}
+      style={{ background: "rgba(10,12,30,0.62)", animation: "ig-fade-in 160ms ease-out" }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        className="w-full max-w-md max-h-[92vh] overflow-y-auto"
+        style={{
+          background: "var(--tg-theme-bg-color, var(--color-paper, #fff))",
+          borderTopLeftRadius: 16, borderTopRightRadius: 16,
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
+          animation: "ig-sheet-up 240ms cubic-bezier(0.2,0.7,0.3,1)",
+        }}
+      >
+        {/* Drag-Handle + Close */}
+        <div className="sticky top-0 flex items-center justify-between px-4 pt-3 pb-2"
+          style={{ background: "var(--tg-theme-bg-color, var(--color-paper, #fff))" }}>
+          <span className="flex items-center gap-1.5 text-[10px] uppercase font-medium"
+            style={{ letterSpacing: "0.16em", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
+            <Icon className="w-3.5 h-3.5" /> {typLabel}
+          </span>
+          <button type="button" onClick={onClose} aria-label="Закрыть"
+            className="p-1 -mr-1 opacity-60" style={{ touchAction: "manipulation" }}>
+            <X className="w-5 h-5" style={{ color: "var(--tg-theme-text-color, var(--color-ink))" }} />
+          </button>
+        </div>
+
+        {/* Großes Cover */}
+        <div className="relative w-full mx-auto"
+          style={{ aspectRatio: "4/5", maxWidth: 420,
+            background: post.bild_url ? "var(--color-paper-warm, #f5f0e8)"
+              : "linear-gradient(135deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)" }}>
+          {post.bild_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={post.bild_url} alt={post.titel ?? post.shortcode}
+              className="absolute inset-0 w-full h-full object-cover" />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <InstagramIcon className="w-12 h-12" style={{ color: "rgba(255,255,255,0.92)" }} />
+            </div>
+          )}
+        </div>
+
+        {/* Text */}
+        <div className="px-4 pt-4">
+          {post.kategorie_name && (
+            <p className="text-[10px] uppercase font-medium mb-1"
+              style={{ letterSpacing: "0.18em", color: "var(--color-coral)" }}>
+              {post.kategorie_name}
+            </p>
+          )}
+          <p className="text-lg leading-snug"
+            style={{ fontFamily: "var(--font-display)", color: "var(--tg-theme-text-color, var(--color-ink))" }}>
+            {post.titel || post.shortcode}
+          </p>
+        </div>
+
+        {/* Aktionen */}
+        <div className="px-4 pt-4 flex flex-col gap-2">
+          <a
+            href={post.permalink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 py-3 text-[12px] uppercase font-medium"
             style={{
-              borderTop: "1px solid var(--color-line)",
-              letterSpacing: "0.18em",
-              background: "var(--color-coral)",
-              color: "#fff",
-              touchAction: "manipulation",
+              letterSpacing: "0.16em", borderRadius: 8, touchAction: "manipulation",
+              border: "1px solid var(--color-coral)", color: "var(--color-coral)",
             }}>
-            {post.produkt_name ? `К товару: ${post.produkt_name}` : "К товару"}
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        )}
+            <ExternalLink className="w-4 h-4" />
+            Открыть в Instagram
+          </a>
+
+          {post.produkt_slug && (
+            <Link
+              href={`/tg/produkt/${post.produkt_slug}`}
+              className="flex items-center justify-center gap-2 py-3 text-[12px] uppercase font-medium"
+              style={{
+                letterSpacing: "0.16em", borderRadius: 8, touchAction: "manipulation",
+                background: "var(--color-coral)", color: "#fff",
+              }}>
+              <ShoppingBag className="w-4 h-4" />
+              {post.produkt_name ? `К товару: ${post.produkt_name}` : "К товару"}
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          )}
+        </div>
       </div>
+
+      <style>{`
+        @keyframes ig-fade-in { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes ig-sheet-up { from { transform: translateY(12%); opacity: 0.6 } to { transform: translateY(0); opacity: 1 } }
+      `}</style>
     </div>
   );
 }
