@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { katalogProdukte, neuheitenProdukte, preisRange, eraFacets, materialFacets } from "@/lib/db/produkte-public";
 import { alleKategorien } from "@/lib/db/kategorien";
+import { instagramPostsPublic } from "@/lib/db/instagram-archive";
 import { isFeatureEnabled } from "@/lib/db/feature-flags";
 import { maskBestandListe } from "@/lib/utils/showcase-mask";
 import { TelegramAuthGate } from "./auth-gate";
@@ -54,7 +55,7 @@ export default async function TelegramMiniAppHome({
 
   const hatFilter = !!suche || !!kat || !!era || !!zustand || !!material || nurReduziert || sort !== "neu" || minPreis !== undefined || maxPreis !== undefined;
 
-  const [data, kategorien, neuheiten, range, eras, materials, kaufenAktiv] = await Promise.all([
+  const [data, kategorien, neuheiten, range, eras, materials, igHighlights, kaufenAktiv] = await Promise.all([
     katalogProdukte({
       seite: 1, limit: 48, suche, kategorie: kat, sortierung: sort,
       min_preis: minPreis, max_preis: maxPreis, era, zustand, material,
@@ -68,8 +69,22 @@ export default async function TelegramMiniAppHome({
     preisRange().catch(() => ({ min: 0, max: 0 })),
     eraFacets().catch(() => []),
     materialFacets().catch(() => []),
+    // IG-Highlights-Strip nur im ungefilterten Einstieg.
+    hatFilter ? Promise.resolve([]) : instagramPostsPublic({ limit: 10 }).catch(() => []),
     isFeatureEnabled("kaufen_aktiv").catch(() => true),
   ]);
+
+  // Nur Highlights MIT Bild (Cover oder verknüpftes Produktbild) zeigen —
+  // ohne Bild wirkt der Strip leer.
+  const igStrip = igHighlights
+    .map(p => ({
+      id:       p.id,
+      titel:    p.titel,
+      kategorie_name: p.kategorie_name ?? null,
+      bild_url: p.thumbnail_url ?? p.produkt_bild_url ?? null,
+    }))
+    .filter(p => !!p.bild_url)
+    .slice(0, 8);
 
   // Nur Kategorien mit verfügbaren Produkten als Filter-Chips anbieten.
   const katChips = kategorien
@@ -96,6 +111,7 @@ export default async function TelegramMiniAppHome({
           materialien={materials.map(m => ({ material: m.material, anzahl: m.anzahl }))}
           aktivesMaterial={material ?? ""}
           nurReduziert={nurReduziert}
+          instagramHighlights={igStrip}
           waehrung={(data.items[0]?.waehrung as "KZT"|"EUR"|"USD"|"RUB"|undefined) ?? "KZT"}
         />
       </Suspense>

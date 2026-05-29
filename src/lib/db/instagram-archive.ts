@@ -57,14 +57,19 @@ export async function instagramKategorienPublic(): Promise<InstagramKategorie[]>
   return r.rows;
 }
 
-/** Aktive Posts, optional nach Kategorie-Slug gefiltert. */
-export async function instagramPostsPublic(params: { kategorie?: string } = {}): Promise<InstagramPost[]> {
+/** Aktive Posts, optional nach Kategorie-Slug gefiltert + optional limitiert. */
+export async function instagramPostsPublic(params: { kategorie?: string; limit?: number } = {}): Promise<InstagramPost[]> {
   const conds = ["p.aktiv = true"];
   const vals: unknown[] = [];
   let idx = 1;
   if (params.kategorie) {
     conds.push(`k.slug = $${idx++}`);
     vals.push(params.kategorie);
+  }
+  let limitSql = "";
+  if (params.limit && Number.isFinite(params.limit)) {
+    limitSql = ` LIMIT $${idx++}`;
+    vals.push(Math.min(50, Math.max(1, Math.floor(params.limit))));
   }
   const r = await query<InstagramPost>(
     `SELECT p.id, p.permalink, p.shortcode, p.typ, p.kategorie_id, p.produkt_id,
@@ -76,7 +81,7 @@ export async function instagramPostsPublic(params: { kategorie?: string } = {}):
        LEFT JOIN sebo.instagram_kategorien k ON k.id = p.kategorie_id
        LEFT JOIN sebo.produkte pr ON pr.id = p.produkt_id
       WHERE ${conds.join(" AND ")}
-      ORDER BY p.sortierung, p.erstellt_am DESC`,
+      ORDER BY p.sortierung, p.erstellt_am DESC${limitSql}`,
     vals,
   );
   return r.rows;

@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Search, X, Loader2, Sparkles, SlidersHorizontal, Star } from "lucide-react";
 import { formatPreis, rabattProzent } from "@/lib/utils/preis";
 import { HeartToggle } from "./heart-toggle";
+import { InstagramIcon } from "@/components/produkte/instagram-icon";
 import type { ProduktListItem } from "@/types/produkt";
 
 type KatChip = { slug: string; name: string; anzahl: number };
@@ -55,6 +56,7 @@ export function TelegramCatalogClient({
   materialien,
   aktivesMaterial,
   nurReduziert,
+  instagramHighlights,
   waehrung,
 }: {
   produkte:        (ProduktListItem & { era?: string | null })[];
@@ -73,6 +75,7 @@ export function TelegramCatalogClient({
   materialien:     MaterialFacet[];
   aktivesMaterial: string;
   nurReduziert:    boolean;
+  instagramHighlights: { id: string; titel: string | null; kategorie_name: string | null; bild_url: string | null }[];
   waehrung:        "KZT" | "EUR" | "USD" | "RUB";
 }) {
   const router = useRouter();
@@ -240,6 +243,52 @@ export function TelegramCatalogClient({
           >
             {neuheiten.map(n => (
               <NeuheitCard key={n.id} produkt={n} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* „✦ Из Instagram"-Strip — nur im ungefilterten Einstieg, nur mit Bild */}
+      {instagramHighlights.length > 0 && (
+        <section className="mb-5">
+          <div className="flex items-center justify-between mb-2.5">
+            <Link href="/tg/instagram" className="flex items-center gap-1.5"
+              style={{ touchAction: "manipulation" }}>
+              <span className="w-3.5 h-3.5 rounded-full inline-flex items-center justify-center shrink-0"
+                style={{ background: "linear-gradient(135deg,#f09433,#dc2743,#bc1888)" }} />
+              <h2 className="text-[11px] uppercase font-medium"
+                style={{ letterSpacing: "0.22em", color: "var(--tg-theme-text-color, var(--color-ink))" }}>
+                Из Instagram
+              </h2>
+            </Link>
+            <Link href="/tg/instagram" className="text-[11px] uppercase font-medium"
+              style={{ letterSpacing: "0.16em", color: "var(--tg-theme-link-color, var(--color-coral))", touchAction: "manipulation" }}>
+              Все →
+            </Link>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+            {instagramHighlights.map(ig => (
+              <Link key={ig.id} href="/tg/instagram" className="block shrink-0"
+                style={{ width: 116, touchAction: "manipulation" }}>
+                <div className="relative w-full overflow-hidden"
+                  style={{ aspectRatio: "4/5", background: "var(--color-paper-warm)", borderRadius: 6 }}>
+                  {ig.bild_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={ig.bild_url} alt={ig.titel ?? ""} className="absolute inset-0 w-full h-full object-cover" />
+                  )}
+                  <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full inline-flex items-center justify-center"
+                    style={{ background: "linear-gradient(135deg,#f09433,#dc2743,#bc1888)" }}>
+                    <InstagramIcon className="w-3 h-3" style={{ color: "#fff" }} />
+                  </span>
+                </div>
+                {ig.titel && (
+                  <p className="line-clamp-1 mt-1 text-[11px]"
+                    style={{ fontFamily: "var(--font-display)", color: "var(--tg-theme-text-color, var(--color-ink))" }}>
+                    {ig.titel}
+                  </p>
+                )}
+              </Link>
             ))}
           </div>
         </section>
