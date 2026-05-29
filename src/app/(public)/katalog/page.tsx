@@ -9,6 +9,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import { getDictionary } from "@/i18n";
 import { SortSelect } from "./sort-select";
+import { PushSubscribeCustomer } from "@/components/push/push-subscribe-customer";
 
 export const metadata: Metadata = {
   title:       "Каталог",
@@ -204,6 +205,11 @@ export default async function KatalogPage({ searchParams }: Props) {
               </div>
             </div>
           </header>
+
+          {/* Push-Abo «Уведомлять о новинках» (dezente Zeile) */}
+          <div className="mb-8 -mt-2">
+            <PushSubscribeCustomer />
+          </div>
 
           {/* Mobile Chip-Rail (Kategorien) */}
           <div className="lg:hidden -mx-5 mb-8 overflow-x-auto">

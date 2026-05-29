@@ -6,6 +6,7 @@ import {
   ArrowRight, Sparkles, Loader2, Trash2, ShoppingBag, MessageCircle,
 } from "lucide-react";
 import { ProduktKarte } from "@/components/produkte/produkt-karte";
+import { PushSubscribeCustomer } from "@/components/push/push-subscribe-customer";
 import { useWunschliste } from "@/hooks/use-wunschliste";
 import { useCart } from "@/lib/cart";
 import { formatPreis } from "@/lib/utils/preis";
@@ -206,6 +207,11 @@ export function WunschlistePage() {
             </button>
           </div>
         )}
+
+        {/* ─── Push-Abo «Уведомлять о новинках» (dezent) ──── */}
+        <div className="mb-8">
+          <PushSubscribeCustomer />
+        </div>
 
         {/* ─── Produkt-Grid ────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10">

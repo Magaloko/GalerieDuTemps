@@ -77,3 +77,51 @@ export async function notifyAdminsPush(
     console.error("[notifyAdminsPush] unexpected", err);
   }
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Kunden-Broadcast — Push an alle Shop-Besucher mit audience='customer'.
+ *
+ * Im Gegensatz zu notifyAdminsPush wird hier NICHT ins notification_log
+ * geschrieben: das Log ist benutzer-scoped (sebo.benutzer), Kunden-Subscriptions
+ * haben aber kein benutzer_id (customer_id oder anonym). Wir aktualisieren nur
+ * letzter_push_am. Best-Effort: jeder Fehler wird geloggt, nie propagiert.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+interface CustomerPushRow extends PushSubscriptionRow {
+  id: string; // push_subscriptions.id (BIGSERIAL → string via pg)
+}
+
+/** Sendet (title, body, url) als Web-Push an alle Kunden-Geräte. */
+export async function notifyCustomersPush(
+  title: string,
+  body: string,
+  url?: string,
+): Promise<void> {
+  try {
+    const r = await query<CustomerPushRow>(
+      `SELECT id, endpoint, p256dh, auth
+       FROM sebo.push_subscriptions
+       WHERE audience = 'customer'`,
+    );
+    if (r.rows.length === 0) return;
+
+    const payload = { title, body, url: absoluteUrl(url) };
+
+    for (const sub of r.rows) {
+      try {
+        await sendPush(
+          { endpoint: sub.endpoint, p256dh: sub.p256dh, auth: sub.auth },
+          payload,
+        );
+        await query(
+          `UPDATE sebo.push_subscriptions SET letzter_push_am = now() WHERE id = $1`,
+          [sub.id],
+        );
+      } catch (err) {
+        console.error("[notifyCustomersPush] Subscription", sub.endpoint, err);
+      }
+    }
+  } catch (err) {
+    console.error("[notifyCustomersPush] unexpected", err);
+  }
+}

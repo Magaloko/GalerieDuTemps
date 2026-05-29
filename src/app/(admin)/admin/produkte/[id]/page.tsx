@@ -4,6 +4,7 @@ import { alleKategorien } from "@/lib/db/kategorien";
 import { bilderFuerProdukt } from "@/lib/db/bilder";
 import { ProduktFormular } from "@/components/produkte/produkt-formular";
 import { QrWidget } from "@/components/produkte/qr-widget";
+import { KundenPushButton } from "@/components/produkte/kunden-push-button";
 import {
   produktAktualisierenAction,
   produktLoeschenAction,
@@ -86,6 +87,7 @@ export default async function ProduktBearbeitenPage({ params }: Props) {
             >
               <ImageIcon className="w-3.5 h-3.5" /> Фото
             </Link>
+            {produkt.aktiv && !produkt.verkauft && <KundenPushButton id={produkt.id} />}
           </div>
         </div>
 

@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CheckCircle2, XCircle, EyeOff, Star, Loader2, Clock, Megaphone } from "lucide-react";
+import { CheckCircle2, XCircle, EyeOff, Star, Loader2, Clock, Megaphone, BellRing } from "lucide-react";
 import {
   produktQuickToggleAction,
   produktReservierenAction,
   produktReservierungAufhebenAction,
   produktInKanalAction,
+  produktKundenPushAction,
 } from "@/app/(admin)/admin/produkte/actions";
 import { useToast } from "@/components/ui/toast-provider";
 
@@ -63,6 +64,15 @@ export function QuickToggleRow({ id, aktiv, featured, verkauft, lagerbestand, re
     start(async () => {
       const r = await produktInKanalAction(id);
       if (r.ok) toast.success("Опубликовано в канал ✓");
+      else toast.error(r.error ?? "Ошибка");
+    });
+  };
+
+  const kundenPush = () => {
+    if (!confirm("Отправить push-уведомление всем подписчикам о новинке?")) return;
+    start(async () => {
+      const r = await produktKundenPushAction(id);
+      if ("ok" in r) toast.success("Уведомление отправлено ✓");
       else toast.error(r.error ?? "Ошибка");
     });
   };
@@ -149,6 +159,21 @@ export function QuickToggleRow({ id, aktiv, featured, verkauft, lagerbestand, re
         >
           <Megaphone className="w-3 h-3" />
           В канал
+        </button>
+      )}
+
+      {/* Web-Push an Kunden-Abonnenten (Neuheit) */}
+      {optimistic.aktiv && !optimistic.verkauft && (
+        <button
+          type="button"
+          onClick={kundenPush}
+          disabled={pending}
+          title="📣 Уведомить подписчиков о новинке (web-push)"
+          className="flex items-center gap-1 px-2 py-1 border border-vintage-sand text-xs text-vintage-dust hover:bg-vintage-parchment transition-colors"
+          style={{ borderRadius: "var(--radius-vintage)" }}
+        >
+          <BellRing className="w-3 h-3" />
+          Подписчикам
         </button>
       )}
     </div>

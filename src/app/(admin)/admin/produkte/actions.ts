@@ -6,6 +6,7 @@ import { auth, requireAdminSession } from "@/lib/auth/config";
 import { produktErstellen, produktAktualisieren, produktLoeschen, produktById, produktReservieren, produktReservierungAufheben, produktEntwurfErstellen, entwuerfeListe } from "@/lib/db/produkte";
 import { ProduktCreateSchema } from "@/lib/utils/validierung";
 import { auditLog } from "@/lib/db/audit-log";
+import type { Currency } from "@/lib/utils/preis";
 
 export type FormState = {
   errors?:  Record<string, string[]>;
@@ -295,6 +296,38 @@ export async function produktInKanalAction(
     entity:     id,
   });
   return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// Kunden-Web-Push — Produkt als Neuheit an alle Push-Abonnenten (audience='customer')
+// ---------------------------------------------------------------------------
+export async function produktKundenPushAction(
+  produktId: string,
+): Promise<{ ok: true } | { error: string }> {
+  const session = await requireAdminSession();
+  if (!session) return { error: "Нет прав" };
+
+  const produkt = await produktById(produktId);
+  if (!produkt) return { error: "Товар не найден" };
+
+  try {
+    const { formatPreis } = await import("@/lib/utils/preis");
+    const { notifyCustomersPush } = await import("@/lib/push/notify");
+    await notifyCustomersPush(
+      `Новинка: ${produkt.name}`,
+      `${formatPreis(produkt.preis, produkt.waehrung as Currency)} · смотреть`,
+      `/katalog/${produkt.slug}`,
+    );
+    await auditLog({
+      action:     "produkt_kunden_push",
+      actorEmail: session.user.email ?? null,
+      entity:     produktId,
+    });
+    return { ok: true };
+  } catch (err) {
+    console.error("[produktKundenPush]", err);
+    return { error: "Не удалось отправить уведомление" };
+  }
 }
 
 // ---------------------------------------------------------------------------
