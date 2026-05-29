@@ -3,6 +3,7 @@ import { query } from "@/lib/db";
 import { adminBadgeCounts } from "@/lib/db/dashboard-v2";
 import { Plus, LayoutGrid, ArrowRight } from "lucide-react";
 import { PushToggle } from "./push-toggle";
+import { TodayFeed } from "@/components/dashboard/today-feed";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +53,9 @@ export default async function AppHeutePage() {
 
       {/* Web-Push für Operator-Alerts (neuer Lead / neue Bestellung) */}
       <PushToggle />
+
+      {/* Geteilte „Сегодня"-Sektion: Что сделать + Активность */}
+      <TodayFeed />
     </div>
   );
 }

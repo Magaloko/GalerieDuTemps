@@ -10,6 +10,7 @@ import {
   Send, ExternalLink, TrendingUp, Clock, Bell,
 } from "lucide-react";
 import { InstagramIcon } from "@/components/produkte/instagram-icon";
+import { TodayFeed } from "@/components/dashboard/today-feed";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -132,6 +133,15 @@ export default async function TgAdminHome() {
           <Kpi label="Выручка сегодня" value={today.revenue_today_cents > 0 ? `₸ ${Math.round(today.revenue_today_cents/100).toLocaleString("ru-RU")}` : "—"} />
           <Kpi label="Заказов в работе" value={String(b.orders_pending)} coral={b.orders_pending>0} />
         </div>
+
+        {/* „Сегодня" — was ansteht + Активность (geteilte Sektion) */}
+        <section className="space-y-2.5">
+          <p className="text-[10px] uppercase font-medium px-1"
+             style={{ letterSpacing: "0.24em", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
+            Сегодня
+          </p>
+          <TodayFeed />
+        </section>
 
         {/* Grouped tile-grid menu (Facebook-Business-Suite-Stil) */}
         {groups.map(g => (
