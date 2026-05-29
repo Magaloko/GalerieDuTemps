@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { Save, Trash2, Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { Button } from "@/components/ui/button";
 import { markdownToHtml } from "@/lib/utils/markdown";
 import { postUpdateAction, postDeleteAction } from "../../actions";
@@ -59,7 +60,7 @@ export function JournalEditor({ post }: { post: JournalPost }) {
 
         <section className="bg-vintage-white border border-vintage-sand p-5 space-y-3" style={{ borderRadius: "var(--radius-card)" }}>
           <div className="flex items-center justify-between">
-            <h2 className="font-serif text-lg text-vintage-espresso">Контент (Markdown)</h2>
+            <h2 className="font-serif text-lg text-vintage-espresso">Контент</h2>
             <button onClick={() => setVorschau(v => !v)}
               className="flex items-center gap-1 px-3 py-1.5 text-xs font-sans uppercase tracking-widest text-vintage-brown border border-vintage-sand hover:bg-vintage-parchment transition-colors"
               style={{ borderRadius: "var(--radius-button)" }}>
@@ -71,13 +72,10 @@ export function JournalEditor({ post }: { post: JournalPost }) {
               style={{ borderRadius: "var(--radius-vintage)" }}
               dangerouslySetInnerHTML={{ __html: html }} />
           ) : (
-            <textarea
-              value={markdown}
-              onChange={(e) => setMarkdown(e.target.value)}
-              rows={20}
-              placeholder="# Заголовок&#10;&#10;Ваш **Markdown**-текст…"
-              className="w-full px-3 py-2 bg-vintage-cream border border-vintage-sand text-sm font-mono text-vintage-ink focus:outline-none focus:border-vintage-brown resize-y"
-              style={{ borderRadius: "var(--radius-vintage)" }}
+            <RichTextEditor
+              initialMarkdown={post.markdown}
+              onChange={setMarkdown}
+              placeholder="# Заголовок…  Текст статьи с форматированием."
             />
           )}
         </section>
