@@ -46,6 +46,7 @@ export default async function TgAdminProduktEdit({
         <ProduktEditor
           produkt={{
             id:               p.id,
+            slug:             p.slug,
             name:             p.name,
             artikel_code:     p.artikel_code,
             preis:            Number(p.preis),

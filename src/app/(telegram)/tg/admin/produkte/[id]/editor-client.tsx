@@ -2,14 +2,16 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
-  Check, Loader2, Star, Trash2, Plus, Eye, EyeOff,
+  Check, Loader2, Star, Trash2, Plus, Eye, EyeOff, ChevronLeft, ChevronRight, ExternalLink,
 } from "lucide-react";
 import {
   produktVollEditAction,
   produktBildUploadAction,
   produktBildLoeschenAction,
   produktHauptbildAction,
+  produktBildSortierenAction,
 } from "../../actions";
 import { haptic } from "../../../fx";
 
@@ -17,7 +19,7 @@ type Zustand = "sehr_gut" | "gut" | "akzeptabel" | "restauriert";
 type B2cMode = "visible" | "teaser" | "hidden";
 
 interface ProduktData {
-  id: string; name: string; artikel_code: string | null;
+  id: string; slug: string; name: string; artikel_code: string | null;
   preis: number; originalpreis: number | null;
   kurzbeschreibung: string | null; beschreibung: string | null;
   kategorie_id: number | null; zustand: Zustand;
@@ -113,6 +115,24 @@ export function ProduktEditor({
     else flashMsg("err", r.error);
   });
 
+  // Galerie-Reihenfolge: Bild um eine Position verschieben (optimistisch +
+  // persistieren). dir = -1 nach vorne, +1 nach hinten.
+  const moveBild = (id: string, dir: -1 | 1) => {
+    setBilder(prev => {
+      const i = prev.findIndex(b => b.id === id);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= prev.length) return prev;
+      const next = prev.slice();
+      [next[i], next[j]] = [next[j], next[i]];
+      haptic("light");
+      start(async () => {
+        const r = await produktBildSortierenAction(f.id, next.map(b => b.id));
+        if (!r.ok) { flashMsg("err", r.error); router.refresh(); }
+      });
+      return next;
+    });
+  };
+
   const ohnePreis = f.preis <= 1;
   // Pflicht-Führung: was fehlt noch zur Veröffentlichung?
   const fehlt: string[] = [
@@ -127,9 +147,18 @@ export function ProduktEditor({
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <p className="text-[10px] uppercase font-medium mb-1" style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}>
-          ✦ {f.artikel_code ?? "Новый"} {f.aktiv ? "· 🟢 активен" : "· черновик"}
-        </p>
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-[10px] uppercase font-medium" style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}>
+            ✦ {f.artikel_code ?? "Новый"} {f.aktiv ? "· 🟢 активен" : "· черновик"}
+          </p>
+          {f.aktiv && (
+            <Link href={`/tg/produkt/${produkt.slug}`} target="_blank"
+              className="inline-flex items-center gap-1 text-[10px] uppercase font-medium shrink-0"
+              style={{ letterSpacing: "0.14em", color: "var(--tg-theme-link-color, var(--color-coral))", touchAction: "manipulation" }}>
+              <ExternalLink className="w-3 h-3" /> Превью
+            </Link>
+          )}
+        </div>
         <input
           value={f.name}
           onChange={e => upd("name", e.target.value)}
@@ -141,7 +170,7 @@ export function ProduktEditor({
       {/* ── Galerie ── */}
       <Section title="Фотографии">
         <div className="grid grid-cols-3 gap-2">
-          {bilder.map(b => (
+          {bilder.map((b, i) => (
             <div key={b.id} className="relative aspect-square overflow-hidden" style={{ background: "var(--color-bone)", border: b.ist_hauptbild ? "2px solid var(--color-coral)" : "1px solid var(--color-line)" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={b.url} alt="" className="w-full h-full object-cover" />
@@ -155,6 +184,19 @@ export function ProduktEditor({
                   <Trash2 className="w-3 h-3" style={{ color: "var(--color-coral-deep, #A53E26)" }} />
                 </button>
               </div>
+              {/* Reihenfolge: ◀ / ▶ (nur wenn mehr als ein Bild) */}
+              {bilder.length > 1 && (
+                <div className="absolute bottom-1 right-1 flex gap-1">
+                  <button type="button" disabled={i === 0} onClick={() => moveBild(b.id, -1)}
+                    className="p-0.5 disabled:opacity-30" style={{ background: "rgba(255,255,255,0.9)", borderRadius: 4 }} aria-label="Влево">
+                    <ChevronLeft className="w-3 h-3" style={{ color: "var(--color-ink)" }} />
+                  </button>
+                  <button type="button" disabled={i === bilder.length - 1} onClick={() => moveBild(b.id, 1)}
+                    className="p-0.5 disabled:opacity-30" style={{ background: "rgba(255,255,255,0.9)", borderRadius: 4 }} aria-label="Вправо">
+                    <ChevronRight className="w-3 h-3" style={{ color: "var(--color-ink)" }} />
+                  </button>
+                </div>
+              )}
               {b.ist_hauptbild && (
                 <span className="absolute bottom-1 left-1 text-[8px] uppercase px-1 py-0.5" style={{ background: "var(--color-coral)", color: "#fff", letterSpacing: "0.1em" }}>главное</span>
               )}

@@ -23,7 +23,7 @@ import { adminTelegramNotificationsSetzen, adminProfilKontaktAktualisieren } fro
 import { extractInstagramUrl, instagramShortcode, instagramTyp } from "@/lib/utils/instagram";
 import { auditLog } from "@/lib/db/audit-log";
 import { bildVerarbeiten } from "@/lib/storage/upload";
-import { bildEinfuegen, bildLoeschen, hauptbildSetzen } from "@/lib/db/bilder";
+import { bildEinfuegen, bildLoeschen, hauptbildSetzen, bilderSortierungAktualisieren } from "@/lib/db/bilder";
 import type { ProduktUpdateInput } from "@/lib/utils/validierung";
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -339,6 +339,20 @@ export async function produktHauptbildAction(bildId: string, produktId: string, 
     return { ok: true, message: "Главное фото обновлено" };
   } catch (err) {
     console.error("[produktHauptbild]", err);
+    return { ok: false, error: "Ошибка" };
+  }
+}
+
+/* ── Produkt-Bild: Galerie-Reihenfolge speichern ───────────────────────────── */
+export async function produktBildSortierenAction(produktId: string, orderedIds: string[]): Promise<ActionRes> {
+  if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
+  if (!Array.isArray(orderedIds) || orderedIds.length === 0) return { ok: false, error: "Пустой список" };
+  try {
+    await bilderSortierungAktualisieren(orderedIds.map((id, i) => ({ id, sortierung: i })));
+    revalidatePath(`/tg/admin/produkte/${produktId}`);
+    return { ok: true };
+  } catch (err) {
+    console.error("[produktBildSortieren]", err);
     return { ok: false, error: "Ошибка" };
   }
 }
