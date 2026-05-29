@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { HeroEditorial } from "@/components/home/hero-editorial";
+import { HeroLogoSpotlight } from "@/components/home/hero-logo-spotlight";
 import { ManifestoSection } from "@/components/home/manifesto-section";
 import { FeaturedCollection } from "@/components/home/featured-collection";
 import { CuratedEditions } from "@/components/home/curated-editions";
@@ -93,17 +93,12 @@ export default async function HomePage() {
     <div className="flex flex-col min-h-screen" style={{ background: "var(--color-paper)" }}>
       <SiteHeader />
       <main className="flex-1 pb-24 md:pb-0">
-        <HeroEditorial
-          backgroundUrl    = {heroStrings["home.hero.background_url"]     || "/images/hero-stack-1.jpg"}
-          backgroundPoster = {heroStrings["home.hero.background_poster"]  || undefined}
-          kicker           = {heroStrings["home.hero.eyebrow"]            || "Кураторский винтаж с 2015"}
-          title            = {heroStrings["home.hero.h1_oben"]            || "Редкие вещи"}
-          titleAccent      = {heroStrings["home.hero.h1_unten"]           || "с историей."}
-          subtitle         = {heroStrings["home.hero.subhead"]            || "Кураторская подборка винтажа — мебель, керамика, графика, текстиль."}
-          ctaPrimaryLabel  = {heroStrings["home.hero.cta_primary"]        || "Открыть каталог"}
-          ctaPrimaryHref   = "/katalog"
-          ctaSecondaryLabel= {heroStrings["home.hero.cta_secondary"]      || undefined}
-          ctaSecondaryHref = "/assistent"
+        <HeroLogoSpotlight
+          eyebrow           = {heroStrings["home.hero.eyebrow"]     || "Винтаж с историей. Изящество вне времени."}
+          ctaPrimaryLabel   = {heroStrings["home.hero.cta_primary"] || "Открыть каталог"}
+          ctaPrimaryHref    = "/katalog"
+          ctaSecondaryLabel = {heroStrings["home.hero.cta_secondary"] || "Пройти квиз"}
+          ctaSecondaryHref  = "/assistent"
         />
 
         <ManifestoSection />
