@@ -14,7 +14,7 @@ export async function passwortVergessenAction(
 ): Promise<{ ok?: boolean; fehler?: string }> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   if (!z.string().email().safeParse(email).success) {
-    return { fehler: "Ungültige E-Mail" };
+    return { fehler: "Некорректный e-mail" };
   }
 
   const customer = await customerByEmail(email);
@@ -25,7 +25,7 @@ export async function passwortVergessenAction(
       const url = siteUrl(`/kunde/passwort-neu?token=${token}`);
       sendEmail({
         to: [{ email, name: customer.vorname ?? email }],
-        subject: "Passwort zurücksetzen – Galerie du Temps",
+        subject: "Сброс пароля — Galerie du Temps",
         htmlContent: passwortResetMail(customer.vorname ?? "", url),
         tags: ["password-reset"],
       }).catch(err => console.error("[PW-Reset] Brevo:", err));
@@ -40,7 +40,7 @@ const NeuesPasswortSchema = z.object({
   neues_passwort: z.string().min(8),
   wdh:            z.string(),
 }).refine(d => d.neues_passwort === d.wdh, {
-  message: "Passwörter stimmen nicht überein",
+  message: "Пароли не совпадают",
   path:    ["wdh"],
 });
 
@@ -54,12 +54,12 @@ export async function passwortNeuSetzenAction(
     wdh:            formData.get("wdh"),
   });
   if (!parsed.success) {
-    return { fehler: parsed.error.issues[0]?.message ?? "Ungültige Eingabe" };
+    return { fehler: parsed.error.issues[0]?.message ?? "Неверный ввод" };
   }
 
   const hash = await bcrypt.hash(parsed.data.neues_passwort, 12);
   const ok   = await passwortResetEinloesen(parsed.data.token, hash);
-  if (!ok) return { fehler: "Link ungültig oder abgelaufen. Bitte erneut anfordern." };
+  if (!ok) return { fehler: "Ссылка недействительна или истекла. Запросите новую." };
 
   return { ok: true };
 }

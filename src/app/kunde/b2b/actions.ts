@@ -6,11 +6,11 @@ import { auth } from "@/lib/auth/config";
 import { b2bAntragAktualisieren } from "@/lib/db/customer-b2b";
 
 const Schema = z.object({
-  company_name: z.string().min(2, "Firmenname erforderlich"),
+  company_name: z.string().min(2, "Название компании обязательно"),
   ust_id:       z.string().optional(),
   company_note: z.string().optional(),
 }).refine(d => d.ust_id || (d.company_note && d.company_note.length > 10), {
-  message: "USt-IdNr. oder Begründung erforderlich",
+  message: "Укажите БИН/ИИН или комментарий",
   path:    ["ust_id"],
 });
 
@@ -19,7 +19,7 @@ export async function b2bAntragStellenAction(
   formData: FormData
 ): Promise<{ ok?: boolean; fehler?: string }> {
   const session = await auth();
-  if (!session || session.user?.role !== "customer") return { fehler: "Nicht angemeldet" };
+  if (!session || session.user?.role !== "customer") return { fehler: "Вы не авторизованы" };
 
   const parsed = Schema.safeParse({
     company_name: formData.get("company_name"),
@@ -27,7 +27,7 @@ export async function b2bAntragStellenAction(
     company_note: formData.get("company_note"),
   });
   if (!parsed.success) {
-    return { fehler: parsed.error.issues[0]?.message ?? "Ungültige Eingabe" };
+    return { fehler: parsed.error.issues[0]?.message ?? "Неверный ввод" };
   }
 
   await b2bAntragAktualisieren(session.user.id, {

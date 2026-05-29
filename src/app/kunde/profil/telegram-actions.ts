@@ -22,10 +22,10 @@ type SimpleResult = { ok: true } | { ok: false; error: string };
 async function ensureOwn(customerId: string): Promise<{ ok: false; error: string } | null> {
   const session = await auth();
   if (session?.user?.role !== "customer") {
-    return { ok: false, error: "Nicht autorisiert." };
+    return { ok: false, error: "Не авторизовано." };
   }
   if (session.user.id !== customerId) {
-    return { ok: false, error: "Falscher Account." };
+    return { ok: false, error: "Неверный аккаунт." };
   }
   return null;
 }
@@ -38,7 +38,7 @@ export async function telegramTokenGenerierenAction(customerId: string): Promise
     return { ok: true, token };
   } catch (err) {
     console.error("[telegramTokenGenerieren]", err);
-    return { ok: false, error: "Token-Generierung fehlgeschlagen." };
+    return { ok: false, error: "Не удалось сгенерировать токен." };
   }
 }
 
@@ -51,7 +51,7 @@ export async function telegramEntfernenAction(customerId: string): Promise<Simpl
     return { ok: true };
   } catch (err) {
     console.error("[telegramEntfernen]", err);
-    return { ok: false, error: "Entfernen fehlgeschlagen." };
+    return { ok: false, error: "Не удалось отвязать." };
   }
 }
 
@@ -67,6 +67,6 @@ export async function telegramNotificationsToggleAction(
     return { ok: true };
   } catch (err) {
     console.error("[telegramNotificationsToggle]", err);
-    return { ok: false, error: "Toggle fehlgeschlagen." };
+    return { ok: false, error: "Не удалось переключить." };
   }
 }

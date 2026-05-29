@@ -15,7 +15,7 @@ const ProfilSchema = z.object({
   strasse:    z.string().max(200).optional(),
   plz:        z.string().max(10).optional(),
   ort:        z.string().max(100).optional(),
-  land:       z.string().max(2).default("DE"),
+  land:       z.string().max(2).default("KZ"),
 });
 
 export type ProfilState = { ok?: boolean; fehler?: string; errors?: Record<string, string[]> } | null;
@@ -25,7 +25,7 @@ export async function profilSpeichernAction(
   formData: FormData
 ): Promise<ProfilState> {
   const session = await auth();
-  if (!session || session.user?.role !== "customer") return { fehler: "Nicht angemeldet" };
+  if (!session || session.user?.role !== "customer") return { fehler: "Вы не авторизованы" };
 
   const parsed = ProfilSchema.safeParse({
     vorname:      formData.get("vorname"),
@@ -36,7 +36,7 @@ export async function profilSpeichernAction(
     strasse:      formData.get("strasse"),
     plz:          formData.get("plz"),
     ort:          formData.get("ort"),
-    land:         formData.get("land") || "DE",
+    land:         formData.get("land") || "KZ",
   });
   if (!parsed.success) {
     return { errors: parsed.error.flatten().fieldErrors as Record<string, string[]> };

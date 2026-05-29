@@ -16,7 +16,7 @@ export function B2bAntragsFormular({
     <form action={formAction} className="space-y-4">
       {state?.ok && (
         <div className="flex items-center gap-2 p-3 bg-vintage-sage/10 border border-vintage-sage/30 text-vintage-forest text-sm font-sans" style={{ borderRadius: "var(--radius-vintage)" }}>
-          <CheckCircle2 className="w-4 h-4" /> Antrag eingereicht. Wir melden uns innerhalb 1-2 Werktagen.
+          <CheckCircle2 className="w-4 h-4" /> Заявка отправлена. Мы свяжемся с вами в течение 1–2 рабочих дней.
         </div>
       )}
       {state?.fehler && (
@@ -24,10 +24,10 @@ export function B2bAntragsFormular({
           <AlertCircle className="w-4 h-4" /> {state.fehler}
         </div>
       )}
-      <Input label="Firmenname" name="company_name" defaultValue={initial.company_name} required />
-      <Input label="USt-IdNr." name="ust_id" defaultValue={initial.ust_id} placeholder="DE123456789" hint="Wenn keine UID: Begründung unten" />
-      <Textarea label="Begründung (wenn keine UID)" name="company_note" defaultValue={initial.company_note} rows={3} placeholder="z.B. Kleinunternehmerin, Gewerbeschein-Nr., ..." />
-      <Button type="submit" loading={isPending}>Antrag absenden</Button>
+      <Input label="Название компании" name="company_name" defaultValue={initial.company_name} required />
+      <Input label="БИН / ИИН" name="ust_id" defaultValue={initial.ust_id} placeholder="123456789012" hint="Если нет БИН — укажите комментарий ниже" />
+      <Textarea label="Комментарий (если нет БИН)" name="company_note" defaultValue={initial.company_note} rows={3} placeholder="например: ИП, спецналоговый режим, № свидетельства ..." />
+      <Button type="submit" loading={isPending}>Отправить заявку</Button>
     </form>
   );
 }
