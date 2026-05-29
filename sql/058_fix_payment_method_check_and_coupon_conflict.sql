@@ -18,7 +18,15 @@
 -- Constraint greift (ADD CONSTRAINT würde sonst an Bestandsdaten scheitern).
 UPDATE sebo.orders SET payment_method = 'stripe_card' WHERE payment_method = 'stripe';
 UPDATE sebo.orders SET payment_method = 'stripe_sepa' WHERE payment_method = 'sepa';
-UPDATE sebo.orders SET payment_method = NULL          WHERE payment_method = 'manual';
+
+-- Catch-all: ALLES, was nicht in der neuen Liste ist (inkl. 'manual' und jeden
+-- unerwarteten Altwert), auf NULL — garantiert, dass ADD CONSTRAINT durchläuft.
+UPDATE sebo.orders SET payment_method = NULL
+ WHERE payment_method IS NOT NULL
+   AND payment_method NOT IN (
+     'stripe_card','stripe_sepa','paypal','crypto_nowpayments',
+     'bank_transfer','vor_ort','vor_ort_anzahlung','telegram_payments','kaspi'
+   );
 
 -- Default 'stripe' (aus 010) entfernen — orderErstellen setzt payment_method
 -- NICHT, neue Orders sollen NULL ("noch nicht entschieden") sein.
