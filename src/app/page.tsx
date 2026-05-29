@@ -4,6 +4,7 @@ import { HeroEditorial } from "@/components/home/hero-editorial";
 import { ManifestoSection } from "@/components/home/manifesto-section";
 import { FeaturedCollection } from "@/components/home/featured-collection";
 import { CuratedEditions } from "@/components/home/curated-editions";
+import { LuminaShowcase } from "@/components/home/lumina-showcase";
 import { TestimonialSection } from "@/components/home/testimonial-section";
 import { CTABanner } from "@/components/home/cta-banner";
 
@@ -78,6 +79,16 @@ export default async function HomePage() {
     category: p.kategorie_name ?? undefined,
   }));
 
+  // Lumina-Slider-Slides: nur Featured-Produkte MIT Bild.
+  const luminaSlides = produkte
+    .filter((p) => !!p.hauptbild_url)
+    .slice(0, 6)
+    .map((p) => ({
+      title:       p.name,
+      description: p.kategorie_name ?? p.era ?? "",
+      media:       p.hauptbild_url as string,
+    }));
+
   return (
     <div className="flex flex-col min-h-screen" style={{ background: "var(--color-paper)" }}>
       <SiteHeader />
@@ -100,6 +111,8 @@ export default async function HomePage() {
         {featuredProducts.length > 0 && (
           <FeaturedCollection products={featuredProducts} />
         )}
+
+        <LuminaShowcase slides={luminaSlides} />
 
         <CuratedEditions />
 
