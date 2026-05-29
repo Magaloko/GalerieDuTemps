@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth/config";
+import { auth, requireAdminSession } from "@/lib/auth/config";
 import { segmentErstellen, segmentLoeschen, segmentVorschau } from "@/lib/db/crm";
 import type { SegmentFilter } from "@/types/crm";
 
@@ -56,7 +56,7 @@ export async function segmentLoeschenAction(id: string): Promise<void> {
 }
 
 export async function segmentVorschauAction(filter: SegmentFilter): Promise<{ treffer: number }> {
-  await auth();
+  if (!(await requireAdminSession())) return { treffer: 0 };
   const r = await segmentVorschau(filter, 1);
   return { treffer: r.treffer };
 }

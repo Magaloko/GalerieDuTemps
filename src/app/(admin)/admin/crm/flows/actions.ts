@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth/config";
+import { auth, requireAdminSession } from "@/lib/auth/config";
 import { dripFlowErstellen, dripFlowToggleAktiv, dripFlowLoeschen } from "@/lib/db/crm";
 import type { DripTriggerTyp } from "@/types/crm";
 
@@ -27,13 +27,13 @@ export async function flowCreateAction(
 }
 
 export async function flowToggleAction(id: string, aktiv: boolean): Promise<void> {
-  await auth();
+  if (!(await requireAdminSession())) return;
   await dripFlowToggleAktiv(id, aktiv);
   revalidatePath("/admin/crm/flows");
 }
 
 export async function flowDeleteAction(id: string): Promise<void> {
-  await auth();
+  if (!(await requireAdminSession())) return;
   await dripFlowLoeschen(id);
   revalidatePath("/admin/crm/flows");
 }

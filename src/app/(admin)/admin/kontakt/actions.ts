@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth/config";
+import { auth, requireAdminSession } from "@/lib/auth/config";
 import {
   kontaktStatusUpdate,
   kontaktLoeschen,
@@ -14,15 +14,15 @@ import { neueProvisionMail } from "@/lib/email/affiliate-templates";
 import { z } from "zod";
 
 export async function statusAendernAction(id: string, neuerStatus: KontaktStatus): Promise<void> {
-  const session = await auth();
-  if (!session) throw new Error("Не выполнен вход");
+  const session = await requireAdminSession();
+  if (!session) throw new Error("Нет прав");
   await kontaktStatusUpdate(id, neuerStatus);
   revalidatePath("/admin/kontakt");
 }
 
 export async function anfrageLoeschenAction(id: string): Promise<void> {
-  const session = await auth();
-  if (!session) throw new Error("Не выполнен вход");
+  const session = await requireAdminSession();
+  if (!session) throw new Error("Нет прав");
   await kontaktLoeschen(id);
   revalidatePath("/admin/kontakt");
 }

@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth/config";
+import { requireAdminSession } from "@/lib/auth/config";
 import {
   kategorieErstellen,
   kategorieAktualisieren,
@@ -31,7 +31,7 @@ export async function kategorieErstellenAction(
   _prev: FormState,
   formData: FormData
 ): Promise<FormState> {
-  const session = await auth();
+  const session = await requireAdminSession();
   if (!session) return { message: "Не авторизовано" };
 
   const parsed = KategorieCreateSchema.safeParse(parseFormData(formData));
@@ -48,7 +48,7 @@ export async function kategorieAktualisierenAction(
   _prev: FormState,
   formData: FormData
 ): Promise<FormState> {
-  const session = await auth();
+  const session = await requireAdminSession();
   if (!session) return { message: "Не авторизовано" };
 
   const parsed = KategorieCreateSchema.safeParse(parseFormData(formData));
@@ -61,7 +61,7 @@ export async function kategorieAktualisierenAction(
 }
 
 export async function kategorieLoeschenAction(id: number): Promise<void> {
-  const session = await auth();
+  const session = await requireAdminSession();
   if (!session) throw new Error("Не авторизовано");
   await kategorieLoeschen(id);
   redirect("/admin/kategorien");
