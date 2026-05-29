@@ -97,7 +97,7 @@ export async function aktionsItems(): Promise<AktionsItem[]> {
       (SELECT COUNT(*)::int FROM sebo.customers
          WHERE customer_type = 'b2b_pending')                          AS b2b_pending,
       (SELECT COUNT(*)::int FROM sebo.leads
-         WHERE gelesen = false)                                        AS leads_unread,
+         WHERE gelesen_am IS NULL)                                     AS leads_unread,
       (SELECT COUNT(*)::int FROM sebo.kontaktanfragen
          WHERE status = 'neu')                                         AS kontakt_neu,
       (SELECT COUNT(*)::int FROM sebo.produkte

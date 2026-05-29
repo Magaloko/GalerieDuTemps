@@ -59,33 +59,37 @@ export default async function JournalAdminPage() {
       ) : (
         <div className="space-y-2">
           {posts.map(p => (
-            <Link key={p.id} href={`/admin/journal/${p.id}/edit`}
+            // Server-Komponente: KEIN onClick erlaubt + kein <a> in <a>. Daher
+            // Zeile = <div>, Haupt-Link (Bearbeiten) + externer Link als Geschwister.
+            <div key={p.id}
               className="flex items-center gap-4 p-4 bg-vintage-white border border-vintage-sand hover:border-vintage-brown transition-colors"
               style={{ borderRadius: "var(--radius-card)" }}>
-              {p.cover_bild_url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={p.cover_bild_url} alt="" className="w-14 h-14 object-cover bg-vintage-parchment flex-shrink-0" style={{ borderRadius: "var(--radius-vintage)" }} />
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="font-serif text-vintage-espresso truncate">{p.titel}</p>
-                  {p.veroeffentlicht ? (
-                    <span className="flex items-center gap-1 px-2 py-0.5 text-xs bg-vintage-sage/10 text-vintage-sage" style={{ borderRadius: "var(--radius-vintage)" }}>
-                      <CheckCircle2 className="w-3 h-3" /> Live
-                    </span>
-                  ) : (
-                    <span className="px-2 py-0.5 text-xs bg-vintage-dust/10 text-vintage-dust" style={{ borderRadius: "var(--radius-vintage)" }}>Черновик</span>
-                  )}
+              <Link href={`/admin/journal/${p.id}/edit`} className="flex items-center gap-4 flex-1 min-w-0">
+                {p.cover_bild_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={p.cover_bild_url} alt="" className="w-14 h-14 object-cover bg-vintage-parchment flex-shrink-0" style={{ borderRadius: "var(--radius-vintage)" }} />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-serif text-vintage-espresso truncate">{p.titel}</p>
+                    {p.veroeffentlicht ? (
+                      <span className="flex items-center gap-1 px-2 py-0.5 text-xs bg-vintage-sage/10 text-vintage-sage" style={{ borderRadius: "var(--radius-vintage)" }}>
+                        <CheckCircle2 className="w-3 h-3" /> Live
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 text-xs bg-vintage-dust/10 text-vintage-dust" style={{ borderRadius: "var(--radius-vintage)" }}>Черновик</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-vintage-dust font-sans mt-0.5 font-mono">/{p.slug}</p>
                 </div>
-                <p className="text-xs text-vintage-dust font-sans mt-0.5 font-mono">/{p.slug}</p>
-              </div>
-              <Edit className="w-4 h-4 text-vintage-dust" />
+                <Edit className="w-4 h-4 text-vintage-dust shrink-0" />
+              </Link>
               {p.veroeffentlicht && (
-                <a href={`/journal/${p.slug}`} target="_blank" onClick={e => e.stopPropagation()} className="text-vintage-dust hover:text-vintage-brown">
+                <a href={`/journal/${p.slug}`} target="_blank" rel="noopener noreferrer" className="text-vintage-dust hover:text-vintage-brown shrink-0">
                   <ExternalLink className="w-4 h-4" />
                 </a>
               )}
-            </Link>
+            </div>
           ))}
         </div>
       )}
