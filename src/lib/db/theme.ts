@@ -79,7 +79,7 @@ export async function getThemeBranding(): Promise<{
     faviconUrl:   v("brand.favicon_url") || null,
     showWordmark: v("brand.show_wordmark") !== "false",
     brandName:    v("brand.name")        || "Galerie du Temps",
-    tagline:      v("brand.tagline")     || "Rare pieces with history, elegance, and timeless charm.",
+    tagline:      v("brand.tagline")     || "Винтаж с историей. Изящество вне времени.",
   };
 }
 

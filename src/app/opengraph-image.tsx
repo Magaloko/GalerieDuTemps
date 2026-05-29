@@ -95,7 +95,7 @@ export default async function OpengraphImage() {
             display:       "flex",
           }}
         >
-          Rare pieces with history, elegance, and timeless charm.
+          Винтаж с историей. Изящество вне времени.
         </div>
       </div>
     ),
