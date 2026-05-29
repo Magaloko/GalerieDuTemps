@@ -30,6 +30,7 @@ export interface TelegramMessage {
   date:       number;
   text?:      string;
   caption?:   string;
+  media_group_id?: string;   // gesetzt wenn die Nachricht Teil eines Albums ist
   photo?:     Array<{ file_id: string; file_unique_id: string; width: number; height: number; file_size?: number }>;
   document?:  { file_id: string; file_unique_id: string; file_name?: string; mime_type?: string; file_size?: number };
 }

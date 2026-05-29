@@ -2,6 +2,7 @@ import { getFile, downloadTelegramFile, sendMessage, type InlineKeyboardMarkup }
 import { bildVerarbeiten } from "@/lib/storage/upload";
 import { produktErstellen } from "@/lib/db/produkte";
 import { bildEinfuegen } from "@/lib/db/bilder";
+import { query } from "@/lib/db";
 import { getSiteUrl } from "@/lib/site-url";
 import { formatPreis } from "@/lib/utils/preis";
 import { parsePreis, preisHatMarker } from "./caption-preis";
@@ -221,27 +222,122 @@ export function buildErfolgsAntwort(r: ProduktAusFotoResult): {
 
 /** Convenience: kompletter Flow inkl. Antwort senden. */
 export async function handleAdminFoto(opts: {
-  botToken:   string;
-  chatId:     number;
-  photos:     TgPhotoSize[];
-  caption:    string | null;
-  benutzerId: string;
+  botToken:     string;
+  chatId:       number;
+  photos:       TgPhotoSize[];
+  caption:      string | null;
+  benutzerId:   string;
+  mediaGroupId?: string | null;
 }): Promise<void> {
-  // Sofort-Feedback dass wir arbeiten (Bild-Pipeline kann 2-4s dauern)
+  // ── Album (Media-Group): N Fotos → EIN Produkt mit Galerie ──────────────
+  // Race-sicher: der erste Aufruf „claimt" die Gruppe und legt das Produkt an;
+  // die übrigen warten kurz und hängen ihr Foto an die Galerie.
+  if (opts.mediaGroupId) {
+    const owner = await mediaGruppeClaim(opts.mediaGroupId, opts.benutzerId);
+    if (owner) {
+      await sendMessage(opts.botToken, opts.chatId, "⏳ Обрабатываю фото…").catch(() => {});
+      const result = await produktAusFotoErstellen(opts);
+      if (!result.ok) {
+        await sendMessage(opts.botToken, opts.chatId, `✕ ${result.error}`).catch(() => {});
+        return;
+      }
+      await mediaGruppeSetProdukt(opts.mediaGroupId, result.produktId).catch(() => {});
+      const { text, keyboard } = buildErfolgsAntwort(result);
+      await sendMessage(opts.botToken, opts.chatId, text, { parse_mode: "HTML", reply_markup: keyboard })
+        .catch(err => console.error("[handleAdminFoto] reply", err));
+      return;
+    }
+    // Follower: auf das vom Owner angelegte Produkt warten, dann Foto anhängen.
+    const produktId = await mediaGruppeWarteAufProdukt(opts.mediaGroupId, 9000);
+    if (!produktId) {
+      console.warn("[handleAdminFoto] media-group owner produkt nicht rechtzeitig — Foto verworfen", opts.mediaGroupId);
+      return; // KEIN Duplikat anlegen; Owner-Fehler ist dem Admin bereits sichtbar.
+    }
+    await fotoAnProduktAnhaengen({ botToken: opts.botToken, photos: opts.photos, produktId })
+      .catch(err => console.warn("[handleAdminFoto] anhängen", err));
+    return; // Follower antworten nicht (Owner hat schon geantwortet).
+  }
+
+  // ── Einzelfoto (kein Album) — bisheriges Verhalten ──────────────────────
   await sendMessage(opts.botToken, opts.chatId, "⏳ Обрабатываю фото…").catch(() => {});
-
   const result = await produktAusFotoErstellen(opts);
-
   if (!result.ok) {
     await sendMessage(opts.botToken, opts.chatId, `✕ ${result.error}`).catch(() => {});
     return;
   }
-
   const { text, keyboard } = buildErfolgsAntwort(result);
   await sendMessage(opts.botToken, opts.chatId, text, {
     parse_mode:   "HTML",
     reply_markup: keyboard,
   }).catch(err => console.error("[handleAdminFoto] reply", err));
+}
+
+// ── Media-Group-Claim-Helfer (siehe sql/052_tg_media_gruppen.sql) ───────────
+
+/** Atomar: true wenn DIESER Aufruf die Gruppe gewinnt (Produkt anlegen darf). */
+async function mediaGruppeClaim(mediaGroupId: string, benutzerId: string): Promise<boolean> {
+  try {
+    const r = await query(
+      `INSERT INTO sebo.tg_media_gruppen (media_group_id, benutzer_id)
+       VALUES ($1, $2) ON CONFLICT (media_group_id) DO NOTHING
+       RETURNING media_group_id`,
+      [mediaGroupId, benutzerId],
+    );
+    return (r.rowCount ?? 0) > 0;
+  } catch (err) {
+    // Tabelle fehlt (Migration 052 nicht angewandt) o.ä. → als Owner behandeln,
+    // damit wenigstens ein Entwurf je Foto entsteht (kein Totalausfall).
+    console.warn("[mediaGruppeClaim] fail-open:", err);
+    return true;
+  }
+}
+
+async function mediaGruppeSetProdukt(mediaGroupId: string, produktId: string): Promise<void> {
+  await query(`UPDATE sebo.tg_media_gruppen SET produkt_id = $1 WHERE media_group_id = $2`, [produktId, mediaGroupId]);
+}
+
+/** Pollt bis produkt_id gesetzt ist (Owner fertig) oder Timeout. */
+async function mediaGruppeWarteAufProdukt(mediaGroupId: string, maxMs: number): Promise<string | null> {
+  const start = Date.now();
+  while (Date.now() - start < maxMs) {
+    try {
+      const r = await query<{ produkt_id: string | null }>(
+        `SELECT produkt_id FROM sebo.tg_media_gruppen WHERE media_group_id = $1`,
+        [mediaGroupId],
+      );
+      const pid = r.rows[0]?.produkt_id;
+      if (pid) return pid;
+    } catch { return null; }
+    await new Promise(res => setTimeout(res, 400));
+  }
+  return null;
+}
+
+/** Lädt das größte Foto einer Album-Nachricht herunter und hängt es an die
+ *  Galerie eines bestehenden Produkts (NICHT als Hauptbild). */
+async function fotoAnProduktAnhaengen(opts: {
+  botToken: string; photos: TgPhotoSize[]; produktId: string;
+}): Promise<void> {
+  const largest = [...opts.photos].sort((a, b) => (b.width * b.height) - (a.width * a.height))[0];
+  if (!largest) return;
+  const fileInfo = await getFile(opts.botToken, largest.file_id);
+  if (!fileInfo.file_path) return;
+  const buffer = await downloadTelegramFile(opts.botToken, fileInfo.file_path);
+  const file = new File([new Uint8Array(buffer)], `tg-${Date.now()}.jpg`, { type: "image/jpeg" });
+  const bild = await bildVerarbeiten(file);
+  await bildEinfuegen({
+    produkt_id:    opts.produktId,
+    url:           bild.url,
+    url_thumb:     bild.url_thumb,
+    url_medium:    bild.url_medium,
+    url_large:     bild.url_large,
+    format:        bild.format,
+    ist_hauptbild: false,
+    dateigroesse:  bild.dateigroesse,
+    breite:        bild.breite,
+    hoehe:         bild.hoehe,
+    sha256:        bild.sha256,
+  });
 }
 
 function escapeHtml(s: string): string {

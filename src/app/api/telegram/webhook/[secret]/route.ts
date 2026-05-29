@@ -141,11 +141,12 @@ export async function POST(
     if (fotoAdmin) {
       const { handleAdminFoto } = await import("@/lib/telegram/produkt-erstellung");
       await handleAdminFoto({
-        botToken:   konto.access_token,
-        chatId:     msg.chat.id,
-        photos:     msg.photo,
-        caption:    msg.caption ?? null,
-        benutzerId: fotoAdmin.id,
+        botToken:     konto.access_token,
+        chatId:       msg.chat.id,
+        photos:       msg.photo,
+        caption:      msg.caption ?? null,
+        benutzerId:   fotoAdmin.id,
+        mediaGroupId: msg.media_group_id ?? null,
       }).catch(err => console.error("[tg admin-foto]", err));
     } else {
       // Nicht-Admin schickt Foto → höfliche Antwort, kein Lead-Spam
