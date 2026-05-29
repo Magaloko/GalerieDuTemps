@@ -359,11 +359,29 @@ export async function instagramKategorieCreateAction(name: string): Promise<Acti
 }
 
 /* ── Instagram-Archiv: Post anlegen (Embed-Code oder URL) ──────────────────── */
+/* ── Instagram-Archiv: Cover-Bild hochladen (gibt nur die URL zurück) ──────── */
+export async function instagramThumbnailUploadAction(
+  formData: FormData,
+): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
+  if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return { ok: false, error: "Нет файла" };
+  try {
+    const bild = await bildVerarbeiten(file);
+    // medium-Variante als Cover (gute Balance Größe/Qualität), Fallback Original.
+    return { ok: true, url: bild.url_medium ?? bild.url };
+  } catch (err) {
+    console.error("[instagramThumbnailUpload]", err);
+    return { ok: false, error: "Не удалось обработать изображение" };
+  }
+}
+
 export async function instagramPostCreateAction(input: {
   embedOderUrl: string;
   kategorieId?: number | null;
   produktId?:   string | null;
   titel?:       string | null;
+  thumbnailUrl?: string | null;
 }): Promise<ActionRes> {
   if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
 
@@ -379,6 +397,7 @@ export async function instagramPostCreateAction(input: {
       kategorieId: input.kategorieId ?? null,
       produktId:   input.produktId ?? null,
       titel:       input.titel ?? null,
+      thumbnailUrl: input.thumbnailUrl ?? null,
     });
     await auditLog({ action: "instagram_post_erstellt", actorEmail: null, entity: shortcode, neuWert: { typ, via: "tg-admin" } });
     revalidatePath("/tg/admin/instagram");
@@ -396,7 +415,7 @@ export async function instagramPostCreateAction(input: {
 /* ── Instagram-Archiv: Post bearbeiten (Kategorie/Produkt/aktiv/Titel) ─────── */
 export async function instagramPostUpdateAction(
   id: string,
-  input: { kategorieId?: number | null; produktId?: string | null; titel?: string | null; aktiv?: boolean; sortierung?: number },
+  input: { kategorieId?: number | null; produktId?: string | null; titel?: string | null; aktiv?: boolean; sortierung?: number; thumbnailUrl?: string | null },
 ): Promise<ActionRes> {
   if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
   try {

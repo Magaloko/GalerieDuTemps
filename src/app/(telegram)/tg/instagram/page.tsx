@@ -38,6 +38,8 @@ export default async function TgInstagramArchivePage({
           kategorie_name: p.kategorie_name ?? null,
           produkt_slug:   p.produkt_slug ?? null,
           produkt_name:   p.produkt_name ?? null,
+          // Cover: admin-Thumbnail > verknüpftes Produktbild > (Client: Icon)
+          bild_url:       p.thumbnail_url ?? p.produkt_bild_url ?? null,
         }))}
         kategorien={kategorien.map(k => ({ slug: k.slug, name: k.name, anzahl: k.anzahl ?? 0 }))}
         aktiveKategorie={kat ?? ""}

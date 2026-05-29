@@ -31,11 +31,13 @@ export interface InstagramPost {
   aktiv:             boolean;
   erstellt_am:       string;
   kanal_gepostet_am: string | null;
+  thumbnail_url:     string | null;
   // joined
-  kategorie_name?: string | null;
-  kategorie_slug?: string | null;
-  produkt_slug?:   string | null;
-  produkt_name?:   string | null;
+  kategorie_name?:   string | null;
+  kategorie_slug?:   string | null;
+  produkt_slug?:     string | null;
+  produkt_name?:     string | null;
+  produkt_bild_url?: string | null;   // Hauptbild des verknüpften Produkts (Fallback-Cover)
 }
 
 // ── Public ──────────────────────────────────────────────────────────────────
@@ -68,7 +70,8 @@ export async function instagramPostsPublic(params: { kategorie?: string } = {}):
     `SELECT p.id, p.permalink, p.shortcode, p.typ, p.kategorie_id, p.produkt_id,
             p.titel, p.sortierung, p.aktiv, p.erstellt_am,
             k.name AS kategorie_name, k.slug AS kategorie_slug,
-            pr.slug AS produkt_slug, pr.name AS produkt_name
+            pr.slug AS produkt_slug, pr.name AS produkt_name,
+            pr.hauptbild_url AS produkt_bild_url, p.thumbnail_url
        FROM sebo.instagram_posts p
        LEFT JOIN sebo.instagram_kategorien k ON k.id = p.kategorie_id
        LEFT JOIN sebo.produkte pr ON pr.id = p.produkt_id
@@ -109,7 +112,8 @@ export async function instagramPostsAlle(): Promise<InstagramPost[]> {
     `SELECT p.id, p.permalink, p.shortcode, p.typ, p.kategorie_id, p.produkt_id,
             p.titel, p.sortierung, p.aktiv, p.erstellt_am, p.kanal_gepostet_am,
             k.name AS kategorie_name, k.slug AS kategorie_slug,
-            pr.slug AS produkt_slug, pr.name AS produkt_name
+            pr.slug AS produkt_slug, pr.name AS produkt_name,
+            pr.hauptbild_url AS produkt_bild_url, p.thumbnail_url
        FROM sebo.instagram_posts p
        LEFT JOIN sebo.instagram_kategorien k ON k.id = p.kategorie_id
        LEFT JOIN sebo.produkte pr ON pr.id = p.produkt_id
@@ -124,7 +128,8 @@ export async function instagramPostsFuerProdukt(produktId: string): Promise<Inst
     `SELECT p.id, p.permalink, p.shortcode, p.typ, p.kategorie_id, p.produkt_id,
             p.titel, p.sortierung, p.aktiv, p.erstellt_am, p.kanal_gepostet_am,
             k.name AS kategorie_name, k.slug AS kategorie_slug,
-            pr.slug AS produkt_slug, pr.name AS produkt_name
+            pr.slug AS produkt_slug, pr.name AS produkt_name,
+            pr.hauptbild_url AS produkt_bild_url, p.thumbnail_url
        FROM sebo.instagram_posts p
        LEFT JOIN sebo.instagram_kategorien k ON k.id = p.kategorie_id
        LEFT JOIN sebo.produkte pr ON pr.id = p.produkt_id
@@ -141,7 +146,8 @@ export async function instagramPostById(id: string): Promise<InstagramPost | nul
     `SELECT p.id, p.permalink, p.shortcode, p.typ, p.kategorie_id, p.produkt_id,
             p.titel, p.sortierung, p.aktiv, p.erstellt_am, p.kanal_gepostet_am,
             k.name AS kategorie_name, k.slug AS kategorie_slug,
-            pr.slug AS produkt_slug, pr.name AS produkt_name
+            pr.slug AS produkt_slug, pr.name AS produkt_name,
+            pr.hauptbild_url AS produkt_bild_url, p.thumbnail_url
        FROM sebo.instagram_posts p
        LEFT JOIN sebo.instagram_kategorien k ON k.id = p.kategorie_id
        LEFT JOIN sebo.produkte pr ON pr.id = p.produkt_id
@@ -162,22 +168,23 @@ export async function instagramPostErstellen(input: {
   permalink:   string;
   shortcode:   string;
   typ:         "p" | "reel" | "tv";
-  kategorieId?: number | null;
-  produktId?:   string | null;
-  titel?:       string | null;
+  kategorieId?:  number | null;
+  produktId?:    string | null;
+  titel?:        string | null;
+  thumbnailUrl?: string | null;
 }): Promise<InstagramPost> {
   const r = await query<InstagramPost>(
-    `INSERT INTO sebo.instagram_posts (permalink, shortcode, typ, kategorie_id, produkt_id, titel)
-     VALUES ($1, $2, $3, $4, $5, $6)
-     RETURNING id, permalink, shortcode, typ, kategorie_id, produkt_id, titel, sortierung, aktiv, erstellt_am`,
-    [input.permalink, input.shortcode, input.typ, input.kategorieId ?? null, input.produktId ?? null, input.titel?.trim() || null],
+    `INSERT INTO sebo.instagram_posts (permalink, shortcode, typ, kategorie_id, produkt_id, titel, thumbnail_url)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     RETURNING id, permalink, shortcode, typ, kategorie_id, produkt_id, titel, sortierung, aktiv, erstellt_am, kanal_gepostet_am, thumbnail_url`,
+    [input.permalink, input.shortcode, input.typ, input.kategorieId ?? null, input.produktId ?? null, input.titel?.trim() || null, input.thumbnailUrl?.trim() || null],
   );
   return r.rows[0];
 }
 
 export async function instagramPostAktualisieren(
   id: string,
-  input: { kategorieId?: number | null; produktId?: string | null; titel?: string | null; aktiv?: boolean; sortierung?: number },
+  input: { kategorieId?: number | null; produktId?: string | null; titel?: string | null; aktiv?: boolean; sortierung?: number; thumbnailUrl?: string | null },
 ): Promise<void> {
   const sets: string[] = [];
   const vals: unknown[] = [];
@@ -187,6 +194,7 @@ export async function instagramPostAktualisieren(
   if (input.titel       !== undefined) { sets.push(`titel = $${idx++}`);        vals.push(input.titel?.trim() || null); }
   if (input.aktiv       !== undefined) { sets.push(`aktiv = $${idx++}`);        vals.push(input.aktiv); }
   if (input.sortierung  !== undefined) { sets.push(`sortierung = $${idx++}`);   vals.push(input.sortierung); }
+  if (input.thumbnailUrl !== undefined){ sets.push(`thumbnail_url = $${idx++}`); vals.push(input.thumbnailUrl?.trim() || null); }
   if (sets.length === 0) return;
   vals.push(id);
   await query(`UPDATE sebo.instagram_posts SET ${sets.join(", ")} WHERE id = $${idx}`, vals);

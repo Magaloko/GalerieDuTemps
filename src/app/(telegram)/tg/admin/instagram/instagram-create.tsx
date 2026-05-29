@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Loader2, Check } from "lucide-react";
-import { instagramPostCreateAction, instagramKategorieCreateAction } from "../actions";
+import { Plus, Loader2, Check, ImagePlus, X } from "lucide-react";
+import { instagramPostCreateAction, instagramKategorieCreateAction, instagramThumbnailUploadAction } from "../actions";
 import { haptic } from "../../fx";
 
 type Option = { value: string; label: string };
@@ -20,8 +20,24 @@ export function InstagramCreate({
   const [titel, setTitel]       = useState("");
   const [neueKat, setNeueKat]   = useState("");
   const [katOffen, setKatOffen] = useState(false);
+  const [cover, setCover]       = useState("");           // hochgeladene Cover-URL
+  const [coverBusy, setCoverBusy] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [pending, start]        = useTransition();
   const [flash, setFlash]       = useState<{ t: "ok" | "err"; m: string } | null>(null);
+
+  const onCover = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (e.target) e.target.value = "";
+    if (!file) return;
+    setCoverBusy(true);
+    const fd = new FormData();
+    fd.set("file", file);
+    const r = await instagramThumbnailUploadAction(fd);
+    setCoverBusy(false);
+    if (r.ok) { haptic("success"); setCover(r.url); }
+    else { haptic("error"); setFlash({ t: "err", m: r.error }); }
+  };
 
   const create = () => start(async () => {
     const r = await instagramPostCreateAction({
@@ -29,11 +45,12 @@ export function InstagramCreate({
       kategorieId:  kat ? parseInt(kat, 10) : null,
       produktId:    prod || null,
       titel:        titel || null,
+      thumbnailUrl: cover || null,
     });
     if (r.ok) {
       haptic("success");
       setFlash({ t: "ok", m: "Добавлено" });
-      setEmbed(""); setTitel(""); setProd("");
+      setEmbed(""); setTitel(""); setProd(""); setCover("");
       setTimeout(() => { setFlash(null); router.refresh(); }, 900);
     } else {
       haptic("error");
@@ -91,6 +108,28 @@ export function InstagramCreate({
         <option value="">— товар (необязательно) —</option>
         {produkte.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
       </select>
+
+      {/* Cover-Bild (optional). Bei verknüpftem Produkt ist es optional — die
+          App nutzt sonst automatisch das Produktbild. */}
+      <div className="flex items-center gap-2">
+        {cover ? (
+          <div className="relative shrink-0" style={{ width: 56, height: 70 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={cover} alt="" className="w-full h-full object-cover" style={{ borderRadius: 6, border: "1px solid var(--color-line)" }} />
+            <button type="button" onClick={() => setCover("")}
+              className="absolute -top-1.5 -right-1.5 p-0.5" style={{ background: "var(--color-ink)", borderRadius: 999 }} aria-label="Удалить обложку">
+              <X className="w-3 h-3" style={{ color: "#fff" }} />
+            </button>
+          </div>
+        ) : null}
+        <button type="button" disabled={coverBusy} onClick={() => fileRef.current?.click()}
+          className="flex items-center gap-1.5 px-3 py-2 text-[11px] uppercase font-medium disabled:opacity-50"
+          style={{ ...inputStyle, letterSpacing: "0.14em" }}>
+          {coverBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImagePlus className="w-3.5 h-3.5" />}
+          {cover ? "Заменить обложку" : "Обложка (необязательно)"}
+        </button>
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onCover} />
+      </div>
 
       {flash && (
         <p className="text-[11px]" style={{ color: flash.t === "ok" ? "#52663F" : "var(--color-coral-deep, #A53E26)" }}>

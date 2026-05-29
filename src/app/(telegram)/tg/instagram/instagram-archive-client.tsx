@@ -16,6 +16,7 @@ type Post = {
   kategorie_name: string | null;
   produkt_slug:   string | null;
   produkt_name:   string | null;
+  bild_url:       string | null;
 };
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -99,6 +100,7 @@ const TYP_LABEL: Record<string, string> = { reel: "Reel", tv: "IGTV", p: "Post" 
 
 function PostCard({ post }: { post: Post }) {
   const Icon = post.typ === "reel" ? Film : post.typ === "tv" ? Tv : ImageIcon;
+  const typLabel = TYP_LABEL[post.typ] ?? post.typ;
 
   return (
     <div style={{
@@ -107,36 +109,63 @@ function PostCard({ post }: { post: Post }) {
       borderRadius: 6,
       overflow: "hidden",
     }}>
-      {/* Header: IG-Icon + Typ-Badge + Titel */}
-      <div className="flex items-start gap-3 p-3">
-        {/* IG-Farbverlauf-Icon */}
-        <div className="shrink-0 flex items-center justify-center w-10 h-10 rounded-full"
-          style={{ background: "linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)" }}>
-          <InstagramIcon className="w-5 h-5" style={{ color: "#fff" }} />
-        </div>
-
-        <div className="flex-1 min-w-0 pt-0.5">
-          {/* Kategorie + Typ */}
-          <div className="flex items-center gap-2 mb-0.5">
-            {post.kategorie_name && (
-              <span className="text-[10px] uppercase font-medium"
-                style={{ letterSpacing: "0.18em", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
-                {post.kategorie_name}
-              </span>
-            )}
-            <span className="flex items-center gap-1 text-[10px]"
-              style={{ color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
-              <Icon className="w-3 h-3" />
-              {TYP_LABEL[post.typ] ?? post.typ}
+      {post.bild_url ? (
+        /* ─ Großes Karten-Layout mit echtem Cover ─ */
+        <>
+          <div className="relative w-full" style={{ aspectRatio: "4/5", background: "var(--color-paper-warm, #f5f0e8)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={post.bild_url} alt={post.titel ?? post.shortcode}
+              className="absolute inset-0 w-full h-full object-cover" />
+            {/* Typ-Badge oben rechts (IG-Gradient) */}
+            <span className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 text-[10px] uppercase font-medium"
+              style={{ borderRadius: 999, letterSpacing: "0.12em", color: "#fff",
+                background: "linear-gradient(135deg,#f09433,#dc2743,#bc1888)" }}>
+              <Icon className="w-3 h-3" /> {typLabel}
             </span>
+            {/* Titel/Kategorie als Overlay unten */}
+            <div className="absolute inset-x-0 bottom-0 p-3"
+              style={{ background: "linear-gradient(to top, rgba(15,20,48,0.78), rgba(15,20,48,0))" }}>
+              {post.kategorie_name && (
+                <p className="text-[10px] uppercase font-medium mb-0.5"
+                  style={{ letterSpacing: "0.18em", color: "rgba(255,255,255,0.82)" }}>
+                  {post.kategorie_name}
+                </p>
+              )}
+              <p className="text-sm leading-snug"
+                style={{ fontFamily: "var(--font-display)", color: "#fff" }}>
+                {post.titel || post.shortcode}
+              </p>
+            </div>
           </div>
-          {/* Titel */}
-          <p className="text-sm leading-snug"
-            style={{ fontFamily: "var(--font-display)", color: "var(--tg-theme-text-color, var(--color-ink))" }}>
-            {post.titel || post.shortcode}
-          </p>
+        </>
+      ) : (
+        /* ─ Fallback ohne Bild: Icon-Header ─ */
+        <div className="flex items-start gap-3 p-3">
+          <div className="shrink-0 flex items-center justify-center w-10 h-10 rounded-full"
+            style={{ background: "linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)" }}>
+            <InstagramIcon className="w-5 h-5" style={{ color: "#fff" }} />
+          </div>
+          <div className="flex-1 min-w-0 pt-0.5">
+            <div className="flex items-center gap-2 mb-0.5">
+              {post.kategorie_name && (
+                <span className="text-[10px] uppercase font-medium"
+                  style={{ letterSpacing: "0.18em", color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
+                  {post.kategorie_name}
+                </span>
+              )}
+              <span className="flex items-center gap-1 text-[10px]"
+                style={{ color: "var(--tg-theme-hint-color, var(--color-ink-mute))" }}>
+                <Icon className="w-3 h-3" />
+                {typLabel}
+              </span>
+            </div>
+            <p className="text-sm leading-snug"
+              style={{ fontFamily: "var(--font-display)", color: "var(--tg-theme-text-color, var(--color-ink))" }}>
+              {post.titel || post.shortcode}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Buttons */}
       <div className="flex flex-col gap-0" style={{ borderTop: "1px solid var(--color-line)" }}>
