@@ -78,8 +78,9 @@ export default async function TgAdminHome() {
     {
       title: "Клиенты",
       items: [
-        { href: "/tg/admin/kunden", label: "Клиенты",    icon: Users,     kind: "native" },
-        { href: "/tg/admin/b2b",    label: "Заявки B2B", icon: Briefcase, kind: "native", badge: b.b2b_pending },
+        { href: "/tg/admin/kunden",   label: "Клиенты",    icon: Users,      kind: "native" },
+        { href: "/tg/admin/pipeline", label: "Воронка",    icon: TrendingUp, kind: "native" },
+        { href: "/tg/admin/b2b",      label: "Заявки B2B", icon: Briefcase,  kind: "native", badge: b.b2b_pending },
       ],
     },
     {

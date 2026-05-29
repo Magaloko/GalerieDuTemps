@@ -343,6 +343,20 @@ export async function produktHauptbildAction(bildId: string, produktId: string, 
   }
 }
 
+/* ── CRM-Pipeline: Kunde in andere Stufe verschieben ───────────────────────── */
+export async function kundeStageVerschiebenTgAction(customerId: string, stageId: number): Promise<ActionRes> {
+  if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
+  try {
+    const { stageAktualisieren } = await import("@/lib/db/crm");
+    await stageAktualisieren(customerId, stageId);
+    revalidatePath("/tg/admin/pipeline");
+    return { ok: true };
+  } catch (err) {
+    console.error("[kundeStageVerschieben]", err);
+    return { ok: false, error: "Ошибка" };
+  }
+}
+
 /* ── Produkt-Bild: Galerie-Reihenfolge speichern ───────────────────────────── */
 export async function produktBildSortierenAction(produktId: string, orderedIds: string[]): Promise<ActionRes> {
   if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
