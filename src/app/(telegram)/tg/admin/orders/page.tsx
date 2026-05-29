@@ -68,9 +68,13 @@ export default async function TgAdminOrdersPage() {
     erstellt_am: string;
     customer_email: string | null;
     customer_name: string | null;
+    payment_method: string | null;
+    payment_status: string | null;
+    anzahlung_cents: number | null;
   }>(
     `SELECT id, order_number, status, total_cents, erstellt_am,
-            customer_email, customer_name
+            customer_email, customer_name,
+            payment_method, payment_status, anzahlung_cents
      FROM sebo.orders
      WHERE status IN ('pending','paid') AND versendet_am IS NULL
      ORDER BY erstellt_am DESC
@@ -155,6 +159,9 @@ export default async function TgAdminOrdersPage() {
                   kunde={o.customer_name ?? o.customer_email ?? "—"}
                   statusLabel={meta.label}
                   statusColor={meta.color}
+                  paymentMethod={o.payment_method}
+                  paymentStatus={o.payment_status}
+                  anzahlungCents={o.anzahlung_cents}
                 />
               );
             })}

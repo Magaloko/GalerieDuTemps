@@ -8,6 +8,7 @@ import { couponToggleAktiv } from "@/lib/db/coupons";
 import { auszahlungAlsBezahltMarkieren } from "@/lib/db/auszahlungen";
 import { produktAktualisieren, produktReservieren, produktReservierungAufheben, produktReservierungVerlaengern, produktErstellen } from "@/lib/db/produkte";
 import { orderStatusUpdate } from "@/lib/db/orders";
+import { orderSetPaymentStatus } from "@/lib/db/order-payment";
 import { kategorieErstellen } from "@/lib/db/kategorien";
 import {
   instagramKategorieErstellen,
@@ -119,16 +120,35 @@ export async function produktReservierungVerlaengernTgAction(
   }
 }
 
-/* ── Order: als bezahlt markieren (pending → paid) ─────────────────────────── */
+/* ── Order: als (voll) bezahlt markieren (pending → paid) ───────────────────── */
 export async function orderBezahltTgAction(orderId: string): Promise<ActionRes> {
   if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
   try {
     await orderStatusUpdate(orderId, "paid", { bezahlt: true });
+    // payment_status nachziehen, damit Voll-Zahlung im Lebenszyklus konsistent
+    // ist (auch für Anzahlung: partial → paid bei Abholung & Rest).
+    await orderSetPaymentStatus(orderId, "paid").catch(() => {});
     await auditLog({ action: "order_bezahlt", actorEmail: null, entity: orderId, neuWert: { via: "tg-admin" } });
     revalidatePath("/tg/admin/orders");
     return { ok: true, message: "Отмечен оплаченным" };
   } catch (err) {
     console.error("[orderBezahltTg]", err);
+    return { ok: false, error: "Ошибка БД" };
+  }
+}
+
+/* ── Order: Anzahlung erhalten (Reserve bestätigen, payment_status → partial) ── */
+export async function orderAnzahlungErhaltenTgAction(orderId: string): Promise<ActionRes> {
+  if (!(await requireTgAdmin())) return { ok: false, error: "Нет прав" };
+  try {
+    // Setzt payment_status='partial' + anzahlung_bezahlt_am=now() (in der Lib).
+    // Order bleibt status='pending' bis Abholung & Rest-Zahlung.
+    await orderSetPaymentStatus(orderId, "partial");
+    await auditLog({ action: "order_anzahlung_erhalten", actorEmail: null, entity: orderId, neuWert: { via: "tg-admin" } });
+    revalidatePath("/tg/admin/orders");
+    return { ok: true, message: "Предоплата подтверждена" };
+  } catch (err) {
+    console.error("[orderAnzahlungErhaltenTg]", err);
     return { ok: false, error: "Ошибка БД" };
   }
 }

@@ -107,9 +107,9 @@ export const PAYMENT_METHODS: PaymentMethodInfo[] = [
         de: "Abholung — vor Ort bezahlen (mit Anzahlung)",
       },
       sub: {
-        ru: "Резерв на 7 дней. Предоплата онлайн ≈30%, остаток в галерее.",
-        en: "7-day hold. Online deposit ~30%, balance at gallery.",
-        de: "7-Tage-Reservierung. Online-Anzahlung ~30%, Rest in der Galerie.",
+        ru: "Резерв на 7 дней. Предоплата ≈30% переводом, остаток в галерее.",
+        en: "7-day hold. ~30% deposit by transfer, balance at gallery.",
+        de: "7-Tage-Reservierung. ~30% Anzahlung per Überweisung, Rest in der Galerie.",
       },
     },
   },
@@ -154,7 +154,6 @@ export function providerEnvOk(method: PaymentMethod): boolean {
   switch (method) {
     case "stripe_card":
     case "stripe_sepa":
-    case "vor_ort_anzahlung":      // nutzt Stripe-PaymentIntent
       return Boolean(process.env.STRIPE_SECRET_KEY);
     case "paypal":
       return Boolean(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_SECRET);
@@ -164,6 +163,7 @@ export function providerEnvOk(method: PaymentMethod): boolean {
       return Boolean(process.env.TELEGRAM_PAYMENTS_PROVIDER_TOKEN);
     case "bank_transfer":
     case "vor_ort":
+    case "vor_ort_anzahlung":      // Anzahlung per Überweisung, manuelle Bestätigung
     case "kaspi":
       return true;                 // brauchen keinen Provider-Key
   }
