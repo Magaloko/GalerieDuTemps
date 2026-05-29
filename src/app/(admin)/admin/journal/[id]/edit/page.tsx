@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { postById } from "@/lib/db/journal";
 import { JournalEditor } from "./journal-editor";
@@ -12,7 +12,16 @@ export default async function JournalEditPage({
   params,
 }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const post = await postById(id);
+  // Defensive (wie die Journal-Liste): fehlt die Tabelle journal_posts in
+  // Produktion (Migration 009 nicht angewendet) ODER ist die DB kurz weg, wirft
+  // postById → sonst 500. Dann zurück zur Liste (die den Migrations-Hinweis zeigt).
+  let post: Awaited<ReturnType<typeof postById>> = null;
+  try {
+    post = await postById(id);
+  } catch (err) {
+    console.error("[admin/journal/edit] postById failed:", err);
+    redirect("/admin/journal");
+  }
   if (!post) notFound();
 
   return (
