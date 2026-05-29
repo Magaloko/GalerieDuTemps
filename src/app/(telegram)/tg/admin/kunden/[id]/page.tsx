@@ -6,6 +6,7 @@ import { customerById } from "@/lib/db/customers";
 import { ordersFuerCustomer } from "@/lib/db/orders";
 import { customerTimeline } from "@/lib/db/leads";
 import { formatPreis } from "@/lib/utils/preis";
+import { orderStatusMeta } from "@/lib/utils/order-status";
 import {
   Phone, MessageCircle, Send, Mail, ShoppingBag, Inbox, Activity, CheckSquare, StickyNote, Package,
 } from "lucide-react";
@@ -25,14 +26,6 @@ export const dynamic = "force-dynamic";
 
 const TYP_LABEL: Record<string, string> = {
   b2c: "Частный", b2b_pending: "B2B · ожидает", b2b_verified: "B2B", b2b_rejected: "B2B · отклонён",
-};
-const ORDER_STATUS: Record<string, { label: string; color: string }> = {
-  pending:   { label: "Ожидает оплаты", color: "#9A7B1F" },
-  paid:      { label: "Оплачен",        color: "#52663F" },
-  fulfilled: { label: "Выполнен",       color: "#52663F" },
-  completed: { label: "Завершён",       color: "#52663F" },
-  cancelled: { label: "Отменён",        color: "var(--color-ink-mute)" },
-  refunded:  { label: "Возврат",        color: "var(--color-coral-deep, #A53E26)" },
 };
 const TL_ICON: Record<string, React.ElementType> = {
   order: ShoppingBag, lead: Inbox, event: Activity, task: CheckSquare, note: StickyNote,
@@ -148,7 +141,7 @@ export default async function TgAdminKundenAkte({
           ) : (
             <div className="space-y-1.5">
               {orders.slice(0, 10).map(o => {
-                const st = ORDER_STATUS[o.status] ?? { label: o.status, color: "var(--color-ink-mute)" };
+                const st = orderStatusMeta(o.status);
                 return (
                   <div key={o.id} className="flex items-center gap-2 px-3 py-2"
                     style={{ background: "var(--tg-theme-section-bg-color, #fff)", border: "1px solid var(--color-line)" }}>

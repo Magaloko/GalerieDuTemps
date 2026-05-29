@@ -6,21 +6,13 @@ import { OrderRow } from "./order-row";
 import { Package, ChevronLeft } from "lucide-react";
 import type { Metadata } from "next";
 import type { OrderStatus } from "@/types/commerce";
+import { orderStatusMeta } from "@/lib/utils/order-status";
 
 export const metadata: Metadata = {
   title:  "Заказы · Mini-App",
   robots: { index: false, follow: false },
 };
 export const dynamic = "force-dynamic";
-
-const STATUS_META: Record<OrderStatus, { label: string; color: string }> = {
-  pending:   { label: "Ожидает оплаты", color: "#C9A84C" },
-  paid:      { label: "Оплачен",         color: "#7A8B6F" },
-  fulfilled: { label: "Отправлен",       color: "#52663F" },
-  completed: { label: "Завершён",        color: "#52663F" },
-  cancelled: { label: "Отменён",         color: "var(--color-ink-mute)" },
-  refunded:  { label: "Возврат",         color: "var(--color-coral-deep, #A53E26)" },
-};
 
 /* ──────────────────────────────────────────────────────────────────────────
  * /tg/admin/orders — Pending-Orders-Queue für Admin.
@@ -148,7 +140,7 @@ export default async function TgAdminOrdersPage() {
         ) : (
           <div className="space-y-2">
             {orders.map(o => {
-              const meta = STATUS_META[o.status] ?? STATUS_META.pending;
+              const meta = orderStatusMeta(o.status);
               return (
                 <OrderRow
                   key={o.id}

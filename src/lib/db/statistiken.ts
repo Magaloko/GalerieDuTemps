@@ -44,12 +44,13 @@ export async function uebersichtStats(): Promise<UebersichtStats> {
       (SELECT COUNT(*)::int FROM sebo.orders WHERE status = 'pending')                   AS bestellungen_pending,
       (SELECT COUNT(*)::int FROM sebo.orders WHERE status = 'paid')                      AS bestellungen_paid,
       (SELECT COUNT(*)::int FROM sebo.orders WHERE status = 'fulfilled')                 AS bestellungen_fulfilled,
-      (SELECT COUNT(*)::int FROM sebo.orders WHERE versendet_am::date = CURRENT_DATE)    AS bestellungen_heute_versandt,
+      (SELECT COUNT(*)::int FROM sebo.orders
+         WHERE versendet_am >= CURRENT_DATE AND versendet_am < CURRENT_DATE + INTERVAL '1 day') AS bestellungen_heute_versandt,
       (SELECT COALESCE(SUM(total_cents), 0)::bigint FROM sebo.orders
          WHERE status IN ('paid','fulfilled','completed'))                               AS umsatz_gesamt_cents,
       (SELECT COALESCE(SUM(total_cents), 0)::bigint FROM sebo.orders
          WHERE status IN ('paid','fulfilled','completed')
-           AND bezahlt_am::date = CURRENT_DATE)                                          AS umsatz_heute_cents,
+           AND bezahlt_am >= CURRENT_DATE AND bezahlt_am < CURRENT_DATE + INTERVAL '1 day') AS umsatz_heute_cents,
       (SELECT COALESCE(SUM(total_cents), 0)::bigint FROM sebo.orders
          WHERE status IN ('paid','fulfilled','completed')
            AND bezahlt_am >= now() - interval '30 days')                                 AS umsatz_30tage_cents

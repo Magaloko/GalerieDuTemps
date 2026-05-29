@@ -14,7 +14,6 @@ import { storeSchema, websiteSchema } from "@/lib/seo/schemas";
 import { systemEinstellungenLaden } from "@/lib/db/system-einstellungen";
 import { kontaktKanaeleLaden, whatsappUrl, telegramUrl, instagramUrl } from "@/lib/db/kontakt-kanaele";
 import { renderThemeCssVars, getThemeBranding } from "@/lib/db/theme";
-import { LenisProvider } from "@/components/providers/lenis-provider";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
 import { ToastProvider } from "@/components/ui/toast-provider";
 
@@ -184,7 +183,7 @@ export default async function RootLayout({
         <JsonLd id="org-site" data={[orgJsonLd, siteJsonLd]} />
         <ServiceWorkerRegister />
         <ToastProvider>
-          <LenisProvider>{children}</LenisProvider>
+          {children}
         </ToastProvider>
       </body>
     </html>

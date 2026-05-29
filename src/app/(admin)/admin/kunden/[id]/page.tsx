@@ -10,6 +10,7 @@ import {
 import { customerTimeline } from "@/lib/db/leads";
 import { ActivityTimeline } from "@/components/customer/activity-timeline";
 import { formatPreis } from "@/lib/utils/preis";
+import { orderStatusMeta } from "@/lib/utils/order-status";
 import { ChevronLeft, Mail, Phone, Briefcase, Calendar, Hash, ShoppingBag, Coins } from "lucide-react";
 import { TagsSection } from "./tags-section";
 import { NotesSection } from "./notes-section";
@@ -26,15 +27,6 @@ const TYPE_LABEL: Record<string, string> = {
   b2b_pending: "B2B — ожидает активации",
   b2b_verified: "B2B — подтверждён",
   b2b_rejected: "B2B — отклонён",
-};
-
-const ORDER_STATUS_LABEL: Record<string, string> = {
-  pending: "Ожидает",
-  paid: "Оплачен",
-  fulfilled: "Отправлен",
-  completed: "Завершён",
-  cancelled: "Отменён",
-  refunded: "Возврат",
 };
 
 export default async function KundenDetailPage({
@@ -132,7 +124,7 @@ export default async function KundenDetailPage({
               <Link key={o.id} href={`/admin/bestellungen/${o.id}`} className="py-2 flex items-center justify-between hover:bg-vintage-parchment/40 -mx-2 px-2 transition-colors">
                 <div>
                   <p className="font-mono text-vintage-gold text-sm">GDT-{o.order_number}</p>
-                  <p className="text-xs text-vintage-dust">{new Date(o.erstellt_am).toLocaleDateString("ru-RU")} · {ORDER_STATUS_LABEL[o.status] ?? o.status}</p>
+                  <p className="text-xs text-vintage-dust">{new Date(o.erstellt_am).toLocaleDateString("ru-RU")} · {orderStatusMeta(o.status).label}</p>
                 </div>
                 <p className="font-serif text-vintage-espresso">{formatPreis(o.total_cents / 100)}</p>
               </Link>

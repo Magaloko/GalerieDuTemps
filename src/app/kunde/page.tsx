@@ -10,18 +10,10 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import { getDictionary } from "@/i18n";
+import { orderStatusMeta } from "@/lib/utils/order-status";
 
 export const metadata: Metadata = { title: "Обзор" };
 export const dynamic = "force-dynamic";
-
-/* Status → russisches Label + Farb-Token */
-const ORDER_STATUS_META: Record<string, { label: string; color: string }> = {
-  pending:   { label: "Ожидает оплаты",  color: "#C9A84C" },
-  paid:      { label: "Оплачен",          color: "#7A8B6F" },
-  fulfilled: { label: "Отправлен",        color: "#52663F" },
-  cancelled: { label: "Отменён",          color: "var(--color-ink-mute)" },
-  refunded:  { label: "Возврат",          color: "var(--color-coral-deep, #A53E26)" },
-};
 
 export default async function KundeDashboard() {
   const session = await auth();
@@ -198,7 +190,7 @@ export default async function KundeDashboard() {
         ) : (
           <ul className="divide-y" style={{ borderColor: "var(--color-line)" }}>
             {orders.slice(0, 5).map(o => {
-              const meta = ORDER_STATUS_META[o.status] ?? { label: o.status, color: "var(--color-ink-mute)" };
+              const meta = orderStatusMeta(o.status);
               return (
                 <li key={o.id}>
                   <Link
