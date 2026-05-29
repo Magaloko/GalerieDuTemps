@@ -197,9 +197,11 @@ async function notifyOrderStatusChange(
 ): Promise<void> {
   try {
     const mod = await import("@/lib/notifications/customer-telegram");
-    if (status === "paid")        return mod.notifyOrderPaid(orderId);
-    if (status === "fulfilled")   return mod.notifyOrderShipped(orderId, tracking);
-    if (status === "cancelled")   return mod.notifyOrderCancelled(orderId);
+    // WICHTIG: await statt `return promise` — sonst entkommt eine Rejection dem
+    // try/catch (return wartet nicht) und wird zur unhandled rejection.
+    if (status === "paid")        await mod.notifyOrderPaid(orderId);
+    else if (status === "fulfilled") await mod.notifyOrderShipped(orderId, tracking);
+    else if (status === "cancelled") await mod.notifyOrderCancelled(orderId);
     // 'pending' / 'completed' / 'refunded' bewusst ohne Push
   } catch (err) {
     console.warn("[order-notify-status]", err);
