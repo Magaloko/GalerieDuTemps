@@ -1,6 +1,7 @@
 import Script from "next/script";
 import { MiniAppTabBar } from "./tg/tab-bar";
 import { ErudaLoader } from "./eruda-loader";
+import { TelegramChrome } from "./telegram-chrome";
 import { isFeatureEnabled } from "@/lib/db/feature-flags";
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -41,6 +42,7 @@ export default async function TelegramLayout({ children }: { children: React.Rea
           fontFamily: "var(--font-sans)",
         }}
       >
+        <TelegramChrome />
         {children}
         <MiniAppTabBar kaufenAktiv={kaufenAktiv} />
         <ErudaLoader />

@@ -7,6 +7,7 @@ import {
   Home, Heart, ShoppingBag, User, Inbox, Package, Shield, MessageCircle,
 } from "lucide-react";
 import { useCart } from "@/lib/cart";
+import { haptic } from "./fx";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * MiniAppTabBar — role-aware Bottom-Navigation.
@@ -112,6 +113,7 @@ export function MiniAppTabBar({ kaufenAktiv = true }: { kaufenAktiv?: boolean })
             key={href}
             href={href}
             prefetch={false}
+            onClick={() => { if (!active) haptic("light"); }}
             className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-1.5"
             style={{
               touchAction:             "manipulation",
