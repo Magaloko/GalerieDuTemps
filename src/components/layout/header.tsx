@@ -6,7 +6,6 @@ import { useState, useRef, useEffect } from "react";
 import { Search, Heart, Menu, X, User } from "lucide-react";
 import { useWunschliste } from "@/hooks/use-wunschliste";
 import { CartBadge } from "./cart-badge";
-import { LanguageSwitcher } from "./language-switcher";
 import { MobileDrawer } from "./mobile-drawer";
 import { Hourglass } from "@/components/brand/hourglass";
 import type { Dictionary } from "@/i18n";
@@ -218,7 +217,6 @@ export function Header({
                   )}
                 </Link>
                 {kaufenAktiv && <CartBadge />}
-                <LanguageSwitcher ariaLabel={t.nav.sprache} />
                 <Link
                   href={userHref}
                   className="ml-2 btn-coral btn-coral-sm"
@@ -260,7 +258,6 @@ export function Header({
             <span style={{ color: "var(--color-coral)" }}>
               {promo?.rechts || "Новые поступления каждую среду"}
             </span>
-            <LanguageSwitcher ariaLabel={t.nav.sprache} />
           </div>
         </div>
 

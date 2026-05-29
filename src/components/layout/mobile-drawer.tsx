@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { X, ArrowRight } from "lucide-react";
 import { Wordmark } from "@/components/brand/wordmark";
-import { LanguageSwitcher } from "./language-switcher";
 import type { Dictionary } from "@/i18n";
 import type { Kategorie } from "@/types/produkt";
 
@@ -211,10 +210,6 @@ export function MobileDrawer({
           )}
         </nav>
 
-        {/* Footer: Sprache + Spacer */}
-        <div className="mt-4 pt-4 border-t flex items-center justify-between" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-          <LanguageSwitcher ariaLabel={t.nav.sprache} />
-        </div>
       </div>
     </div>
   );
