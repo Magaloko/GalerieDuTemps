@@ -69,3 +69,67 @@ jobs:
           name:           coverage-report
           path:           coverage/
           retention-days: 14
+
+  migrations:
+    name: DB-Migrations (apply + schema-check)
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    # Frische Postgres-Instanz — alle sql/NNN_*.sql werden von Grund auf
+    # angewendet. Fängt kaputtes Migrations-SQL VOR dem Merge (statt erst beim
+    # manuellen Einspielen auf Prod).
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: test
+          POSTGRES_USER:     postgres
+          POSTGRES_DB:       galerie_migrate
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:test@localhost:5432/galerie_migrate
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify Postgres ready
+        run: |
+          for i in 1 2 3 4 5; do
+            pg_isready -h localhost -p 5432 -U postgres && break
+            echo "Postgres not ready yet (attempt $i), waiting 2s ..."
+            sleep 2
+          done
+
+      # Wendet alle nummerierten Migrationen in Reihenfolge an (db:migrate
+      # ignoriert _APPLY_*/​_supabase_combined). Bricht bei kaputtem SQL mit
+      # exit 1 ab → roter Check, kein Merge.
+      - name: Apply all migrations (fresh DB)
+        run: npm run db:migrate
+
+      # Verifiziert Schema-Integrität: alle Migrations getrackt, erwartete
+      # Tabellen + Indizes vorhanden, keine Hash-Drift. (Nur Schema — Daten-/
+      # Stats-Checks sind auf der leeren CI-DB nicht aussagekräftig.)
+      #
+      # continue-on-error: zunächst informativ — db:check hat eine hartkodierte
+      # Erwartungsliste, die ggf. nachgezogen werden muss. Der harte Gate ist
+      # der db:migrate-Schritt oben (kaputtes SQL → roter Check). Sobald dieser
+      # Schema-Check einmal grün ist, kann continue-on-error entfernt werden.
+      - name: Schema-Integrity-Check (informativ)
+        run: npm run db:check -- --section schema
+        continue-on-error: true
