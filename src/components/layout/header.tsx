@@ -290,31 +290,8 @@ export function Header({
 
             {/* Desktop: 3-col (nav | logo | actions) */}
             <div className="hidden md:grid grid-cols-[1fr_auto_1fr] items-center gap-6">
-              {/* Nav left — „КАТАЛОГ" als Kategorien-Dropdown, Rest als Links */}
-              <nav className="flex items-center gap-7">
-                <KatalogMenu
-                  kategorien={kategorien}
-                  label={t.nav.katalog}
-                  active={pathname.startsWith("/katalog") || pathname.startsWith("/kategorien")}
-                />
-                {navLinks.filter(l => l.href !== "/katalog").map(({ href, label }) => {
-                  const active = pathname.startsWith(href);
-                  return (
-                    <Link
-                      key={href}
-                      href={href}
-                      className={`text-[11px] uppercase font-medium transition-colors whitespace-nowrap ${active ? "text-coral" : "text-white/85 hover:text-coral"}`}
-                      style={{
-                        letterSpacing: "var(--tracking-nav)",
-                        borderBottom:  active ? "1px solid var(--color-coral)" : "1px solid transparent",
-                        paddingBottom: "6px",
-                      }}
-                    >
-                      {label}
-                    </Link>
-                  );
-                })}
-              </nav>
+              {/* left spacer — Navigation liegt jetzt in der Leiste darunter (Bar 3) */}
+              <div aria-hidden />
 
               {/* Horizontal-Lockup center: Sanduhr + GALERIE + du Temps in einer Zeile.
                   „du Temps" baseline-aligned direkt an GALERIE angesetzt. */}
@@ -384,7 +361,36 @@ export function Header({
           </div>
         </div>
 
-        {/* Kategorien sind jetzt im „КАТАЛОГ"-Dropdown integriert (keine eigene Bar 3). */}
+        {/* ─ Bar 3: Sub (cobalt) — Haupt-Navigation zentriert, КАТАЛОГ mit Dropdown ─ */}
+        <div
+          className="hidden md:block border-t"
+          style={{ background: "var(--color-cobalt)", borderColor: "rgba(232,112,58,0.15)" }}
+        >
+          <nav className="max-w-[1440px] mx-auto px-14 py-2.5 flex items-center justify-center gap-8">
+            <KatalogMenu
+              kategorien={kategorien}
+              label={t.nav.katalog}
+              active={pathname.startsWith("/katalog") || pathname.startsWith("/kategorien")}
+            />
+            {navLinks.filter(l => l.href !== "/katalog").map(({ href, label }) => {
+              const active = pathname.startsWith(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`text-[11px] uppercase font-medium transition-colors whitespace-nowrap ${active ? "text-coral" : "text-white/85 hover:text-coral"}`}
+                  style={{
+                    letterSpacing: "var(--tracking-nav)",
+                    borderBottom:  active ? "1px solid var(--color-coral)" : "1px solid transparent",
+                    paddingBottom: "4px",
+                  }}
+                >
+                  {label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
 
         {/* ─ Such-Leiste (ausklappbar) ─────────────────────────────────── */}
         {sucheOffen && (
