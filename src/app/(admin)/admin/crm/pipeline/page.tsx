@@ -15,12 +15,12 @@ export default async function PipelinePage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
-        <Users className="w-5 h-5 text-vintage-gold" />
+        <Users className="w-5 h-5" style={{ color: "var(--color-coral)" }} />
         <div>
-          <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-          <h1 className="font-serif text-2xl text-vintage-espresso">Воронка</h1>
-          <p className="text-vintage-dust text-xs font-sans mt-0.5">
-            {kunden.length} клиентов · {stages.length} этапов · перетащите карточку для перемещения
+          <p className="eyebrow">✦ CRM</p>
+          <h1 className="list-title">Воронка</h1>
+          <p className="list-sub">
+            {kunden.length} клиентов · {stages.length} этапов · перетащите карточку
           </p>
         </div>
       </div>

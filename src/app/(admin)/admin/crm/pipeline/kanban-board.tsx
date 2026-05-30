@@ -2,11 +2,25 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { DndContext, useDroppable, useDraggable, type DragEndEvent } from "@dnd-kit/core";
+import {
+  DndContext,
+  useDroppable,
+  useDraggable,
+  useSensor,
+  useSensors,
+  MouseSensor,
+  TouchSensor,
+  type DragEndEvent,
+} from "@dnd-kit/core";
 import { Briefcase, Mail, ExternalLink } from "lucide-react";
 import { stageVerschiebenAction } from "./actions";
 import { useModuleBase } from "@/lib/module-base-client";
 import type { PipelineStage } from "@/types/crm";
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * KanbanBoard — Twenty-Politur: kompakte ruhige Karten, saubere Spalten,
+ * Touch-Aktivierungs-Constraint (verhindert versehentliches Drag bei Scroll).
+ * ────────────────────────────────────────────────────────────────────────── */
 
 interface Kunde {
   customer_id:    string;
@@ -24,22 +38,46 @@ export function KanbanBoard({
   const [kunden, setKunden] = useState(kundenInit);
   const [, startTransition] = useTransition();
 
+  /* Touch-Sensor: 250 ms Delay + 5 px Toleranz — User kann scrollen ohne
+   * versehentlich Karten zu verschieben. Mouse-Sensor bleibt sofort. */
+  const sensors = useSensors(
+    useSensor(MouseSensor),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
+  );
+
   const handleDragEnd = (event: DragEndEvent) => {
     const customerId = String(event.active.id);
     const stageId    = event.over ? parseInt(String(event.over.id), 10) : null;
     if (!stageId) return;
-
-    // Optimistic update
-    setKunden(prev => prev.map(k => k.customer_id === customerId ? { ...k, stage_id: stageId } : k));
+    setKunden(prev => prev.map(k =>
+      k.customer_id === customerId ? { ...k, stage_id: stageId } : k
+    ));
     startTransition(() => stageVerschiebenAction(customerId, stageId));
   };
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
-      <div className="grid gap-4 overflow-x-auto" style={{ gridTemplateColumns: `repeat(${stages.length}, minmax(260px, 1fr))` }}>
-        {stages.map(stage => (
-          <StageColumn key={stage.id} stage={stage} kunden={kunden.filter(k => k.stage_id === stage.id)} />
-        ))}
+    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+      {/* Horizontaler Scroll auf kleinen Screens; ab lg füllen Spalten den Platz. */}
+      <div
+        className="overflow-x-auto pb-2"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: `repeat(${stages.length}, minmax(240px, 1fr))`,
+            gap: "0.75rem",
+            minWidth: `${stages.length * 252}px`,
+          }}
+        >
+          {stages.map(stage => (
+            <StageColumn
+              key={stage.id}
+              stage={stage}
+              kunden={kunden.filter(k => k.stage_id === stage.id)}
+            />
+          ))}
+        </div>
       </div>
     </DndContext>
   );
@@ -51,30 +89,53 @@ function StageColumn({ stage, kunden }: { stage: PipelineStage; kunden: Kunde[] 
   return (
     <div
       ref={setNodeRef}
-      className={`bg-vintage-white border border-vintage-sand p-4 min-h-96 ${isOver ? "ring-2 ring-vintage-gold" : ""}`}
-      style={{ borderRadius: "var(--radius-card)" }}
+      style={{
+        background:    "var(--color-app-surface)",
+        border:        "1px solid var(--color-line)",
+        borderTop:     `3px solid ${stage.farbe}`,
+        borderRadius:  "var(--radius-card)",
+        outline:       isOver ? "2px solid var(--color-coral)" : "2px solid transparent",
+        outlineOffset: "2px",
+        minHeight:     "22rem",
+        transition:    "outline 100ms ease",
+      }}
+      className="p-3"
     >
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-vintage-sand/50">
-        <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full" style={{ background: stage.farbe }} />
-          <p className="font-serif text-vintage-espresso">{stage.name}</p>
+      {/* Spalten-Header */}
+      <div className="flex items-center justify-between mb-3 pb-2"
+           style={{ borderBottom: "1px solid var(--color-line)" }}>
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                style={{ background: stage.farbe }} />
+          <p className="font-serif text-sm truncate" style={{ color: "var(--color-ink)" }}>
+            {stage.name}
+          </p>
         </div>
-        <span className="text-xs font-sans text-vintage-dust">{kunden.length}</span>
+        <span className="font-mono text-xs flex-shrink-0 ml-2"
+              style={{ color: "var(--color-ink-mute)" }}>
+          {kunden.length}
+        </span>
       </div>
 
-      <div className="space-y-2">
+      {/* Karten */}
+      <div className="space-y-1.5">
         {kunden.length === 0 ? (
-          <p className="text-xs text-vintage-dust font-sans text-center py-8 italic">пусто</p>
-        ) : kunden.map(k => <DraggableKundenKarte key={k.customer_id} kunde={k} />)}
+          <p className="text-xs text-center py-8 italic"
+             style={{ color: "var(--color-ink-mute)" }}>
+            пусто
+          </p>
+        ) : kunden.map(k => (
+          <DraggableKundenKarte key={k.customer_id} kunde={k} />
+        ))}
       </div>
     </div>
   );
 }
 
 function DraggableKundenKarte({ kunde }: { kunde: Kunde }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: kunde.customer_id });
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({ id: kunde.customer_id });
   const mbase = useModuleBase();
-
   const istB2B = kunde.customer_type.startsWith("b2b");
 
   return (
@@ -83,29 +144,51 @@ function DraggableKundenKarte({ kunde }: { kunde: Kunde }) {
       {...attributes}
       {...listeners}
       style={{
-        transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
-        opacity:   isDragging ? 0.5 : 1,
-        cursor:    "grab",
+        transform:   transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
+        opacity:     isDragging ? 0.45 : 1,
+        cursor:      isDragging ? "grabbing" : "grab",
+        background:  "var(--color-bone)",
+        border:      "1px solid var(--color-line)",
+        borderRadius: "var(--radius-card)",
+        boxShadow:   isDragging ? "0 8px 24px rgba(15,20,48,0.15)" : undefined,
+        userSelect:  "none",
+        touchAction: "none",
+        transition:  isDragging ? undefined : "box-shadow 150ms ease",
+        zIndex:      isDragging ? 50 : undefined,
       }}
-      className="p-3 bg-vintage-parchment border border-vintage-sand hover:border-vintage-brown transition-colors"
+      className="p-2.5"
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <p className="font-serif text-sm text-vintage-espresso truncate">{kunde.customer_name}</p>
-          <p className="text-xs text-vintage-dust font-sans flex items-center gap-1 mt-0.5">
-            <Mail className="w-2.5 h-2.5" /> {kunde.customer_email}
+      <div className="flex items-start gap-2">
+        <div className="flex-1 min-w-0">
+          {/* Name — Serif, eine Zeile */}
+          <p className="font-serif text-sm truncate leading-tight"
+             style={{ color: "var(--color-ink)" }}>
+            {kunde.customer_name}
           </p>
+          {/* E-Mail — mono, gedimmt */}
+          <p className="flex items-center gap-1 mt-0.5 truncate"
+             style={{ fontSize: "0.6875rem", color: "var(--color-ink-mute)", fontFamily: "var(--font-mono)" }}>
+            <Mail className="w-2.5 h-2.5 flex-shrink-0" />
+            {kunde.customer_email}
+          </p>
+          {/* B2B-Chip — nur wenn relevant */}
           {istB2B && (
-            <p className="text-xs text-vintage-gold font-sans flex items-center gap-1 mt-1">
-              <Briefcase className="w-2.5 h-2.5" /> {kunde.customer_type === "b2b_verified" ? "B2B ✓" : "B2B ожидает"}
-            </p>
+            <span className="inline-flex items-center gap-0.5 mt-1"
+                  style={{ fontSize: "0.625rem", color: "var(--color-coral-deep)", fontFamily: "var(--font-sans)" }}>
+              <Briefcase className="w-2.5 h-2.5" />
+              {kunde.customer_type === "b2b_verified" ? "B2B ✓" : "B2B ожидает"}
+            </span>
           )}
         </div>
+
+        {/* Link-Button — klickbar ohne Drag auszulösen */}
         <Link
           href={`${mbase}/kunden/${kunde.customer_id}`}
           onClick={e => e.stopPropagation()}
-          className="text-vintage-dust hover:text-vintage-brown flex-shrink-0"
-          aria-label="Подробнее"
+          className="row-action flex-shrink-0"
+          style={{ padding: "0.25rem" }}
+          aria-label="Открыть"
+          draggable={false}
         >
           <ExternalLink className="w-3 h-3" />
         </Link>
