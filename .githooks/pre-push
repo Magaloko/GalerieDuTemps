@@ -1,0 +1,33 @@
+#!/bin/sh
+# ─────────────────────────────────────────────────────────────────────────────
+# Galerie du Temps — pre-push Guard
+#
+# Erzwingt, dass JEDER Push den Projekt-Stand dokumentiert: der jüngste Commit
+# (HEAD) MUSS PROJECT_STATE.md angefasst haben (Changelog-Eintrag mit Timestamp
+# + Commit + Änderung). So ist PROJECT_STATE.md — und damit der von AGENTS.md
+# referenzierte „aktuelle Stand" — nach jedem Push garantiert frisch.
+#
+# Aktivierung (einmalig pro Klon):  git config core.hooksPath .githooks
+# Notfall-Override:                 GDT_SKIP_STATE=1 git push
+# ─────────────────────────────────────────────────────────────────────────────
+
+[ "$GDT_SKIP_STATE" = "1" ] && exit 0
+
+# Wurde PROJECT_STATE.md im jüngsten Commit geändert?
+if git diff-tree --no-commit-id --name-only -r HEAD | grep -qx "PROJECT_STATE.md"; then
+  exit 0
+fi
+
+echo "────────────────────────────────────────────────────────────────"
+echo "✖  PUSH BLOCKIERT — PROJECT_STATE.md im letzten Commit NICHT gepflegt."
+echo ""
+echo "   Pflicht bei jedem Push (siehe AGENTS.md §0):"
+echo "   1. Neuen Changelog-Eintrag in PROJECT_STATE.md eintragen"
+echo "      (UTC-Timestamp · Commit-Hash · was geändert wurde)."
+echo "   2. 'Aktueller Stand' / 'Offen' bei Bedarf aktualisieren."
+echo "   3. PROJECT_STATE.md mit-committen, dann erneut pushen."
+echo ""
+echo "   Notfall-Override (nur für triviale Fälle):"
+echo "      GDT_SKIP_STATE=1 git push"
+echo "────────────────────────────────────────────────────────────────"
+exit 1
