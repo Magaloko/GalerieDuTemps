@@ -71,12 +71,12 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 
 ## 🚧 Offen / mögliche nächste Schritte
 
-- **Produkt-Bereich (laufender Strang):** Formular-Struktur (einklappbare `FormSection`) ✓,
-  Shop-Galerie-Bild-Fallback + Cleanup ✓, „KI-Ausfüllen" im Vollformular (`KiFuellenBlock`) ✓.
-  Offen nach Wunsch: Formular-**Optik** auf neue Tokens (paper/bone/coral, weiche Radien im /app);
-  weitere **Darstellung** (Bild-Fallback auch in `ProduktKarte`/next-image, ConditionMeter-Feinschliff).
-  Hinweis: client-interaktive `/app`-Änderungen lassen sich im Dev wegen PWA-Service-Worker-Cache schlecht
-  visuell prüfen → live nach Deploy testen (siehe Memory `dev-preview-setup`).
+- **Produkt-Bereich (laufender Strang):** Formular-Struktur (`FormSection`) ✓, Shop-Galerie-Bild-Fallback
+  + Cleanup ✓, „KI-Ausfüllen" (`KiFuellenBlock`) ✓, Katalog-Karten-Bild-Fallback (`ProduktKarte`) ✓ —
+  Bild-Robustheit damit shop-weit (Galerie + Karten). Offen nach Wunsch: Formular-**Optik** auf neue
+  Tokens (paper/bone/coral, weiche Radien im /app); Darstellungs-Feinschliff (ConditionMeter,
+  Detailseiten-Politur). Hinweis: client-interaktive `/app`-Änderungen lassen sich im Dev wegen
+  PWA-Service-Worker-Cache schlecht visuell prüfen → live nach Deploy testen (Memory `dev-preview-setup`).
 - **TG1 — Telegram Dark-Mode-Lücken:** harte `#fff`-Fallbacks in `src/app/(telegram)/**`,
   Texte hart `#1a1410`/`#fff`, Order-Status-Farben ohne `[data-tg-theme="dark"]`-Override.
 - **Pattern-Ausweitung (wiederverwendbar):** `.chip-select` (Inline-Edit) → Lead-Status /
@@ -106,7 +106,12 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
 
-- 2026-05-30 17:16 UTC · `(dieser Commit)` · feat(app) Produkt-Formular „KI-Ausfüllen": neuer
+- 2026-05-30 17:47 UTC · `(dieser Commit)` · design(public) Katalog-Karten (`ProduktKarte`): Bild-Fallback
+  wie in der Galerie — tote/fehlende `hauptbild_url` (next/image) fällt sauber auf den „Без фото"-Placeholder
+  zurück (onError + ref-Mount-Check für SSR-Fehler vor Hydration, deckt priority/eager-Bilder ab). Rundet die
+  Bild-Robustheit shop-weit ab. (Verifiziert: tsc grün, onError am Karten-img gebunden, keine false positives
+  bei gültigen Bildern; echtes Auslösen mangels toter Test-Bilder nicht visuell, Mechanismus identisch zur Galerie.)
+- 2026-05-30 17:16 UTC · `1b1124e` · feat(app) Produkt-Formular „KI-Ausfüllen": neuer
   `KiFuellenBlock` über dem Editor-Formular — Notizen → DeepSeek-Extraktor befüllt Name, Beschreibung,
   Epoche, Herkunft, Material, Zustand, Tags + SEO (Server-Action `produktKiAusfuellenAction`, danach
   `router.refresh()`). Nutzt dieselbe Infra wie Schnell-Flow + Entwürfe-Queue; standardmäßig

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Heart, Sparkles, Star } from "lucide-react";
@@ -37,6 +38,17 @@ interface ProduktKarteProps {
 
 export function ProduktKarte({ produkt, priority = false }: ProduktKarteProps) {
   const { toggle, istGemerkt, isLoading } = useWunschliste();
+
+  // Bild-Fallback: tote URL / fehlende Datei → sauberer „Без фото"-Placeholder
+  // statt Broken-Image. onError fängt Laufzeitfehler; der Mount-Check (ref)
+  // fängt SSR-Fehler vor der Hydration ab (relevant für priority/eager-Bilder).
+  const [bildFehler, setBildFehler] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth === 0) setBildFehler(true);
+  }, []);
+
   const gemerkt    = istGemerkt(produkt.id);
   const rabatt     = produkt.originalpreis ? rabattProzent(produkt.preis, produkt.originalpreis) : 0;
   const waehrung   = (produkt.waehrung as "KZT" | "EUR" | "USD" | "RUB" | undefined) ?? "KZT";
@@ -68,14 +80,16 @@ export function ProduktKarte({ produkt, priority = false }: ProduktKarteProps) {
           background:  "var(--color-paper-warm)",
         }}
       >
-        {produkt.hauptbild_url ? (
+        {produkt.hauptbild_url && !bildFehler ? (
           <Image
+            ref={imgRef}
             src={produkt.hauptbild_url}
             alt={produkt.name}
             fill
             sizes="(max-width:640px) 50vw, (max-width:1280px) 33vw, 25vw"
             className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
             priority={priority}
+            onError={() => setBildFehler(true)}
           />
         ) : (
           <ImagePlaceholder name={produkt.name} />
