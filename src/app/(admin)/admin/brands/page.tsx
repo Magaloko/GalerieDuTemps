@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import Image from "next/image";
 import { Tag, ExternalLink, EyeOff } from "lucide-react";
@@ -9,6 +10,7 @@ export const metadata: Metadata = { title: "Бренды" };
 export const dynamic = "force-dynamic";
 
 export default async function BrandsAdminPage() {
+  const base = await getModuleBase();
   const brands = await brandsAlle();
 
   return (
@@ -34,7 +36,7 @@ export default async function BrandsAdminPage() {
           {brands.map((b) => (
             <Link
               key={b.id}
-              href={`/admin/brands/${b.id}`}
+              href={`${base}/brands/${b.id}`}
               className="flex items-center gap-4 p-4 bg-vintage-white border border-vintage-sand hover:border-vintage-brown transition-colors"
               style={{ borderRadius: "var(--radius-card)" }}
             >

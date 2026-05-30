@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import {
   preisHistogramm,
@@ -14,6 +15,7 @@ export const metadata: Metadata = { title: "Анализ цен" };
 export const dynamic = "force-dynamic";
 
 export default async function PreisanalysePage() {
+  const base = await getModuleBase();
   const [histogramm, statsPerKat, teuer, guenstig] = await Promise.all([
     preisHistogramm().catch(() => []),
     preisStatistikPerKategorie().catch(() => []),
@@ -127,7 +129,7 @@ export default async function PreisanalysePage() {
               {teuer.map((p, i) => (
                 <Link
                   key={p.id}
-                  href={`/admin/produkte/${p.id}`}
+                  href={`${base}/produkte/${p.id}`}
                   className="flex items-center justify-between p-3 border border-vintage-sand/60 hover:bg-vintage-parchment/40 transition-colors"
                   style={{ borderRadius: "var(--radius-vintage)" }}
                 >
@@ -163,7 +165,7 @@ export default async function PreisanalysePage() {
               {guenstig.map((p, i) => (
                 <Link
                   key={p.id}
-                  href={`/admin/produkte/${p.id}`}
+                  href={`${base}/produkte/${p.id}`}
                   className="flex items-center justify-between p-3 border border-vintage-sand/60 hover:bg-vintage-parchment/40 transition-colors"
                   style={{ borderRadius: "var(--radius-vintage)" }}
                 >

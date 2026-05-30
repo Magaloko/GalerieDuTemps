@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { alleKategorienAdmin } from "@/lib/db/kategorien";
@@ -8,12 +9,13 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Новая категория" };
 
 export default async function NeueKategoriePage() {
+  const base = await getModuleBase();
   const elternKandidaten = await alleKategorienAdmin();
 
   return (
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
-        <Link href="/admin/kategorien" className="hover:text-vintage-brown transition-colors flex items-center gap-1">
+        <Link href={`${base}/kategorien`} className="hover:text-vintage-brown transition-colors flex items-center gap-1">
           <ChevronLeft className="w-3 h-3" /> Категории
         </Link>
         <span>/</span>

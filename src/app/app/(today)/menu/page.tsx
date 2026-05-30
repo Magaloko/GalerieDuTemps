@@ -20,17 +20,17 @@ export default async function AppMenuPage() {
       title: "Продажи",
       items: [
         { href: "/app/bestellungen", label: "Заказы",      icon: ShoppingBag, badge: b?.orders_pending },
-        { href: "/admin/rechnungen",   label: "Счета",       icon: FileText },
-        { href: "/admin/statistiken",  label: "Статистика",  icon: BarChart3 },
-        { href: "/admin/preisanalyse", label: "Анализ цен",  icon: TrendingUp },
+        { href: "/app/rechnungen",   label: "Счета",       icon: FileText },
+        { href: "/app/statistiken",  label: "Статистика",  icon: BarChart3 },
+        { href: "/app/preisanalyse", label: "Анализ цен",  icon: TrendingUp },
       ],
     },
     {
       title: "Каталог",
       items: [
         { href: "/app/produkte",     label: "Товары",     icon: Package },
-        { href: "/admin/kategorien", label: "Категории",  icon: Tag },
-        { href: "/admin/coupons",    label: "Промокоды",  icon: Ticket },
+        { href: "/app/kategorien", label: "Категории",  icon: Tag },
+        { href: "/app/coupons",    label: "Промокоды",  icon: Ticket },
       ],
     },
     {

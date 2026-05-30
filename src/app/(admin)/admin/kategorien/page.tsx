@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { alleKategorienAdmin } from "@/lib/db/kategorien";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ export const metadata: Metadata = { title: "Категории" };
 export const dynamic = "force-dynamic";
 
 export default async function KategorienListePage() {
+  const base = await getModuleBase();
   const kategorien = await alleKategorienAdmin();
 
   return (
@@ -20,7 +22,7 @@ export default async function KategorienListePage() {
             Всего категорий: {kategorien.length}
           </p>
         </div>
-        <Link href="/admin/kategorien/neu">
+        <Link href={`${base}/kategorien/neu`}>
           <Button icon={<Plus className="w-3.5 h-3.5" />}>Новая категория</Button>
         </Link>
       </div>
@@ -33,7 +35,7 @@ export default async function KategorienListePage() {
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <Tag className="w-12 h-12 text-vintage-sand mb-3" />
             <p className="font-serif text-vintage-brown text-lg">Категорий пока нет</p>
-            <Link href="/admin/kategorien/neu">
+            <Link href={`${base}/kategorien/neu`}>
               <Button className="mt-4" size="sm" icon={<Plus className="w-3 h-3" />}>
                 Создать первую категорию
               </Button>
@@ -85,7 +87,7 @@ export default async function KategorienListePage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <Link
-                        href={`/admin/kategorien/${k.id}`}
+                        href={`${base}/kategorien/${k.id}`}
                         className="inline-flex p-2 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-parchment transition-colors"
                         style={{ borderRadius: "var(--radius-vintage)" }}
                         title="Изменить"

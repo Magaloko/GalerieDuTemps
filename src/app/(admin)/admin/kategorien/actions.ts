@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { requireAdminSession } from "@/lib/auth/config";
+import { getModuleBase } from "@/lib/module-base-server";
 import {
   kategorieErstellen,
   kategorieAktualisieren,
@@ -40,7 +41,8 @@ export async function kategorieErstellenAction(
   }
 
   const kat = await kategorieErstellen(parsed.data);
-  redirect(`/admin/kategorien/${kat.id}`);
+  const base = await getModuleBase();
+  redirect(`${base}/kategorien/${kat.id}`);
 }
 
 export async function kategorieAktualisierenAction(
@@ -64,5 +66,6 @@ export async function kategorieLoeschenAction(id: number): Promise<void> {
   const session = await requireAdminSession();
   if (!session) throw new Error("Не авторизовано");
   await kategorieLoeschen(id);
-  redirect("/admin/kategorien");
+  const base = await getModuleBase();
+  redirect(`${base}/kategorien`);
 }

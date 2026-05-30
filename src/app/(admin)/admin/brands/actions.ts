@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdminSession } from "@/lib/auth/config";
+import { getModuleBase } from "@/lib/module-base-server";
 import {
   brandErstellen,
   brandAktualisieren,
@@ -39,7 +40,8 @@ export async function brandErstellenAction(
 
   const brand = await brandErstellen({ name, slug });
   revalidatePath("/admin/brands");
-  redirect(`/admin/brands/${brand.id}`);
+  const base = await getModuleBase();
+  redirect(`${base}/brands/${brand.id}`);
 }
 
 /** Inhalt + Meta speichern. */

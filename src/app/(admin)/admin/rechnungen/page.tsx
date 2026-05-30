@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { alleRechnungen } from "@/lib/db/invoices";
 import { formatPreis } from "@/lib/utils/preis";
@@ -24,6 +25,7 @@ const STATUS_KLASSE: Record<string, string> = {
 export default async function RechnungenPage({
   searchParams,
 }: { searchParams: Promise<{ status?: string; seite?: string }> }) {
+  const base   = await getModuleBase();
   const sp     = await searchParams;
   const status = sp.status ?? "";
   const seite  = parseInt(sp.seite ?? "1", 10);
@@ -43,7 +45,7 @@ export default async function RechnungenPage({
       <div className="flex flex-wrap gap-1.5 border-b border-vintage-sand pb-1">
         {FILTER.map(f => (
           <Link key={f.value}
-            href={f.value ? `/admin/rechnungen?status=${f.value}` : "/admin/rechnungen"}
+            href={f.value ? `${base}/rechnungen?status=${f.value}` : `${base}/rechnungen`}
             className={`px-4 py-2 text-xs font-sans uppercase tracking-widest transition-colors ${
               status === f.value ? "bg-vintage-espresso text-vintage-cream" : "text-vintage-dust hover:bg-vintage-parchment hover:text-vintage-brown"
             }`}
@@ -84,7 +86,7 @@ export default async function RechnungenPage({
                       <p className="text-xs text-vintage-dust">{r.empfaenger_email}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <Link href={`/admin/bestellungen/${r.order_id}`} className="font-mono text-vintage-brown hover:text-vintage-espresso transition-colors">
+                      <Link href={`${base}/bestellungen/${r.order_id}`} className="font-mono text-vintage-brown hover:text-vintage-espresso transition-colors">
                         GDT-{r.order_number}
                       </Link>
                     </td>
@@ -112,14 +114,14 @@ export default async function RechnungenPage({
           <p className="text-xs text-vintage-dust font-sans">Страница {daten.seite} из {daten.seiten}</p>
           <div className="flex gap-2">
             {daten.seite > 1 && (
-              <Link href={`/admin/rechnungen?seite=${daten.seite - 1}${status ? `&status=${status}` : ""}`}
+              <Link href={`${base}/rechnungen?seite=${daten.seite - 1}${status ? `&status=${status}` : ""}`}
                 className="flex items-center gap-1 px-3 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans hover:bg-vintage-parchment transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}>
                 <ChevronLeft className="w-3.5 h-3.5" /> Назад
               </Link>
             )}
             {daten.seite < daten.seiten && (
-              <Link href={`/admin/rechnungen?seite=${daten.seite + 1}${status ? `&status=${status}` : ""}`}
+              <Link href={`${base}/rechnungen?seite=${daten.seite + 1}${status ? `&status=${status}` : ""}`}
                 className="flex items-center gap-1 px-3 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans hover:bg-vintage-parchment transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}>
                 Вперёд <ChevronRight className="w-3.5 h-3.5" />

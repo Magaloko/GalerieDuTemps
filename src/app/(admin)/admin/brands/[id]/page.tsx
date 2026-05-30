@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
@@ -13,6 +14,7 @@ export default async function BrandEditPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const base = await getModuleBase();
   const { id } = await params;
   const brand = await brandById(id);
   if (!brand) notFound();
@@ -20,7 +22,7 @@ export default async function BrandEditPage({
   return (
     <div className="space-y-5">
       <nav className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
-        <Link href="/admin/brands" className="hover:text-vintage-brown flex items-center gap-1 transition-colors">
+        <Link href={`${base}/brands`} className="hover:text-vintage-brown flex items-center gap-1 transition-colors">
           <ChevronLeft className="w-3 h-3" /> Бренды
         </Link>
         <span>/</span>
