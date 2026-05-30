@@ -51,28 +51,28 @@ export default async function KundenDetailPage({
 
   return (
     <div className="space-y-6 max-w-6xl">
-      <nav className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
-        <Link href={`${base}/kunden`} className="hover:text-vintage-brown flex items-center gap-1 transition-colors">
+      <nav className="record-breadcrumb">
+        <Link href={`${base}/kunden`}>
           <ChevronLeft className="w-3 h-3" /> Клиенты
         </Link>
         <span>/</span>
-        <span className="font-mono text-vintage-gold">KD-{customer.customer_number.toString().padStart(4, "0")}</span>
+        <span className="crumb-id">KD-{customer.customer_number.toString().padStart(4, "0")}</span>
       </nav>
 
       {/* Header-Karte */}
-      <section className="bg-vintage-white border border-vintage-sand p-6" style={{ borderRadius: "var(--radius-card)" }}>
+      <section className="record-card">
         <div className="flex items-start gap-5">
-          <div className="w-16 h-16 bg-vintage-parchment border border-vintage-sand flex items-center justify-center flex-shrink-0" style={{ borderRadius: "var(--radius-card)" }}>
-            <span className="text-vintage-brown text-2xl font-serif">
+          <div className="w-16 h-16 flex items-center justify-center flex-shrink-0" style={{ background: "var(--color-paper-warm)", border: "1px solid var(--color-line)", borderRadius: "var(--radius-card)" }}>
+            <span className="text-2xl font-serif" style={{ color: "var(--color-ink-soft)" }}>
               {(customer.vorname ?? customer.email ?? "?")[0].toUpperCase()}
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="font-serif text-2xl text-vintage-espresso">
+            <h1 className="list-title">
               {customer.vorname} {customer.nachname}
             </h1>
-            <p className="text-xs text-vintage-gold font-sans mt-1">{TYPE_LABEL[customer.customer_type]}</p>
-            <div className="flex flex-wrap gap-4 mt-3 text-sm font-sans text-vintage-dust">
+            <p className="eyebrow mt-1">{TYPE_LABEL[customer.customer_type]}</p>
+            <div className="flex flex-wrap gap-4 mt-3 text-sm font-sans" style={{ color: "var(--color-ink-mute)" }}>
               <span className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5" /> {customer.email}</span>
               {customer.telefon && <span className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" /> {customer.telefon}</span>}
               {customer.company_name && <span className="flex items-center gap-1.5"><Briefcase className="w-3.5 h-3.5" /> {customer.company_name}</span>}
@@ -80,7 +80,7 @@ export default async function KundenDetailPage({
               <span className="flex items-center gap-1.5"><Hash className="w-3.5 h-3.5" /> KD-{customer.customer_number.toString().padStart(4, "0")}</span>
             </div>
             {customer.dnc_aktiv && (
-              <p className="text-xs text-vintage-burgundy font-sans mt-2 italic">
+              <p className="text-xs font-sans mt-2 italic" style={{ color: "var(--color-vintage-burgundy)" }}>
                 ⚠️ DNC активен с {customer.dnc_seit && new Date(customer.dnc_seit).toLocaleDateString("ru-RU")}
                 {customer.dnc_grund && ` – ${customer.dnc_grund}`}
               </p>
@@ -98,57 +98,59 @@ export default async function KundenDetailPage({
         <StatBox icon={Calendar}    label="Открытые задачи" wert={stats.tasks_offen} />
       </div>
 
-      {/* Pipeline-Stage */}
-      <section className="bg-vintage-white border border-vintage-sand p-5" style={{ borderRadius: "var(--radius-card)" }}>
-        <p className="text-xs font-sans uppercase tracking-widest text-vintage-dust mb-3">Этап воронки</p>
-        <StageSelector customerId={customer.id} stages={stages} aktuelleStage={customer.pipeline_stage_id ?? null} />
-      </section>
+      {/* Zweispalter: Stammdaten/CRM links, Activity-Timeline als Aside rechts */}
+      <div className="record-layout">
+        <div className="record-main">
+          {/* Pipeline-Stage */}
+          <section className="record-card">
+            <p className="field-label mb-3">Этап воронки</p>
+            <StageSelector customerId={customer.id} stages={stages} aktuelleStage={customer.pipeline_stage_id ?? null} />
+          </section>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Tags */}
-        <TagsSection customerId={customer.id} alleTags={allTags} kundenTags={kundenTags} />
-
-        {/* Tasks */}
-        <TasksSection customerId={customer.id} tasks={tasks} />
-      </div>
-
-      {/* Notes */}
-      <NotesSection customerId={customer.id} notes={notes} />
-
-      {/* Bestellungen */}
-      <section className="bg-vintage-white border border-vintage-sand p-5" style={{ borderRadius: "var(--radius-card)" }}>
-        <h2 className="font-serif text-lg text-vintage-espresso mb-3">Заказы ({orders.length})</h2>
-        {orders.length === 0 ? (
-          <p className="text-vintage-dust text-sm font-sans text-center py-4">Пока нет</p>
-        ) : (
-          <div className="divide-y divide-vintage-sand/40">
-            {orders.slice(0, 10).map(o => (
-              <Link key={o.id} href={`${base}/bestellungen/${o.id}`} className="py-2 flex items-center justify-between hover:bg-vintage-parchment/40 -mx-2 px-2 transition-colors">
-                <div>
-                  <p className="font-mono text-vintage-gold text-sm">GDT-{o.order_number}</p>
-                  <p className="text-xs text-vintage-dust">{new Date(o.erstellt_am).toLocaleDateString("ru-RU")} · {orderStatusMeta(o.status).label}</p>
-                </div>
-                <p className="font-serif text-vintage-espresso">{formatPreis(o.total_cents / 100)}</p>
-              </Link>
-            ))}
+          <div className="grid md:grid-cols-2 gap-5">
+            <TagsSection customerId={customer.id} alleTags={allTags} kundenTags={kundenTags} />
+            <TasksSection customerId={customer.id} tasks={tasks} />
           </div>
-        )}
-      </section>
 
-      {/* Activity-Timeline (Orders + Leads + Events + Tasks + Notes unified) */}
-      <ActivityTimeline entries={timeline} />
+          <NotesSection customerId={customer.id} notes={notes} />
+
+          {/* Bestellungen */}
+          <section className="record-card">
+            <h2 className="record-section-title mb-3">Заказы ({orders.length})</h2>
+            {orders.length === 0 ? (
+              <p className="text-sm font-sans text-center py-4" style={{ color: "var(--color-ink-mute)" }}>Пока нет</p>
+            ) : (
+              <div style={{ borderTop: "1px solid var(--color-line)" }}>
+                {orders.slice(0, 10).map(o => (
+                  <Link key={o.id} href={`${base}/bestellungen/${o.id}`} className="py-2.5 flex items-center justify-between -mx-2 px-2 transition-colors" style={{ borderBottom: "1px solid var(--color-line)" }}>
+                    <div>
+                      <p className="font-mono text-sm" style={{ color: "var(--color-coral-deep)" }}>GDT-{o.order_number}</p>
+                      <p className="text-xs" style={{ color: "var(--color-ink-mute)" }}>{new Date(o.erstellt_am).toLocaleDateString("ru-RU")} · {orderStatusMeta(o.status).label}</p>
+                    </div>
+                    <p className="font-serif" style={{ color: "var(--color-ink)", fontVariantNumeric: "tabular-nums" }}>{formatPreis(o.total_cents / 100)}</p>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+
+        {/* Aside: Activity-Timeline (Orders + Leads + Events + Tasks + Notes unified) */}
+        <aside className="record-aside">
+          <div className="record-aside-sticky">
+            <ActivityTimeline entries={timeline} />
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
 
 function StatBox({ icon: Icon, label, wert }: { icon: React.ElementType; label: string; wert: string | number }) {
   return (
-    <div className="bg-vintage-white border border-vintage-sand p-4" style={{ borderRadius: "var(--radius-card)" }}>
-      <div className="flex items-center gap-2 mb-2">
-        <Icon className="w-3.5 h-3.5 text-vintage-gold" />
-        <p className="text-xs font-sans uppercase tracking-widest text-vintage-dust">{label}</p>
-      </div>
-      <p className="font-serif text-lg text-vintage-espresso">{wert}</p>
+    <div className="kpi">
+      <p className="kpi-label"><Icon className="w-3.5 h-3.5" /> {label}</p>
+      <p className="kpi-value">{wert}</p>
     </div>
   );
 }

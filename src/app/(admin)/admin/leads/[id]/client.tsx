@@ -4,8 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  User, Mail, Phone, Tag as TagIcon, Package, MessageSquare, Send,
-  CheckCircle2, AlertTriangle, Clock, EyeOff, UserPlus, Loader2,
+  User, Mail, Package, MessageSquare, Send,
+  CheckCircle2, AlertTriangle, EyeOff, UserPlus, Loader2, Tag as TagIcon,
 } from "lucide-react";
 import { Select }   from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -94,30 +94,29 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
   };
 
   return (
-    <div className="grid lg:grid-cols-[1fr_320px] gap-6">
-      {/* ─── Haupt: Konversation ──────────────────────────────────── */}
-      <div className="space-y-6">
+    <div className="record-layout">
+      {/* ─── Hauptspalte: Konversation ────────────────────────────── */}
+      <div className="record-main">
 
         {error && (
-          <div className="flex items-start gap-3 px-5 py-3 bg-vintage-burgundy/10 border border-vintage-burgundy/30 text-sm font-sans text-vintage-burgundy"
-               style={{ borderRadius: "var(--radius-card)" }}>
+          <div className="flex items-start gap-3 px-5 py-3 text-sm font-sans"
+               style={{ background: "rgba(194,71,71,0.10)", border: "1px solid rgba(194,71,71,0.30)", color: "var(--color-vintage-burgundy)", borderRadius: "var(--radius-card)" }}>
             <AlertTriangle className="w-4 h-4 mt-0.5" /> {error}
           </div>
         )}
 
         {/* Header-Card */}
-        <section className="bg-vintage-white border border-vintage-sand p-6 space-y-3"
-                 style={{ borderRadius: "var(--radius-card)" }}>
+        <section className="record-card space-y-3">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs uppercase tracking-widest text-vintage-dust">{lead.quelle.replace("_"," ")}</p>
-              <h1 className="font-serif text-xl text-vintage-espresso flex items-center gap-2 mt-1">
-                <User className="w-4 h-4 text-vintage-gold" />
+              <p className="field-label">{lead.quelle.replace("_"," ")}</p>
+              <h1 className="record-section-title mt-1">
+                <User className="w-4 h-4" />
                 {lead.kontakt_name ?? lead.kontakt_handle ?? lead.kontakt_email ?? "Неизвестно"}
               </h1>
-              <div className="flex flex-wrap gap-3 mt-2 text-sm text-vintage-dust">
+              <div className="flex flex-wrap gap-3 mt-2 text-sm" style={{ color: "var(--color-ink-mute)" }}>
                 {lead.kontakt_email && (
-                  <a href={`mailto:${lead.kontakt_email}`} className="hover:text-vintage-brown flex items-center gap-1">
+                  <a href={`mailto:${lead.kontakt_email}`} className="flex items-center gap-1" style={{ color: "var(--color-ink-soft)" }}>
                     <Mail className="w-3 h-3" /> {lead.kontakt_email}
                   </a>
                 )}
@@ -126,10 +125,10 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
                 )}
               </div>
             </div>
-            <div className="text-xs text-vintage-dust text-right">
+            <div className="text-xs text-right" style={{ color: "var(--color-ink-mute)" }}>
               <p>{new Date(lead.erstellt_am).toLocaleString("ru-RU")}</p>
               {lead.beantwortet_am && (
-                <p className="text-vintage-sage mt-1">
+                <p className="mt-1" style={{ color: "var(--color-vintage-forest)" }}>
                   Отвечено: {new Date(lead.beantwortet_am).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit"})}
                 </p>
               )}
@@ -137,33 +136,33 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
           </div>
 
           {lead.betreff && (
-            <div className="border-t border-vintage-sand/40 pt-3">
-              <p className="text-xs uppercase tracking-widest text-vintage-dust mb-1">Тема</p>
-              <p className="text-vintage-ink">{lead.betreff}</p>
+            <div className="pt-3" style={{ borderTop: "1px solid var(--color-line)" }}>
+              <p className="field-label mb-1">Тема</p>
+              <p className="field-value">{lead.betreff}</p>
             </div>
           )}
 
           {lead.produkt_id && lead.produkt_name && (
-            <div className="border-t border-vintage-sand/40 pt-3">
-              <p className="text-xs uppercase tracking-widest text-vintage-dust mb-1">Товар</p>
+            <div className="pt-3" style={{ borderTop: "1px solid var(--color-line)" }}>
+              <p className="field-label mb-1">Товар</p>
               <Link href={`${mbase}/produkte/${lead.produkt_id}`}
-                    className="inline-flex items-center gap-1 text-vintage-gold hover:underline">
+                    className="inline-flex items-center gap-1 hover:underline" style={{ color: "var(--color-coral-deep)" }}>
                 <Package className="w-3.5 h-3.5" /> {lead.produkt_name}
               </Link>
             </div>
           )}
 
           {lead.customer_id ? (
-            <div className="border-t border-vintage-sand/40 pt-3">
-              <p className="text-xs uppercase tracking-widest text-vintage-dust mb-1">Клиент</p>
+            <div className="pt-3" style={{ borderTop: "1px solid var(--color-line)" }}>
+              <p className="field-label mb-1">Клиент</p>
               <Link href={`${mbase}/kunden/${lead.customer_id}`}
-                    className="text-vintage-gold hover:underline">{lead.customer_email}</Link>
+                    className="hover:underline" style={{ color: "var(--color-coral-deep)" }}>{lead.customer_email}</Link>
             </div>
           ) : (
-            <div className="border-t border-vintage-sand/40 pt-3">
+            <div className="pt-3" style={{ borderTop: "1px solid var(--color-line)" }}>
               {showCustomerForm ? (
                 <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-widest text-vintage-dust">Создать клиента</p>
+                  <p className="field-label">Создать клиента</p>
                   <Input label="Имя" value={custName} onChange={(e)=>setCustName(e.target.value)} />
                   <Input label="E-Mail" value={custEmail} onChange={(e)=>setCustEmail(e.target.value)} />
                   <div className="flex gap-2">
@@ -173,7 +172,7 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
                 </div>
               ) : (
                 <button onClick={()=>setShowCustomerForm(true)}
-                        className="flex items-center gap-2 text-xs font-sans uppercase tracking-widest text-vintage-gold hover:text-vintage-amber">
+                        className="flex items-center gap-2 text-xs font-sans uppercase tracking-widest" style={{ color: "var(--color-coral-deep)" }}>
                   <UserPlus className="w-3.5 h-3.5" /> Создать клиента и привязать
                 </button>
               )}
@@ -186,12 +185,11 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
 
         {/* Original-Text (Kontaktformular) */}
         {originalText && (
-          <section className="bg-vintage-white border border-vintage-sand p-6 space-y-3"
-                   style={{ borderRadius: "var(--radius-card)" }}>
-            <h2 className="font-serif text-base text-vintage-espresso flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-vintage-gold" /> Исходное сообщение
+          <section className="record-card space-y-3">
+            <h2 className="record-section-title">
+              <MessageSquare className="w-4 h-4" /> Исходное сообщение
             </h2>
-            <div className="text-sm text-vintage-ink whitespace-pre-line border-l-2 border-vintage-gold/40 pl-4 py-2">
+            <div className="text-sm whitespace-pre-line pl-4 py-2" style={{ color: "var(--color-ink)", borderLeft: "2px solid rgba(232,112,58,0.40)" }}>
               {originalText}
             </div>
           </section>
@@ -199,47 +197,49 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
 
         {/* Konversation */}
         {messages.length > 0 && (
-          <section className="bg-vintage-white border border-vintage-sand p-6 space-y-4"
-                   style={{ borderRadius: "var(--radius-card)" }}>
-            <h2 className="font-serif text-base text-vintage-espresso">Переписка</h2>
+          <section className="record-card space-y-4">
+            <h2 className="record-section-title">Переписка</h2>
             <div className="space-y-3">
-              {messages.map(m => (
-                <div key={m.id} className={`p-3 border ${
-                  m.richtung === "outbound"      ? "bg-vintage-gold/5 border-vintage-gold/30 ml-8" :
-                  m.richtung === "interne_notiz" ? "bg-vintage-parchment border-vintage-sand"      :
-                                                    "bg-vintage-white border-vintage-sand mr-8"
-                }`} style={{ borderRadius: "var(--radius-vintage)" }}>
-                  <div className="flex items-center justify-between text-xs text-vintage-dust mb-1">
-                    <span className="uppercase tracking-widest">
-                      {m.richtung === "outbound" ? "Админ → клиент" :
-                       m.richtung === "interne_notiz" ? "Внутренняя заметка" : "Клиент → админ"}
-                      {m.autor_name && ` · ${m.autor_name}`}
-                    </span>
-                    <span>{new Date(m.gesendet_am).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</span>
+              {messages.map(m => {
+                const bg = m.richtung === "outbound" ? "rgba(232,112,58,0.06)"
+                  : m.richtung === "interne_notiz" ? "var(--color-paper-warm)" : "var(--color-app-surface)";
+                const side = m.richtung === "outbound" ? "ml-8" : m.richtung === "interne_notiz" ? "" : "mr-8";
+                return (
+                  <div key={m.id} className={`p-3 ${side}`}
+                       style={{ background: bg, border: "1px solid var(--color-line)", borderRadius: "var(--radius-vintage)" }}>
+                    <div className="flex items-center justify-between text-xs mb-1" style={{ color: "var(--color-ink-mute)" }}>
+                      <span className="uppercase tracking-widest">
+                        {m.richtung === "outbound" ? "Админ → клиент" :
+                         m.richtung === "interne_notiz" ? "Внутренняя заметка" : "Клиент → админ"}
+                        {m.autor_name && ` · ${m.autor_name}`}
+                      </span>
+                      <span>{new Date(m.gesendet_am).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</span>
+                    </div>
+                    <p className="text-sm whitespace-pre-line" style={{ color: "var(--color-ink)" }}>{m.text}</p>
                   </div>
-                  <p className="text-sm text-vintage-ink whitespace-pre-line">{m.text}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         )}
 
         {/* Notiz/Antwort hinzufügen */}
-        <section className="bg-vintage-white border border-vintage-sand p-6 space-y-3"
-                 style={{ borderRadius: "var(--radius-card)" }}>
+        <section className="record-card space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="font-serif text-base text-vintage-espresso">Ответ / заметка</h2>
+            <h2 className="record-section-title">Ответ / заметка</h2>
             <div className="flex gap-1 text-xs">
               <button onClick={()=>setNotizRichtung("interne_notiz")}
-                      className={`px-3 py-1 border transition-colors ${
-                        notizRichtung==="interne_notiz" ? "bg-vintage-espresso text-vintage-cream border-vintage-espresso" : "border-vintage-sand text-vintage-brown"
-                      }`} style={{ borderRadius: "var(--radius-vintage)" }}>
+                      className="px-3 py-1 transition-colors"
+                      style={notizRichtung==="interne_notiz"
+                        ? { background: "var(--color-ink)", color: "var(--color-bone)", border: "1px solid var(--color-ink)", borderRadius: "var(--radius-vintage)" }
+                        : { border: "1px solid var(--color-line)", color: "var(--color-ink-soft)", borderRadius: "var(--radius-vintage)" }}>
                 Внутренняя заметка
               </button>
               <button onClick={()=>setNotizRichtung("outbound")}
-                      className={`px-3 py-1 border transition-colors ${
-                        notizRichtung==="outbound" ? "bg-vintage-gold text-vintage-espresso border-vintage-gold" : "border-vintage-sand text-vintage-brown"
-                      }`} style={{ borderRadius: "var(--radius-vintage)" }}>
+                      className="px-3 py-1 transition-colors"
+                      style={notizRichtung==="outbound"
+                        ? { background: "var(--color-coral)", color: "#fff", border: "1px solid var(--color-coral)", borderRadius: "var(--radius-vintage)" }
+                        : { border: "1px solid var(--color-line)", color: "var(--color-ink-soft)", borderRadius: "var(--radius-vintage)" }}>
                 Отправленный ответ
               </button>
             </div>
@@ -247,7 +247,7 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
           <Textarea value={notiz} onChange={(e)=>setNotiz(e.target.value)}
                     rows={4}
                     placeholder={notizRichtung==="outbound" ? "Что Вы ответили клиенту? (заметка в системе — отправка остаётся вручную)" : "Внутренняя заметка — видна только админам"} />
-          <p className="text-xs text-vintage-dust">
+          <p className="text-xs" style={{ color: "var(--color-ink-mute)" }}>
             Примечание: это сообщение сохраняется только в системе. Фактическая отправка выполняется вручную через Ваш канал (e-mail, IG, …).
           </p>
           <Button size="sm" onClick={sendNotiz} loading={pending}
@@ -257,64 +257,64 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
         </section>
       </div>
 
-      {/* ─── Sidebar: Action-Bar ──────────────────────────────────── */}
-      <aside className="space-y-4 lg:sticky lg:top-20 self-start">
-        <section className="bg-vintage-white border border-vintage-sand p-5 space-y-4"
-                 style={{ borderRadius: "var(--radius-card)" }}>
-          <h3 className="font-serif text-base text-vintage-espresso">Действия</h3>
+      {/* ─── Aside: Action-Bar ────────────────────────────────────── */}
+      <aside className="record-aside">
+        <div className="record-aside-sticky flex flex-col gap-4">
+          <section className="record-card space-y-4">
+            <h3 className="record-section-title">Действия</h3>
 
-          <Select label="Статус" value={lead.status}
-                  options={STATUS_OPTIONS}
-                  onChange={(e)=>changeStatus((e.target as HTMLSelectElement).value as LeadStatus)} />
+            <Select label="Статус" value={lead.status}
+                    options={STATUS_OPTIONS}
+                    onChange={(e)=>changeStatus((e.target as HTMLSelectElement).value as LeadStatus)} />
 
-          <Select label="Приоритет" value={lead.prioritaet}
-                  options={PRIO_OPTIONS}
-                  onChange={(e)=>changePrio((e.target as HTMLSelectElement).value as LeadPrioritaet)} />
+            <Select label="Приоритет" value={lead.prioritaet}
+                    options={PRIO_OPTIONS}
+                    onChange={(e)=>changePrio((e.target as HTMLSelectElement).value as LeadPrioritaet)} />
 
-          <Select label="Назначено" value={lead.zugewiesen_an ?? ""}
-                  options={[{ value: "", label: "— Никому —" }, ...admins.map(a=>({ value: a.id, label: a.name }))]}
-                  onChange={(e)=>changeZuweisung((e.target as HTMLSelectElement).value)} />
+            <Select label="Назначено" value={lead.zugewiesen_an ?? ""}
+                    options={[{ value: "", label: "— Никому —" }, ...admins.map(a=>({ value: a.id, label: a.name }))]}
+                    onChange={(e)=>changeZuweisung((e.target as HTMLSelectElement).value)} />
 
-          <div className="pt-3 border-t border-vintage-sand/40 flex flex-col gap-2">
-            <Button size="sm" variant={lead.status==="beantwortet"?"secondary":"primary"}
-                    onClick={()=>changeStatus(lead.status==="beantwortet" ? "in_arbeit" : "beantwortet")}
-                    icon={pending ? <Loader2 className="w-3.5 h-3.5 animate-spin"/> : <CheckCircle2 className="w-3.5 h-3.5" />}>
-              {lead.status==="beantwortet" ? "Открыть снова" : "Отметить как отвеченный"}
-            </Button>
-            {lead.status !== "archiviert" && (
-              <Button size="sm" variant="ghost" onClick={()=>changeStatus("archiviert")}
-                      icon={<EyeOff className="w-3.5 h-3.5" />}>
-                Архивировать
+            <div className="pt-3 flex flex-col gap-2" style={{ borderTop: "1px solid var(--color-line)" }}>
+              <Button size="sm" variant={lead.status==="beantwortet"?"secondary":"primary"}
+                      onClick={()=>changeStatus(lead.status==="beantwortet" ? "in_arbeit" : "beantwortet")}
+                      icon={pending ? <Loader2 className="w-3.5 h-3.5 animate-spin"/> : <CheckCircle2 className="w-3.5 h-3.5" />}>
+                {lead.status==="beantwortet" ? "Открыть снова" : "Отметить как отвеченный"}
               </Button>
-            )}
-          </div>
-        </section>
-
-        {/* Tags */}
-        {lead.tags.length > 0 && (
-          <section className="bg-vintage-white border border-vintage-sand p-5 space-y-2"
-                   style={{ borderRadius: "var(--radius-card)" }}>
-            <h3 className="text-xs uppercase tracking-widest text-vintage-dust flex items-center gap-1.5">
-              <TagIcon className="w-3 h-3" /> Tags
-            </h3>
-            <div className="flex flex-wrap gap-1">
-              {lead.tags.map(t => (
-                <span key={t} className="px-2 py-0.5 bg-vintage-parchment border border-vintage-sand text-xs"
-                      style={{ borderRadius: "var(--radius-vintage)" }}>
-                  {t}
-                </span>
-              ))}
+              {lead.status !== "archiviert" && (
+                <Button size="sm" variant="ghost" onClick={()=>changeStatus("archiviert")}
+                        icon={<EyeOff className="w-3.5 h-3.5" />}>
+                  Архивировать
+                </Button>
+              )}
             </div>
           </section>
-        )}
 
-        {/* Meta */}
-        <section className="bg-vintage-parchment border border-vintage-sand p-4 text-xs text-vintage-dust space-y-1 font-mono"
-                 style={{ borderRadius: "var(--radius-card)" }}>
-          <p>ID: {lead.id.slice(0, 8)}…</p>
-          {lead.externe_id && <p>Внешний ID: {lead.externe_id.slice(0, 20)}{lead.externe_id.length>20?"…":""}</p>}
-          <p>Последнее изменение: {new Date(lead.aktualisiert_am).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</p>
-        </section>
+          {/* Tags */}
+          {lead.tags.length > 0 && (
+            <section className="record-card space-y-2">
+              <h3 className="field-label flex items-center gap-1.5">
+                <TagIcon className="w-3 h-3" /> Tags
+              </h3>
+              <div className="flex flex-wrap gap-1">
+                {lead.tags.map(t => (
+                  <span key={t} className="px-2 py-0.5 text-xs"
+                        style={{ background: "var(--color-paper-warm)", border: "1px solid var(--color-line)", color: "var(--color-ink-soft)", borderRadius: "var(--radius-vintage)" }}>
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Meta */}
+          <section className="p-4 text-xs space-y-1 font-mono"
+                   style={{ background: "var(--color-paper-warm)", border: "1px solid var(--color-line)", color: "var(--color-ink-mute)", borderRadius: "var(--radius-card)" }}>
+            <p>ID: {lead.id.slice(0, 8)}…</p>
+            {lead.externe_id && <p>Внешний ID: {lead.externe_id.slice(0, 20)}{lead.externe_id.length>20?"…":""}</p>}
+            <p>Последнее изменение: {new Date(lead.aktualisiert_am).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</p>
+          </section>
+        </div>
       </aside>
     </div>
   );

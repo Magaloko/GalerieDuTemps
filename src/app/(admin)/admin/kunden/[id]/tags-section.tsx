@@ -34,15 +34,15 @@ export function TagsSection({
   };
 
   return (
-    <section className="bg-vintage-white border border-vintage-sand p-5" style={{ borderRadius: "var(--radius-card)" }}>
+    <section className="record-card">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2">
-          <TagIcon className="w-4 h-4 text-vintage-gold" /> Теги
+        <h2 className="record-section-title">
+          <TagIcon className="w-4 h-4" /> Теги
         </h2>
         <button
           onClick={() => setPicker(p => !p)}
-          className="px-3 py-1.5 text-xs font-sans uppercase tracking-widest text-vintage-brown border border-vintage-sand hover:bg-vintage-parchment transition-colors flex items-center gap-1"
-          style={{ borderRadius: "var(--radius-button)" }}
+          className="btn-line flex items-center gap-1"
+          style={{ padding: "0.375rem 0.75rem" }}
         >
           <Plus className="w-3 h-3" /> Добавить тег
         </button>
@@ -51,7 +51,7 @@ export function TagsSection({
       {/* Aktive Tags */}
       <div className="flex flex-wrap gap-1.5 mb-3 min-h-[24px]">
         {kundenTags.length === 0 && !pending ? (
-          <p className="text-xs text-vintage-dust font-sans italic">тегов нет</p>
+          <p className="text-xs font-sans italic" style={{ color: "var(--color-ink-mute)" }}>тегов нет</p>
         ) : kundenTags.map(t => (
           <span key={t.id}
             className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-sans border"
@@ -66,10 +66,10 @@ export function TagsSection({
 
       {/* Tag-Picker */}
       {picker && (
-        <div className="border-t border-vintage-sand pt-3 space-y-3">
+        <div className="pt-3 space-y-3" style={{ borderTop: "1px solid var(--color-line)" }}>
           {verfuegbar.length > 0 && (
             <div>
-              <p className="text-xs font-sans text-vintage-dust mb-1.5">Доступно:</p>
+              <p className="text-xs font-sans mb-1.5" style={{ color: "var(--color-ink-mute)" }}>Доступно:</p>
               <div className="flex flex-wrap gap-1.5">
                 {verfuegbar.map(t => (
                   <button key={t.id} onClick={() => handleAdd(t.id)}
@@ -84,27 +84,26 @@ export function TagsSection({
 
           {/* Neuen Tag erstellen */}
           <div>
-            <p className="text-xs font-sans text-vintage-dust mb-1.5">Новый тег:</p>
+            <p className="text-xs font-sans mb-1.5" style={{ color: "var(--color-ink-mute)" }}>Новый тег:</p>
             <div className="flex gap-2">
               <input
                 value={neuName}
                 onChange={(e) => setNeuName(e.target.value)}
                 placeholder="Название тега"
-                className="flex-1 px-3 py-1.5 bg-vintage-cream border border-vintage-sand text-sm font-sans focus:outline-none focus:border-vintage-brown"
-                style={{ borderRadius: "var(--radius-vintage)" }}
+                className="field-input flex-1"
+                style={{ padding: "0.375rem 0.75rem" }}
               />
               <input
                 type="color"
                 value={neuFarbe}
                 onChange={(e) => setNeuFarbe(e.target.value)}
-                className="w-10 h-9 border border-vintage-sand cursor-pointer"
-                style={{ borderRadius: "var(--radius-vintage)" }}
+                className="w-10 h-9 cursor-pointer"
+                style={{ border: "1px solid var(--color-line)", borderRadius: "var(--radius-vintage)" }}
               />
               <button
                 onClick={handleCreate}
                 disabled={!neuName.trim() || pending}
-                className="px-3 py-1.5 bg-vintage-espresso text-vintage-cream text-xs font-sans uppercase tracking-widest hover:bg-vintage-brown transition-colors disabled:opacity-50"
-                style={{ borderRadius: "var(--radius-button)" }}
+                className="btn-coral btn-coral-sm disabled:opacity-50"
               >
                 Создать
               </button>
