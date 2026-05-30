@@ -11,7 +11,7 @@ export default function AboutPage() {
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-16">
 
       <div className="text-center">
-        <p className="text-vintage-gold text-xs tracking-widest uppercase mb-3">✦</p>
+        <p className="eyebrow mb-3">✦</p>
         <h1 className="font-serif text-4xl text-vintage-cream">О нас</h1>
       </div>
 
@@ -34,7 +34,7 @@ export default function AboutPage() {
       </div>
 
       <div>
-        <p className="text-vintage-gold text-xs tracking-widest uppercase mb-6">✦ Наши ценности</p>
+        <p className="eyebrow mb-6">✦ Наши ценности</p>
         <div className="grid sm:grid-cols-3 gap-6">
           {[
             {
@@ -52,7 +52,7 @@ export default function AboutPage() {
           ].map(({ titel, text }) => (
             <div
               key={titel}
-              className="p-6 bg-vintage-brown/40 border border-vintage-sand/40"
+              className="p-6 bg-vintage-brown border border-vintage-sand/40"
               style={{ borderRadius: "var(--radius-card)" }}
             >
               <p className="font-serif text-lg text-vintage-cream mb-2">{titel}</p>
@@ -66,7 +66,7 @@ export default function AboutPage() {
         className="text-center py-10 bg-vintage-espresso"
         style={{ borderRadius: "var(--radius-card)" }}
       >
-        <p className="text-vintage-gold text-xs tracking-widest uppercase mb-3">✦</p>
+        <p className="eyebrow mb-3">✦</p>
         <p className="font-serif text-2xl text-vintage-cream mb-4">
           Заинтересовались?
         </p>

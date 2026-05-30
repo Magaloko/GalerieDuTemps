@@ -105,7 +105,7 @@ export function FeaturedCollection({ products }: FeaturedCollectionProps) {
         {heroProduct && (
           <div data-animate-hero className="relative mb-10 group cursor-pointer">
             <Link href={`/katalog/${heroProduct.slug}`}>
-              <div className="relative aspect-[16/9] overflow-hidden rounded-lg">
+              <div className="relative aspect-[16/9] overflow-hidden">
                 {heroProduct.image ? (
                   <Image
                     src={heroProduct.image}
@@ -146,7 +146,7 @@ export function FeaturedCollection({ products }: FeaturedCollectionProps) {
               className="group cursor-pointer"
               data-animate-card
             >
-              <div className="relative aspect-[3/4] overflow-hidden rounded-md mb-4">
+              <div className="relative aspect-[3/4] overflow-hidden mb-4">
                 {product.image ? (
                   <Image
                     src={product.image}
@@ -168,8 +168,12 @@ export function FeaturedCollection({ products }: FeaturedCollectionProps) {
                 </span>
                 {product.category && (
                   <span
-                    className="text-[11px] uppercase tracking-wider px-3 py-1 rounded-full"
-                    style={{ backgroundColor: 'rgba(232,112,58,0.15)', color: 'var(--color-ink)' }}
+                    className="text-[11px] uppercase tracking-wider px-3 py-1"
+                    style={{
+                      backgroundColor: 'rgba(232,112,58,0.15)',
+                      color:           'var(--color-ink)',
+                      borderRadius:    'var(--radius-vintage)',
+                    }}
                   >
                     {product.category}
                   </span>

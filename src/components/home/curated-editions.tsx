@@ -88,7 +88,7 @@ export function CuratedEditions() {
         <div data-animate-grid className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {journalEntries.map((entry) => (
             <article key={entry.title} className="group cursor-pointer" data-animate-card>
-              <div className="relative aspect-[4/3] overflow-hidden rounded-md mb-5">
+              <div className="relative aspect-[4/3] overflow-hidden mb-5">
                 <Image
                   src={entry.image}
                   alt={entry.title}

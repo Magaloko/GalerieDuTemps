@@ -80,9 +80,10 @@ export function ConditionMeter({ zustand }: { zustand: Zustand }) {
         {SEGMENT_COLORS.map((color, i) => (
           <div
             key={i}
-            className="h-1 flex-1 rounded-sm"
+            className="h-1 flex-1"
             style={{
-              background: i < info.level ? color : "rgba(44, 36, 32, 0.08)",
+              background:   i < info.level ? color : "rgba(44, 36, 32, 0.08)",
+              borderRadius: "var(--radius-vintage)",
             }}
           />
         ))}

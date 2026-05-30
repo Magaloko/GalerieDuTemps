@@ -33,7 +33,7 @@ export default async function InstagramArchivePage({
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-10">
       <div className="text-center">
-        <p className="text-vintage-gold text-xs tracking-widest uppercase mb-3">✦ Из Instagram</p>
+        <p className="eyebrow mb-3">✦ Из Instagram</p>
         <h1 className="font-serif text-4xl text-vintage-cream">Архив</h1>
       </div>
 
