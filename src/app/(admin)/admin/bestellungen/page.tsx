@@ -7,6 +7,7 @@ import { Package, ChevronLeft, ChevronRight, ExternalLink, Clock, CreditCard, Tr
 import type { Metadata } from "next";
 import type { OrderStatus } from "@/types/commerce";
 import { StatusChipSelect } from "./status-chip-select";
+import { PeekButton } from "./peek-button";
 
 interface StatusCounts {
   pending:   number;
@@ -153,9 +154,12 @@ export default async function BestellungenAdminPage({
                         <StatusChipSelect orderId={o.id} initial={o.status} />
                       </td>
                       <td className="num">
-                        <Link href={`${base}/bestellungen/${o.id}`} className="row-action">
-                          <ExternalLink className="w-4 h-4" />
-                        </Link>
+                        <div className="flex items-center justify-end gap-0.5">
+                          <PeekButton orderId={o.id} />
+                          <Link href={`${base}/bestellungen/${o.id}`} className="row-action" title="Открыть полностью">
+                            <ExternalLink className="w-4 h-4" />
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   );

@@ -4,6 +4,7 @@ import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminBell }    from "@/components/layout/admin-bell";
 import { ViewSwitch }   from "@/components/layout/view-switch";
 import { CommandMenu }  from "@/components/layout/command-menu";
+import { OrderPeek }    from "@/components/layout/order-peek";
 import { AuthSessionProvider } from "@/components/layout/session-provider";
 import { ungeleseneCount }    from "@/lib/notifications/lead-notify";
 import { adminBadgeCounts }   from "@/lib/db/dashboard-v2";
@@ -67,6 +68,7 @@ export default async function AdminLayout({
               <div id="admin-page-title" className="min-w-0 truncate" />
               <div className="flex items-center gap-3 flex-shrink-0">
                 <CommandMenu />
+                <OrderPeek />
                 <AdminBell />
                 {/* App ↔ Klassik-Umschalter (hier immer Klassik-Nutzer) */}
                 <ViewSwitch current="classic" />

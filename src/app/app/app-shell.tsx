@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Home, ShoppingBag, Users, Inbox, LayoutGrid } from "lucide-react";
 import { ViewSwitch } from "@/components/layout/view-switch";
 import { CommandMenu } from "@/components/layout/command-menu";
+import { OrderPeek } from "@/components/layout/order-peek";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * AppShell — mobile Operator-App-Hülle (Amina-/FB-Business-Suite-Stil).
@@ -67,6 +68,7 @@ export function AppShell({
         <CommandMenu />
         {/* App ↔ Klassik-Umschalter — Cookie-Default = App */}
         <ViewSwitch current="app" compact />
+        <OrderPeek />
       </header>
 
       {/* Inhalt — Spacer = Tab-Bar-Höhe inkl. Safe-Area (statt fixem pb-24,
