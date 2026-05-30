@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useTransition } from "react";
 import { CheckSquare, Square, Trash2, User } from "lucide-react";
 import { taskStatusAction, taskDeleteAction } from "../../kunden/[id]/actions";
+import { useModuleBase } from "@/lib/module-base-client";
 import type { Task, TaskPrioritaet } from "@/types/crm";
 
 const PRIO_STYLE: Record<TaskPrioritaet, string> = {
@@ -22,6 +23,7 @@ const PRIO_LABEL: Record<TaskPrioritaet, string> = {
 
 export function TaskRow({ task }: { task: Task }) {
   const [pending, startTransition] = useTransition();
+  const mbase = useModuleBase();
 
   return (
     <div
@@ -49,7 +51,7 @@ export function TaskRow({ task }: { task: Task }) {
             {PRIO_LABEL[task.prioritaet]}
           </span>
           {task.customer_name && (
-            <Link href={`/admin/kunden/${task.customer_id}`} className="text-vintage-brown hover:text-vintage-espresso flex items-center gap-1">
+            <Link href={`${mbase}/kunden/${task.customer_id}`} className="text-vintage-brown hover:text-vintage-espresso flex items-center gap-1">
               <User className="w-3 h-3" /> {task.customer_name}
             </Link>
           )}

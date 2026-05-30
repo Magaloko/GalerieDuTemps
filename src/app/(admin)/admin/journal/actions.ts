@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getModuleBase } from "@/lib/module-base-server";
 import { auth } from "@/lib/auth/config";
 import { postErstellen, postAktualisieren, postLoeschen, postById } from "@/lib/db/journal";
 import { storyBildUploadAction } from "@/app/(admin)/admin/produkte/actions";
@@ -37,7 +38,8 @@ export async function postCreateAction(
     autor_id:   user.id,
     autor_name: user.name ?? undefined,
   });
-  redirect(`/admin/journal/${p.id}/edit`);
+  const base = await getModuleBase();
+  redirect(`${base}/journal/${p.id}/edit`);
 }
 
 export async function postUpdateAction(id: string, data: {

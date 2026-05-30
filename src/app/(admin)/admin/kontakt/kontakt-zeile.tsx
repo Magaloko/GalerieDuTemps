@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { statusAendernAction, anfrageLoeschenAction } from "./actions";
 import { VerkauftDialog } from "./verkauft-dialog";
+import { useModuleBase } from "@/lib/module-base-client";
 import type { Kontaktanfrage, KontaktStatus } from "@/lib/db/kontakt";
 
 const STATUS_CONFIG: Record<string, { label: string; variant: "gold" | "sage" | "dust" | "espresso" | "burgundy" }> = {
@@ -26,6 +27,7 @@ const STATUS_CONFIG: Record<string, { label: string; variant: "gold" | "sage" | 
 };
 
 export function KontaktZeile({ anfrage }: { anfrage: Kontaktanfrage }) {
+  const mbase = useModuleBase();
   const [offen, setOffen] = useState(anfrage.status === "neu");
   const [pending, startTransition] = useTransition();
   const [verkauftDialogOpen, setVerkauftDialogOpen] = useState(false);
@@ -80,7 +82,7 @@ export function KontaktZeile({ anfrage }: { anfrage: Kontaktanfrage }) {
           {/* Verbundenes Produkt */}
           {anfrage.produkt_id && (
             <Link
-              href={`/admin/produkte/${anfrage.produkt_id}`}
+              href={`${mbase}/produkte/${anfrage.produkt_id}`}
               className="flex items-center gap-2 text-xs text-vintage-brown hover:text-vintage-espresso transition-colors"
             >
               <ExternalLink className="w-3 h-3" />

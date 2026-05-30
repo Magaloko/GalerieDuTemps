@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getModuleBase } from "@/lib/module-base-server";
 import { requireAdminSession } from "@/lib/auth/config";
 import {
   landingPageErstellen,
@@ -40,7 +41,8 @@ export async function landingErstellenAction(
 
   const page = await landingPageErstellen({ titel, slug });
   revalidatePath("/admin/landing");
-  redirect(`/admin/landing/${page.id}`);
+  const base = await getModuleBase();
+  redirect(`${base}/landing/${page.id}`);
 }
 
 /** Inhalt + Meta speichern. */

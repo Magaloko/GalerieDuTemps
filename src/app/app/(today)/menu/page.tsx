@@ -37,18 +37,18 @@ export default async function AppMenuPage() {
       title: "Клиенты",
       items: [
         { href: "/app/kunden", label: "Клиенты",    icon: Users },
-        { href: "/admin/b2b",    label: "Заявки B2B", icon: Briefcase, badge: b?.b2b_pending },
+        { href: "/app/b2b",    label: "Заявки B2B", icon: Briefcase, badge: b?.b2b_pending },
       ],
     },
     {
       title: "Входящие и CRM",
       items: [
         { href: "/app/leads",        label: "Лиды",      icon: Inbox,     badge: b?.leads_unread },
-        { href: "/admin/kontakt",      label: "Сообщения", icon: Mail,      badge: b?.kontakt_neu },
-        { href: "/admin/crm/pipeline", label: "Воронка",   icon: GitBranch },
-        { href: "/admin/crm/segments", label: "Сегменты",  icon: Layers },
-        { href: "/admin/crm/flows",    label: "Цепочки",   icon: Workflow },
-        { href: "/admin/crm/tasks",    label: "Задачи",    icon: CheckSquare, badge: b?.crm_tasks_today },
+        { href: "/app/kontakt",      label: "Сообщения", icon: Mail,      badge: b?.kontakt_neu },
+        { href: "/app/crm/pipeline", label: "Воронка",   icon: GitBranch },
+        { href: "/app/crm/segments", label: "Сегменты",  icon: Layers },
+        { href: "/app/crm/flows",    label: "Цепочки",   icon: Workflow },
+        { href: "/app/crm/tasks",    label: "Задачи",    icon: CheckSquare, badge: b?.crm_tasks_today },
       ],
     },
     {
@@ -62,8 +62,8 @@ export default async function AppMenuPage() {
     {
       title: "Контент",
       items: [
-        { href: "/admin/journal",    label: "Журнал",   icon: BookOpen },
-        { href: "/admin/newsletter", label: "Рассылка", icon: Send },
+        { href: "/app/journal",    label: "Журнал",   icon: BookOpen },
+        { href: "/app/newsletter", label: "Рассылка", icon: Send },
       ],
     },
     {

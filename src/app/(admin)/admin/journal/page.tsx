@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { allePostsAdmin } from "@/lib/db/journal";
 import { JournalNeuFormular } from "./journal-neu-formular";
@@ -8,6 +9,7 @@ export const metadata: Metadata = { title: "Журнал" };
 export const dynamic = "force-dynamic";
 
 export default async function JournalAdminPage() {
+  const base = await getModuleBase();
   // Defensive: in Produktion kann die Migration 009_newsletter_journal noch
   // nicht angewendet sein → die Query wirft „relation does not exist". Statt
   // 500 zeigen wir einen Hinweis-State, damit die Seite überhaupt rendert.
@@ -64,7 +66,7 @@ export default async function JournalAdminPage() {
             <div key={p.id}
               className="flex items-center gap-4 p-4 bg-vintage-white border border-vintage-sand hover:border-vintage-brown transition-colors"
               style={{ borderRadius: "var(--radius-card)" }}>
-              <Link href={`/admin/journal/${p.id}/edit`} className="flex items-center gap-4 flex-1 min-w-0">
+              <Link href={`${base}/journal/${p.id}/edit`} className="flex items-center gap-4 flex-1 min-w-0">
                 {p.cover_bild_url && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={p.cover_bild_url} alt="" className="w-14 h-14 object-cover bg-vintage-parchment flex-shrink-0" style={{ borderRadius: "var(--radius-vintage)" }} />

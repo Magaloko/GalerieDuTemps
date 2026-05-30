@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { LayoutTemplate, ExternalLink, Home } from "lucide-react";
 import { landingPagesAlle } from "@/lib/db/landing-pages";
@@ -20,6 +21,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default async function LandingAdminPage() {
+  const base = await getModuleBase();
   const pages = await landingPagesAlle();
 
   return (
@@ -45,7 +47,7 @@ export default async function LandingAdminPage() {
           {pages.map((p) => (
             <Link
               key={p.id}
-              href={`/admin/landing/${p.id}`}
+              href={`${base}/landing/${p.id}`}
               className="flex items-center justify-between p-4 bg-vintage-white border border-vintage-sand hover:border-vintage-brown transition-colors"
               style={{ borderRadius: "var(--radius-card)" }}
             >

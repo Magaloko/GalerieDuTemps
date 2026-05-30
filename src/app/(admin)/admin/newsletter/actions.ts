@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getModuleBase } from "@/lib/module-base-server";
 import { auth } from "@/lib/auth/config";
 import {
   newsletterErstellen, newsletterAktualisieren, newsletterLoeschen,
@@ -31,7 +32,8 @@ export async function newsletterCreateAction(
   if (titel.length < 2) return { fehler: "Укажите название" };
 
   const n = await newsletterErstellen({ titel, betreff, erstellt_von: adminId });
-  redirect(`/admin/newsletter/${n.id}/edit`);
+  const base = await getModuleBase();
+  redirect(`${base}/newsletter/${n.id}/edit`);
 }
 
 export async function newsletterUpdateAction(id: string, data: {

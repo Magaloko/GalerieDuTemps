@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { alleSubscribers } from "@/lib/db/newsletter";
 import { SubscriberRow } from "./subscriber-row";
@@ -10,6 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function SubscribersPage({
   searchParams,
 }: { searchParams: Promise<{ suche?: string; aktiv?: string }> }) {
+  const base = await getModuleBase();
   const sp = await searchParams;
   const daten = await alleSubscribers({
     suche:      sp.suche,
@@ -19,7 +21,7 @@ export default async function SubscribersPage({
   return (
     <div className="space-y-6 max-w-5xl">
       <nav className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
-        <Link href="/admin/newsletter" className="hover:text-vintage-brown flex items-center gap-1 transition-colors">
+        <Link href={`${base}/newsletter`} className="hover:text-vintage-brown flex items-center gap-1 transition-colors">
           <ChevronLeft className="w-3 h-3" /> Рассылка
         </Link>
       </nav>

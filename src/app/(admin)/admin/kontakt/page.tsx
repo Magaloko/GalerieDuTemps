@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { kontaktanfragenListe, type KontaktStatus } from "@/lib/db/kontakt";
 import { KontaktZeile } from "./kontakt-zeile";
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export default async function KontaktAdminPage({ searchParams }: Props) {
+  const base = await getModuleBase();
   const sp     = await searchParams;
   const seite  = parseInt(sp.seite ?? "1", 10);
   const status = (sp.status as KontaktStatus | undefined) ?? "";
@@ -47,7 +49,7 @@ export default async function KontaktAdminPage({ searchParams }: Props) {
         {STATUS_FILTER.map(s => (
           <Link
             key={s.value}
-            href={s.value ? `/admin/kontakt?status=${s.value}` : "/admin/kontakt"}
+            href={s.value ? `${base}/kontakt?status=${s.value}` : `${base}/kontakt`}
             className={`
               px-4 py-2 text-xs font-sans uppercase tracking-widest transition-colors
               ${status === s.value
@@ -93,7 +95,7 @@ export default async function KontaktAdminPage({ searchParams }: Props) {
           <div className="flex gap-2">
             {daten.seite > 1 && (
               <Link
-                href={`/admin/kontakt?seite=${daten.seite - 1}${status ? `&status=${status}` : ""}`}
+                href={`${base}/kontakt?seite=${daten.seite - 1}${status ? `&status=${status}` : ""}`}
                 className="flex items-center gap-1 px-3 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans hover:bg-vintage-parchment transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}
               >
@@ -102,7 +104,7 @@ export default async function KontaktAdminPage({ searchParams }: Props) {
             )}
             {daten.seite < daten.seiten && (
               <Link
-                href={`/admin/kontakt?seite=${daten.seite + 1}${status ? `&status=${status}` : ""}`}
+                href={`${base}/kontakt?seite=${daten.seite + 1}${status ? `&status=${status}` : ""}`}
                 className="flex items-center gap-1 px-3 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans hover:bg-vintage-parchment transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}
               >

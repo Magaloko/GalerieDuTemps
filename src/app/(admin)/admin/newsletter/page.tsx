@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { alleNewsletters, alleSubscribers } from "@/lib/db/newsletter";
 import { Mail, Plus, Users, ExternalLink, Send } from "lucide-react";
@@ -22,6 +23,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default async function NewsletterAdminPage() {
+  const base = await getModuleBase();
   const [newsletters, subs] = await Promise.all([
     alleNewsletters(),
     alleSubscribers({ nur_aktive: true }),
@@ -38,7 +40,7 @@ export default async function NewsletterAdminPage() {
             <p className="text-vintage-dust text-xs font-sans mt-0.5">{newsletters.length} рассылок · {subs.aktive} активных подписчиков</p>
           </div>
         </div>
-        <Link href="/admin/newsletter/subscribers"
+        <Link href={`${base}/newsletter/subscribers`}
           className="flex items-center gap-2 px-4 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans uppercase tracking-widest hover:bg-vintage-parchment transition-colors"
           style={{ borderRadius: "var(--radius-button)" }}>
           <Users className="w-3.5 h-3.5" /> Подписчики
@@ -55,7 +57,7 @@ export default async function NewsletterAdminPage() {
       ) : (
         <div className="space-y-2">
           {newsletters.map(n => (
-            <Link key={n.id} href={`/admin/newsletter/${n.id}/edit`}
+            <Link key={n.id} href={`${base}/newsletter/${n.id}/edit`}
               className="flex items-center justify-between p-4 bg-vintage-white border border-vintage-sand hover:border-vintage-brown transition-colors"
               style={{ borderRadius: "var(--radius-card)" }}>
               <div>

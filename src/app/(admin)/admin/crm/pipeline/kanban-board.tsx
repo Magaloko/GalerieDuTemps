@@ -5,6 +5,7 @@ import Link from "next/link";
 import { DndContext, useDroppable, useDraggable, type DragEndEvent } from "@dnd-kit/core";
 import { Briefcase, Mail, ExternalLink } from "lucide-react";
 import { stageVerschiebenAction } from "./actions";
+import { useModuleBase } from "@/lib/module-base-client";
 import type { PipelineStage } from "@/types/crm";
 
 interface Kunde {
@@ -72,6 +73,7 @@ function StageColumn({ stage, kunden }: { stage: PipelineStage; kunden: Kunde[] 
 
 function DraggableKundenKarte({ kunde }: { kunde: Kunde }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: kunde.customer_id });
+  const mbase = useModuleBase();
 
   const istB2B = kunde.customer_type.startsWith("b2b");
 
@@ -100,7 +102,7 @@ function DraggableKundenKarte({ kunde }: { kunde: Kunde }) {
           )}
         </div>
         <Link
-          href={`/admin/kunden/${kunde.customer_id}`}
+          href={`${mbase}/kunden/${kunde.customer_id}`}
           onClick={e => e.stopPropagation()}
           className="text-vintage-dust hover:text-vintage-brown flex-shrink-0"
           aria-label="Подробнее"
