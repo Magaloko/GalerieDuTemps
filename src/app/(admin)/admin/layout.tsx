@@ -1,11 +1,10 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import Link from "next/link";
-import { LayoutGrid } from "lucide-react";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminBell }    from "@/components/layout/admin-bell";
 import { ViewSwitch }   from "@/components/layout/view-switch";
 import { AuthSessionProvider } from "@/components/layout/session-provider";
+import { AppShell }     from "@/app/app/app-shell";
 import { ungeleseneCount }    from "@/lib/notifications/lead-notify";
 import { adminBadgeCounts }   from "@/lib/db/dashboard-v2";
 import { getAdminView }       from "@/lib/admin-view";
@@ -35,11 +34,28 @@ export default async function AdminLayout({
     redirect("/login");
   }
 
+  const adminView = await getAdminView().catch(() => "classic" as const);
+
+  // ── App-Modus ───────────────────────────────────────────────────────────
+  // Gespeicherte Ansicht = App: Admin-Module rendern in der App-Hülle (obere
+  // Bar + untere Tab-Leiste), damit der Operator beim Tippen einer Kachel NICHT
+  // ins Klassik-Layout (Sidebar) fällt, sondern in der App bleibt. `fluid` =
+  // volle Breite für Tabellen/Editoren. Keine Sidebar-Badges nötig.
+  if (adminView === "app") {
+    return (
+      <AuthSessionProvider session={session}>
+        <AppShell userName={session.user?.name} fluid>
+          <div style={{ color: "var(--color-ink)" }}>{children}</div>
+        </AppShell>
+      </AuthSessionProvider>
+    );
+  }
+
+  // ── Klassik-Modus ───────────────────────────────────────────────────────
   // Live-Badges für Sidebar (alle 6 Counts parallel, 30s gecached)
-  const [inboxCount, badges, adminView] = await Promise.all([
+  const [inboxCount, badges] = await Promise.all([
     ungeleseneCount().catch(() => 0),
     adminBadgeCounts().catch(() => undefined),
-    getAdminView().catch(() => "classic" as const),
   ]);
 
   return (
@@ -64,38 +80,11 @@ export default async function AdminLayout({
             }}
           >
             <div className="flex items-center justify-between gap-3 pl-12 md:pl-0">
-              <div className="flex items-center gap-3 min-w-0">
-                {/* Rückweg zur App: nur wenn die gespeicherte Ansicht = App ist.
-                    Diese Admin-Seite wurde dann aus einem App-Tab geöffnet —
-                    ohne diesen Link gäbe es keinen sichtbaren Weg zurück. */}
-                {adminView === "app" && (
-                  <Link
-                    href="/app"
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 whitespace-nowrap transition-colors hover:opacity-80"
-                    style={{
-                      background:    "var(--color-coral)",
-                      color:         "#fff",
-                      fontSize:      10,
-                      fontWeight:    500,
-                      letterSpacing: "0.16em",
-                      textTransform: "uppercase",
-                      borderRadius:  6,
-                      touchAction:   "manipulation",
-                    }}
-                    aria-label="Вернуться в приложение"
-                  >
-                    <LayoutGrid className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">В приложение</span>
-                  </Link>
-                )}
-                <div id="admin-page-title" className="min-w-0 truncate" />
-              </div>
+              <div id="admin-page-title" className="min-w-0 truncate" />
               <div className="flex items-center gap-3 flex-shrink-0">
                 <AdminBell />
-                {/* App ↔ Klassik-Umschalter nur für echte Klassik-Nutzer.
-                    Im App-Modus übernimmt der „В приложение"-Link links den
-                    Rückweg — ein zweiter App-Button wäre redundant. */}
-                {adminView === "classic" && <ViewSwitch current="classic" />}
+                {/* App ↔ Klassik-Umschalter (hier immer Klassik-Nutzer) */}
+                <ViewSwitch current="classic" />
                 <div
                   className="hidden sm:block text-[11px] uppercase font-medium"
                   style={{ letterSpacing: "0.18em", color: "var(--color-ink-mute)" }}

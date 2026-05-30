@@ -13,24 +13,42 @@ import { ViewSwitch } from "@/components/layout/view-switch";
  * (responsiv), „Сегодня" + „Меню" leben in /app.
  * ────────────────────────────────────────────────────────────────────────── */
 
+// Generische /admin-Sektion (aus dem Kachelmenü geöffnet) → „Меню" aktiv
+// markieren, außer es ist eine der eigenen Daten-Tab-Routen.
+const istMenueSektion = (p: string) =>
+  p.startsWith("/app/menu") ||
+  (p.startsWith("/admin") &&
+    !p.startsWith("/admin/bestellungen") &&
+    !p.startsWith("/admin/kunden") &&
+    !p.startsWith("/admin/leads"));
+
 const TABS = [
   { href: "/app",                 label: "Сегодня", icon: Home,       match: (p: string) => p === "/app" },
   { href: "/admin/bestellungen",  label: "Заказы",  icon: ShoppingBag, match: (p: string) => p.startsWith("/admin/bestellungen") },
   { href: "/admin/kunden",        label: "Клиенты", icon: Users,      match: (p: string) => p.startsWith("/admin/kunden") },
   { href: "/admin/leads",         label: "Лиды",    icon: Inbox,      match: (p: string) => p.startsWith("/admin/leads") },
-  { href: "/app/menu",            label: "Меню",    icon: LayoutGrid, match: (p: string) => p.startsWith("/app/menu") },
+  { href: "/app/menu",            label: "Меню",    icon: LayoutGrid, match: istMenueSektion },
 ];
 
-export function AppShell({ children, userName }: { children: React.ReactNode; userName?: string | null }) {
+/**
+ * AppShell — Operator-App-Hülle (Top-Bar + untere 5-Tab-Leiste).
+ *
+ * `fluid`: für eingebettete /admin-Arbeitsflächen (Tabellen/Editoren) → volle
+ * Breite + eigene Content-Paddings. Ohne `fluid` (Default, /app-Seiten wie
+ * Сегодня/Меню) bleibt die zentrierte max-w-md-Spalte.
+ */
+export function AppShell({
+  children, userName, fluid = false,
+}: { children: React.ReactNode; userName?: string | null; fluid?: boolean }) {
   const pathname = usePathname();
   const initial = (userName ?? "A").charAt(0).toUpperCase();
 
   return (
     // Äußerer Wrapper trägt den Paper-Hintergrund über die VOLLE Breite —
     // sonst zeigt sich auf iPad/Desktop neben der max-w-md-Spalte der dunkle
-    // espresso <body>-Hintergrund. Innen wird die Spalte zentriert.
+    // espresso <body>-Hintergrund. Innen wird die Spalte zentriert (außer fluid).
     <div className="min-h-[100dvh]" style={{ background: "var(--color-paper)" }}>
-    <div className="min-h-[100dvh] mx-auto max-w-md flex flex-col" style={{ background: "var(--color-paper)" }}>
+    <div className={`min-h-[100dvh] flex flex-col ${fluid ? "" : "mx-auto max-w-md"}`} style={{ background: "var(--color-paper)" }}>
       {/* Top-Bar */}
       <header
         className="sticky top-0 z-20 flex items-center gap-3 px-4 py-3 backdrop-blur"
@@ -50,12 +68,18 @@ export function AppShell({ children, userName }: { children: React.ReactNode; us
       </header>
 
       {/* Inhalt — Spacer = Tab-Bar-Höhe inkl. Safe-Area (statt fixem pb-24,
-          das auf Notch-Geräten knapp wird). */}
-      <main className="flex-1" style={{ paddingBottom: "calc(72px + env(safe-area-inset-bottom, 0px))" }}>{children}</main>
+          das auf Notch-Geräten knapp wird). fluid → eigene Paddings für
+          eingebettete /admin-Seiten (die sonst auf das Layout-Padding bauen). */}
+      <main
+        className={`flex-1 ${fluid ? "px-4 md:px-6 py-5" : ""}`}
+        style={{ paddingBottom: "calc(72px + env(safe-area-inset-bottom, 0px))" }}
+      >
+        {children}
+      </main>
 
-      {/* Untere Tab-Bar */}
+      {/* Untere Tab-Bar — fluid: volle Breite; sonst zentriert max-w-md */}
       <nav
-        className="fixed bottom-0 inset-x-0 z-30 mx-auto max-w-md flex items-stretch justify-around"
+        className={`fixed bottom-0 inset-x-0 z-30 mx-auto flex items-stretch justify-around ${fluid ? "" : "max-w-md"}`}
         style={{ background: "#fff", borderTop: "1px solid var(--color-line)", paddingTop: 8, paddingBottom: "calc(max(10px, env(safe-area-inset-bottom)) + 4px)" }}
         aria-label="Навигация"
       >
