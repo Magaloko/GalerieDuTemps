@@ -109,7 +109,11 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
 
-- 2026-05-30 20:15 UTC · `(dieser Commit)` · feat(app) Kategorie-Verwaltung: sortierbare Listen-UI
+- 2026-05-30 20:23 UTC · `(dieser Commit)` · design(public) Detailseite-Feinschliff: Mobile-Preis-Strip
+  jetzt bei jedem kaufbaren Produkt (vorher nur mit WhatsApp/Telegram) — Preis + „Написать" direkt nach
+  der Galerie sichtbar statt erst weit unten in der Sidebar. teaser/verkauft ausgenommen. Visuell auf
+  Mobile verifiziert (öffentliche Route).
+- 2026-05-30 20:15 UTC · `d31ea11` · feat(app) Kategorie-Verwaltung: sortierbare Listen-UI
   (`KategorieVerwaltung`) — Drag&Drop (dnd-kit) + Pfeil-Buttons ↑↓ für die Reihenfolge, hierarchische
   Anzeige (Unterkategorien eingerückt), Inline-Parent-Dropdown zum Gruppieren (2 Ebenen), Inline-Aktiv-
   Toggle, Batch-Save (`kategorienStrukturAction` → atomares UNNEST-UPDATE in `kategorienStrukturSpeichern`).

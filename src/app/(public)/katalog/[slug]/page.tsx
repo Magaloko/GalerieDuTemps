@@ -247,8 +247,12 @@ export default async function ProduktDetailPage({ params }: Props) {
         </div>
       </div>
 
-      {/* ── Mobile-only Quick-CTAs (vor dem Scroll sichtbar) ────────── */}
-      {!produkt.verkauft && (waUrl || tgUrl) && (
+      {/* ── Mobile-only Quick-CTAs (vor dem Scroll sichtbar) ──────────
+           Immer bei kaufbaren Produkten zeigen (nicht verkauft, kein Schaufenster):
+           der Preis ist die wichtigste Kaufinfo und muss auf Mobile direkt nach
+           der Galerie sichtbar sein — auch ohne WhatsApp/Telegram, da „Написать"
+           als Anfrage-Weg immer verfügbar ist. */}
+      {!produkt.verkauft && produkt.b2c_mode !== "teaser" && (
         <div className="lg:hidden mx-4 mt-5">
           <div
             className="p-4 space-y-3"
