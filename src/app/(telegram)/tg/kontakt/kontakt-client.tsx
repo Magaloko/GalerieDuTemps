@@ -112,7 +112,7 @@ export function KontaktClient({ produktId, produktName, produktSlug, intent }: P
 
   if (status === "sent") {
     return (
-      <main className="p-4 min-h-[70vh] flex flex-col items-center justify-center text-center gap-4">
+      <main className="p-4 min-h-[70dvh] flex flex-col items-center justify-center text-center gap-4">
         <div
           className="inline-flex items-center justify-center"
           style={{

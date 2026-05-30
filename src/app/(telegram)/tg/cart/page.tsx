@@ -18,7 +18,7 @@ export default async function TelegramCartPage() {
   if (!kaufenAktiv) {
     return (
       <TelegramAuthGate>
-        <main className="min-h-[60vh] flex items-center justify-center px-6 py-16">
+        <main className="min-h-[60dvh] flex items-center justify-center px-6 py-16">
           <div className="max-w-sm text-center">
             <p
               className="text-[11px] uppercase font-medium mb-3"

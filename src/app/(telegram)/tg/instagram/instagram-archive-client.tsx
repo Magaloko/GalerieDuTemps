@@ -200,7 +200,7 @@ function DetailSheet({ post, onClose }: { post: Post; onClose: () => void }) {
     >
       <div
         onClick={e => e.stopPropagation()}
-        className="w-full max-w-md max-h-[92vh] overflow-y-auto"
+        className="w-full max-w-md max-h-[92dvh] overflow-y-auto"
         style={{
           background: "var(--tg-theme-bg-color, var(--color-paper, #fff))",
           borderTopLeftRadius: 16, borderTopRightRadius: 16,

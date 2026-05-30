@@ -56,7 +56,7 @@ export default async function TgAdminLeadDetailPage({
   if (!session || session.role !== "admin") {
     return (
       <TelegramAuthGate>
-        <main className="p-6 text-center min-h-[60vh] flex flex-col items-center justify-center gap-3">
+        <main className="p-6 text-center min-h-[60dvh] flex flex-col items-center justify-center gap-3">
           <Inbox className="w-10 h-10" style={{ color: "var(--color-ink-mute)" }} />
           <p style={{ fontFamily: "var(--font-display)", fontSize: 18, color: "var(--color-ink)" }}>
             Только для администраторов
@@ -78,7 +78,7 @@ export default async function TgAdminLeadDetailPage({
   if (!lead) {
     return (
       <TelegramAuthGate>
-        <main className="p-6 text-center min-h-[50vh] flex flex-col items-center justify-center gap-3">
+        <main className="p-6 text-center min-h-[50dvh] flex flex-col items-center justify-center gap-3">
           <p style={{ fontFamily: "var(--font-display)", fontSize: 18, color: "var(--color-ink)" }}>
             Лид не найден
           </p>

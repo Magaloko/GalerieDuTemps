@@ -35,8 +35,11 @@ export default async function TelegramLayout({ children }: { children: React.Rea
         strategy="beforeInteractive"
       />
       <div
-        className="min-h-[100dvh] pb-20"
+        className="min-h-[100dvh]"
         style={{
+          // Spacer = MiniAppTabBar-Höhe inkl. Safe-Area (statt fixem pb-20,
+          // das auf Notch-iPhones zu knapp ist → letzte Zeile hinter der Bar).
+          paddingBottom: "var(--tg-tabbar-h)",
           background: "var(--tg-theme-bg-color, var(--color-paper))",
           color:      "var(--tg-theme-text-color, var(--color-ink))",
           fontFamily: "var(--font-sans)",

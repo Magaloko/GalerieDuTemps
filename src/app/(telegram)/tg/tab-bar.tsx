@@ -63,7 +63,13 @@ const TABS_ADMIN: Tab[] = [
 export function MiniAppTabBar({ kaufenAktiv = true }: { kaufenAktiv?: boolean }) {
   const pathname  = usePathname();
   const [role, setRole] = useState<Role>("guest");
+  const [hasTg, setHasTg] = useState(false);
   const cartCount = useCart(s => s.items.reduce((acc, i) => acc + i.menge, 0));
+
+  // Nur im echten Telegram-WebView blendet der native MainButton ein. Dort
+  // würde unsere Tab-Bar mit ihm kollidieren (zwei Bottom-Leisten). Im Browser-
+  // Fallback gibt es keinen MainButton → Tab-Bar muss bleiben.
+  useEffect(() => { setHasTg(!!window.Telegram?.WebApp); }, []);
 
   // Role einmal pro Mount fetchen. Wenn 401 / network-error → bleibt guest.
   // x-tg-id: aktuelle Telegram-User-ID mitsenden, damit der Server ein an einen
@@ -93,6 +99,15 @@ export function MiniAppTabBar({ kaufenAktiv = true }: { kaufenAktiv?: boolean })
       : kaufenAktiv
         ? TABS_GUEST_CUSTOMER
         : TABS_GUEST_CUSTOMER_SCHAUFENSTER;
+
+  // MainButton-Screens: Produktdetail (immer MainButton) und Warenkorb mit
+  // Inhalt (MainButton „Оплатить"). Dort Tab-Bar ausblenden, damit der native
+  // MainButton sie nicht überlagert. Produktdetail hat den nativen Back-Button,
+  // der Warenkorb einen „Каталог"-Link oben — der Weg zurück bleibt erhalten.
+  const mainButtonScreen =
+    pathname.startsWith("/tg/produkt") ||
+    (pathname.startsWith("/tg/cart") && cartCount > 0);
+  if (hasTg && mainButtonScreen) return null;
 
   return (
     <nav

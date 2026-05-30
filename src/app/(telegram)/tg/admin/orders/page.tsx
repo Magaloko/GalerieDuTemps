@@ -29,7 +29,7 @@ export default async function TgAdminOrdersPage() {
   if (!session || session.role !== "admin") {
     return (
       <TelegramAuthGate>
-        <main className="p-6 text-center min-h-[60vh] flex flex-col items-center justify-center gap-3">
+        <main className="p-6 text-center min-h-[60dvh] flex flex-col items-center justify-center gap-3">
           <Package className="w-10 h-10" style={{ color: "var(--color-ink-mute)" }} />
           <p
             style={{

@@ -31,7 +31,7 @@ export default async function TgAdminProduktEdit({
   if (!p) {
     return (
       <TelegramAuthGate>
-        <main className="p-6 text-center min-h-[40vh] flex flex-col items-center justify-center gap-3">
+        <main className="p-6 text-center min-h-[40dvh] flex flex-col items-center justify-center gap-3">
           <p style={{ fontFamily: "var(--font-display)", fontSize: 18, color: "var(--color-ink)" }}>Товар не найден</p>
           <AdminBack href="/tg/admin/produkte" label="Товары" />
         </main>

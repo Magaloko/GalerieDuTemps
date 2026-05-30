@@ -25,6 +25,10 @@ interface TgWebApp {
   disableVerticalSwipes?: () => void;
   setHeaderColor?: (c: string) => void;
   setBackgroundColor?: (c: string) => void;
+  colorScheme?: "light" | "dark";
+  viewportStableHeight?: number;
+  onEvent?: (ev: string, cb: () => void) => void;
+  offEvent?: (ev: string, cb: () => void) => void;
   BackButton?: { show: () => void; hide: () => void; onClick: (cb: () => void) => void; offClick: (cb: () => void) => void };
 }
 
@@ -68,10 +72,61 @@ export function TelegramChrome() {
       }
     } catch {}
 
+    // ── Dark-/Light-Theme an <html data-tg-theme> spiegeln ────────────────
+    // Telegram injiziert --tg-theme-*-Variablen, aber unsere markeneigenen
+    // Tokens (--color-line/paper/ink…) sind hell verdrahtet. data-tg-theme
+    // schaltet die Dark-Overrides in globals.css frei, damit helle Borders/
+    // Flächen im Telegram-Dunkelmodus nicht „glühen".
+    const applyTheme = () => {
+      try {
+        const scheme = tg.colorScheme === "dark" ? "dark" : "light";
+        document.documentElement.dataset.tgTheme = scheme;
+      } catch {}
+    };
+    applyTheme();
+
+    // ── Viewport-Höhe als CSS-Var (--tg-vh) ───────────────────────────────
+    // dvh ist im Telegram-WebView unzuverlässig (TG-Chrome liegt außerhalb des
+    // dvh-Modells). viewportStableHeight ist die echte nutzbare Höhe; bei
+    // Tastatur/Expand ändert sie sich → wir tracken sie.
+    const applyViewport = () => {
+      try {
+        const h = tg.viewportStableHeight;
+        if (typeof h === "number" && h > 0) {
+          document.documentElement.style.setProperty("--tg-vh", `${h}px`);
+        }
+      } catch {}
+    };
+    applyViewport();
+
+    try { tg.onEvent?.("themeChanged", applyTheme); } catch {}
+    try { tg.onEvent?.("viewportChanged", applyViewport); } catch {}
+
     // Stabilen Back-Handler genau einmal registrieren.
     const stable = () => backHandler.current();
     try { tg.BackButton?.onClick(stable); } catch {}
-    return () => { try { tg.BackButton?.offClick(stable); } catch {} };
+
+    // ── Keyboard-aware: fokussiertes Eingabefeld in Sicht scrollen ─────────
+    // Öffnet sich (iOS) die Tastatur, schrumpft der Viewport, aber nichts
+    // scrollt den Submit-Button nach oben. Wir scrollen das fokussierte Feld
+    // nach kurzer Verzögerung (Keyboard-Animation) zentriert in den Blick.
+    const onFocusIn = (e: FocusEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (!el) return;
+      if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+        setTimeout(() => {
+          try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch {}
+        }, 300);
+      }
+    };
+    document.addEventListener("focusin", onFocusIn);
+
+    return () => {
+      try { tg.BackButton?.offClick(stable); } catch {}
+      try { tg.offEvent?.("themeChanged", applyTheme); } catch {}
+      try { tg.offEvent?.("viewportChanged", applyViewport); } catch {}
+      document.removeEventListener("focusin", onFocusIn);
+    };
   }, []);
 
   // ── BackButton pro Route zeigen/verstecken + Aktion setzen ───────────────

@@ -114,7 +114,7 @@ export function AdminListRow({
 /** „Nur für Admins"-Fallback (wenn keine admin-webapp-session). */
 export function AdminNotAllowed() {
   return (
-    <main className="p-6 text-center min-h-[60vh] flex flex-col items-center justify-center gap-3">
+    <main className="p-6 text-center min-h-[60dvh] flex flex-col items-center justify-center gap-3">
       <Shield className="w-10 h-10" style={{ color: "var(--color-ink-mute)" }} />
       <h1 style={{ fontFamily: "var(--font-display)", fontSize: 20, color: "var(--tg-theme-text-color, var(--color-ink))" }}>
         Только для администраторов

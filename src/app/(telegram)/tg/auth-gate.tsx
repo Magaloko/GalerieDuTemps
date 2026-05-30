@@ -146,7 +146,7 @@ export function TelegramAuthGate({ children }: { children: React.ReactNode }) {
 
   if (state.kind === "init" || state.kind === "authing") {
     return (
-      <div className="min-h-[50vh] flex flex-col items-center justify-center gap-3 p-8">
+      <div className="min-h-[50dvh] flex flex-col items-center justify-center gap-3 p-8">
         <Spinner />
         <p
           className="text-[11px] uppercase font-medium"
@@ -160,7 +160,7 @@ export function TelegramAuthGate({ children }: { children: React.ReactNode }) {
 
   if (state.kind === "no-telegram") {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 text-center gap-4">
+      <div className="min-h-[60dvh] flex flex-col items-center justify-center p-8 text-center gap-4">
         <p
           className="text-[10px] uppercase font-medium"
           style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}
@@ -193,7 +193,7 @@ export function TelegramAuthGate({ children }: { children: React.ReactNode }) {
 
   if (state.kind === "auth-error") {
     return (
-      <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center gap-3">
+      <div className="min-h-[50dvh] flex flex-col items-center justify-center p-8 text-center gap-3">
         <p
           className="text-[11px] uppercase font-medium"
           style={{ letterSpacing: "0.22em", color: "var(--color-coral-deep, #A53E26)" }}

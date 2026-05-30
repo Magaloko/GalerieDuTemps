@@ -75,7 +75,7 @@ export function WunschlisteClient() {
 
   if (loading) {
     return (
-      <div className="min-h-[40vh] flex items-center justify-center">
+      <div className="min-h-[40dvh] flex items-center justify-center">
         <Loader2 className="w-5 h-5 animate-spin" style={{ color: "var(--color-ink-mute)" }} />
       </div>
     );
@@ -83,7 +83,7 @@ export function WunschlisteClient() {
 
   if (items.length === 0) {
     return (
-      <main className="p-6 text-center min-h-[60vh] flex flex-col items-center justify-center">
+      <main className="p-6 text-center min-h-[60dvh] flex flex-col items-center justify-center">
         <Heart className="w-10 h-10 mb-3" style={{ color: "var(--color-ink-mute)" }} />
         <p className="text-[10px] uppercase font-medium mb-2"
           style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}>
