@@ -89,6 +89,23 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
   товары" via `<Suspense>` gestreamt, Lightbox-Wischgeste mobil. Hinweis: client-interaktive `/app`-
   Änderungen lassen sich im Dev wegen PWA-Service-Worker-Cache schlecht visuell prüfen → live nach Deploy
   testen (Memory `dev-preview-setup`).
+- **🔎 Audit-Backlog (Gesamt-Audit 2026-05-31, 5 Agenten + Verifikation):** P0/Quick-Win-P1
+  bereits gefixt (s. Changelog `(dieser Commit)`): JWT-Rolle-Default→`customer`, `kategorie_slug`
+  in Detail-Breadcrumb, Newsletter-Segment-Versand (fail-safe). **Offen, noch NICHT angefasst:**
+  - **P0 Steuer/Währung (`api/checkout/route.ts`):** MwSt hart `19` (KZ=12 %, `getItemTaxRate()` ungenutzt),
+    `firma_land` default `"DE"` (`system-einstellungen.ts:9`), Stripe-Currency hart `"eur"` (Z. 300/363).
+    ⚠️ Vor Fix klären, welche Flows diese Legacy-Direct-Route real treffen (Public nutzt `picker`-Pfad).
+  - **P1 kein `src/middleware.ts`:** keine Edge-Schutzschicht; jede Route nur per Eigen-Check.
+  - **P1 `EMAXCONNSESSION`:** Pool `max:10` (`db/index.ts:33`) vs. Supabase Session-Mode-Limit 15 →
+    Transaction-Mode-Pooler (Port 6543) in `DATABASE_URL`.
+  - **P1 a11y:** Lightbox/CommandMenu/MobileDrawer ohne `role=dialog`/`aria-modal`/Focus-Trap.
+  - **P1 `robots.ts`:** `/app`,`/tg`,`/kunde`,`/affiliate`,`/monitoring` crawlbar (nicht disallowed).
+  - **P1 ESLint fehlt komplett** (kein Dep/Config/Script) → `next build` lintet nicht.
+  - **P1 Public-Seiten `about`/`instagram`/`kategorien/[…]`** noch dunkle `vintage-*` auf hell → Kontrast ~1:1.
+  - **P2:** Theme-CSS-Injection (`theme.ts:117` ungefilterte Keys), TG-Webhook Header-Check optional,
+    CSP quasi leer, Cron ohne `timingSafeEqual`, Temp-Passwort im Klartext per Mail, `_eur`-Namensfalle
+    (KZT-Felder heißen `_eur`), N+1 Bild-Subqueries, fehlende `generateStaticParams`.
+  - **Hinweis:** `revalidateTag(tag,{expire:0})` ist KORREKT (Next-16-Signatur, 2. Param required) — kein Bug.
 - **TG1 — Telegram Dark-Mode-Lücken:** harte `#fff`-Fallbacks in `src/app/(telegram)/**`,
   Texte hart `#1a1410`/`#fff`, Order-Status-Farben ohne `[data-tg-theme="dark"]`-Override.
 - **Pattern-Ausweitung (wiederverwendbar):** `.chip-select` (Inline-Edit) → Lead-Status /
@@ -118,6 +135,17 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
 
+- 2026-05-31 00:00 UTC · `(dieser Commit)` · fix(security/data) Audit-P0/Quick-Win-P1: (1) **JWT-Rolle
+  fail-closed** — `token.role`/`session.user.role` defaulten jetzt auf `"customer"` statt `"admin"`
+  (`lib/auth/config.ts`); ein rollenloses/migriertes Token wird nie mehr Admin (Defense-in-Depth, der
+  AuthZ-Gate liest `session.user.role`). (2) **`kategorie_slug`** in `oeffentlichesProduktBySlug`
+  (`db/produkte-public.ts`, SELECT + GROUP BY) → die Detail-Breadcrumb-JSON-LD enthält wieder die
+  Kategorie-Ebene (war still übersprungen, SEO). (3) **Newsletter-Segment-Versand** repariert
+  (`db/newsletter.ts`): `newsletterEmpfaengerSammeln(segmentId)` lädt jetzt den Segment-Filter und löst
+  über `segmentVorschau()` die echten Empfänger auf — **fail-safe** (unbekanntes/leeres Segment → 0, NIE
+  „an alle"; vorher ignorierte der Zweig die segmentId und sendete an jeden). Rein Backend/Daten — keine
+  UI. Verifiziert: tsc grün, vitest 176✓/39 skip, next build grün. Restliche Audit-Funde im Backlog
+  (Abschnitt „🔎 Audit-Backlog" oben).
 - 2026-05-30 23:01 UTC · `7dc911b` · design(public) Detailseiten-Feinschliff `katalog/[slug]`:
   Gewicht-Einheit-Fix in den Характеристики (`г` → `кг` — der Admin pflegt das Maß als Kilogramm, die
   Detailseite zeigte fälschlich Gramm); „Похожие товары" als eigene `<Suspense>`-Insel

@@ -170,9 +170,12 @@ const authConfig: NextAuthConfig = {
     async jwt({ token, user }) {
       if (user) {
         token.id   = user.id;
-        token.role = (user as { role?: string }).role ?? "admin";
-        // Legacy
-        token.rolle = (user as { rolle?: string }).rolle ?? "admin";
+        // Fail-closed auf die geringste Rechtestufe: ein Token ohne echte Rolle
+        // darf NIEMALS Admin werden (Defense-in-Depth; authorize() liefert die
+        // echte Rolle, dieser Fallback greift nur bei Daten-/Migrations-Lücken).
+        token.role = (user as { role?: string }).role ?? "customer";
+        // Legacy-Feld (nur Anzeige) — ebenfalls nicht-privilegierter Default.
+        token.rolle = (user as { rolle?: string }).rolle ?? "customer";
       }
       return token;
     },
@@ -180,8 +183,8 @@ const authConfig: NextAuthConfig = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id    = token.id   as string;
-        session.user.role  = (token.role  ?? "admin") as AuthRole;
-        session.user.rolle = (token.rolle ?? "admin") as "admin" | "superadmin";
+        session.user.role  = (token.role  ?? "customer") as AuthRole;
+        session.user.rolle = (token.rolle ?? "customer") as "admin" | "superadmin";
       }
       return session;
     },

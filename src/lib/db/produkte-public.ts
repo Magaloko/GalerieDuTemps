@@ -232,6 +232,7 @@ async function oeffentlichesProduktBySlugUncached(slug: string): Promise<Produkt
     `SELECT
        p.*,
        k.name AS kategorie_name,
+       k.slug AS kategorie_slug,
        COALESCE(
          json_agg(
            json_build_object(
@@ -247,7 +248,7 @@ async function oeffentlichesProduktBySlugUncached(slug: string): Promise<Produkt
        AND p.veroeffentlicht_am IS NOT NULL
        AND p.aktiv = true            -- Master-Schalter: aus = nirgends sichtbar (auch nicht per Direktlink)
        AND p.b2c_mode != 'hidden'    -- explizit versteckt = nur Admin-Zugriff
-     GROUP BY p.id, k.name`,
+     GROUP BY p.id, k.name, k.slug`,
     [slug]
   );
   const produkt = result.rows[0];

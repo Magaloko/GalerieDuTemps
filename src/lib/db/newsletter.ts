@@ -1,6 +1,8 @@
 import { query } from "./index";
 import { randomBytes } from "crypto";
 import type { Newsletter, NewsletterStatus, NewsletterSubscriber } from "@/types/newsletter";
+import type { Segment, SegmentFilter } from "@/types/crm";
+import { segmentVorschau } from "./crm";
 
 // ===========================================================================
 // SUBSCRIBERS
@@ -175,19 +177,36 @@ export interface VersandKandidat {
 
 export async function newsletterEmpfaengerSammeln(segmentId?: string): Promise<VersandKandidat[]> {
   if (segmentId) {
-    // Segment-Customer + alle bestätigten Subscribers, die NICHT in dnc sind
-    // (Newsletter erlaubt Customer + Anonyme Subscribers)
-    // Vereinfachung: wir nehmen aktive Subscribers UND Customers im Segment
+    // Segment-Versand: NUR Customers, die dem Segment-Filter entsprechen.
+    // Der Filter liegt als jsonb in sebo.segments; segmentVorschau() ist der
+    // kanonische Resolver (gleiche Logik wie die Admin-Vorschau).
+    //
+    // FAIL-SAFE: unbekanntes/leeres Segment → 0 Empfänger (NIE „an alle"!).
+    // Vorher ignorierte dieser Zweig die segmentId und sendete an JEDEN.
+    const segRes = await query<Segment>(
+      `SELECT * FROM sebo.segments WHERE id = $1 LIMIT 1`,
+      [segmentId],
+    );
+    const segment = segRes.rows[0];
+    if (!segment) return [];
+
+    const filter = (segment.filter ?? {}) as SegmentFilter;
+    const { ids } = await segmentVorschau(filter, 10_000);
+    if (ids.length === 0) return [];
+
+    // Auflösen zu Versand-Kandidaten (Newsletter-aktiv + nicht in DNC), mit
+    // Unsubscribe-Token (eigenes Subscriber-Token bevorzugt, sonst dnc_token).
     const r = await query<VersandKandidat>(
-      `(SELECT s.email, s.vorname, s.unsubscribe_token, s.id AS subscriber_id, s.customer_id
-        FROM sebo.newsletter_subscribers s
-        WHERE s.confirmed_am IS NOT NULL AND s.unsubscribed_am IS NULL)
-       UNION
-       (SELECT c.email, c.vorname, COALESCE(s.unsubscribe_token, c.dnc_token), s.id AS subscriber_id, c.id AS customer_id
-        FROM sebo.customers c
-        LEFT JOIN sebo.newsletter_subscribers s ON s.email = c.email
-        WHERE c.newsletter_aktiv = true AND c.dnc_aktiv = false
-          AND c.email IS NOT NULL)`
+      `SELECT c.email, c.vorname,
+              COALESCE(s.unsubscribe_token, c.dnc_token) AS unsubscribe_token,
+              s.id AS subscriber_id, c.id AS customer_id
+       FROM sebo.customers c
+       LEFT JOIN sebo.newsletter_subscribers s ON s.email = c.email
+       WHERE c.id = ANY($1::uuid[])
+         AND c.newsletter_aktiv = true
+         AND c.dnc_aktiv = false
+         AND c.email IS NOT NULL`,
+      [ids],
     );
     return r.rows;
   }
