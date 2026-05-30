@@ -285,6 +285,7 @@ function Lightbox({
 }) {
   const current = bilder[activeIdx] || bilder[0];
   const hasMultiple = bilder.length > 1;
+  const swipeStart = useRef<{ x: number; y: number } | null>(null);
 
   // Keyboard
   useEffect(() => {
@@ -325,6 +326,20 @@ function Lightbox({
         alt={current.alt_text ?? produktName}
         className="max-w-[92vw] max-h-[85vh] object-contain select-none"
         onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => { e.stopPropagation(); swipeStart.current = { x: e.clientX, y: e.clientY }; }}
+        onPointerUp={(e) => {
+          e.stopPropagation();
+          const s = swipeStart.current;
+          swipeStart.current = null;
+          if (!s) return;
+          const dx = e.clientX - s.x;
+          const dy = e.clientY - s.y;
+          // Horizontale Wischgeste (> 50px, dominanter als vertikal) → blättern.
+          if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+            if (dx > 0) onPrev();
+            else        onNext();
+          }
+        }}
         draggable={false}
       />
 

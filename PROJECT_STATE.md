@@ -85,9 +85,10 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
   `InstagramUrlsInput`, `ProduktStoryEditor` (nur Chrome; `BlockPreview` bleibt Shop-treu), `SingleMediaUpload`
   (`tone="app"`), `Dateien-`/`ZertifikateManager` + `bilder`-Seiten-Header; `ConditionMeter` Token-Hygiene
   (inaktive Segmente `--color-line`). Damit ist der ganze Produkt-Editor (Voll + Schnell + Bilder-Seite) hell.
-  Offen nach Wunsch: Detailseiten-Politur (öffentliche `katalog/[slug]` — ist bereits hell/boutique, nur
-  Feinschliff denkbar). Hinweis: client-interaktive `/app`-Änderungen lassen sich im Dev wegen
-  PWA-Service-Worker-Cache schlecht visuell prüfen → live nach Deploy testen (Memory `dev-preview-setup`).
+  **Detailseiten-Feinschliff ✓** (öffentliche `katalog/[slug]`): Gewicht-Einheit-Fix (г→кг), „Похожие
+  товары" via `<Suspense>` gestreamt, Lightbox-Wischgeste mobil. Hinweis: client-interaktive `/app`-
+  Änderungen lassen sich im Dev wegen PWA-Service-Worker-Cache schlecht visuell prüfen → live nach Deploy
+  testen (Memory `dev-preview-setup`).
 - **TG1 — Telegram Dark-Mode-Lücken:** harte `#fff`-Fallbacks in `src/app/(telegram)/**`,
   Texte hart `#1a1410`/`#fff`, Order-Status-Farben ohne `[data-tg-theme="dark"]`-Override.
 - **Pattern-Ausweitung (wiederverwendbar):** `.chip-select` (Inline-Edit) → Lead-Status /
@@ -117,6 +118,14 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
 
+- 2026-05-30 23:01 UTC · `(dieser Commit)` · design(public) Detailseiten-Feinschliff `katalog/[slug]`:
+  Gewicht-Einheit-Fix in den Характеристики (`г` → `кг` — der Admin pflegt das Maß als Kilogramm, die
+  Detailseite zeigte fälschlich Gramm); „Похожие товары" als eigene `<Suspense>`-Insel
+  (`AehnlicheProdukteSektion`) — ihr separater DB-Query blockt den First Paint nicht mehr (lag unter dem
+  Fold, lief aber als sequenzieller Roundtrip vor dem Render); Lightbox bekommt eine horizontale
+  Wischgeste (Pointer-Swipe > 50px) fürs Blättern auf Mobile (vorher nur Tastatur/Pfeile). Rein
+  visuell/UX — Daten/Wiring unberührt. Verifiziert: tsc grün, vitest 176✓, next build grün
+  (`/katalog/[slug]`-Route vorhanden, 404-sauber ohne Seed-DB). Visuell live nach Deploy.
 - 2026-05-31 00:29 UTC · `89106f0` · design(app) Produkt-Editor-Bausteine auf helle App-Tokens:
   Restliche dunkle Cobalt-`vintage-*`-Flächen im Produkt-Editor auf paper/bone/coral + weiche
   `--radius-app` umgezogen — Bild-Verwaltung (`BildManager`/`BildUploadZone`/`BildGalerie`, Foto-Hover-Veil

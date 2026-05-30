@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { oeffentlichesProduktBySlug, aehnlicheProdukte } from "@/lib/db/produkte-public";
 import { kontaktKanaeleLaden, whatsappUrl, telegramUrl } from "@/lib/db/kontakt-kanaele";
@@ -88,13 +89,6 @@ export default async function ProduktDetailPage({ params }: Props) {
   const lang   = i18nOr(produkt.beschreibung_i18n,     locale, produkt.beschreibung);
   const hatStory = (produkt.inhalt_blocks?.length ?? 0) > 0;
 
-  const aehnliche = await aehnlicheProdukte(
-    produkt.id,
-    produkt.kategorie_id ?? null,
-    produkt.preis,
-    4
-  ).catch(() => []);
-
   const instagramUrls = produkt.instagram_urls ?? [];
   const galerie = produkt.bilder ?? [];
 
@@ -166,7 +160,7 @@ export default async function ProduktDetailPage({ params }: Props) {
     produkt.abmessungen?.breite  && { label: "Ширина",  value: `${produkt.abmessungen.breite} см` },
     produkt.abmessungen?.hoehe   && { label: "Высота",  value: `${produkt.abmessungen.hoehe} см` },
     produkt.abmessungen?.tiefe   && { label: "Глубина", value: `${produkt.abmessungen.tiefe} см` },
-    produkt.abmessungen?.gewicht && { label: "Вес",     value: `${produkt.abmessungen.gewicht} г` },
+    produkt.abmessungen?.gewicht && { label: "Вес",     value: `${produkt.abmessungen.gewicht} кг` },
     produkt.artikel_code   && { label: "Артикул",       value: produkt.artikel_code },
   ].filter((x): x is { label: string; value: string } => Boolean(x));
 
@@ -566,32 +560,60 @@ export default async function ProduktDetailPage({ params }: Props) {
         </section>
       )}
 
-      {/* ── Related ────────────────────────────────────────────── */}
-      {aehnliche.length > 0 && (
-        <section
-          className="max-w-[1440px] mx-auto px-5 md:px-14 py-16 md:py-20 border-t"
-          style={{ borderColor: "var(--color-line)" }}
-        >
-          <p
-            className="text-[11px] uppercase font-medium mb-3"
-            style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}
-          >
-            ◆
-          </p>
-          <h2
-            className="mb-10"
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize:   "clamp(1.75rem, 4vw, 2.25rem)",
-              color:      "var(--color-ink)",
-            }}
-          >
-            {t.produkt.aehnlich}
-          </h2>
-          <ProduktGrid produkte={maskBestandListe(aehnliche, kaufenAktiv)} prioCount={0} />
-        </section>
-      )}
+      {/* ── Related — gestreamt via Suspense, blockt den First Paint nicht
+           (eigener DB-Roundtrip, liegt unter dem Fold). ───────────────── */}
+      <Suspense fallback={null}>
+        <AehnlicheProdukteSektion
+          produktId={produkt.id}
+          kategorieId={produkt.kategorie_id ?? null}
+          preis={produkt.preis}
+          kaufenAktiv={kaufenAktiv}
+          titel={t.produkt.aehnlich}
+        />
+      </Suspense>
 
     </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * AehnlicheProdukteSektion — „Похожие товары" als eigene async-Insel.
+ * In <Suspense> gewrappt, damit ihr separater DB-Query den ersten Seiten-
+ * Paint nicht blockiert (sequenzieller Roundtrip, unter dem Fold).
+ * ────────────────────────────────────────────────────────────────────────── */
+async function AehnlicheProdukteSektion({
+  produktId, kategorieId, preis, kaufenAktiv, titel,
+}: {
+  produktId:   string;
+  kategorieId: number | null;
+  preis:       number;
+  kaufenAktiv: boolean;
+  titel:       string;
+}) {
+  const aehnliche = await aehnlicheProdukte(produktId, kategorieId, preis, 4).catch(() => []);
+  if (aehnliche.length === 0) return null;
+  return (
+    <section
+      className="max-w-[1440px] mx-auto px-5 md:px-14 py-16 md:py-20 border-t"
+      style={{ borderColor: "var(--color-line)" }}
+    >
+      <p
+        className="text-[11px] uppercase font-medium mb-3"
+        style={{ letterSpacing: "0.28em", color: "var(--color-coral)" }}
+      >
+        ◆
+      </p>
+      <h2
+        className="mb-10"
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize:   "clamp(1.75rem, 4vw, 2.25rem)",
+          color:      "var(--color-ink)",
+        }}
+      >
+        {titel}
+      </h2>
+      <ProduktGrid produkte={maskBestandListe(aehnliche, kaufenAktiv)} prioCount={0} />
+    </section>
   );
 }
