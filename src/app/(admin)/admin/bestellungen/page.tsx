@@ -6,6 +6,7 @@ import { formatPreis } from "@/lib/utils/preis";
 import { Package, ChevronLeft, ChevronRight, ExternalLink, Clock, CreditCard, Truck, Plus } from "lucide-react";
 import type { Metadata } from "next";
 import type { OrderStatus } from "@/types/commerce";
+import { StatusChipSelect } from "./status-chip-select";
 
 interface StatusCounts {
   pending:   number;
@@ -44,15 +45,6 @@ const formatBestellnummer = (n: number) => `GDT-${String(n).padStart(4, "0")}`;
 
 export const metadata: Metadata = { title: "Заказы" };
 export const dynamic = "force-dynamic";
-
-const STATUS_STYLE: Record<OrderStatus, { label: string; klasse: string }> = {
-  pending:   { label: "Ожидает",   klasse: "chip chip-warn"    },
-  paid:      { label: "Оплачен",   klasse: "chip chip-success" },
-  fulfilled: { label: "Отправлен", klasse: "chip chip-success" },
-  completed: { label: "Завершён",  klasse: "chip chip-success" },
-  cancelled: { label: "Отменён",   klasse: "chip chip-muted"   },
-  refunded:  { label: "Возврат",   klasse: "chip chip-danger"  },
-};
 
 const FILTER: Array<{ value: OrderStatus | ""; label: string }> = [
   { value: "",          label: "Все"       },
@@ -148,7 +140,6 @@ export default async function BestellungenAdminPage({
               </thead>
               <tbody>
                 {daten.items.map(o => {
-                  const s = STATUS_STYLE[o.status];
                   return (
                     <tr key={o.id}>
                       <td className="mono">{formatBestellnummer(o.order_number)}</td>
@@ -159,7 +150,7 @@ export default async function BestellungenAdminPage({
                       </td>
                       <td className="num strong">{formatPreis(o.total_cents / 100)}</td>
                       <td className="center">
-                        <span className={s.klasse}>{s.label}</span>
+                        <StatusChipSelect orderId={o.id} initial={o.status} />
                       </td>
                       <td className="num">
                         <Link href={`${base}/bestellungen/${o.id}`} className="row-action">

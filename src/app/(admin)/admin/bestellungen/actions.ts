@@ -34,6 +34,23 @@ export async function statusAktualisierenAction(
   return { ok: true, message: "Статус обновлён." };
 }
 
+/**
+ * Inline-Status-Wechsel aus der Listen-Zeile (Chip-Dropdown). Schlanke
+ * Variante von statusAktualisierenAction ohne FormData — direkt (id, status).
+ */
+export async function statusInlineAction(
+  orderId: string,
+  status: OrderStatus,
+): Promise<ActionResult> {
+  const session = await requireAdminSession();
+  if (!session) return { ok: false, error: "Не авторизовано" };
+  if (!STATI.includes(status)) return { ok: false, error: "Некорректный статус" };
+
+  await orderStatusUpdate(orderId, status, { bezahlt: status === "paid" });
+  revalidatePath("/admin/bestellungen");
+  return { ok: true, message: "Статус обновлён." };
+}
+
 /* ── Anzahlung-Lebenszyklus (vor_ort_anzahlung) ────────────────────────────── */
 
 /** Anzahlung als erhalten bestätigen → payment_status='partial' (+ anzahlung_bezahlt_am). */

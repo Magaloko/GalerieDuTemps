@@ -1017,6 +1017,54 @@ em.font-italic, .font-italic {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   INLINE-EDIT — Status-Chip-Dropdown (Twenty-Pattern: Feld in der Zeile ändern)
+   Klickbarer Chip öffnet ein Popover mit Optionen. Scharfe Radien (lebt im
+   Klassik-Admin + /app). Genutzt in der Bestellungen-Liste.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.chip-select { position: relative; display: inline-block; }
+
+/* Chip wird klickbar: Cursor + Caret + dezenter Hover. Erbt .chip-Ton. */
+.chip-select-trigger {
+  cursor:     pointer;
+  border:     0;
+  transition: filter 120ms ease;
+}
+.chip-select-trigger:hover { filter: brightness(0.96); }
+.chip-select-caret { opacity: 0.6; margin-left: 0.125rem; }
+
+/* Popover-Menü unter dem Chip. */
+.chip-select-menu {
+  position:      absolute;
+  top:           calc(100% + 4px);
+  left:          50%;
+  transform:     translateX(-50%);
+  z-index:       30;
+  min-width:     11rem;
+  padding:       0.25rem;
+  background:    var(--color-app-surface);
+  border:        1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  box-shadow:    0 8px 24px rgba(15, 20, 48, 0.14), 0 2px 6px rgba(15, 20, 48, 0.08);
+  animation:     gdt-toast-in 140ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.chip-select-option {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  gap:             0.5rem;
+  width:           100%;
+  padding:         0.375rem 0.5rem;
+  border:          0;
+  background:      transparent;
+  border-radius:   var(--radius-vintage);
+  cursor:          pointer;
+  transition:      background 100ms ease;
+}
+.chip-select-option:hover { background: var(--color-paper-warm); }
+.chip-select-check { color: var(--color-coral); flex-shrink: 0; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
    COMMAND-MENU (⌘K) — Twenty-Signatur-Sprungbrett
    Overlay zum Sofort-Springen (Aktionen + Navigation + Live-Suche). Weiche
    App-Radien (Overlay-Charakter), ruhige Tokens, EIN Akzent (Coral) für den
