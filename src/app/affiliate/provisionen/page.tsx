@@ -84,7 +84,7 @@ export default async function ProvisionenPage({
         <div className="bg-vintage-brown border border-vintage-sand/40 overflow-hidden" style={{ borderRadius: "var(--radius-card)" }}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm font-sans">
-              <thead className="bg-vintage-brown/40/50 border-b border-vintage-sand/40">
+              <thead className="bg-vintage-espresso/40 border-b border-vintage-sand/40">
                 <tr>
                   <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Дата</th>
                   <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-vintage-dust font-normal">Товар</th>
@@ -98,7 +98,7 @@ export default async function ProvisionenPage({
                 {daten.items.map(p => {
                   const status = STATUS_LABELS[p.status];
                   return (
-                    <tr key={p.id} className="hover:bg-vintage-brown/40/30 transition-colors">
+                    <tr key={p.id} className="hover:bg-vintage-sand/10 transition-colors">
                       <td className="px-4 py-3 text-vintage-dust">
                         {new Date(p.erstellt_am).toLocaleDateString("ru-RU")}
                       </td>

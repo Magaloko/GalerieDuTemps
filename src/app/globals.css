@@ -91,9 +91,22 @@
   --spacing-card:    1.5rem;
 
   /* ─ Border Radius ───────────────────────────────────────────────────────── */
+  /* Web/Klassik = scharf/editorial (Marken-Look). */
   --radius-vintage: 2px;
   --radius-card:    4px;
   --radius-button:  2px;
+  /* Operator-App + Telegram = weich/app-artig (Tool-Charakter). Bisher als
+     Magic-Numbers (10/14/999) verstreut — jetzt zentral. */
+  --radius-app:     10px;
+  --radius-app-lg:  14px;
+  --radius-pill:    999px;
+
+  /* ─ App-Flächen-Tokens (Operator-App, hell) ────────────────────────────────
+     Zentralisiert die bisher hartkodierten #fff / rgba(245,241,234,…) Werte
+     der App-Shell, damit ein späterer Dark-Mode nur hier umschalten muss. */
+  --color-app-bg:       var(--color-paper);   /* Seiten-Hintergrund */
+  --color-app-surface:  #ffffff;              /* Karten/Bars über dem BG */
+  --color-app-bar:      rgba(245, 241, 234, 0.95); /* sticky Top-Bar (blur) */
 
   /* ─ Schatten — für Dark Mode unauffällig, mehr Glow als Schatten ────────── */
   --shadow-vintage-xs: 0 1px 2px rgba(0, 0, 0, 0.30);
@@ -451,4 +464,93 @@ em.font-italic, .font-italic {
   background:     rgba(255,255,255,0.05);
   padding:        0.1em 0.3em;
   border-radius:  3px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   OPERATOR-APP-KOMPONENTEN (weiche Radien)
+   Wiederverwendbare Klassen statt verstreuter Inline-Styles in der App-Shell,
+   Сегодня-/Меню-Seiten. Werte spiegeln exakt die bisherigen Inline-Styles —
+   reine Zentralisierung, kein visueller Bruch. Token-getrieben, damit ein
+   späterer Dark-Mode nur die --color-app-* Tokens umschalten muss.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Karte/Fläche über dem Paper-Hintergrund (KPIs, Listen, Panels). */
+.app-card {
+  background:    var(--color-app-surface);
+  border:        1px solid var(--color-line);
+  border-radius: var(--radius-app);
+}
+/* Linksbündiger Coral-Akzent für „Achtung"-Kacheln (offene Aufgaben etc.). */
+.app-card-accent { border-left: 3px solid var(--color-coral); }
+
+/* Quadratische Icon-Kachel (Меню-Grid). */
+.app-tile {
+  background:    var(--color-bone);
+  border-radius: var(--radius-app-lg);
+}
+
+/* Sticky Top-Bar der App-Shell. */
+.app-bar {
+  background:      var(--color-app-bar);
+  border-bottom:   1px solid var(--color-line);
+  backdrop-filter: blur(8px);
+}
+
+/* Untere Tab-Leiste der App-Shell. */
+.app-tabbar {
+  background:  var(--color-app-surface);
+  border-top:  1px solid var(--color-line);
+}
+
+/* Runder Avatar-Chip (Initiale) in der Top-Bar. */
+.app-avatar {
+  display:         inline-flex;
+  align-items:     center;
+  justify-content: center;
+  width:           32px;
+  height:          32px;
+  border-radius:   var(--radius-pill);
+  background:      var(--color-coral);
+  color:           #fff;
+  font-family:     var(--font-display);
+  font-size:       15px;
+  flex-shrink:     0;
+}
+
+/* Aktions-Button (Schnellzugriff). Default = sekundär (Outline). */
+.app-action {
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  gap:             0.5rem;
+  padding:         0.875rem 1rem;
+  border-radius:   var(--radius-app);
+  background:      var(--color-app-surface);
+  border:          1px solid var(--color-line);
+  color:           var(--color-ink);
+  touch-action:    manipulation;
+  transition:      background 150ms ease, border-color 150ms ease;
+}
+.app-action:hover { background: var(--color-paper-warm); }
+.app-action-primary {
+  background: var(--color-coral);
+  border:     0;
+  color:      #fff;
+}
+.app-action-primary:hover { background: var(--color-coral-bright); }
+
+/* Coral Zähler-Badge (Pill) für Kacheln/Tabs. */
+.app-badge {
+  display:         inline-flex;
+  align-items:     center;
+  justify-content: center;
+  min-width:       18px;
+  height:          18px;
+  padding:         0 5px;
+  border-radius:   var(--radius-pill);
+  background:      var(--color-coral);
+  color:           #fff;
+  font-size:       10px;
+  font-weight:     500;
+  line-height:     1;
 }

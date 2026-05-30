@@ -38,7 +38,7 @@ export default async function AppHeutePage() {
       </header>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
         <Kpi label="Выручка сегодня" value={today.revenue_today_cents > 0 ? `₸ ${Math.round(today.revenue_today_cents / 100).toLocaleString("ru-RU")}` : "—"} />
         <Kpi label="Заказов в работе" value={String(today.orders_pending)} accent={today.orders_pending > 0} href="/app/bestellungen" />
         <Kpi label="Новых лидов"      value={String(b?.leads_unread ?? 0)}   accent={(b?.leads_unread ?? 0) > 0} href="/app/leads" />
@@ -62,7 +62,7 @@ export default async function AppHeutePage() {
 
 function Kpi({ label, value, accent, href }: { label: string; value: string; accent?: boolean; href?: string }) {
   const inner = (
-    <div className="p-3" style={{ background: "#fff", border: "1px solid var(--color-line)", borderLeft: accent ? "3px solid var(--color-coral)" : "1px solid var(--color-line)", borderRadius: 10 }}>
+    <div className={`app-card p-3${accent ? " app-card-accent" : ""}`}>
       <p className="text-[10px] uppercase font-medium mb-1" style={{ letterSpacing: "0.18em", color: "var(--color-ink-mute)" }}>{label}</p>
       <p style={{ fontFamily: "var(--font-display)", fontSize: 22, color: "var(--color-ink)", lineHeight: 1 }}>{value}</p>
     </div>
@@ -72,16 +72,7 @@ function Kpi({ label, value, accent, href }: { label: string; value: string; acc
 
 function Action({ href, icon: Icon, label, primary }: { href: string; icon: React.ElementType; label: string; primary?: boolean }) {
   return (
-    <Link
-      href={href}
-      className="flex items-center justify-center gap-2 py-3.5"
-      style={{
-        borderRadius: 10, touchAction: "manipulation",
-        background: primary ? "var(--color-coral)" : "#fff",
-        border:     primary ? "none" : "1px solid var(--color-line)",
-        color:      primary ? "#fff" : "var(--color-ink)",
-      }}
-    >
+    <Link href={href} className={`app-action${primary ? " app-action-primary" : ""}`}>
       <Icon className="w-4 h-4" />
       <span className="text-[12px] uppercase font-medium" style={{ letterSpacing: "0.12em" }}>{label}</span>
       {!primary && <ArrowRight className="w-3.5 h-3.5 opacity-40" />}

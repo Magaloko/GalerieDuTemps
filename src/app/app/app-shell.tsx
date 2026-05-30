@@ -56,14 +56,8 @@ export function AppShell({
     <div className="min-h-[100dvh]" style={{ background: "var(--color-paper)" }}>
     <div className={`min-h-[100dvh] flex flex-col ${fluid ? "" : "mx-auto max-w-md"}`} style={{ background: "var(--color-paper)" }}>
       {/* Top-Bar */}
-      <header
-        className="sticky top-0 z-20 flex items-center gap-3 px-4 py-3 backdrop-blur"
-        style={{ background: "rgba(245,241,234,0.95)", borderBottom: "1px solid var(--color-line)" }}
-      >
-        <div
-          className="shrink-0 flex items-center justify-center"
-          style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--color-coral)", color: "#fff", fontFamily: "var(--font-display)", fontSize: 15 }}
-        >
+      <header className="app-bar sticky top-0 z-20 flex items-center gap-3 px-4 py-3">
+        <div className="app-avatar">
           {initial}
         </div>
         <p className="flex-1 min-w-0 truncate whitespace-nowrap" style={{ fontFamily: "var(--font-display)", fontSize: 18, color: "var(--color-ink)" }}>
@@ -85,8 +79,8 @@ export function AppShell({
 
       {/* Untere Tab-Bar — fluid: volle Breite; sonst zentriert max-w-md */}
       <nav
-        className={`fixed bottom-0 inset-x-0 z-30 mx-auto flex items-stretch justify-around ${fluid ? "" : "max-w-md"}`}
-        style={{ background: "#fff", borderTop: "1px solid var(--color-line)", paddingTop: 8, paddingBottom: "calc(max(10px, env(safe-area-inset-bottom)) + 4px)" }}
+        className={`app-tabbar fixed bottom-0 inset-x-0 z-30 mx-auto flex items-stretch justify-around ${fluid ? "" : "max-w-md"}`}
+        style={{ paddingTop: 8, paddingBottom: "calc(max(10px, env(safe-area-inset-bottom)) + 4px)" }}
         aria-label="Навигация"
       >
         {TABS.map(({ href, label, icon: Icon, match }) => {

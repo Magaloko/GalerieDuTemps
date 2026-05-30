@@ -97,16 +97,10 @@ function MenuTile({ item }: { item: Tile }) {
   const Icon = item.icon;
   return (
     <Link href={item.href} className="flex flex-col items-center gap-2" style={{ touchAction: "manipulation" }}>
-      <div
-        className="relative w-full aspect-square flex items-center justify-center"
-        style={{ background: "var(--color-bone, #EFEAE0)", borderRadius: 14 }}
-      >
-        <Icon className="w-6 h-6" strokeWidth={1.6} style={{ color: "var(--color-ink-soft, #3A3E5C)" }} />
+      <div className="app-tile relative w-full aspect-square flex items-center justify-center">
+        <Icon className="w-6 h-6" strokeWidth={1.6} style={{ color: "var(--color-ink-soft)" }} />
         {item.badge != null && item.badge > 0 && (
-          <span
-            className="absolute top-1.5 right-1.5 text-[10px] font-medium flex items-center justify-center"
-            style={{ background: "var(--color-coral)", color: "#fff", borderRadius: 999, minWidth: 18, height: 18, padding: "0 5px", lineHeight: "18px" }}
-          >
+          <span className="app-badge absolute top-1.5 right-1.5">
             {item.badge > 99 ? "99+" : item.badge}
           </span>
         )}
