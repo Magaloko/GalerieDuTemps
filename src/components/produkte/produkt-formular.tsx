@@ -11,9 +11,10 @@ import { PreisMultiCurrency } from "./preis-multi-currency";
 import { MultilingualInput } from "@/components/ui/multilingual-input";
 import { SingleMediaUpload } from "@/components/ui/single-media-upload";
 import { BildManager } from "./bild-manager";
+import { FormSection } from "./form-section";
 import { InstagramUrlsInput } from "./instagram-urls-input";
 import { ProduktStoryEditor } from "./produkt-story-editor";
-import { Save, Trash2, AlertCircle, CheckCircle2, ImagePlus, Info, Eye } from "lucide-react";
+import { Save, Trash2, AlertCircle, CheckCircle2, ImagePlus, Eye } from "lucide-react";
 import { InstagramIcon } from "./instagram-icon";
 import Image from "next/image";
 import { formatPreis } from "@/lib/utils/preis";
@@ -93,6 +94,18 @@ export function ProduktFormular({
     ...brands.map(b => ({ value: b.id, label: b.name })),
   ];
 
+  // ── Optionale Sektionen: offen wenn sie bereits Daten haben, sonst zu ──────
+  // Ergebnis: ein frischer Draft ist maximal kompakt (alles zu); ein bereits
+  // gepflegtes Produkt zeigt seine vorhandenen Daten sofort (relevant offen).
+  const hatStory     = (produkt?.inhalt_blocks?.length ?? 0) > 0;
+  const hatMasse     = !!(produkt?.abmessungen && (
+    produkt.abmessungen.breite || produkt.abmessungen.hoehe ||
+    produkt.abmessungen.tiefe  || produkt.abmessungen.gewicht
+  ));
+  const hatVideo     = !!produkt?.video_url;
+  const hatInstagram = (produkt?.instagram_urls?.length ?? 0) > 0;
+  const hatSeo       = !!(produkt?.seo_titel || produkt?.seo_beschreibung);
+
   // ── Live-Vorschau-State (wie im Newsletter-Editor) ───────────────────────
   // Spiegelt Name + Preis live; Hauptbild kommt aus den bereits gespeicherten
   // Bildern (aktualisiert sich nach Upload beim Reload).
@@ -164,424 +177,353 @@ export function ProduktFormular({
 
       {/* ── 2-Spalten: links Felder, rechts Live-Vorschau (wie Newsletter-Editor) ── */}
       <div className="grid lg:grid-cols-[1fr_320px] gap-6 items-start">
-        <div className="space-y-8 min-w-0">
+        <div className="space-y-6 min-w-0">
 
-      {/* ─── Basisinformationen ───────────────────────────────────── */}
-      <section
-        className="bg-vintage-white border border-vintage-sand p-6 space-y-5"
-        style={{ borderRadius: "var(--radius-card)" }}
-      >
-        <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
-          Основная информация
-        </h2>
+          {/* ════ KERN (immer sichtbar) ═══════════════════════════════ */}
 
-        <MultilingualInput
-          label="Название"
-          name="name_i18n"
-          variant="input"
-          initial={produkt?.name_i18n ?? {}}
-          fallbackValue={produkt?.name}
-          maxLength={300}
-          placeholder="напр. Комод бидермейер"
-          onChange={(v) => setPvName(v.ru || v.en || v.de || "")}
-        />
-        {/* Hidden default-Sprache (ru) für name-Spalte fallback */}
-        <input type="hidden" name="name" value={produkt?.name ?? ""} />
+          {/* ─── Основная информация ─────────────────────────────── */}
+          <FormSection title="Основная информация">
+            <MultilingualInput
+              label="Название"
+              name="name_i18n"
+              variant="input"
+              initial={produkt?.name_i18n ?? {}}
+              fallbackValue={produkt?.name}
+              maxLength={300}
+              placeholder="напр. Комод бидермейер"
+              onChange={(v) => setPvName(v.ru || v.en || v.de || "")}
+            />
+            {/* Hidden default-Sprache (ru) für name-Spalte fallback */}
+            <input type="hidden" name="name" value={produkt?.name ?? ""} />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            label="Slug (URL)"
-            name="slug"
-            defaultValue={produkt?.slug ?? ""}
-            error={e("slug")}
-            placeholder="оставьте пустым → создаётся автоматически"
-            hint="Создаётся из названия. Можно отредактировать вручную."
-          />
-          <Input
-            label="Артикул-код"
-            name="artikel_code"
-            defaultValue={produkt?.artikel_code ?? ""}
-            error={e("artikel_code")}
-            placeholder="оставьте пустым → V-0001, V-0002 …"
-            hint="Создаётся автоматически по очереди. Можно перезаписать."
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Select
-            label="Категория"
-            name="kategorie_id"
-            options={kategorieOptions}
-            defaultValue={String(produkt?.kategorie_id ?? "")}
-            error={e("kategorie_id")}
-            onChange={(ev) => setPvKatId((ev.target as HTMLSelectElement).value)}
-          />
-          <Select
-            label="Состояние"
-            name="zustand"
-            required
-            options={ZUSTAND_OPTIONS}
-            defaultValue={produkt?.zustand ?? "gut"}
-            error={e("zustand")}
-            onChange={(ev) => setPvZustand((ev.target as HTMLSelectElement).value)}
-          />
-        </div>
-
-        <Select
-          label="Бренд"
-          name="brand_id"
-          options={brandOptions}
-          defaultValue={produkt?.brand_id ?? ""}
-        />
-
-        <Input
-          label="Количество на складе"
-          name="lagerbestand"
-          type="number"
-          min="0"
-          defaultValue={produkt?.lagerbestand ?? 1}
-          error={e("lagerbestand")}
-        />
-      </section>
-
-      {/* ─── Fotos (foto-first: direkt nach den Basis-Infos) ──────── */}
-      <section
-        className="bg-vintage-white border border-vintage-sand p-6 space-y-5"
-        style={{ borderRadius: "var(--radius-card)" }}
-      >
-        <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
-          <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2">
-            <ImagePlus className="w-4 h-4 text-vintage-gold" />
-            Фотографии
-          </h2>
-          {produkt && (
-            <p className="text-xs font-sans text-vintage-dust">
-              {initialBilder.length} {initialBilder.length === 1 ? "фото" : "фото"}
-            </p>
-          )}
-        </div>
-
-        {produkt ? (
-          <BildManager produktId={produkt.id} initialBilder={initialBilder} />
-        ) : (
-          <div
-            className="flex items-start gap-3 p-4"
-            style={{
-              background:   "rgba(201,168,76,0.08)",
-              border:       "1px solid rgba(201,168,76,0.30)",
-              borderLeft:   "4px solid var(--color-gold, #C9A84C)",
-              borderRadius: "var(--radius-card)",
-            }}
-          >
-            <Info className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "var(--color-gold, #C9A84C)" }} />
-            <div className="text-sm text-vintage-ink font-sans flex-1">
-              <p>
-                <strong>Сначала сохрани товар</strong> — после этого откроется галерея с
-                функциями: drag-sort, главное фото, alt-тексты, массовое удаление, paste из буфера.
-              </p>
-              <p className="text-xs text-vintage-dust mt-1">
-                Все фото обрабатываются автоматически: WebP-варианты, EXIF-strip, сжатие.
-              </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Slug (URL)"
+                name="slug"
+                defaultValue={produkt?.slug ?? ""}
+                error={e("slug")}
+                placeholder="оставьте пустым → создаётся автоматически"
+                hint="Создаётся из названия. Можно отредактировать вручную."
+              />
+              <Input
+                label="Артикул-код"
+                name="artikel_code"
+                defaultValue={produkt?.artikel_code ?? ""}
+                error={e("artikel_code")}
+                placeholder="оставьте пустым → V-0001, V-0002 …"
+                hint="Создаётся автоматически по очереди. Можно перезаписать."
+              />
             </div>
-          </div>
-        )}
-      </section>
 
-      {/* ─── Preise & Marge ───────────────────────────────────────── */}
-      <PreiseSektion produkt={produkt} e={e} onPreisChange={setPvPreis} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Select
+                label="Категория"
+                name="kategorie_id"
+                options={kategorieOptions}
+                defaultValue={String(produkt?.kategorie_id ?? "")}
+                error={e("kategorie_id")}
+                onChange={(ev) => setPvKatId((ev.target as HTMLSelectElement).value)}
+              />
+              <Select
+                label="Состояние"
+                name="zustand"
+                required
+                options={ZUSTAND_OPTIONS}
+                defaultValue={produkt?.zustand ?? "gut"}
+                error={e("zustand")}
+                onChange={(ev) => setPvZustand((ev.target as HTMLSelectElement).value)}
+              />
+            </div>
 
-      {/* ─── Beschreibungen ───────────────────────────────────────── */}
-      <section
-        className="bg-vintage-white border border-vintage-sand p-6 space-y-5"
-        style={{ borderRadius: "var(--radius-card)" }}
-      >
-        <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
-          Описания
-        </h2>
-        <MultilingualInput
-          label="Краткое описание"
-          name="kurzbeschreibung_i18n"
-          variant="textarea"
-          initial={produkt?.kurzbeschreibung_i18n ?? {}}
-          fallbackValue={produkt?.kurzbeschreibung ?? undefined}
-          rows={3}
-          maxLength={500}
-          placeholder="Краткое резюме (макс. 500 символов)"
-        />
-        <MultilingualInput
-          label="Подробное описание"
-          name="beschreibung_i18n"
-          variant="markdown"
-          initial={produkt?.beschreibung_i18n ?? {}}
-          fallbackValue={produkt?.beschreibung ?? undefined}
-          rows={10}
-          placeholder="Подробное описание, история, особенности …"
-        />
-        {/* Hidden-Felder für Backwards-Compat (Action liest auch i18n) */}
-        <input type="hidden" name="kurzbeschreibung" value={produkt?.kurzbeschreibung ?? ""} />
-        <input type="hidden" name="beschreibung"     value={produkt?.beschreibung ?? ""} />
-      </section>
+            <Select
+              label="Бренд"
+              name="brand_id"
+              options={brandOptions}
+              defaultValue={produkt?.brand_id ?? ""}
+            />
 
-      {/* ─── Story-Blöcke (block-basierte Detail-Beschreibung) ───────── */}
-      <section
-        className="bg-vintage-white border border-vintage-sand p-6 space-y-4"
-        style={{ borderRadius: "var(--radius-card)" }}
-      >
-        <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
-          <h2 className="font-serif text-lg text-vintage-espresso">История товара</h2>
-          <p className="text-xs font-sans text-vintage-dust">Опционально · блоки: текст, фото, цитата</p>
-        </div>
-        <p className="text-xs text-vintage-dust font-sans">
-          Соберите страницу товара из блоков (как рассылку): палитра, живой
-          предпросмотр, свойства. Если оставить пустым — показывается обычное
-          описание выше.
-        </p>
-        <ProduktStoryEditor initial={produkt?.inhalt_blocks ?? []} galerie={initialBilder} />
-      </section>
+            <Input
+              label="Количество на складе"
+              name="lagerbestand"
+              type="number"
+              min="0"
+              defaultValue={produkt?.lagerbestand ?? 1}
+              error={e("lagerbestand")}
+            />
+          </FormSection>
 
-      {/* ─── Details ──────────────────────────────────────────────── */}
-      <section
-        className="bg-vintage-white border border-vintage-sand p-6 space-y-5"
-        style={{ borderRadius: "var(--radius-card)" }}
-      >
-        <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
-          Детали
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Input
-            label="Эпоха"
-            name="era"
-            defaultValue={produkt?.era ?? ""}
-            placeholder="напр. 1920-е, ар-деко"
-            onChange={(ev) => setPvEra((ev.target as HTMLInputElement).value)}
-          />
-          <Input
-            label="Происхождение"
-            name="herkunft"
-            defaultValue={produkt?.herkunft ?? ""}
-            placeholder="напр. Германия, Франция"
-          />
-          <Input
-            label="Материал"
-            name="material"
-            defaultValue={produkt?.material ?? ""}
-            placeholder="напр. дуб, латунь, фарфор"
-          />
-        </div>
-        <Input
-          label="Теги"
-          name="tags"
-          defaultValue={produkt?.tags?.join(", ") ?? ""}
-          placeholder="винтаж, антиквариат, ар-деко (через запятую)"
-          hint="Ключевые слова через запятую для поиска"
-        />
-      </section>
+          {/* ─── Fotos (foto-first: direkt nach den Basis-Infos) ──────── */}
+          {produkt && (
+            <FormSection
+              title="Фотографии"
+              icon={<ImagePlus className="w-4 h-4 text-vintage-gold" />}
+              hint={`${initialBilder.length} фото`}
+            >
+              <BildManager produktId={produkt.id} initialBilder={initialBilder} />
+            </FormSection>
+          )}
 
-      {/* ─── Sichtbarkeit ─────────────────────────────────────────── */}
-      <section
-        className="bg-vintage-white border border-vintage-sand p-6 space-y-4"
-        style={{ borderRadius: "var(--radius-card)" }}
-      >
-        <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
-          Видимость
-        </h2>
+          {/* ─── Preise & Marge ───────────────────────────────────────── */}
+          <PreiseSektion produkt={produkt} e={e} onPreisChange={setPvPreis} />
 
-        {/* Master-Aktiv-Switch */}
-        <label className="flex items-start gap-3 cursor-pointer">
-          <input type="hidden" name="aktiv" value="false" />
-          <input
-            type="checkbox"
-            name="aktiv"
-            value="true"
-            defaultChecked={produkt?.aktiv ?? true}
-            className="w-4 h-4 mt-0.5 accent-vintage-sage"
-          />
-          <span className="text-sm font-sans text-vintage-ink">
-            <strong>Активен</strong> — виден и доступен в магазине.
-            <span className="block text-xs text-vintage-dust">
-              Если выключено, товар нигде не отображается (мастер-выключатель).
-            </span>
-          </span>
-        </label>
+          {/* ─── Beschreibungen ───────────────────────────────────────── */}
+          <FormSection title="Описания">
+            <MultilingualInput
+              label="Краткое описание"
+              name="kurzbeschreibung_i18n"
+              variant="textarea"
+              initial={produkt?.kurzbeschreibung_i18n ?? {}}
+              fallbackValue={produkt?.kurzbeschreibung ?? undefined}
+              rows={3}
+              maxLength={500}
+              placeholder="Краткое резюме (макс. 500 символов)"
+            />
+            <MultilingualInput
+              label="Подробное описание"
+              name="beschreibung_i18n"
+              variant="markdown"
+              initial={produkt?.beschreibung_i18n ?? {}}
+              fallbackValue={produkt?.beschreibung ?? undefined}
+              rows={10}
+              placeholder="Подробное описание, история, особенности …"
+            />
+            {/* Hidden-Felder für Backwards-Compat (Action liest auch i18n) */}
+            <input type="hidden" name="kurzbeschreibung" value={produkt?.kurzbeschreibung ?? ""} />
+            <input type="hidden" name="beschreibung"     value={produkt?.beschreibung ?? ""} />
+          </FormSection>
 
-        {/* B2C-Sichtbarkeits-Tri-State */}
-        <fieldset className="space-y-2 pt-2 border-t border-vintage-sand/40">
-          <legend className="text-xs font-sans uppercase tracking-widest text-vintage-brown mb-2">
-            B2C-видимость
-          </legend>
-          {[
-            {
-              value: "visible",
-              title: "Виден",
-              desc:  "Клиенты видят товар с ценой и могут купить. (По умолчанию)",
-            },
-            {
-              value: "teaser",
-              title: "Витрина",
-              desc:  "Клиенты видят товар (фото, описание), но без цены. Для регистрации как «студия».",
-            },
-            {
-              value: "hidden",
-              title: "Скрыт",
-              desc:  "Товар не отображается в публичном каталоге. Только админ-доступ.",
-            },
-          ].map(opt => (
-            <label key={opt.value} className="flex items-start gap-3 cursor-pointer">
+          {/* ─── Details ──────────────────────────────────────────────── */}
+          <FormSection title="Детали">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Input
+                label="Эпоха"
+                name="era"
+                defaultValue={produkt?.era ?? ""}
+                placeholder="напр. 1920-е, ар-деко"
+                onChange={(ev) => setPvEra((ev.target as HTMLInputElement).value)}
+              />
+              <Input
+                label="Происхождение"
+                name="herkunft"
+                defaultValue={produkt?.herkunft ?? ""}
+                placeholder="напр. Германия, Франция"
+              />
+              <Input
+                label="Материал"
+                name="material"
+                defaultValue={produkt?.material ?? ""}
+                placeholder="напр. дуб, латунь, фарфор"
+              />
+            </div>
+            <Input
+              label="Теги"
+              name="tags"
+              defaultValue={produkt?.tags?.join(", ") ?? ""}
+              placeholder="винтаж, антиквариат, ар-деко (через запятую)"
+              hint="Ключевые слова через запятую для поиска"
+            />
+          </FormSection>
+
+          {/* ─── Sichtbarkeit ─────────────────────────────────────────── */}
+          <FormSection title="Видимость">
+            {/* Master-Aktiv-Switch */}
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input type="hidden" name="aktiv" value="false" />
               <input
-                type="radio"
-                name="b2c_mode"
-                value={opt.value}
-                defaultChecked={(produkt?.b2c_mode ?? "visible") === opt.value}
-                className="w-4 h-4 mt-0.5 accent-vintage-gold"
+                type="checkbox"
+                name="aktiv"
+                value="true"
+                defaultChecked={produkt?.aktiv ?? true}
+                className="w-4 h-4 mt-0.5 accent-vintage-sage"
               />
               <span className="text-sm font-sans text-vintage-ink">
-                <strong>{opt.title}</strong>
-                <span className="block text-xs text-vintage-dust">{opt.desc}</span>
+                <strong>Активен</strong> — виден и доступен в магазине.
+                <span className="block text-xs text-vintage-dust">
+                  Если выключено, товар нигде не отображается (мастер-выключатель).
+                </span>
               </span>
             </label>
-          ))}
-        </fieldset>
 
-        {/* Featured + Verkauft */}
-        <div className="flex flex-wrap gap-6 pt-2 border-t border-vintage-sand/40">
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input type="hidden" name="featured" value="false" />
-            <input
-              type="checkbox"
-              name="featured"
-              value="true"
-              defaultChecked={produkt?.featured ?? false}
-              className="w-4 h-4 accent-vintage-gold"
+            {/* B2C-Sichtbarkeits-Tri-State */}
+            <fieldset className="space-y-2 pt-2 border-t border-vintage-sand/40">
+              <legend className="text-xs font-sans uppercase tracking-widest text-vintage-brown mb-2">
+                B2C-видимость
+              </legend>
+              {[
+                {
+                  value: "visible",
+                  title: "Виден",
+                  desc:  "Клиенты видят товар с ценой и могут купить. (По умолчанию)",
+                },
+                {
+                  value: "teaser",
+                  title: "Витрина",
+                  desc:  "Клиенты видят товар (фото, описание), но без цены. Для регистрации как «студия».",
+                },
+                {
+                  value: "hidden",
+                  title: "Скрыт",
+                  desc:  "Товар не отображается в публичном каталоге. Только админ-доступ.",
+                },
+              ].map(opt => (
+                <label key={opt.value} className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="b2c_mode"
+                    value={opt.value}
+                    defaultChecked={(produkt?.b2c_mode ?? "visible") === opt.value}
+                    className="w-4 h-4 mt-0.5 accent-vintage-gold"
+                  />
+                  <span className="text-sm font-sans text-vintage-ink">
+                    <strong>{opt.title}</strong>
+                    <span className="block text-xs text-vintage-dust">{opt.desc}</span>
+                  </span>
+                </label>
+              ))}
+            </fieldset>
+
+            {/* Featured + Verkauft */}
+            <div className="flex flex-wrap gap-6 pt-2 border-t border-vintage-sand/40">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="hidden" name="featured" value="false" />
+                <input
+                  type="checkbox"
+                  name="featured"
+                  value="true"
+                  defaultChecked={produkt?.featured ?? false}
+                  className="w-4 h-4 accent-vintage-gold"
+                />
+                <span className="text-sm font-sans text-vintage-ink">
+                  Рекомендуемое (главная страница)
+                </span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="hidden" name="verkauft" value="false" />
+                <input
+                  type="checkbox"
+                  name="verkauft"
+                  value="true"
+                  defaultChecked={produkt?.verkauft ?? false}
+                  className="w-4 h-4 accent-vintage-burgundy"
+                />
+                <span className="text-sm font-sans text-vintage-ink">
+                  Отметить как проданное
+                </span>
+              </label>
+            </div>
+          </FormSection>
+
+          {/* ════ ОПЦИОНАЛЬНО / ДОПОЛНИТЕЛЬНО (einklappbar) ═══════════ */}
+
+          {/* ─── Story-Blöcke (block-basierte Detail-Beschreibung) ───────── */}
+          <FormSection
+            title="История товара"
+            hint="Опционально · блоки: текст, фото, цитата"
+            collapsible
+            defaultOpen={hatStory}
+          >
+            <p className="text-xs text-vintage-dust font-sans">
+              Соберите страницу товара из блоков (как рассылку): палитра, живой
+              предпросмотр, свойства. Если оставить пустым — показывается обычное
+              описание выше.
+            </p>
+            <ProduktStoryEditor initial={produkt?.inhalt_blocks ?? []} galerie={initialBilder} />
+          </FormSection>
+
+          {/* ─── Abmessungen & Versand ──────────────────────────────── */}
+          <FormSection
+            title="Размеры и доставка"
+            hint="Опционально · для расчёта доставки"
+            collapsible
+            defaultOpen={hatMasse}
+          >
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Input
+                label="Ширина (см)"
+                name="abmessungen_breite"
+                type="number" step="0.1" min="0"
+                defaultValue={produkt?.abmessungen?.breite ?? ""}
+                placeholder="0"
+              />
+              <Input
+                label="Высота (см)"
+                name="abmessungen_hoehe"
+                type="number" step="0.1" min="0"
+                defaultValue={produkt?.abmessungen?.hoehe ?? ""}
+                placeholder="0"
+              />
+              <Input
+                label="Глубина (см)"
+                name="abmessungen_tiefe"
+                type="number" step="0.1" min="0"
+                defaultValue={produkt?.abmessungen?.tiefe ?? ""}
+                placeholder="0"
+              />
+              <Input
+                label="Вес (кг)"
+                name="abmessungen_gewicht"
+                type="number" step="0.01" min="0"
+                defaultValue={produkt?.abmessungen?.gewicht ?? ""}
+                placeholder="0.00"
+              />
+            </div>
+          </FormSection>
+
+          {/* ─── Видео (опционально) ─────────────────────────────────── */}
+          <FormSection
+            title="Видео"
+            hint="Опционально · 1 видео на товар"
+            collapsible
+            defaultOpen={hatVideo}
+          >
+            <SingleMediaUpload
+              label="Видео-обзор товара"
+              name="video_url"
+              accept="video/mp4,video/webm,video/quicktime"
+              variant="video"
+              defaultValue={produkt?.video_url ?? ""}
+              placeholder="https://… .mp4  или  https://youtu.be/…"
+              hint="MP4 (макс. 100 МБ) или URL YouTube/Vimeo"
             />
-            <span className="text-sm font-sans text-vintage-ink">
-              Рекомендуемое (главная страница)
-            </span>
-          </label>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input type="hidden" name="verkauft" value="false" />
-            <input
-              type="checkbox"
-              name="verkauft"
-              value="true"
-              defaultChecked={produkt?.verkauft ?? false}
-              className="w-4 h-4 accent-vintage-burgundy"
+          </FormSection>
+
+          {/* ─── Instagram-Embeds (опционально) ───────────────────────── */}
+          <FormSection
+            title="Instagram"
+            icon={<InstagramIcon className="w-4 h-4" style={{ color: "#C13584" }} />}
+            hint="Reels и посты · до 5 на товар"
+            collapsible
+            defaultOpen={hatInstagram}
+          >
+            <p className="text-xs text-vintage-dust font-sans">
+              Скопируй ссылку с reel или поста (либо весь embed-код прямо из Instagram).
+              Будет показано на странице товара как нативный embed.
+            </p>
+            <InstagramUrlsInput
+              name="instagram_urls"
+              defaultValue={produkt?.instagram_urls ?? []}
             />
-            <span className="text-sm font-sans text-vintage-ink">
-              Отметить как проданное
-            </span>
-          </label>
-        </div>
-      </section>
+          </FormSection>
 
-      {/* ─── Abmessungen & Versand ──────────────────────────────── */}
-      <section
-        className="bg-vintage-white border border-vintage-sand p-6 space-y-5"
-        style={{ borderRadius: "var(--radius-card)" }}
-      >
-        <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
-          <h2 className="font-serif text-lg text-vintage-espresso">Размеры и доставка</h2>
-          <p className="text-xs font-sans text-vintage-dust">Опционально · для расчёта доставки</p>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Input
-            label="Ширина (см)"
-            name="abmessungen_breite"
-            type="number" step="0.1" min="0"
-            defaultValue={produkt?.abmessungen?.breite ?? ""}
-            placeholder="0"
-          />
-          <Input
-            label="Высота (см)"
-            name="abmessungen_hoehe"
-            type="number" step="0.1" min="0"
-            defaultValue={produkt?.abmessungen?.hoehe ?? ""}
-            placeholder="0"
-          />
-          <Input
-            label="Глубина (см)"
-            name="abmessungen_tiefe"
-            type="number" step="0.1" min="0"
-            defaultValue={produkt?.abmessungen?.tiefe ?? ""}
-            placeholder="0"
-          />
-          <Input
-            label="Вес (кг)"
-            name="abmessungen_gewicht"
-            type="number" step="0.01" min="0"
-            defaultValue={produkt?.abmessungen?.gewicht ?? ""}
-            placeholder="0.00"
-          />
-        </div>
-      </section>
-
-      {/* ─── Видео (опционально) ─────────────────────────────────── */}
-      <section
-        className="bg-vintage-white border border-vintage-sand p-6 space-y-3"
-        style={{ borderRadius: "var(--radius-card)" }}
-      >
-        <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
-          <h2 className="font-serif text-lg text-vintage-espresso">Видео</h2>
-          <p className="text-xs font-sans text-vintage-dust">Опционально · 1 видео на товар</p>
-        </div>
-
-        <SingleMediaUpload
-          label="Видео-обзор товара"
-          name="video_url"
-          accept="video/mp4,video/webm,video/quicktime"
-          variant="video"
-          defaultValue={produkt?.video_url ?? ""}
-          placeholder="https://… .mp4  или  https://youtu.be/…"
-          hint="MP4 (макс. 100 МБ) или URL YouTube/Vimeo"
-        />
-      </section>
-
-      {/* ─── Instagram-Embeds (опционально) ───────────────────────── */}
-      <section
-        className="bg-vintage-white border border-vintage-sand p-6 space-y-3"
-        style={{ borderRadius: "var(--radius-card)" }}
-      >
-        <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
-          <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2">
-            <InstagramIcon className="w-4 h-4" style={{ color: "#C13584" }} />
-            Instagram
-          </h2>
-          <p className="text-xs font-sans text-vintage-dust">Reels и посты · до 5 на товар</p>
-        </div>
-        <p className="text-xs text-vintage-dust font-sans">
-          Скопируй ссылку с reel или поста (либо весь embed-код прямо из Instagram).
-          Будет показано на странице товара как нативный embed.
-        </p>
-        <InstagramUrlsInput
-          name="instagram_urls"
-          defaultValue={produkt?.instagram_urls ?? []}
-        />
-      </section>
-
-      {/* ─── SEO ──────────────────────────────────────────────────── */}
-      <section
-        className="bg-vintage-white border border-vintage-sand p-6 space-y-5"
-        style={{ borderRadius: "var(--radius-card)" }}
-      >
-        <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
-          SEO
-        </h2>
-        <Input
-          label="SEO-заголовок"
-          name="seo_titel"
-          defaultValue={produkt?.seo_titel ?? ""}
-          placeholder="макс. 70 символов"
-          maxLength={70}
-          hint="Если пусто — используется название товара"
-        />
-        <Textarea
-          label="SEO-описание"
-          name="seo_beschreibung"
-          defaultValue={produkt?.seo_beschreibung ?? ""}
-          placeholder="макс. 160 символов"
-          maxLength={160}
-          rows={3}
-        />
-      </section>
+          {/* ─── SEO ──────────────────────────────────────────────────── */}
+          <FormSection title="SEO" collapsible defaultOpen={hatSeo}>
+            <Input
+              label="SEO-заголовок"
+              name="seo_titel"
+              defaultValue={produkt?.seo_titel ?? ""}
+              placeholder="макс. 70 символов"
+              maxLength={70}
+              hint="Если пусто — используется название товара"
+            />
+            <Textarea
+              label="SEO-описание"
+              name="seo_beschreibung"
+              defaultValue={produkt?.seo_beschreibung ?? ""}
+              placeholder="макс. 160 символов"
+              maxLength={160}
+              rows={3}
+            />
+          </FormSection>
 
         </div>{/* /linke Spalte (Felder) */}
 
@@ -770,17 +712,10 @@ function PreiseSektion({
     : null;
 
   return (
-    <section
-      className="bg-vintage-white border border-vintage-sand p-6 space-y-5"
-      style={{ borderRadius: "var(--radius-card)" }}
+    <FormSection
+      title="Цены и маржа"
+      hint="Все цены нетто · НДС добавляется в зависимости от страны"
     >
-      <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
-        <h2 className="font-serif text-lg text-vintage-espresso">Цены и маржа</h2>
-        <p className="text-xs font-sans text-vintage-dust">
-          Все цены нетто · НДС добавляется в зависимости от страны
-        </p>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input
           label="Закупочная цена (нетто)"
@@ -837,6 +772,6 @@ function PreiseSektion({
           </div>
         </div>
       </div>
-    </section>
+    </FormSection>
   );
 }
