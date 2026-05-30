@@ -191,6 +191,55 @@ export async function produktAktualisierenAction(
 }
 
 // ---------------------------------------------------------------------------
+// KI-Ausfüllen im Vollformular (Editor) — Notizen → strukturierte Felder.
+// Nutzt denselben Extraktor wie Schnell-Flow + Entwürfe-Queue. Schreibt direkt
+// in die DB; der Editor macht danach router.refresh() und zeigt die gefüllten
+// Felder. Quelle: explizite Notizen, sonst Fallback auf Name + Beschreibung.
+// ---------------------------------------------------------------------------
+export async function produktKiAusfuellenAction(
+  id: string,
+  notizen: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const session = await requireAdminSession();
+  if (!session) return { ok: false, error: "Нет прав" };
+
+  const p = await produktById(id);
+  if (!p) return { ok: false, error: "Товар не найден" };
+
+  const quelle = notizen?.trim() || [p.name, p.beschreibung ?? ""].join("\n").trim();
+  if (quelle.length < 20) {
+    return { ok: false, error: "Слишком мало текста для ИИ — минимум 20 символов" };
+  }
+
+  try {
+    const { extrahiereProduktDaten, ExtraktorError } = await import("@/lib/ai/produkt-extraktor");
+    let daten;
+    try {
+      daten = await extrahiereProduktDaten(quelle, { kategorieHint: p.kategorie_name ?? undefined });
+    } catch (err) {
+      if (err instanceof ExtraktorError) return { ok: false, error: err.message };
+      throw err;
+    }
+    await produktAktualisieren(id, {
+      name:             daten.name,
+      kurzbeschreibung: daten.kurzbeschreibung,
+      beschreibung:     daten.beschreibung,
+      era:              daten.era ?? undefined,
+      herkunft:         daten.herkunft ?? undefined,
+      material:         daten.material ?? undefined,
+      zustand:          daten.zustand,
+      tags:             daten.tags,
+      seo_titel:        daten.seo_titel,
+      seo_beschreibung: daten.seo_beschreibung,
+    });
+    return { ok: true };
+  } catch (err) {
+    console.error("[produktKiAusfuellen]", err);
+    return { ok: false, error: err instanceof Error ? err.message : "Ошибка ИИ" };
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Quick-Toggles für Listen-Aktionen — kein redirect, nur revalidatePath
 // ---------------------------------------------------------------------------
 type ToggleField = "aktiv" | "featured" | "verkauft";

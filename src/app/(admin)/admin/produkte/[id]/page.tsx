@@ -5,6 +5,7 @@ import { alleKategorien } from "@/lib/db/kategorien";
 import { brandsAktiv } from "@/lib/db/brands";
 import { bilderFuerProdukt } from "@/lib/db/bilder";
 import { ProduktFormular } from "@/components/produkte/produkt-formular";
+import { KiFuellenBlock } from "@/components/produkte/ki-fuellen-block";
 import { QrWidget } from "@/components/produkte/qr-widget";
 import { KundenPushButton } from "@/components/produkte/kunden-push-button";
 import {
@@ -109,6 +110,8 @@ export default async function ProduktBearbeitenPage({ params }: Props) {
           ID: {produkt.id} · Slug: {produkt.slug}
           {produkt.artikel_code && ` · Артикул: ${produkt.artikel_code}`}
         </p>
+
+        <KiFuellenBlock produktId={produkt.id} />
 
         <ProduktFormular
           produkt={produkt}

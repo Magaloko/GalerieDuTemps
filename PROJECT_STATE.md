@@ -71,11 +71,12 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 
 ## 🚧 Offen / mögliche nächste Schritte
 
-- **Produkt-Bereich (laufender Strang):** Formular-Struktur (einklappbare `FormSection`, Kern offen /
-  Optionales zu) ✓ und Shop-Galerie-Bild-Fallback + Cleanup (tote `client.tsx` + Lint-Platzhalter) ✓
-  erledigt. Offen nach Wunsch: Formular-Optik auf neue Tokens (paper/bone/coral, weiche Radien im /app)
-  bzw. „KI-Ausfüllen" im Vollformular; weitere Darstellung (z.B. Bild-Fallback auch in `ProduktKarte`/
-  next-image, ConditionMeter-Feinschliff).
+- **Produkt-Bereich (laufender Strang):** Formular-Struktur (einklappbare `FormSection`) ✓,
+  Shop-Galerie-Bild-Fallback + Cleanup ✓, „KI-Ausfüllen" im Vollformular (`KiFuellenBlock`) ✓.
+  Offen nach Wunsch: Formular-**Optik** auf neue Tokens (paper/bone/coral, weiche Radien im /app);
+  weitere **Darstellung** (Bild-Fallback auch in `ProduktKarte`/next-image, ConditionMeter-Feinschliff).
+  Hinweis: client-interaktive `/app`-Änderungen lassen sich im Dev wegen PWA-Service-Worker-Cache schlecht
+  visuell prüfen → live nach Deploy testen (siehe Memory `dev-preview-setup`).
 - **TG1 — Telegram Dark-Mode-Lücken:** harte `#fff`-Fallbacks in `src/app/(telegram)/**`,
   Texte hart `#1a1410`/`#fff`, Order-Status-Farben ohne `[data-tg-theme="dark"]`-Override.
 - **Pattern-Ausweitung (wiederverwendbar):** `.chip-select` (Inline-Edit) → Lead-Status /
@@ -105,7 +106,13 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
 
-- 2026-05-30 15:58 UTC · `(dieser Commit)` · design(public) Produkt-Darstellung (Shop): Galerie mit
+- 2026-05-30 17:16 UTC · `(dieser Commit)` · feat(app) Produkt-Formular „KI-Ausfüllen": neuer
+  `KiFuellenBlock` über dem Editor-Formular — Notizen → DeepSeek-Extraktor befüllt Name, Beschreibung,
+  Epoche, Herkunft, Material, Zustand, Tags + SEO (Server-Action `produktKiAusfuellenAction`, danach
+  `router.refresh()`). Nutzt dieselbe Infra wie Schnell-Flow + Entwürfe-Queue; standardmäßig
+  eingeklappt, Preis/Fotos/Sichtbarkeit bleiben unberührt. (Visuelle Interaktiv-Prüfung im Dev durch
+  PWA-Service-Worker-Cache auf /app blockiert — Code via tsc/build + Server-Render verifiziert, live testbar.)
+- 2026-05-30 15:58 UTC · `b19f83d` · design(public) Produkt-Darstellung (Shop): Galerie mit
   robustem Bild-Fallback — `GalleryImg` ersetzt rohe `<img>`, fängt Ladefehler ab (SSR-vor-Hydration
   via Mount-Check + Laufzeit via onError) und zeigt einen ruhigen „Фото недоступно"-Platzhalter statt
   des Broken-Image-Icons (relevant bei fehlendem Persistent Volume → AGENTS.md). Cleanup: tote
