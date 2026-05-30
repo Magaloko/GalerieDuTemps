@@ -4,7 +4,7 @@ import { systemEinstellungenLaden } from "@/lib/db/system-einstellungen";
 import { getStripeConfig } from "@/lib/affiliate/stripe";
 import { EinstellungenFormular } from "./einstellungen-formular";
 import { EmailHealthBanner } from "@/components/produkte/email-health-banner";
-import { Settings, MessageSquareText, Send, Bell, Palette, Activity, ToggleLeft, ArrowRight } from "lucide-react";
+import { Settings, MessageSquareText, Send, Bell, Palette, Activity, ToggleLeft, ArrowRight, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Глобальные настройки" };
@@ -55,6 +55,12 @@ export default async function GlobaleEinstellungenPage() {
           icon={MessageSquareText}
           title="Маркетинговые тексты"
           desc="Hero, тикер, баннер · реквизиты для оплаты"
+        />
+        <SettingsLink
+          href={`${base}/einstellungen/ki`}
+          icon={Sparkles}
+          title="ИИ · DeepSeek"
+          desc="API-ключ для ассистента и ИИ-заполнения товаров"
         />
         <SettingsLink
           href={`${base}/einstellungen/telegram`}

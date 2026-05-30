@@ -66,7 +66,7 @@ ${text}
 ${hints?.preisHint ? `Preis-Hinweis: ${hints.preisHint} KZT\n` : ""}${hints?.kategorieHint ? `Kategorie-Hinweis: ${hints.kategorieHint}\n` : ""}
 Bitte extrahiere jetzt das JSON gemäß Schema.`;
 
-  const client = getDeepseekClient();
+  const client = await getDeepseekClient();
   const res = await client.chat.completions.create({
     model:           DEEPSEEK_MODEL,
     response_format: { type: "json_object" },

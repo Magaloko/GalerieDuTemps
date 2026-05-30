@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
 
   let client: OpenAI;
   try {
-    client = getDeepseekClient();
+    client = await getDeepseekClient();
   } catch (err) {
     const msg = err instanceof Error ? err.message : "DeepSeek nicht konfiguriert";
     return NextResponse.json({ error: msg }, { status: 503 });

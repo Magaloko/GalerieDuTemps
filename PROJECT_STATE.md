@@ -71,6 +71,9 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 
 ## 🚧 Offen / mögliche nächste Schritte
 
+- **KI-Key im Admin ✓** — DeepSeek-Key unter „Настройки → ИИ" (`/einstellungen/ki`) eintragbar
+  (DB-gespeichert, ENV-Fallback). ⚠️ **Offen (Nutzer-Aktion):** Der Admin muss den Key dort eintragen —
+  aktuell fehlt er überall (DB + ENV), daher sind Assistent + Produkt-„KI-Ausfüllen" bis dahin inaktiv.
 - **Kategorie-Verwaltung ✓** — sortierbare Liste (Drag/Pfeile), Gruppierung (Parent, 2 Ebenen),
   Inline-Aktiv-Toggle, Batch-Save; + 7 Kategorien als Sollzustand. Nächster Nutzer-Wunsch: zurück zum
   **Produkt-Bereich**.
@@ -109,7 +112,12 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
 
-- 2026-05-30 20:23 UTC · `(dieser Commit)` · design(public) Detailseite-Feinschliff: Mobile-Preis-Strip
+- 2026-05-30 20:51 UTC · `(dieser Commit)` · feat(app) DeepSeek-Key im Admin pflegbar: neue Seite
+  „Настройки → ИИ" (`/einstellungen/ki`) — Key eintragen/löschen/Verbindungstest; gespeichert in
+  `sebo.affiliate_einstellungen` (`deepseek_api_key`), ENV `DEEPSEEK_API_KEY` bleibt Fallback.
+  `getDeepseekClient` jetzt async (DB > ENV), Aufrufer (Produkt-Extraktor + Assistent-Chat) auf await.
+  Key in der UI maskiert, nie im Code/Log. Deckt Assistent + Produkt-„KI-Ausfüllen" ab. Live getestet.
+- 2026-05-30 20:23 UTC · `5e56b7f` · design(public) Detailseite-Feinschliff: Mobile-Preis-Strip
   jetzt bei jedem kaufbaren Produkt (vorher nur mit WhatsApp/Telegram) — Preis + „Написать" direkt nach
   der Galerie sichtbar statt erst weit unten in der Sidebar. teaser/verkauft ausgenommen. Visuell auf
   Mobile verifiziert (öffentliche Route).
