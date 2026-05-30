@@ -25,24 +25,24 @@ export function BildManager({ produktId, initialBilder }: Props) {
   return (
     <div className="space-y-6">
       <section
-        className="bg-vintage-white border border-vintage-sand p-6 space-y-3"
-        style={{ borderRadius: "var(--radius-card)" }}
+        className="bg-[var(--color-app-surface)] border border-[var(--color-line)] p-6 space-y-3"
+        style={{ borderRadius: "var(--radius-app)" }}
       >
-        <h2 className="font-serif text-base text-vintage-espresso">
+        <h2 className="font-serif text-base text-[var(--color-ink)]">
           Загрузка изображений
         </h2>
         <BildUploadZone produktId={produktId} onUpload={handleUpload} />
       </section>
 
       <section
-        className="bg-vintage-white border border-vintage-sand p-6 space-y-4"
-        style={{ borderRadius: "var(--radius-card)" }}
+        className="bg-[var(--color-app-surface)] border border-[var(--color-line)] p-6 space-y-4"
+        style={{ borderRadius: "var(--radius-app)" }}
       >
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <h2 className="font-serif text-base text-vintage-espresso">
-            Галерея <span className="text-vintage-dust text-sm">· {bilder.length}</span>
+          <h2 className="font-serif text-base text-[var(--color-ink)]">
+            Галерея <span className="text-[var(--color-ink-mute)] text-sm">· {bilder.length}</span>
           </h2>
-          <p className="text-xs text-vintage-dust font-sans">
+          <p className="text-xs text-[var(--color-ink-mute)] font-sans">
             Перетащите для сортировки · Звезда = главное · Клик по описанию для редактирования
           </p>
         </div>

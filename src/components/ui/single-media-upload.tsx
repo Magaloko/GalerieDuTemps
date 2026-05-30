@@ -11,6 +11,7 @@ interface Props {
   placeholder?: string;
   hint?:       string;
   variant?:    "image" | "video" | "file";
+  tone?:       "shop" | "app";
 }
 
 const ICONS = { image: ImageIcon, video: Film, file: FileText };
@@ -23,7 +24,9 @@ export function SingleMediaUpload({
   placeholder = "https://…",
   hint,
   variant = "image",
+  tone = "shop",
 }: Props) {
+  const isApp = tone === "app";
   const inputRef = useRef<HTMLInputElement>(null);
   const [url,    setUrl]    = useState<string>(defaultValue);
   const [busy,   setBusy]   = useState(false);
@@ -56,7 +59,14 @@ export function SingleMediaUpload({
   return (
     <div className="flex flex-col gap-1.5">
       {label && (
-        <label className="text-xs font-sans uppercase tracking-widest text-vintage-gold/80">
+        <label
+          className={
+            isApp
+              ? "text-xs font-sans uppercase tracking-widest"
+              : "text-xs font-sans uppercase tracking-widest text-vintage-gold/80"
+          }
+          style={isApp ? { color: "var(--color-ink-mute)" } : undefined}
+        >
           {label}
         </label>
       )}
@@ -69,15 +79,33 @@ export function SingleMediaUpload({
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder={placeholder}
-          className="
-            flex-1 px-4 py-2.5
-            bg-vintage-brown border border-vintage-sand/40
-            text-vintage-cream text-sm font-sans
-            placeholder:text-vintage-dust
-            focus:outline-none focus:border-vintage-gold focus:ring-1 focus:ring-vintage-gold/30
-            transition-colors
-          "
-          style={{ borderRadius: "var(--radius-vintage)" }}
+          className={
+            isApp
+              ? `
+                flex-1 px-4 py-2.5
+                text-[var(--color-ink)] text-sm font-sans
+                placeholder:text-[var(--color-ink-mute)]
+                focus:outline-none focus:border-[var(--color-coral)] focus:[box-shadow:0_0_0_3px_rgba(232,112,58,0.18)]
+                transition-colors
+              `
+              : `
+                flex-1 px-4 py-2.5
+                bg-vintage-brown border border-vintage-sand/40
+                text-vintage-cream text-sm font-sans
+                placeholder:text-vintage-dust
+                focus:outline-none focus:border-vintage-gold focus:ring-1 focus:ring-vintage-gold/30
+                transition-colors
+              `
+          }
+          style={
+            isApp
+              ? {
+                  background: "var(--color-bone)",
+                  border: "1px solid var(--color-line)",
+                  borderRadius: "var(--radius-app)",
+                }
+              : { borderRadius: "var(--radius-vintage)" }
+          }
         />
         <input
           ref={inputRef}
@@ -90,14 +118,28 @@ export function SingleMediaUpload({
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={busy}
-          className="
-            inline-flex items-center gap-2 px-4 py-2.5
-            bg-vintage-espresso text-vintage-cream
-            text-xs font-sans uppercase tracking-widest
-            hover:bg-vintage-brown disabled:opacity-50 transition-colors
-            border border-vintage-sand/30
-          "
-          style={{ borderRadius: "var(--radius-vintage)" }}
+          className={
+            isApp
+              ? `
+                inline-flex items-center gap-2 px-4 py-2.5
+                text-[#fff]
+                text-xs font-sans uppercase tracking-widest
+                bg-[var(--color-coral)] hover:bg-[var(--color-coral-bright)]
+                disabled:opacity-50 transition-colors
+              `
+              : `
+                inline-flex items-center gap-2 px-4 py-2.5
+                bg-vintage-espresso text-vintage-cream
+                text-xs font-sans uppercase tracking-widest
+                hover:bg-vintage-brown disabled:opacity-50 transition-colors
+                border border-vintage-sand/30
+              `
+          }
+          style={
+            isApp
+              ? { borderRadius: "var(--radius-app)" }
+              : { borderRadius: "var(--radius-vintage)" }
+          }
         >
           {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
           {busy ? "Загрузка…" : "Загрузить"}
@@ -112,23 +154,39 @@ export function SingleMediaUpload({
             <img
               src={url}
               alt=""
-              className="max-h-32 border border-vintage-sand/40"
-              style={{ borderRadius: "var(--radius-vintage)" }}
+              className={isApp ? "max-h-32 border" : "max-h-32 border border-vintage-sand/40"}
+              style={
+                isApp
+                  ? { borderColor: "var(--color-line)", borderRadius: "var(--radius-app)" }
+                  : { borderRadius: "var(--radius-vintage)" }
+              }
             />
           ) : variant === "video" && /\.(mp4|webm|mov)$/i.test(url) ? (
             <video
               src={url}
               controls
-              className="max-h-40 border border-vintage-sand/40"
-              style={{ borderRadius: "var(--radius-vintage)" }}
+              className={isApp ? "max-h-40 border" : "max-h-40 border border-vintage-sand/40"}
+              style={
+                isApp
+                  ? { borderColor: "var(--color-line)", borderRadius: "var(--radius-app)" }
+                  : { borderRadius: "var(--radius-vintage)" }
+              }
             />
           ) : (
             <a
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-3 py-2 border border-vintage-sand/40 text-vintage-cream text-xs font-sans hover:bg-vintage-espresso transition-colors"
-              style={{ borderRadius: "var(--radius-vintage)" }}
+              className={
+                isApp
+                  ? "inline-flex items-center gap-2 px-3 py-2 border text-[var(--color-ink-soft)] text-xs font-sans hover:bg-[var(--color-paper-warm)] transition-colors"
+                  : "inline-flex items-center gap-2 px-3 py-2 border border-vintage-sand/40 text-vintage-cream text-xs font-sans hover:bg-vintage-espresso transition-colors"
+              }
+              style={
+                isApp
+                  ? { borderColor: "var(--color-line)", borderRadius: "var(--radius-app)" }
+                  : { borderRadius: "var(--radius-vintage)" }
+              }
             >
               <Icon className="w-3.5 h-3.5" /> Просмотр
             </a>
@@ -136,8 +194,16 @@ export function SingleMediaUpload({
           <button
             type="button"
             onClick={() => setUrl("")}
-            className="absolute -top-2 -right-2 p-1 bg-vintage-burgundy text-vintage-cream hover:bg-vintage-burgundy/80 transition-colors"
-            style={{ borderRadius: "9999px" }}
+            className={
+              isApp
+                ? "absolute -top-2 -right-2 p-1 text-[#fff] hover:opacity-90 transition-opacity"
+                : "absolute -top-2 -right-2 p-1 bg-vintage-burgundy text-vintage-cream hover:bg-vintage-burgundy/80 transition-colors"
+            }
+            style={
+              isApp
+                ? { background: "var(--color-vintage-burgundy)", borderRadius: "9999px" }
+                : { borderRadius: "9999px" }
+            }
             title="Удалить"
           >
             <X className="w-3 h-3" />
@@ -146,10 +212,20 @@ export function SingleMediaUpload({
       )}
 
       {fehler && (
-        <p className="text-xs text-vintage-burgundy font-sans">{fehler}</p>
+        <p
+          className={isApp ? "text-xs font-sans" : "text-xs text-vintage-burgundy font-sans"}
+          style={isApp ? { color: "var(--color-vintage-burgundy)" } : undefined}
+        >
+          {fehler}
+        </p>
       )}
       {hint && !fehler && (
-        <p className="text-xs text-vintage-dust font-sans">{hint}</p>
+        <p
+          className={isApp ? "text-xs font-sans" : "text-xs text-vintage-dust font-sans"}
+          style={isApp ? { color: "var(--color-ink-mute)" } : undefined}
+        >
+          {hint}
+        </p>
       )}
     </div>
   );

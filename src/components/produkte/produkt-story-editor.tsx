@@ -70,12 +70,12 @@ export function ProduktStoryEditor({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-sans border border-vintage-sand text-vintage-ink hover:bg-vintage-parchment transition-colors"
-        style={{ borderRadius: "var(--radius-vintage)" }}
+        className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-sans border border-[var(--color-line)] text-[var(--color-ink)] hover:bg-[var(--color-paper-warm)] transition-colors"
+        style={{ borderRadius: "var(--radius-app)" }}
       >
-        <LayoutPanelTop className="w-4 h-4 text-vintage-gold" />
+        <LayoutPanelTop className="w-4 h-4 text-[var(--color-coral)]" />
         Открыть редактор истории
-        <span className="text-xs text-vintage-dust">· {blocks.length} блок(ов)</span>
+        <span className="text-xs text-[var(--color-ink-mute)]">· {blocks.length} блок(ов)</span>
       </button>
 
       {open && (
@@ -160,17 +160,17 @@ function StoryOverlay({
   return (
     <div className="fixed inset-0 z-[60] flex flex-col" style={{ background: "var(--color-paper, #FDFAF5)" }}>
       {/* Top-Bar */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-vintage-sand bg-vintage-white">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-line)] bg-[var(--color-app-surface)]">
         <div className="flex items-center gap-2">
-          <LayoutPanelTop className="w-4 h-4 text-vintage-gold" />
-          <span className="font-serif text-base text-vintage-espresso">Редактор истории</span>
-          <span className="text-xs text-vintage-dust">· {blocks.length} блок(ов)</span>
+          <LayoutPanelTop className="w-4 h-4 text-[var(--color-coral)]" />
+          <span className="font-serif text-base text-[var(--color-ink)]">Редактор истории</span>
+          <span className="text-xs text-[var(--color-ink-mute)]">· {blocks.length} блок(ов)</span>
         </div>
         <button
           type="button"
           onClick={onClose}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] uppercase font-medium"
-          style={{ letterSpacing: "0.14em", background: "var(--color-coral)", color: "#fff", borderRadius: "var(--radius-vintage)" }}
+          style={{ letterSpacing: "0.14em", background: "var(--color-coral)", color: "#fff", borderRadius: "var(--radius-app)" }}
         >
           <X className="w-3.5 h-3.5" /> Готово
         </button>
@@ -179,21 +179,21 @@ function StoryOverlay({
       {/* 3 Panes */}
       <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[210px_1fr_320px]">
         {/* Palette */}
-        <div className="border-r border-vintage-sand bg-vintage-white p-3 overflow-y-auto">
-          <p className="text-[10px] uppercase tracking-widest text-vintage-dust mb-2">Блоки</p>
+        <div className="border-r border-[var(--color-line)] bg-[var(--color-app-surface)] p-3 overflow-y-auto">
+          <p className="text-[10px] uppercase tracking-widest text-[var(--color-ink-mute)] mb-2">Блоки</p>
           <div className="flex lg:flex-col gap-2 flex-wrap">
             {PALETTE.map(p => (
               <button
                 key={p.type}
                 type="button"
                 onClick={() => add(p.type)}
-                className="flex items-center gap-2 px-3 py-2 text-sm border border-vintage-sand text-vintage-ink hover:bg-vintage-parchment transition-colors w-full text-left"
-                style={{ borderRadius: "var(--radius-vintage)" }}
+                className="flex items-center gap-2 px-3 py-2 text-sm border border-[var(--color-line)] text-[var(--color-ink)] hover:bg-[var(--color-paper-warm)] transition-colors w-full text-left"
+                style={{ borderRadius: "var(--radius-app)" }}
               >
-                <p.icon className="w-4 h-4 text-vintage-gold shrink-0" />
+                <p.icon className="w-4 h-4 text-[var(--color-coral)] shrink-0" />
                 <span className="min-w-0">
                   <span className="block leading-tight">{p.label}</span>
-                  <span className="block text-[10px] text-vintage-dust">{p.sub}</span>
+                  <span className="block text-[10px] text-[var(--color-ink-mute)]">{p.sub}</span>
                 </span>
               </button>
             ))}
@@ -204,7 +204,7 @@ function StoryOverlay({
         <div className="overflow-y-auto p-4 md:p-8" style={{ background: "var(--color-bone)" }}>
           <div ref={listRef} className="max-w-2xl mx-auto space-y-4">
             {blocks.length === 0 ? (
-              <p className="text-sm text-vintage-dust text-center py-16">
+              <p className="text-sm text-[var(--color-ink-mute)] text-center py-16">
                 Слева добавьте блоки — текст, фото, цитату…
               </p>
             ) : blocks.map((b, i) => (
@@ -222,10 +222,10 @@ function StoryOverlay({
               >
                 {/* Floating Controls (gewählt) */}
                 {sel === i && (
-                  <div className="absolute -top-3 right-0 z-10 flex items-center gap-0.5 bg-vintage-white border border-vintage-sand p-0.5" style={{ borderRadius: "var(--radius-vintage)" }}>
+                  <div className="absolute -top-3 right-0 z-10 flex items-center gap-0.5 bg-[var(--color-app-surface)] border border-[var(--color-line)] p-0.5" style={{ borderRadius: "var(--radius-app)" }}>
                     <span
                       title="Перетащите для сортировки"
-                      className="px-1 text-vintage-dust cursor-grab active:cursor-grabbing touch-none"
+                      className="px-1 text-[var(--color-ink-mute)] cursor-grab active:cursor-grabbing touch-none"
                       style={{ touchAction: "none" }}
                       onClick={(e) => e.stopPropagation()}
                       onPointerDown={onGripDown(i)}
@@ -251,10 +251,10 @@ function StoryOverlay({
         </div>
 
         {/* Eigenschaften */}
-        <div className="border-l border-vintage-sand bg-vintage-white p-4 overflow-y-auto">
-          <p className="text-[10px] uppercase tracking-widest text-vintage-dust mb-3">Свойства</p>
+        <div className="border-l border-[var(--color-line)] bg-[var(--color-app-surface)] p-4 overflow-y-auto">
+          <p className="text-[10px] uppercase tracking-widest text-[var(--color-ink-mute)] mb-3">Свойства</p>
           {sel === null || !blocks[sel] ? (
-            <p className="text-sm text-vintage-dust">Выберите блок в предпросмотре.</p>
+            <p className="text-sm text-[var(--color-ink-mute)]">Выберите блок в предпросмотре.</p>
           ) : (
             <BlockProps
               block={blocks[sel]}
@@ -273,8 +273,8 @@ function Ctl({ children, onClick, title, disabled, danger }: {
 }) {
   return (
     <button type="button" onClick={onClick} disabled={disabled} title={title}
-      className={`p-1.5 transition-colors disabled:opacity-30 ${danger ? "text-vintage-burgundy hover:bg-vintage-burgundy/10" : "text-vintage-ink hover:bg-vintage-parchment"}`}
-      style={{ borderRadius: "var(--radius-vintage)" }}>
+      className={`p-1.5 transition-colors disabled:opacity-30 ${danger ? "text-[var(--color-vintage-burgundy)] hover:bg-[var(--color-vintage-burgundy)]/10" : "text-[var(--color-ink)] hover:bg-[var(--color-paper-warm)]"}`}
+      style={{ borderRadius: "var(--radius-app)" }}>
       {children}
     </button>
   );
@@ -341,7 +341,7 @@ function BlockPreview({ block: b }: { block: ProduktBlock }) {
 }
 
 /* ── Eigenschaften-Panel (je Block-Typ) ───────────────────────────────────── */
-const fieldCls = "w-full px-3 py-2 text-sm bg-vintage-parchment border border-vintage-sand text-vintage-ink";
+const fieldCls = "w-full px-3 py-2 text-sm bg-[var(--color-bone)] border border-[var(--color-line)] text-[var(--color-ink)] rounded-[var(--radius-app)]";
 
 const I18N_LOCALES: { code: "ru" | "en" | "de"; flag: string }[] = [
   { code: "ru", flag: "🇷🇺" }, { code: "en", flag: "🇬🇧" }, { code: "de", flag: "🇩🇪" },
@@ -367,7 +367,7 @@ function I18nField({
           const filled = (v[l.code] ?? "").trim().length > 0;
           return (
             <button key={l.code} type="button" onClick={() => setActive(l.code)}
-              className={`px-1.5 py-0.5 text-[11px] border transition-colors ${active === l.code ? "border-vintage-gold bg-vintage-parchment" : "border-vintage-sand text-vintage-dust"}`}
+              className={`px-1.5 py-0.5 text-[11px] border transition-colors ${active === l.code ? "border-[var(--color-coral)] bg-[var(--color-bone)]" : "border-[var(--color-line)] text-[var(--color-ink-mute)]"}`}
               style={{ borderRadius: 4 }}>
               {l.flag}{filled ? " •" : ""}
             </button>
@@ -413,7 +413,7 @@ function BlockProps({ block: b, galerie, onPatch }: {
 
   return (
     <div className="space-y-3">
-      <p className="text-[11px] uppercase tracking-widest text-vintage-gold/80">{labelFor(b.type)}</p>
+      <p className="text-[11px] uppercase tracking-widest text-[var(--color-ink-mute)]">{labelFor(b.type)}</p>
 
       {b.type === "heading" && (
         <I18nField value={b.text} onChange={v => onPatch({ text: v })} placeholder="Подзаголовок" />
@@ -431,10 +431,10 @@ function BlockProps({ block: b, galerie, onPatch }: {
         <div className="space-y-3">
           {/* Direkt-Upload */}
           <label
-            className="flex items-center justify-center gap-2 py-2.5 text-sm border border-vintage-sand text-vintage-ink hover:bg-vintage-parchment cursor-pointer transition-colors"
-            style={{ borderRadius: "var(--radius-vintage)" }}
+            className="flex items-center justify-center gap-2 py-2.5 text-sm border border-[var(--color-line)] text-[var(--color-ink)] hover:bg-[var(--color-paper-warm)] cursor-pointer transition-colors"
+            style={{ borderRadius: "var(--radius-app)" }}
           >
-            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4 text-vintage-gold" />}
+            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4 text-[var(--color-coral)]" />}
             {busy ? "Загрузка…" : "Загрузить фото"}
             <input type="file" accept="image/*" className="hidden" disabled={busy}
               onChange={e => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
@@ -443,7 +443,7 @@ function BlockProps({ block: b, galerie, onPatch }: {
           {/* Galerie-Picker */}
           {galerie.length > 0 && (
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-vintage-dust mb-1.5">Из галереи</p>
+              <p className="text-[10px] uppercase tracking-widest text-[var(--color-ink-mute)] mb-1.5">Из галереи</p>
               <div className="grid grid-cols-3 gap-1.5">
                 {galerie.map(g => (
                   <button
@@ -480,23 +480,23 @@ function BlockProps({ block: b, galerie, onPatch }: {
       )}
 
       {b.type === "divider" && (
-        <p className="text-sm text-vintage-dust">Декоративный разделитель ◆ — без настроек.</p>
+        <p className="text-sm text-[var(--color-ink-mute)]">Декоративный разделитель ◆ — без настроек.</p>
       )}
 
       {b.type === "video" && (
         <div className="space-y-1.5">
           <input className={fieldCls} value={b.url ?? ""} placeholder="YouTube / Vimeo / .mp4 URL" onChange={e => onPatch({ url: e.target.value })} />
-          <p className="text-[11px] text-vintage-dust">Поддержка: youtube.com, youtu.be, vimeo.com, прямые .mp4/.webm.</p>
+          <p className="text-[11px] text-[var(--color-ink-mute)]">Поддержка: youtube.com, youtu.be, vimeo.com, прямые .mp4/.webm.</p>
         </div>
       )}
 
       {b.type === "gallery" && (
         <div className="space-y-3">
           <label
-            className="flex items-center justify-center gap-2 py-2.5 text-sm border border-vintage-sand text-vintage-ink hover:bg-vintage-parchment cursor-pointer transition-colors"
-            style={{ borderRadius: "var(--radius-vintage)" }}
+            className="flex items-center justify-center gap-2 py-2.5 text-sm border border-[var(--color-line)] text-[var(--color-ink)] hover:bg-[var(--color-paper-warm)] cursor-pointer transition-colors"
+            style={{ borderRadius: "var(--radius-app)" }}
           >
-            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4 text-vintage-gold" />}
+            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4 text-[var(--color-coral)]" />}
             {busy ? "Загрузка…" : "Добавить фото"}
             <input type="file" accept="image/*" className="hidden" disabled={busy}
               onChange={e => { const f = e.target.files?.[0]; if (f) uploadAppend(f); e.target.value = ""; }} />
@@ -506,11 +506,11 @@ function BlockProps({ block: b, galerie, onPatch }: {
           {(b.bilder ?? []).length > 0 && (
             <div className="grid grid-cols-3 gap-1.5">
               {(b.bilder ?? []).map((u, j) => (
-                <div key={j} className="relative aspect-square overflow-hidden border border-vintage-sand">
+                <div key={j} className="relative aspect-square overflow-hidden border border-[var(--color-line)]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={u} alt="" className="w-full h-full object-cover" />
                   <button type="button" onClick={() => onPatch({ bilder: (b.bilder ?? []).filter((_, idx) => idx !== j) })}
-                    title="Убрать" className="absolute top-0.5 right-0.5 p-1 bg-vintage-white/90 text-vintage-burgundy" style={{ borderRadius: 4 }}>
+                    title="Убрать" className="absolute top-0.5 right-0.5 p-1 bg-[var(--color-app-surface)]/90 text-[var(--color-vintage-burgundy)]" style={{ borderRadius: 4 }}>
                     <X className="w-3 h-3" />
                   </button>
                 </div>
@@ -521,7 +521,7 @@ function BlockProps({ block: b, galerie, onPatch }: {
           {/* Aus Produkt-Galerie auswählen (toggle) */}
           {galerie.length > 0 && (
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-vintage-dust mb-1.5">Из галереи (нажмите, чтобы добавить)</p>
+              <p className="text-[10px] uppercase tracking-widest text-[var(--color-ink-mute)] mb-1.5">Из галереи (нажмите, чтобы добавить)</p>
               <div className="grid grid-cols-3 gap-1.5">
                 {galerie.map(g => {
                   const aktiv = (b.bilder ?? []).includes(g.url);
@@ -542,8 +542,8 @@ function BlockProps({ block: b, galerie, onPatch }: {
 
       {/* Block-Hintergrund — für alle Block-Typen (außer Trenner) */}
       {b.type !== "divider" && (
-        <div className="pt-3 mt-1 border-t border-vintage-sand/50">
-          <p className="text-[10px] uppercase tracking-widest text-vintage-dust mb-2">Фон блока</p>
+        <div className="pt-3 mt-1 border-t border-[var(--color-line)]">
+          <p className="text-[10px] uppercase tracking-widest text-[var(--color-ink-mute)] mb-2">Фон блока</p>
           <div className="flex flex-wrap gap-1.5">
             {Object.entries(STORY_BG).map(([key, v]) => {
               const aktiv = (b.bg ?? "standard") === key;
@@ -557,7 +557,7 @@ function BlockProps({ block: b, galerie, onPatch }: {
                   style={{
                     background:   key === "standard" ? "repeating-linear-gradient(45deg,#fff,#fff 3px,#eee 3px,#eee 6px)" : v.swatch,
                     border:       aktiv ? "2px solid var(--color-coral)" : "1px solid var(--color-line)",
-                    borderRadius: "var(--radius-vintage)",
+                    borderRadius: "var(--radius-app)",
                   }}
                 />
               );

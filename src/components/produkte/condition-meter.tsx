@@ -82,7 +82,7 @@ export function ConditionMeter({ zustand }: { zustand: Zustand }) {
             key={i}
             className="h-1 flex-1"
             style={{
-              background:   i < info.level ? color : "rgba(44, 36, 32, 0.08)",
+              background:   i < info.level ? color : "var(--color-line)",
               borderRadius: "var(--radius-vintage)",
             }}
           />

@@ -497,6 +497,7 @@ export function ProduktFormular({
             defaultOpen={hatVideo}
           >
             <SingleMediaUpload
+              tone="app"
               label="Видео-обзор товара"
               name="video_url"
               accept="video/mp4,video/webm,video/quicktime"

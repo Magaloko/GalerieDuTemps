@@ -57,7 +57,7 @@ export function DateienManager({ produktId, initialItems }: Props) {
   return (
     <div className="space-y-3">
       {items.length === 0 && (
-        <p className="text-sm font-sans text-vintage-dust italic">
+        <p className="text-sm font-sans italic" style={{ color: "var(--color-ink-mute)" }}>
           Нет загруженных файлов.
         </p>
       )}
@@ -65,15 +65,15 @@ export function DateienManager({ produktId, initialItems }: Props) {
       {items.map(d => (
         <div
           key={d.id}
-          className="flex items-center justify-between gap-2 px-4 py-3 bg-vintage-parchment/50 border border-vintage-sand"
-          style={{ borderRadius: "var(--radius-vintage)" }}
+          className="flex items-center justify-between gap-2 px-4 py-3"
+          style={{ background: "var(--color-bone)", border: "1px solid var(--color-line)", borderRadius: "var(--radius-app)" }}
         >
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <FileText className="w-4 h-4 text-vintage-brown flex-shrink-0" />
+            <FileText className="w-4 h-4 flex-shrink-0" style={{ color: "var(--color-ink-soft)" }} />
             <div className="min-w-0">
-              <p className="text-sm text-vintage-ink truncate font-sans">{d.name}</p>
+              <p className="text-sm truncate font-sans" style={{ color: "var(--color-ink)" }}>{d.name}</p>
               {d.dateigroesse && (
-                <p className="text-xs text-vintage-dust">{Math.round(d.dateigroesse / 1024)} КБ</p>
+                <p className="text-xs" style={{ color: "var(--color-ink-mute)" }}>{Math.round(d.dateigroesse / 1024)} КБ</p>
               )}
             </div>
           </div>
@@ -82,8 +82,8 @@ export function DateienManager({ produktId, initialItems }: Props) {
               href={d.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-white transition-colors"
-              style={{ borderRadius: "var(--radius-vintage)" }}
+              className="p-2 transition-colors text-[var(--color-ink-mute)] hover:text-[var(--color-coral)] hover:bg-[var(--color-paper-warm)]"
+              style={{ borderRadius: "var(--radius-app)" }}
               title="Открыть"
             >
               <ExternalLink className="w-3.5 h-3.5" />
@@ -91,8 +91,8 @@ export function DateienManager({ produktId, initialItems }: Props) {
             <button
               type="button"
               onClick={() => handleDelete(d.id)}
-              className="p-2 text-vintage-burgundy hover:bg-vintage-burgundy/10 transition-colors"
-              style={{ borderRadius: "var(--radius-vintage)" }}
+              className="p-2 transition-colors text-[var(--color-vintage-burgundy)] hover:bg-[rgba(194,71,71,0.10)]"
+              style={{ borderRadius: "var(--radius-app)" }}
               title="Удалить"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -119,18 +119,18 @@ export function DateienManager({ produktId, initialItems }: Props) {
           disabled={busy}
           className="
             inline-flex items-center gap-2 px-4 py-2
-            border border-vintage-sand text-vintage-brown
-            text-xs font-sans uppercase tracking-widest
-            hover:bg-vintage-parchment disabled:opacity-50 transition-colors
+            border text-xs font-sans uppercase tracking-widest
+            disabled:opacity-50 transition-colors
+            border-[var(--color-line)] text-[var(--color-ink-soft)] hover:bg-[var(--color-paper-warm)] hover:text-[var(--color-ink)]
           "
-          style={{ borderRadius: "var(--radius-button)" }}
+          style={{ borderRadius: "var(--radius-app)" }}
         >
           {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
           Загрузить PDF
         </button>
       </div>
 
-      {fehler && <p className="text-xs text-vintage-burgundy font-sans">{fehler}</p>}
+      {fehler && <p className="text-xs font-sans" style={{ color: "var(--color-vintage-burgundy)" }}>{fehler}</p>}
     </div>
   );
 }

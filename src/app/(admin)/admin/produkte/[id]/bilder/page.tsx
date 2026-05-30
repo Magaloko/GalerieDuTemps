@@ -35,24 +35,24 @@ export default async function BilderPage({ params }: Props) {
 
   return (
     <div className="max-w-4xl space-y-6">
-      <div className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
-        <Link href={`${base}/produkte`} className="hover:text-vintage-brown transition-colors flex items-center gap-1">
+      <div className="flex items-center gap-2 text-xs font-sans text-[var(--color-ink-mute)]">
+        <Link href={`${base}/produkte`} className="hover:text-[var(--color-ink)] transition-colors flex items-center gap-1">
           <ChevronLeft className="w-3 h-3" /> Товары
         </Link>
         <span>/</span>
-        <Link href={`${base}/produkte/${id}`} className="hover:text-vintage-brown transition-colors truncate max-w-40">
+        <Link href={`${base}/produkte/${id}`} className="hover:text-[var(--color-ink)] transition-colors truncate max-w-40">
           {produkt.name}
         </Link>
         <span>/</span>
-        <span className="text-vintage-ink">Фото</span>
+        <span className="text-[var(--color-ink)]">Фото</span>
       </div>
 
       <div>
-        <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-        <h1 className="font-serif text-2xl text-vintage-espresso">Фото и медиа</h1>
-        <p className="text-vintage-dust text-xs font-sans mt-0.5">
+        <p className="text-xs tracking-widest" style={{ color: "var(--color-coral)" }}>✦</p>
+        <h1 className="font-serif text-2xl" style={{ color: "var(--color-ink)" }}>Фото и медиа</h1>
+        <p className="text-xs font-sans mt-0.5" style={{ color: "var(--color-ink-mute)" }}>
           {bilder.length} {bilder.length === 1 ? "фото" : "фото"} ·{" "}
-          <span className="text-vintage-brown">{produkt.name}</span>
+          <span style={{ color: "var(--color-ink-soft)" }}>{produkt.name}</span>
         </p>
       </div>
 
@@ -61,27 +61,27 @@ export default async function BilderPage({ params }: Props) {
       <BildManager produktId={id} initialBilder={bilder} />
 
       <section
-        className="bg-vintage-white border border-vintage-sand p-6 space-y-4"
-        style={{ borderRadius: "var(--radius-card)" }}
+        className="p-6 space-y-4"
+        style={{ background: "var(--color-app-surface)", border: "1px solid var(--color-line)", borderRadius: "var(--radius-app)" }}
       >
-        <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
-          <h2 className="font-serif text-base text-vintage-espresso flex items-center gap-2">
-            <FileText className="w-4 h-4 text-vintage-brown" /> Документы
+        <div className="flex items-baseline justify-between pb-3" style={{ borderBottom: "1px solid var(--color-line)" }}>
+          <h2 className="font-serif text-base flex items-center gap-2" style={{ color: "var(--color-ink)" }}>
+            <FileText className="w-4 h-4" style={{ color: "var(--color-ink-soft)" }} /> Документы
           </h2>
-          <p className="text-xs font-sans text-vintage-dust">PDF · максимум 25 МБ</p>
+          <p className="text-xs font-sans" style={{ color: "var(--color-ink-mute)" }}>PDF · максимум 25 МБ</p>
         </div>
         <DateienManager produktId={id} initialItems={dateien} />
       </section>
 
       <section
-        className="bg-vintage-white border border-vintage-sand p-6 space-y-4"
-        style={{ borderRadius: "var(--radius-card)" }}
+        className="p-6 space-y-4"
+        style={{ background: "var(--color-app-surface)", border: "1px solid var(--color-line)", borderRadius: "var(--radius-app)" }}
       >
-        <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
-          <h2 className="font-serif text-base text-vintage-espresso flex items-center gap-2">
-            <Award className="w-4 h-4 text-vintage-gold" /> Сертификаты
+        <div className="flex items-baseline justify-between pb-3" style={{ borderBottom: "1px solid var(--color-line)" }}>
+          <h2 className="font-serif text-base flex items-center gap-2" style={{ color: "var(--color-ink)" }}>
+            <Award className="w-4 h-4" style={{ color: "var(--color-coral)" }} /> Сертификаты
           </h2>
-          <p className="text-xs font-sans text-vintage-dust">Trust-сигналы на странице товара</p>
+          <p className="text-xs font-sans" style={{ color: "var(--color-ink-mute)" }}>Trust-сигналы на странице товара</p>
         </div>
         <ZertifikateManager produktId={id} initialItems={zertifikate} />
       </section>

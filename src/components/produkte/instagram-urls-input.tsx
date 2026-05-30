@@ -82,13 +82,13 @@ export function InstagramUrlsInput({ name, defaultValue = [], max = 5 }: Props) 
                 background:   "#fff",
                 border:       "1px solid var(--color-line)",
                 borderLeft:   "3px solid #C13584",  // IG-Pink
-                borderRadius: "var(--radius-vintage)",
+                borderRadius: "var(--radius-app)",
               }}
             >
               <InstagramIcon className="w-4 h-4 shrink-0" style={{ color: "#C13584" }} />
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-mono text-vintage-ink truncate">{url}</p>
-                <p className="text-[9px] font-mono text-vintage-dust uppercase tracking-widest">
+                <p className="text-[11px] font-mono text-[var(--color-ink)] truncate">{url}</p>
+                <p className="text-[9px] font-mono text-[var(--color-ink-mute)] uppercase tracking-widest">
                   Embed #{i + 1}
                 </p>
               </div>
@@ -99,14 +99,14 @@ export function InstagramUrlsInput({ name, defaultValue = [], max = 5 }: Props) 
                   type="button"
                   onClick={() => handleMove(i, -1)}
                   disabled={i === 0}
-                  className="text-[10px] text-vintage-dust hover:text-vintage-ink disabled:opacity-30"
+                  className="text-[10px] text-[var(--color-ink-mute)] hover:text-[var(--color-ink)] disabled:opacity-30"
                   aria-label="Вверх"
                 >▲</button>
                 <button
                   type="button"
                   onClick={() => handleMove(i, +1)}
                   disabled={i === urls.length - 1}
-                  className="text-[10px] text-vintage-dust hover:text-vintage-ink disabled:opacity-30"
+                  className="text-[10px] text-[var(--color-ink-mute)] hover:text-[var(--color-ink)] disabled:opacity-30"
                   aria-label="Вниз"
                 >▼</button>
               </div>
@@ -115,7 +115,7 @@ export function InstagramUrlsInput({ name, defaultValue = [], max = 5 }: Props) 
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-1.5 text-vintage-dust hover:text-vintage-coral transition-colors"
+                className="p-1.5 text-[var(--color-ink-mute)] hover:text-[var(--color-coral)] transition-colors"
                 title="Открыть в Instagram"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -123,7 +123,7 @@ export function InstagramUrlsInput({ name, defaultValue = [], max = 5 }: Props) 
               <button
                 type="button"
                 onClick={() => handleRemove(i)}
-                className="p-1.5 text-vintage-dust hover:text-vintage-burgundy transition-colors"
+                className="p-1.5 text-[var(--color-ink-mute)] hover:text-[var(--color-vintage-burgundy)] transition-colors"
                 title="Удалить"
               >
                 <X className="w-4 h-4" />
@@ -152,11 +152,11 @@ export function InstagramUrlsInput({ name, defaultValue = [], max = 5 }: Props) 
             style={{
               background:   "#fff",
               border:       "1px solid var(--color-line)",
-              borderRadius: "var(--radius-vintage)",
+              borderRadius: "var(--radius-app)",
             }}
           />
           <div className="flex items-center justify-between gap-3 flex-wrap">
-            <p className="text-[11px] text-vintage-dust font-sans flex items-center gap-1.5">
+            <p className="text-[11px] text-[var(--color-ink-mute)] font-sans flex items-center gap-1.5">
               <InstagramIcon className="w-3 h-3" style={{ color: "#C13584" }} />
               Reels, Posts, IGTV · максимум {max} на товар · {urls.length}/{max} использовано
             </p>
@@ -169,7 +169,7 @@ export function InstagramUrlsInput({ name, defaultValue = [], max = 5 }: Props) 
                 letterSpacing: "0.18em",
                 background:    "linear-gradient(45deg, #F58529, #DD2A7B, #8134AF)",
                 color:         "#fff",
-                borderRadius:  "var(--radius-vintage)",
+                borderRadius:  "var(--radius-app)",
               }}
             >
               <Plus className="w-3.5 h-3.5" />
@@ -186,7 +186,7 @@ export function InstagramUrlsInput({ name, defaultValue = [], max = 5 }: Props) 
             background:   "rgba(232,112,58,0.08)",
             border:       "1px solid rgba(232,112,58,0.40)",
             color:        "#A53E26",
-            borderRadius: "var(--radius-vintage)",
+            borderRadius: "var(--radius-app)",
           }}
         >
           <AlertCircle className="w-3.5 h-3.5 shrink-0" />

@@ -226,11 +226,11 @@ export function BildUploadZone({ produktId, onUpload }: BildUploadZoneProps) {
           w-full min-h-40 cursor-pointer
           border-2 border-dashed transition-colors
           ${isDragging
-            ? "border-vintage-gold bg-vintage-gold/5"
-            : "border-vintage-sand hover:border-vintage-brown hover:bg-vintage-parchment/30"
+            ? "border-[var(--color-coral)] bg-[rgba(232,112,58,0.05)]"
+            : "border-[var(--color-line)] hover:border-[var(--color-ink-soft)] hover:bg-[var(--color-bone)]"
           }
         `}
-        style={{ borderRadius: "var(--radius-card)" }}
+        style={{ borderRadius: "var(--radius-app)" }}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
@@ -245,27 +245,27 @@ export function BildUploadZone({ produktId, onUpload }: BildUploadZoneProps) {
 
         <div className="flex flex-col items-center gap-2 text-center px-6">
           <div
-            className="p-3 bg-vintage-parchment border border-vintage-sand"
-            style={{ borderRadius: "var(--radius-card)" }}
+            className="p-3 bg-[var(--color-bone)] border border-[var(--color-line)]"
+            style={{ borderRadius: "var(--radius-app)" }}
           >
             {isDragging
-              ? <Upload    className="w-6 h-6 text-vintage-gold" />
-              : <ImagePlus className="w-6 h-6 text-vintage-brown" />}
+              ? <Upload    className="w-6 h-6 text-[var(--color-coral)]" />
+              : <ImagePlus className="w-6 h-6 text-[var(--color-ink-soft)]" />}
           </div>
-          <p className="text-sm font-sans text-vintage-brown">
+          <p className="text-sm font-sans text-[var(--color-ink-soft)]">
             Перетащите фото или{" "}
-            <span className="text-vintage-gold underline">выберите файлы</span>
+            <span className="text-[var(--color-coral)] underline">выберите файлы</span>
           </p>
-          <p className="text-xs text-vintage-dust flex items-center gap-1.5 flex-wrap justify-center">
+          <p className="text-xs text-[var(--color-ink-mute)] flex items-center gap-1.5 flex-wrap justify-center">
             <span>JPEG · PNG · WebP · HEIC (iPhone) · AVIF</span>
-            <span className="text-vintage-sand">·</span>
+            <span className="text-[var(--color-line)]">·</span>
             <span>Макс. {PREVIEW_MAX_MB} МБ</span>
-            <span className="text-vintage-sand">·</span>
+            <span className="text-[var(--color-line)]">·</span>
             <span className="inline-flex items-center gap-1">
               <Clipboard className="w-3 h-3" /> Cmd+V
             </span>
           </p>
-          <p className="text-[10px] text-vintage-dust font-mono mt-1">
+          <p className="text-[10px] text-[var(--color-ink-mute)] font-mono mt-1">
             Авто-обработка: оптимизация · WebP-варианты (thumb/medium/large) · сжатие · EXIF-strip
           </p>
         </div>
@@ -279,7 +279,7 @@ export function BildUploadZone({ produktId, onUpload }: BildUploadZoneProps) {
             background:   "rgba(232,112,58,0.08)",
             border:       "1px solid rgba(232,112,58,0.40)",
             color:        "#A53E26",
-            borderRadius: "var(--radius-vintage)",
+            borderRadius: "var(--radius-app)",
           }}
         >
           <AlertCircle className="w-3.5 h-3.5 shrink-0" />
@@ -321,21 +321,21 @@ function UploadItemCard({
     <div
       className="flex items-center gap-3 p-3"
       style={{
-        background:   "#fff",
+        background:   "var(--color-app-surface)",
         border:       "1px solid var(--color-line)",
-        borderRadius: "var(--radius-vintage)",
+        borderRadius: "var(--radius-app)",
       }}
     >
       {/* Thumbnail */}
       <div
-        className="w-14 h-14 shrink-0 overflow-hidden bg-vintage-parchment relative"
-        style={{ borderRadius: "var(--radius-vintage)" }}
+        className="w-14 h-14 shrink-0 overflow-hidden bg-[var(--color-bone)] relative"
+        style={{ borderRadius: "var(--radius-app)" }}
       >
         {item.previewDataUrl ? (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img src={item.previewDataUrl} alt="" className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-vintage-dust">
+          <div className="w-full h-full flex items-center justify-center text-[var(--color-ink-mute)]">
             <ImagePlus className="w-5 h-5" />
           </div>
         )}
@@ -345,7 +345,7 @@ function UploadItemCard({
           </div>
         )}
         {item.status === "done" && (
-          <div className="absolute inset-0 bg-vintage-sage/40 flex items-center justify-center">
+          <div className="absolute inset-0 bg-[rgba(107,168,138,0.4)] flex items-center justify-center">
             <CheckCircle2 className="w-5 h-5 text-white" />
           </div>
         )}
@@ -353,20 +353,20 @@ function UploadItemCard({
 
       {/* Info + Progress */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-sans text-vintage-ink truncate">{item.file.name}</p>
-        <p className="text-[11px] text-vintage-dust font-mono">
+        <p className="text-sm font-sans text-[var(--color-ink)] truncate">{item.file.name}</p>
+        <p className="text-[11px] text-[var(--color-ink-mute)] font-mono">
           {sizeMb} МБ
           {item.status === "uploading" && ` · ${item.progress}%`}
           {item.status === "done"      && " · готово ✓"}
           {item.status === "cancelled" && " · отменено"}
           {item.status === "error"     && (
-            <span className="text-vintage-burgundy"> · {item.error}</span>
+            <span className="text-[var(--color-vintage-burgundy)]"> · {item.error}</span>
           )}
         </p>
         {item.status === "uploading" && (
-          <div className="mt-1.5 h-1 bg-vintage-parchment overflow-hidden" style={{ borderRadius: 2 }}>
+          <div className="mt-1.5 h-1 bg-[var(--color-bone)] overflow-hidden" style={{ borderRadius: 2 }}>
             <div
-              className="h-full transition-all bg-vintage-gold"
+              className="h-full transition-all bg-[var(--color-coral)]"
               style={{ width: `${item.progress}%` }}
             />
           </div>
@@ -378,7 +378,7 @@ function UploadItemCard({
         {item.status === "uploading" && (
           <button
             onClick={onCancel}
-            className="p-1.5 text-vintage-dust hover:text-vintage-burgundy transition-colors"
+            className="p-1.5 text-[var(--color-ink-mute)] hover:text-[var(--color-vintage-burgundy)] transition-colors"
             aria-label="Отменить"
           >
             <X className="w-4 h-4" />
@@ -388,12 +388,12 @@ function UploadItemCard({
           <div className="flex items-center gap-1">
             <button
               onClick={onRetry}
-              className="text-[11px] font-mono uppercase tracking-widest px-2 py-1 text-vintage-gold border border-vintage-gold/40 hover:bg-vintage-gold/10"
-              style={{ borderRadius: "var(--radius-vintage)" }}
+              className="text-[11px] font-mono uppercase tracking-widest px-2 py-1 text-[var(--color-coral)] border border-[rgba(232,112,58,0.4)] hover:bg-[rgba(232,112,58,0.1)]"
+              style={{ borderRadius: "var(--radius-app)" }}
             >
               Повторить
             </button>
-            <button onClick={onDismiss} className="p-1 text-vintage-dust hover:text-vintage-ink">
+            <button onClick={onDismiss} className="p-1 text-[var(--color-ink-mute)] hover:text-[var(--color-ink)]">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -401,7 +401,7 @@ function UploadItemCard({
         {(item.status === "cancelled" || item.status === "done") && (
           <button
             onClick={onDismiss}
-            className="p-1.5 text-vintage-dust hover:text-vintage-ink transition-colors"
+            className="p-1.5 text-[var(--color-ink-mute)] hover:text-[var(--color-ink)] transition-colors"
             aria-label="Скрыть"
           >
             <X className="w-4 h-4" />

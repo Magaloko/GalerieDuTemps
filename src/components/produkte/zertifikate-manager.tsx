@@ -75,7 +75,7 @@ export function ZertifikateManager({ produktId, initialItems }: Props) {
   return (
     <div className="space-y-4">
       {items.length === 0 && (
-        <p className="text-sm font-sans text-vintage-dust italic">
+        <p className="text-sm font-sans italic" style={{ color: "var(--color-ink-mute)" }}>
           Нет загруженных сертификатов.
         </p>
       )}
@@ -83,15 +83,15 @@ export function ZertifikateManager({ produktId, initialItems }: Props) {
       {items.map(z => (
         <div
           key={z.id}
-          className="flex items-center justify-between gap-2 px-4 py-3 bg-vintage-gold/5 border border-vintage-gold/30"
-          style={{ borderRadius: "var(--radius-vintage)" }}
+          className="flex items-center justify-between gap-2 px-4 py-3"
+          style={{ background: "rgba(232,112,58,0.06)", border: "1px solid rgba(232,112,58,0.30)", borderRadius: "var(--radius-app)" }}
         >
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <Award className="w-4 h-4 text-vintage-gold flex-shrink-0" />
+            <Award className="w-4 h-4 flex-shrink-0" style={{ color: "var(--color-coral)" }} />
             <div className="min-w-0">
-              <p className="text-sm text-vintage-ink truncate font-serif">{z.name}</p>
+              <p className="text-sm truncate font-serif" style={{ color: "var(--color-ink)" }}>{z.name}</p>
               {(z.aussteller || z.datum) && (
-                <p className="text-xs text-vintage-dust">
+                <p className="text-xs" style={{ color: "var(--color-ink-mute)" }}>
                   {[z.aussteller, z.datum].filter(Boolean).join(" · ")}
                 </p>
               )}
@@ -102,8 +102,8 @@ export function ZertifikateManager({ produktId, initialItems }: Props) {
               href={z.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-white transition-colors"
-              style={{ borderRadius: "var(--radius-vintage)" }}
+              className="p-2 transition-colors text-[var(--color-ink-mute)] hover:text-[var(--color-coral)] hover:bg-[var(--color-paper-warm)]"
+              style={{ borderRadius: "var(--radius-app)" }}
               title="Открыть"
             >
               <ExternalLink className="w-3.5 h-3.5" />
@@ -111,8 +111,8 @@ export function ZertifikateManager({ produktId, initialItems }: Props) {
             <button
               type="button"
               onClick={() => handleDelete(z.id)}
-              className="p-2 text-vintage-burgundy hover:bg-vintage-burgundy/10 transition-colors"
-              style={{ borderRadius: "var(--radius-vintage)" }}
+              className="p-2 transition-colors text-[var(--color-vintage-burgundy)] hover:bg-[rgba(194,71,71,0.10)]"
+              style={{ borderRadius: "var(--radius-app)" }}
               title="Удалить"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -122,8 +122,8 @@ export function ZertifikateManager({ produktId, initialItems }: Props) {
       ))}
 
       {/* Add form */}
-      <div className="border-t border-vintage-sand/40 pt-4 space-y-3">
-        <p className="text-xs uppercase tracking-widest text-vintage-brown font-sans">
+      <div className="pt-4 space-y-3" style={{ borderTop: "1px solid var(--color-line)" }}>
+        <p className="text-xs uppercase tracking-widest font-sans" style={{ color: "var(--color-ink-soft)" }}>
           Добавить сертификат
         </p>
 
@@ -143,13 +143,13 @@ export function ZertifikateManager({ produktId, initialItems }: Props) {
             type="button"
             onClick={() => fileRef.current?.click()}
             disabled={busy}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans uppercase tracking-widest hover:bg-vintage-parchment disabled:opacity-50 transition-colors"
-            style={{ borderRadius: "var(--radius-button)" }}
+            className="inline-flex items-center gap-2 px-4 py-2 border text-xs font-sans uppercase tracking-widest disabled:opacity-50 transition-colors border-[var(--color-line)] text-[var(--color-ink-soft)] hover:bg-[var(--color-paper-warm)] hover:text-[var(--color-ink)]"
+            style={{ borderRadius: "var(--radius-app)" }}
           >
             {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
             {url ? "Файл загружен" : "Загрузить файл"}
           </button>
-          {url && <span className="text-xs text-vintage-sage font-sans">✓ {url.split("/").pop()}</span>}
+          {url && <span className="text-xs font-sans" style={{ color: "var(--color-vintage-sage)" }}>✓ {url.split("/").pop()}</span>}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
@@ -158,23 +158,23 @@ export function ZertifikateManager({ produktId, initialItems }: Props) {
             placeholder="Название (напр. ISO 9001)"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="px-3 py-2 bg-vintage-cream border border-vintage-sand text-sm font-sans text-vintage-ink focus:outline-none focus:border-vintage-brown"
-            style={{ borderRadius: "var(--radius-vintage)" }}
+            className="px-3 py-2 text-sm font-sans focus:outline-none"
+            style={{ background: "var(--color-bone)", border: "1px solid var(--color-line)", color: "var(--color-ink)", borderRadius: "var(--radius-app)" }}
           />
           <input
             type="text"
             placeholder="Эмитент"
             value={aussteller}
             onChange={(e) => setAussteller(e.target.value)}
-            className="px-3 py-2 bg-vintage-cream border border-vintage-sand text-sm font-sans text-vintage-ink focus:outline-none focus:border-vintage-brown"
-            style={{ borderRadius: "var(--radius-vintage)" }}
+            className="px-3 py-2 text-sm font-sans focus:outline-none"
+            style={{ background: "var(--color-bone)", border: "1px solid var(--color-line)", color: "var(--color-ink)", borderRadius: "var(--radius-app)" }}
           />
           <input
             type="date"
             value={datum}
             onChange={(e) => setDatum(e.target.value)}
-            className="px-3 py-2 bg-vintage-cream border border-vintage-sand text-sm font-sans text-vintage-ink focus:outline-none focus:border-vintage-brown"
-            style={{ borderRadius: "var(--radius-vintage)" }}
+            className="px-3 py-2 text-sm font-sans focus:outline-none"
+            style={{ background: "var(--color-bone)", border: "1px solid var(--color-line)", color: "var(--color-ink)", borderRadius: "var(--radius-app)" }}
           />
         </div>
 
@@ -182,14 +182,14 @@ export function ZertifikateManager({ produktId, initialItems }: Props) {
           type="button"
           onClick={handleSave}
           disabled={busy || !url || !name}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-vintage-espresso text-vintage-cream text-xs font-sans uppercase tracking-widest hover:bg-vintage-brown disabled:opacity-50 transition-colors"
-          style={{ borderRadius: "var(--radius-button)" }}
+          className="inline-flex items-center gap-2 px-4 py-2 text-xs font-sans uppercase tracking-widest disabled:opacity-50 transition-colors"
+          style={{ background: "var(--color-coral)", color: "#fff", borderRadius: "var(--radius-app)" }}
         >
           Сохранить сертификат
         </button>
       </div>
 
-      {fehler && <p className="text-xs text-vintage-burgundy font-sans">{fehler}</p>}
+      {fehler && <p className="text-xs font-sans" style={{ color: "var(--color-vintage-burgundy)" }}>{fehler}</p>}
     </div>
   );
 }

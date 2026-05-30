@@ -81,11 +81,13 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
   + Cleanup ✓, „KI-Ausfüllen" (`KiFuellenBlock`) ✓, Katalog-Karten-Bild-Fallback (`ProduktKarte`) ✓,
   **Formular-Optik auf helle App-Tokens ✓** (paper/bone/coral + weiche Radien; `tone="shop|app"`-Opt-in
   an `Input/Textarea/Select/MultilingualInput/PreisMultiCurrency/RichTextEditor` — Shop bleibt dunkel
-  unberührt). Offen nach Wunsch: Darstellungs-Feinschliff (ConditionMeter, Detailseiten-Politur);
-  weitere Editor-Bausteine im /app-Formular noch in Eigen-Optik (`BildManager`, `SingleMediaUpload`,
-  `InstagramUrlsInput`, `ProduktStoryEditor`). Hinweis: client-interaktive `/app`-Änderungen lassen sich
-  im Dev wegen PWA-Service-Worker-Cache schlecht visuell prüfen → live nach Deploy testen
-  (Memory `dev-preview-setup`).
+  unberührt). **Editor-Bausteine auf helle App-Tokens ✓** — `BildManager`/`BildUploadZone`/`BildGalerie`,
+  `InstagramUrlsInput`, `ProduktStoryEditor` (nur Chrome; `BlockPreview` bleibt Shop-treu), `SingleMediaUpload`
+  (`tone="app"`), `Dateien-`/`ZertifikateManager` + `bilder`-Seiten-Header; `ConditionMeter` Token-Hygiene
+  (inaktive Segmente `--color-line`). Damit ist der ganze Produkt-Editor (Voll + Schnell + Bilder-Seite) hell.
+  Offen nach Wunsch: Detailseiten-Politur (öffentliche `katalog/[slug]` — ist bereits hell/boutique, nur
+  Feinschliff denkbar). Hinweis: client-interaktive `/app`-Änderungen lassen sich im Dev wegen
+  PWA-Service-Worker-Cache schlecht visuell prüfen → live nach Deploy testen (Memory `dev-preview-setup`).
 - **TG1 — Telegram Dark-Mode-Lücken:** harte `#fff`-Fallbacks in `src/app/(telegram)/**`,
   Texte hart `#1a1410`/`#fff`, Order-Status-Farben ohne `[data-tg-theme="dark"]`-Override.
 - **Pattern-Ausweitung (wiederverwendbar):** `.chip-select` (Inline-Edit) → Lead-Status /

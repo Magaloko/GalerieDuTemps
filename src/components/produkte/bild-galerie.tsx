@@ -109,9 +109,9 @@ function SortableBild({
       ref={setNodeRef}
       style={style}
       className={`
-        relative group bg-vintage-parchment border overflow-hidden flex flex-col
-        ${bild.ist_hauptbild ? "border-vintage-gold ring-1 ring-vintage-gold" : "border-vintage-sand"}
-        ${isSelected ? "ring-2 ring-vintage-coral ring-offset-1" : ""}
+        relative group bg-[var(--color-bone)] border overflow-hidden flex flex-col
+        ${bild.ist_hauptbild ? "border-[var(--color-coral)] ring-1 ring-[var(--color-coral)]" : "border-[var(--color-line)]"}
+        ${isSelected ? "ring-2 ring-[var(--color-coral)] ring-offset-1" : ""}
       `}
       {...attributes}
     >
@@ -136,7 +136,7 @@ function SortableBild({
           style={{
             background:    isSelected ? "var(--color-coral)" : "rgba(255,255,255,0.9)",
             color:         isSelected ? "#fff" : "var(--color-ink)",
-            borderRadius:  "var(--radius-vintage)",
+            borderRadius:  "var(--radius-app)",
           }}
           aria-label={isSelected ? "Снять выделение" : "Выделить"}
         >
@@ -145,22 +145,22 @@ function SortableBild({
 
         {/* Hauptbild-Badge */}
         {bild.ist_hauptbild && (
-          <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 bg-vintage-gold text-vintage-espresso text-[10px] font-mono uppercase tracking-widest"
-               style={{ borderRadius: "var(--radius-vintage)" }}>
+          <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 bg-[var(--color-coral)] text-white text-[10px] font-mono uppercase tracking-widest"
+               style={{ borderRadius: "var(--radius-app)" }}>
             <Star className="w-2.5 h-2.5 fill-current" /> Главное
           </div>
         )}
 
         {/* Hover-Action-Overlay */}
         <div className="
-          absolute inset-0 bg-vintage-espresso/0 group-hover:bg-vintage-espresso/55
+          absolute inset-0 bg-[rgba(15,20,48,0)] group-hover:bg-[rgba(15,20,48,0.55)]
           transition-colors flex items-center justify-center gap-2
           opacity-0 group-hover:opacity-100
         ">
           <button
             {...listeners}
             className="p-2 bg-white/20 hover:bg-white/30 text-white cursor-grab active:cursor-grabbing"
-            style={{ borderRadius: "var(--radius-vintage)" }}
+            style={{ borderRadius: "var(--radius-app)" }}
             title="Переместить"
           >
             <GripVertical className="w-4 h-4" />
@@ -168,19 +168,19 @@ function SortableBild({
           <button
             onClick={() => onHauptbild(bild.id)}
             disabled={bild.ist_hauptbild || isLoading}
-            className="p-2 bg-white/20 hover:bg-vintage-gold/60 text-white disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ borderRadius: "var(--radius-vintage)" }}
+            className="p-2 bg-white/20 hover:bg-[rgba(232,112,58,0.6)] text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ borderRadius: "var(--radius-app)" }}
             title={bild.ist_hauptbild ? "Уже главное" : "Сделать главным"}
           >
             {bild.ist_hauptbild
-              ? <Star    className="w-4 h-4 fill-current text-vintage-gold" />
+              ? <Star    className="w-4 h-4 fill-current text-[var(--color-coral)]" />
               : <StarOff className="w-4 h-4" />}
           </button>
           <button
             onClick={() => { if (confirm("Удалить фото?")) onLoeschen(bild.id); }}
             disabled={isLoading}
-            className="p-2 bg-white/20 hover:bg-vintage-burgundy/60 text-white disabled:opacity-50"
-            style={{ borderRadius: "var(--radius-vintage)" }}
+            className="p-2 bg-white/20 hover:bg-[rgba(194,71,71,0.6)] text-white disabled:opacity-50"
+            style={{ borderRadius: "var(--radius-app)" }}
             title="Удалить"
           >
             <Trash2 className="w-4 h-4" />
@@ -190,13 +190,13 @@ function SortableBild({
         {/* Loading-Overlay */}
         {isLoading && (
           <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
-            <Loader2 className="w-5 h-5 animate-spin text-vintage-brown" />
+            <Loader2 className="w-5 h-5 animate-spin text-[var(--color-ink-soft)]" />
           </div>
         )}
       </div>
 
       {/* Alt-Text + Quality-Badge */}
-      <div className="px-2 py-1.5 border-t border-vintage-sand/50 bg-white">
+      <div className="px-2 py-1.5 border-t border-[var(--color-line)] bg-[var(--color-app-surface)]">
         {editingAlt ? (
           <div className="flex items-center gap-1">
             <input
@@ -207,34 +207,34 @@ function SortableBild({
                 if (e.key === "Enter")  saveAlt();
                 if (e.key === "Escape") { setEditingAlt(false); setAltDraft(bild.alt_text ?? ""); }
               }}
-              className="flex-1 min-w-0 text-[11px] px-1 py-0.5 border border-vintage-sand bg-vintage-parchment"
+              className="flex-1 min-w-0 text-[11px] px-1 py-0.5 border border-[var(--color-line)] bg-[var(--color-bone)]"
               placeholder="Описание (alt-текст)"
               maxLength={200}
             />
-            <button onClick={saveAlt} className="p-0.5 text-vintage-sage" aria-label="Сохранить">
+            <button onClick={saveAlt} className="p-0.5 text-[var(--color-vintage-sage)]" aria-label="Сохранить">
               <Check className="w-3.5 h-3.5" />
             </button>
             <button onClick={() => { setEditingAlt(false); setAltDraft(bild.alt_text ?? ""); }}
-                    className="p-0.5 text-vintage-dust" aria-label="Отмена">
+                    className="p-0.5 text-[var(--color-ink-mute)]" aria-label="Отмена">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
         ) : (
           <button
             onClick={() => setEditingAlt(true)}
-            className="w-full text-left flex items-center gap-1 text-[11px] text-vintage-ink hover:text-vintage-gold transition-colors group/alt"
+            className="w-full text-left flex items-center gap-1 text-[11px] text-[var(--color-ink)] hover:text-[var(--color-coral)] transition-colors group/alt"
             title="Кликни для редактирования alt-текста"
           >
             <span className="flex-1 truncate">
               {bild.alt_text
                 ? <span>{bild.alt_text}</span>
-                : <span className="italic text-vintage-dust">Без описания</span>}
+                : <span className="italic text-[var(--color-ink-mute)]">Без описания</span>}
             </span>
             <Edit2 className="w-3 h-3 shrink-0 opacity-0 group-hover/alt:opacity-100 transition-opacity" />
           </button>
         )}
         {qualityBadge(bild) && (
-          <p className="text-[9px] font-mono text-vintage-dust mt-0.5 truncate">
+          <p className="text-[9px] font-mono text-[var(--color-ink-mute)] mt-0.5 truncate">
             {qualityBadge(bild)}
           </p>
         )}
@@ -351,11 +351,11 @@ export function BildGalerie({ initialBilder, produktId }: BildGalerieProps) {
   if (bilder.length === 0) {
     return (
       <div
-        className="flex flex-col items-center justify-center py-12 border border-dashed border-vintage-sand text-center"
-        style={{ borderRadius: "var(--radius-card)" }}
+        className="flex flex-col items-center justify-center py-12 border border-dashed border-[var(--color-line)] text-center"
+        style={{ borderRadius: "var(--radius-app)" }}
       >
-        <p className="font-serif text-vintage-brown">Ещё нет фото</p>
-        <p className="text-vintage-dust text-xs font-sans mt-1">
+        <p className="font-serif text-[var(--color-ink-soft)]">Ещё нет фото</p>
+        <p className="text-[var(--color-ink-mute)] text-xs font-sans mt-1">
           Загрузите выше, чтобы начать
         </p>
       </div>
@@ -373,24 +373,24 @@ export function BildGalerie({ initialBilder, produktId }: BildGalerieProps) {
           style={{
             background:   "rgba(232,112,58,0.08)",
             border:       "1px solid rgba(232,112,58,0.30)",
-            borderRadius: "var(--radius-card)",
+            borderRadius: "var(--radius-app)",
           }}
         >
-          <p className="text-sm font-sans text-vintage-ink">
+          <p className="text-sm font-sans text-[var(--color-ink)]">
             Выбрано: <strong>{selectedIds.size}</strong>
           </p>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSelectedIds(new Set())}
-              className="text-[11px] font-mono uppercase tracking-widest px-3 py-1.5 hover:bg-vintage-sand/40 transition-colors"
-              style={{ borderRadius: "var(--radius-vintage)" }}
+              className="text-[11px] font-mono uppercase tracking-widest px-3 py-1.5 hover:bg-[rgba(217,211,197,0.4)] transition-colors"
+              style={{ borderRadius: "var(--radius-app)" }}
             >
               Снять
             </button>
             <button
               onClick={handleBulkLoeschen}
-              className="text-[11px] font-mono uppercase tracking-widest px-3 py-1.5 bg-vintage-burgundy/10 text-vintage-burgundy border border-vintage-burgundy/30 hover:bg-vintage-burgundy/20 transition-colors inline-flex items-center gap-1.5"
-              style={{ borderRadius: "var(--radius-vintage)" }}
+              className="text-[11px] font-mono uppercase tracking-widest px-3 py-1.5 bg-[rgba(194,71,71,0.1)] text-[var(--color-vintage-burgundy)] border border-[rgba(194,71,71,0.3)] hover:bg-[rgba(194,71,71,0.2)] transition-colors inline-flex items-center gap-1.5"
+              style={{ borderRadius: "var(--radius-app)" }}
             >
               <Trash2 className="w-3.5 h-3.5" />
               Удалить выбранные
