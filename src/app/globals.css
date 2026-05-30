@@ -554,3 +554,224 @@ em.font-italic, .font-italic {
   font-weight:     500;
   line-height:     1;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   OPERATOR-DATEN-FLÄCHEN — Twenty-CRM-inspiriertes Tabellen-Kit
+   Gilt für die geteilten Modul-Listen (rendern in /app UND klassik /admin):
+   bestellungen, kunden, leads, rechnungen, provisionen …
+   Prinzipien (aus docs/DESIGN_SESSION.md): EIN Akzent (Coral), wenige ruhige
+   Graustufen, dichte einheitliche Zeilen, sticky Header, leiser Hover, dezente
+   1px-Borders über --color-line, rechtsbündige tabular-nums-Zahlen, ruhige
+   Status-Chips. Scharfe Radien (diese Flächen leben auch im Klassik-Admin).
+   Unlayered → schlägt Tailwind-Utilities; Komponenten setzen nur noch Klassen.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Ruhige Panel-Fläche (Karten, KPI-Kacheln, Tabellen-Wrapper). */
+.surface {
+  background:    var(--color-app-surface);
+  border:        1px solid var(--color-line);
+  border-radius: var(--radius-card);
+}
+/* KPI-Kachel: ruhige Fläche + dezenter Eyebrow-Slot. */
+.kpi {
+  background:    var(--color-app-surface);
+  border:        1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  padding:       1rem;
+}
+.kpi-label {
+  display:        flex;
+  align-items:    center;
+  gap:            0.375rem;
+  font-family:    var(--font-sans);
+  font-size:      0.6875rem;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color:          var(--color-ink-mute);
+}
+.kpi-value {
+  font-family: var(--font-serif);
+  font-size:   1.5rem;
+  line-height: 1.1;
+  color:       var(--color-ink);
+  margin-top:  0.25rem;
+  font-variant-numeric: tabular-nums;
+}
+.kpi-accent { border-left: 3px solid var(--color-coral); }
+
+/* ─ Daten-Tabelle ─────────────────────────────────────────────────────────
+   Verwendung:
+     <div class="data-table-wrap"><table class="data-table"> … </table></div>
+   Header sticky, Zeilen einheitlich dicht, Zahlen-Spalten via .num. */
+.data-table-wrap {
+  background:     var(--color-app-surface);
+  border:         1px solid var(--color-line);
+  border-radius:  var(--radius-card);
+  overflow:       hidden;
+}
+.data-table-scroll { overflow-x: auto; }
+.data-table {
+  width:           100%;
+  border-collapse: collapse;
+  font-family:     var(--font-sans);
+  font-size:       0.875rem;
+}
+.data-table thead th {
+  position:       sticky;
+  top:            0;
+  z-index:        1;
+  background:     var(--color-paper-warm);
+  border-bottom:  1px solid var(--color-line);
+  text-align:     left;
+  padding:        0.625rem 1rem;
+  font-size:      0.6875rem;
+  font-weight:    500;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color:          var(--color-ink-mute);
+  white-space:    nowrap;
+}
+.data-table tbody td {
+  padding:       0.625rem 1rem;
+  border-bottom: 1px solid var(--color-line);
+  color:         var(--color-ink-soft);
+  vertical-align: middle;
+}
+.data-table tbody tr:last-child td { border-bottom: 0; }
+.data-table tbody tr { transition: background 120ms ease; }
+.data-table tbody tr:hover { background: rgba(0, 0, 0, 0.025); }
+/* Spalten-Helfer */
+.data-table .num   { text-align: right;  font-variant-numeric: tabular-nums; }
+.data-table .center{ text-align: center; }
+.data-table .strong{ color: var(--color-ink); font-weight: 500; }
+.data-table .mono  { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--color-coral-deep); }
+.data-table .muted { color: var(--color-ink-mute); font-size: 0.8125rem; }
+
+/* ─ Status-Chip (ruhig, EIN Ton je Bedeutung) ─────────────────────────────
+   Default neutral; Modifier setzen nur Text-/BG-Ton. Kein lautes Border. */
+.chip {
+  display:         inline-flex;
+  align-items:     center;
+  gap:             0.25rem;
+  padding:         0.125rem 0.5rem;
+  border-radius:   var(--radius-vintage);
+  font-size:       0.75rem;
+  line-height:     1.4;
+  white-space:     nowrap;
+  background:      rgba(122, 125, 146, 0.12);   /* ink-mute @12% */
+  color:           var(--color-ink-soft);
+}
+.chip-coral   { background: rgba(232, 112, 58, 0.12);  color: var(--color-coral-deep); }
+.chip-warn    { background: rgba(232, 112, 58, 0.12);  color: var(--color-coral-deep); }
+.chip-success { background: rgba(74, 138, 110, 0.15);  color: var(--color-vintage-forest); }
+.chip-danger  { background: rgba(194, 71, 71, 0.14);   color: var(--color-vintage-burgundy); }
+.chip-muted   { background: rgba(122, 125, 146, 0.12); color: var(--color-ink-mute); }
+
+/* ─ Filter-Tab-Leiste (Segment-Reiter über Listen) ────────────────────────── */
+.filter-bar {
+  display:       flex;
+  flex-wrap:     wrap;
+  gap:           0.375rem;
+  border-bottom: 1px solid var(--color-line);
+  padding-bottom: 0.25rem;
+}
+.filter-tab {
+  padding:        0.5rem 1rem;
+  border-radius:  var(--radius-button);
+  font-family:    var(--font-sans);
+  font-size:      0.75rem;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color:          var(--color-ink-mute);
+  background:     transparent;
+  transition:     background 120ms ease, color 120ms ease;
+  cursor:         pointer;
+}
+.filter-tab:hover { background: var(--color-paper-warm); color: var(--color-ink); }
+.filter-tab-active,
+.filter-tab[aria-current="true"] {
+  background: var(--color-ink);
+  color:      var(--color-bone);
+}
+.filter-tab-count { opacity: 0.6; margin-left: 0.25rem; }
+
+/* ─ Outline-Button (Sekundär, neben .btn-coral) ───────────────────────────── */
+.btn-line {
+  display:         inline-flex;
+  align-items:     center;
+  justify-content: center;
+  gap:             0.5rem;
+  padding:         0.625rem 1rem;
+  border-radius:   var(--radius-button);
+  font-family:     var(--font-sans);
+  font-size:       0.75rem;
+  letter-spacing:  var(--tracking-nav);
+  text-transform:  uppercase;
+  color:           var(--color-ink-soft);
+  background:      var(--color-app-surface);
+  border:          1px solid var(--color-line);
+  transition:      background 120ms ease, border-color 120ms ease, color 120ms ease;
+  cursor:          pointer;
+}
+.btn-line:hover { background: var(--color-paper-warm); color: var(--color-ink); }
+
+/* ─ Such-/Eingabefeld (ruhig, paper) ──────────────────────────────────────── */
+.field-input {
+  width:          100%;
+  padding:        0.5rem 1rem;
+  border-radius:  var(--radius-vintage);
+  background:     var(--color-bone);
+  border:         1px solid var(--color-line);
+  font-family:    var(--font-sans);
+  font-size:      0.875rem;
+  color:          var(--color-ink);
+  transition:     border-color 120ms ease;
+}
+.field-input::placeholder { color: var(--color-ink-mute); }
+.field-input:focus { outline: none; border-color: var(--color-coral); }
+
+/* ─ Zeilen-Aktion (Icon-Link am Zeilenende: öffnen/extern) ────────────────── */
+.row-action {
+  display:         inline-flex;
+  align-items:     center;
+  justify-content: center;
+  padding:         0.375rem;
+  border-radius:   var(--radius-vintage);
+  color:           var(--color-ink-mute);
+  transition:      background 120ms ease, color 120ms ease;
+}
+.row-action:hover { background: var(--color-paper-warm); color: var(--color-coral-deep); }
+
+/* ─ Listen-Kopf (Eyebrow + Titel + Sub) ───────────────────────────────────── */
+.list-title {
+  font-family: var(--font-serif);
+  font-size:   1.5rem;
+  color:       var(--color-ink);
+  line-height: 1.15;
+}
+.list-sub {
+  font-family: var(--font-sans);
+  font-size:   0.75rem;
+  color:       var(--color-ink-mute);
+  margin-top:  0.125rem;
+}
+
+/* ─ Empty-State (einheitlich freundlich) ──────────────────────────────────── */
+.empty-state {
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  text-align:      center;
+  padding:         4rem 1.5rem;
+  background:      var(--color-app-surface);
+  border:          1px solid var(--color-line);
+  border-radius:   var(--radius-card);
+  color:           var(--color-ink-mute);
+}
+.empty-state-title {
+  font-family: var(--font-serif);
+  font-size:   1.125rem;
+  color:       var(--color-ink-soft);
+  margin-top:  0.75rem;
+}
