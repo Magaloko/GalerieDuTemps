@@ -7,6 +7,7 @@ import {
   kategorieErstellen,
   kategorieAktualisieren,
   kategorieLoeschen,
+  kategorienStrukturSpeichern,
 } from "@/lib/db/kategorien";
 import { KategorieCreateSchema } from "@/lib/utils/validierung";
 
@@ -60,6 +61,35 @@ export async function kategorieAktualisierenAction(
 
   await kategorieAktualisieren(id, parsed.data);
   return { message: "Категория сохранена." };
+}
+
+/**
+ * Struktur speichern (Reihenfolge + Gruppierung + Aktiv) aus der sortierbaren
+ * Verwaltungs-Liste. Batch/atomar.
+ */
+export async function kategorienStrukturAction(
+  items: { id: number; sortierung: number; eltern_id: number | null; aktiv: boolean }[]
+): Promise<{ ok: boolean; error?: string }> {
+  const session = await requireAdminSession();
+  if (!session) return { ok: false, error: "Не авторизовано" };
+  if (!Array.isArray(items) || items.length === 0) return { ok: false, error: "Нет данных" };
+
+  const clean = items
+    .filter(i => Number.isInteger(i.id))
+    .map(i => ({
+      id:         i.id,
+      sortierung: Number.isFinite(i.sortierung) ? Math.trunc(i.sortierung) : 0,
+      eltern_id:  i.eltern_id == null ? null : Number(i.eltern_id),
+      aktiv:      !!i.aktiv,
+    }));
+
+  try {
+    await kategorienStrukturSpeichern(clean);
+    return { ok: true };
+  } catch (err) {
+    console.error("[kategorienStruktur]", err);
+    return { ok: false, error: "Не удалось сохранить структуру" };
+  }
 }
 
 export async function kategorieLoeschenAction(id: number): Promise<void> {

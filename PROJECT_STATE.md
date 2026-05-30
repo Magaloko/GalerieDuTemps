@@ -71,6 +71,9 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 
 ## 🚧 Offen / mögliche nächste Schritte
 
+- **Kategorie-Verwaltung ✓** — sortierbare Liste (Drag/Pfeile), Gruppierung (Parent, 2 Ebenen),
+  Inline-Aktiv-Toggle, Batch-Save; + 7 Kategorien als Sollzustand. Nächster Nutzer-Wunsch: zurück zum
+  **Produkt-Bereich**.
 - **Produkt-Bereich (laufender Strang):** Formular-Struktur (`FormSection`) ✓, Shop-Galerie-Bild-Fallback
   + Cleanup ✓, „KI-Ausfüllen" (`KiFuellenBlock`) ✓, Katalog-Karten-Bild-Fallback (`ProduktKarte`) ✓ —
   Bild-Robustheit damit shop-weit (Galerie + Karten). Offen nach Wunsch: Formular-**Optik** auf neue
@@ -106,7 +109,12 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
 
-- 2026-05-30 18:06 UTC · `(dieser Commit)` · data(kategorien) 7 Produkt-Kategorien als Sollzustand
+- 2026-05-30 20:15 UTC · `(dieser Commit)` · feat(app) Kategorie-Verwaltung: sortierbare Listen-UI
+  (`KategorieVerwaltung`) — Drag&Drop (dnd-kit) + Pfeil-Buttons ↑↓ für die Reihenfolge, hierarchische
+  Anzeige (Unterkategorien eingerückt), Inline-Parent-Dropdown zum Gruppieren (2 Ebenen), Inline-Aktiv-
+  Toggle, Batch-Save (`kategorienStrukturAction` → atomares UNNEST-UPDATE in `kategorienStrukturSpeichern`).
+  Server-Render verifiziert (Liste lädt, 200); Interaktion live testen (PWA-SW-Block auf /app im Dev).
+- 2026-05-30 18:06 UTC · `b1ad0c2` · data(kategorien) 7 Produkt-Kategorien als Sollzustand
   (idempotentes `scripts/seed-kategorien.mjs`): NEU Столовые приборы/`besteck`, Ювелирные изделия/`edelschmuck`,
   Часы/`uhren`, Посуда/`geschirr`, Посеребренные…/`versilbert` (+ Beschreibung); Декор/`deko` & Украшения/`schmuck`
   aktualisiert; Фарфор/Текстиль/Искусство/Кухня deaktiviert (aktiv=false, Daten bleiben). Slugs deutsch

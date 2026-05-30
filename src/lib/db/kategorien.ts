@@ -145,6 +145,33 @@ export async function kategorieAktualisieren(
 }
 
 /**
+ * Struktur batch-speichern: Reihenfolge (sortierung), Gruppierung (eltern_id)
+ * und Aktiv-Status für mehrere Kategorien in EINEM atomaren UPDATE (UNNEST).
+ * Für die sortierbare Verwaltungs-Liste (Drag/Pfeile/Umgruppieren).
+ */
+export async function kategorienStrukturSpeichern(
+  items: { id: number; sortierung: number; eltern_id: number | null; aktiv: boolean }[]
+): Promise<void> {
+  if (items.length === 0) return;
+  await query(
+    `UPDATE sebo.kategorien AS k
+        SET sortierung = v.sortierung,
+            eltern_id  = v.eltern_id,
+            aktiv      = v.aktiv
+       FROM UNNEST($1::int[], $2::int[], $3::int[], $4::boolean[])
+              AS v(id, sortierung, eltern_id, aktiv)
+      WHERE k.id = v.id`,
+    [
+      items.map(i => i.id),
+      items.map(i => i.sortierung),
+      items.map(i => i.eltern_id),
+      items.map(i => i.aktiv),
+    ]
+  );
+  revalidatePublicCatalogCache();
+}
+
+/**
  * Kategorie löschen oder soft-deaktivieren.
  * Wenn Produkte verlinkt sind, wird nur `aktiv=false` gesetzt (Soft-Delete).
  * Wenn keine Produkte verlinkt sind, wird hart gelöscht.
