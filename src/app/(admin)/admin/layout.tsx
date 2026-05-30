@@ -4,10 +4,8 @@ import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminBell }    from "@/components/layout/admin-bell";
 import { ViewSwitch }   from "@/components/layout/view-switch";
 import { AuthSessionProvider } from "@/components/layout/session-provider";
-import { AppShell }     from "@/app/app/app-shell";
 import { ungeleseneCount }    from "@/lib/notifications/lead-notify";
 import { adminBadgeCounts }   from "@/lib/db/dashboard-v2";
-import { getAdminView }       from "@/lib/admin-view";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -34,24 +32,9 @@ export default async function AdminLayout({
     redirect("/login");
   }
 
-  const adminView = await getAdminView().catch(() => "classic" as const);
-
-  // ── App-Modus ───────────────────────────────────────────────────────────
-  // Gespeicherte Ansicht = App: Admin-Module rendern in der App-Hülle (obere
-  // Bar + untere Tab-Leiste), damit der Operator beim Tippen einer Kachel NICHT
-  // ins Klassik-Layout (Sidebar) fällt, sondern in der App bleibt. `fluid` =
-  // volle Breite für Tabellen/Editoren. Keine Sidebar-Badges nötig.
-  if (adminView === "app") {
-    return (
-      <AuthSessionProvider session={session}>
-        <AppShell userName={session.user?.name} fluid>
-          <div style={{ color: "var(--color-ink)" }}>{children}</div>
-        </AppShell>
-      </AuthSessionProvider>
-    );
-  }
-
-  // ── Klassik-Modus ───────────────────────────────────────────────────────
+  // /admin ist seit der /app-Migration immer die Klassik-Ansicht (Sidebar).
+  // App-Operatoren nutzen echte /app/*-Routen; der frühere Cookie-Embed
+  // (AppShell um /admin-Seiten) ist dadurch obsolet und entfernt.
   // Live-Badges für Sidebar (alle 6 Counts parallel, 30s gecached)
   const [inboxCount, badges] = await Promise.all([
     ungeleseneCount().catch(() => 0),
