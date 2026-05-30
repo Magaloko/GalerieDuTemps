@@ -47,7 +47,7 @@ export default async function AppHeutePage() {
 
       {/* Schnellzugriff */}
       <div className="grid grid-cols-2 gap-2.5">
-        <Action href="/admin/produkte/neu" icon={Plus}       label="Новый товар" primary />
+        <Action href="/app/produkte/neu"   icon={Plus}       label="Новый товар" primary />
         <Action href="/app/menu"           icon={LayoutGrid} label="Все разделы" />
       </div>
 

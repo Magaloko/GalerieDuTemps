@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { ChevronLeft, ImagePlus, Inbox } from "lucide-react";
 import { entwuerfeListe } from "@/lib/db/produkte";
@@ -16,6 +17,7 @@ export const dynamic = "force-dynamic";
  * KI-Ausfüllen, Preis/Kategorie/Zustand setzen, Veröffentlichen, Löschen.
  * ────────────────────────────────────────────────────────────────────────── */
 export default async function EntwuerfePage() {
+  const base = await getModuleBase();
   const [entwuerfe, kategorien] = await Promise.all([
     entwuerfeListe(100),
     alleKategorien(),
@@ -25,7 +27,7 @@ export default async function EntwuerfePage() {
   return (
     <div className="max-w-5xl space-y-6">
       <nav className="text-[11px] uppercase font-medium flex items-center gap-2" style={{ letterSpacing: "0.18em", color: "var(--color-ink-mute)" }}>
-        <Link href="/admin/produkte" className="hover:text-coral transition-colors flex items-center gap-1">
+        <Link href={`${base}/produkte`} className="hover:text-coral transition-colors flex items-center gap-1">
           <ChevronLeft className="w-3 h-3" /> Товары
         </Link>
         <span>/</span>
@@ -42,7 +44,7 @@ export default async function EntwuerfePage() {
           </h1>
         </div>
         <Link
-          href="/admin/produkte/bulk"
+          href={`${base}/produkte/bulk`}
           className="inline-flex items-center gap-2 text-[11px] uppercase font-medium px-3 py-2"
           style={{ letterSpacing: "0.22em", background: "var(--color-coral)", color: "#fff" }}
         >

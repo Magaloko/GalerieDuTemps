@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { produkteListe } from "@/lib/db/produkte";
 import { alleKategorien } from "@/lib/db/kategorien";
@@ -32,6 +33,7 @@ interface Props {
 }
 
 export default async function ProduktListePage({ searchParams }: Props) {
+  const base = await getModuleBase();
   const sp       = await searchParams;
   const seite    = parseInt(sp.seite  ?? "1",  10);
   const suche    = sp.suche  ?? "";
@@ -57,7 +59,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link
-            href="/admin/produkte/entwuerfe"
+            href={`${base}/produkte/entwuerfe`}
             className="flex items-center gap-2 px-4 py-2.5 border border-vintage-sand text-vintage-ink text-xs font-sans tracking-[0.2em] uppercase hover:bg-vintage-parchment transition-colors"
             style={{ borderRadius: "var(--radius-button)" }}
             title="Черновики на проверку (фото-пачка + Telegram)"
@@ -65,14 +67,14 @@ export default async function ProduktListePage({ searchParams }: Props) {
             <Inbox className="w-3.5 h-3.5" /> Черновики
           </Link>
           <Link
-            href="/admin/produkte/schnell"
+            href={`${base}/produkte/schnell`}
             className="flex items-center gap-2 px-4 py-2.5 bg-vintage-gold text-vintage-espresso text-xs font-sans tracking-[0.2em] uppercase hover:bg-vintage-amber transition-colors"
             style={{ borderRadius: "var(--radius-button)" }}
             title="Быстрое добавление с помощью ИИ"
           >
             <Sparkles className="w-3.5 h-3.5" /> Быстро + ИИ
           </Link>
-          <Link href="/admin/produkte/neu">
+          <Link href={`${base}/produkte/neu`}>
             <Button variant="secondary" icon={<Plus className="w-3.5 h-3.5" />}>
               Полная форма
             </Button>
@@ -198,7 +200,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
 
         {(suche || katId || zustand) && (
           <Link
-            href="/admin/produkte"
+            href={`${base}/produkte`}
             className="
               px-4 py-2.5 border border-vintage-sand text-vintage-dust
               text-xs font-sans hover:bg-vintage-parchment transition-colors
@@ -227,7 +229,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
             <p className="text-vintage-dust text-sm font-sans mt-1">
               {suche ? "Измени поисковой запрос или" : "Добавь свой первый товар"}
             </p>
-            <Link href="/admin/produkte/neu">
+            <Link href={`${base}/produkte/neu`}>
               <Button className="mt-4" size="sm" icon={<Plus className="w-3 h-3" />}>
                 Создать товар
               </Button>
@@ -357,7 +359,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
                           <ExternalLink className="w-4 h-4" />
                         </a>
                         <Link
-                          href={`/admin/produkte/${p.id}/bilder`}
+                          href={`${base}/produkte/${p.id}/bilder`}
                           className="p-2 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-parchment transition-colors"
                           style={{ borderRadius: "var(--radius-vintage)" }}
                           title="Управление изображениями"
@@ -365,7 +367,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
                           <ImageIcon className="w-4 h-4" />
                         </Link>
                         <Link
-                          href={`/admin/produkte/${p.id}`}
+                          href={`${base}/produkte/${p.id}`}
                           className="p-2 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-parchment transition-colors"
                           style={{ borderRadius: "var(--radius-vintage)" }}
                           title="Редактировать"
@@ -392,7 +394,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
           <div className="flex gap-2">
             {daten.seite > 1 && (
               <Link
-                href={`/admin/produkte?seite=${daten.seite - 1}${suche ? `&suche=${suche}` : ""}`}
+                href={`${base}/produkte?seite=${daten.seite - 1}${suche ? `&suche=${suche}` : ""}`}
                 className="
                   flex items-center gap-1 px-3 py-2
                   border border-vintage-sand text-vintage-brown
@@ -405,7 +407,7 @@ export default async function ProduktListePage({ searchParams }: Props) {
             )}
             {daten.seite < daten.seiten && (
               <Link
-                href={`/admin/produkte?seite=${daten.seite + 1}${suche ? `&suche=${suche}` : ""}`}
+                href={`${base}/produkte?seite=${daten.seite + 1}${suche ? `&suche=${suche}` : ""}`}
                 className="
                   flex items-center gap-1 px-3 py-2
                   border border-vintage-sand text-vintage-brown

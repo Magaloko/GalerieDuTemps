@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/config";
 import { AuthSessionProvider } from "@/components/layout/session-provider";
-import { AppShell } from "./app-shell";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -28,9 +27,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect("/");
   }
 
-  return (
-    <AuthSessionProvider session={session}>
-      <AppShell userName={session.user?.name}>{children}</AppShell>
-    </AuthSessionProvider>
-  );
+  // Die App-Hülle (AppShell) liegt in den Route-Group-Layouts darunter:
+  //   (today)   → schmale Spalte (Сегодня, Меню)
+  //   (modules) → volle Breite (gespiegelte /admin-Module unter /app)
+  return <AuthSessionProvider session={session}>{children}</AuthSessionProvider>;
 }

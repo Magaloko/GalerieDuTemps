@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { ChevronLeft, Zap, ImagePlus, ArrowRight } from "lucide-react";
 import { UploadVolumeBanner } from "@/components/produkte/upload-volume-banner";
@@ -15,6 +16,7 @@ export const metadata: Metadata = { title: "Новый товар" };
  * keine „erst speichern, dann Fotos"-Hürde mehr).
  * ────────────────────────────────────────────────────────────────────────── */
 export default async function NeuesProduktPage() {
+  const base = await getModuleBase();
   return (
     <div className="max-w-2xl space-y-6">
       {/* Breadcrumb */}
@@ -22,7 +24,7 @@ export default async function NeuesProduktPage() {
         className="text-[11px] uppercase font-medium flex items-center gap-2"
         style={{ letterSpacing: "0.18em", color: "var(--color-ink-mute)" }}
       >
-        <Link href="/admin/produkte" className="hover:text-coral transition-colors flex items-center gap-1">
+        <Link href={`${base}/produkte`} className="hover:text-coral transition-colors flex items-center gap-1">
           <ChevronLeft className="w-3 h-3" /> Товары
         </Link>
         <span>/</span>
@@ -72,7 +74,7 @@ export default async function NeuesProduktPage() {
 
         {/* KI-Schnell */}
         <Link
-          href="/admin/produkte/schnell"
+          href={`${base}/produkte/schnell`}
           className="group p-6 transition-all hover:opacity-95"
           style={{
             background:   "#fff",

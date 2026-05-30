@@ -28,7 +28,7 @@ export default async function AppMenuPage() {
     {
       title: "Каталог",
       items: [
-        { href: "/admin/produkte",   label: "Товары",     icon: Package },
+        { href: "/app/produkte",     label: "Товары",     icon: Package },
         { href: "/admin/kategorien", label: "Категории",  icon: Tag },
         { href: "/admin/coupons",    label: "Промокоды",  icon: Ticket },
       ],

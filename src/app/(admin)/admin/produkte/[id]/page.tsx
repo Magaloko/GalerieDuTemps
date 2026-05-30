@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import { notFound } from "next/navigation";
 import { produktById } from "@/lib/db/produkte";
 import { alleKategorien } from "@/lib/db/kategorien";
@@ -26,6 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProduktBearbeitenPage({ params }: Props) {
+  const base = await getModuleBase();
   const { id } = await params;
   const [produkt, kategorien, bilder, brands] = await Promise.all([
     produktById(id),
@@ -57,7 +59,7 @@ export default async function ProduktBearbeitenPage({ params }: Props) {
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
-            <Link href="/admin/produkte" className="hover:text-vintage-brown transition-colors flex items-center gap-1">
+            <Link href={`${base}/produkte`} className="hover:text-vintage-brown transition-colors flex items-center gap-1">
               <ChevronLeft className="w-3 h-3" /> Товары
             </Link>
             <span>/</span>
@@ -83,7 +85,7 @@ export default async function ProduktBearbeitenPage({ params }: Props) {
               </button>
             </form>
             <Link
-              href={`/admin/produkte/${id}/bilder`}
+              href={`${base}/produkte/${id}/bilder`}
               className="flex items-center gap-2 px-4 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans uppercase tracking-widest hover:bg-vintage-parchment transition-colors"
               style={{ borderRadius: "var(--radius-button)" }}
             >

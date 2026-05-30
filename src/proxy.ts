@@ -109,7 +109,12 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/kunde", req.nextUrl));
   }
 
-  return NextResponse.next();
+  // x-pathname-Header durchreichen, damit Server-Components/Actions die aktuelle
+  // Route kennen (für getModuleBase() → /app vs /admin). Header wird am Request
+  // gesetzt, nicht an der Response — so liest ihn das Server-Rendering.
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-pathname", pathname);
+  return NextResponse.next({ request: { headers: requestHeaders } });
 });
 
 export const config = {

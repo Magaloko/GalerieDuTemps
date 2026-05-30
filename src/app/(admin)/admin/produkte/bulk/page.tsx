@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { UploadVolumeBanner } from "@/components/produkte/upload-volume-banner";
@@ -7,10 +8,11 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Фото пачкой → черновики" };
 
 export default async function BulkUploadPage() {
+  const base = await getModuleBase();
   return (
     <div className="max-w-3xl space-y-6">
       <nav className="text-[11px] uppercase font-medium flex items-center gap-2" style={{ letterSpacing: "0.18em", color: "var(--color-ink-mute)" }}>
-        <Link href="/admin/produkte/entwuerfe" className="hover:text-coral transition-colors flex items-center gap-1">
+        <Link href={`${base}/produkte/entwuerfe`} className="hover:text-coral transition-colors flex items-center gap-1">
           <ChevronLeft className="w-3 h-3" /> Черновики
         </Link>
         <span>/</span>

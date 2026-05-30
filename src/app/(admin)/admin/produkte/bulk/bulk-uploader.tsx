@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ImagePlus, Loader2, Check, X, ArrowRight, CopyMinus } from "lucide-react";
+import { useModuleBase } from "@/lib/module-base-client";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * BulkUploader — viele Fotos → je Foto ein Draft-Produkt.
@@ -30,6 +31,7 @@ const DRAFT_NAME = (f: File) => {
 
 export function BulkUploader() {
   const router = useRouter();
+  const mbase = useModuleBase();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [running, setRunning] = useState(false);
@@ -124,7 +126,7 @@ export function BulkUploader() {
                 {running ? "Создаём…" : `Создать ${pending} черновик(ов)`}
               </button>
             ) : (
-              <Link href="/admin/produkte/entwuerfe"
+              <Link href={`${mbase}/produkte/entwuerfe`}
                 className="inline-flex items-center gap-2 px-4 py-2 text-xs uppercase font-medium"
                 style={{ letterSpacing: "0.18em", background: "var(--color-coral)", color: "#fff", borderRadius: "var(--radius-vintage)" }}>
                 К черновикам <ArrowRight className="w-3.5 h-3.5" />

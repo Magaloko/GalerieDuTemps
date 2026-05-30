@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth, requireAdminSession } from "@/lib/auth/config";
+import { getModuleBase } from "@/lib/module-base-server";
 import { produktErstellen, produktAktualisieren, produktLoeschen, produktById, produktReservieren, produktReservierungAufheben, produktEntwurfErstellen, entwuerfeListe } from "@/lib/db/produkte";
 import { ProduktCreateSchema } from "@/lib/utils/validierung";
 import { auditLog } from "@/lib/db/audit-log";
@@ -142,7 +143,8 @@ export async function produktEntwurfStartenAction(): Promise<void> {
   const session = await requireAdminSession();
   if (!session) throw new Error("Нет прав");
   const id = await produktEntwurfErstellen();
-  redirect(`/admin/produkte/${id}?neu=1`);
+  const base = await getModuleBase();
+  redirect(`${base}/produkte/${id}?neu=1`);
 }
 
 // ---------------------------------------------------------------------------
@@ -164,7 +166,8 @@ export async function produktErstellenAction(
   // Direkt zur Edit-Page weiterleiten — dort ist die Bilder-Galerie inline
   // sichtbar, sodass der Admin nahtlos weitermachen kann (Bilder hochladen).
   // ?created=1 → Edit-Page zeigt 1x „Создано"-Toast.
-  redirect(`/admin/produkte/${produkt.id}?created=1`);
+  const base = await getModuleBase();
+  redirect(`${base}/produkte/${produkt.id}?created=1`);
 }
 
 // ---------------------------------------------------------------------------
@@ -514,7 +517,8 @@ export async function produktLoeschenAction(id: string): Promise<void> {
   const session = await requireAdminSession();
   if (!session) throw new Error("Нет прав");
   await produktLoeschen(id);
-  redirect("/admin/produkte");
+  const base = await getModuleBase();
+  redirect(`${base}/produkte`);
 }
 
 // ---------------------------------------------------------------------------
@@ -560,5 +564,6 @@ export async function produktDuplizierenAction(id: string): Promise<void> {
     session.user.id
   );
 
-  redirect(`/admin/produkte/${kopie.id}`);
+  const base = await getModuleBase();
+  redirect(`${base}/produkte/${kopie.id}`);
 }
