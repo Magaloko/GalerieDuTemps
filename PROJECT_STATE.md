@@ -135,7 +135,7 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
 
-- 2026-05-31 00:00 UTC · `(dieser Commit)` · fix(security/data) Audit-P0/Quick-Win-P1: (1) **JWT-Rolle
+- 2026-05-31 00:00 UTC · `0f8a8ff` · fix(security/data) Audit-P0/Quick-Win-P1: (1) **JWT-Rolle
   fail-closed** — `token.role`/`session.user.role` defaulten jetzt auf `"customer"` statt `"admin"`
   (`lib/auth/config.ts`); ein rollenloses/migriertes Token wird nie mehr Admin (Defense-in-Depth, der
   AuthZ-Gate liest `session.user.role`). (2) **`kategorie_slug`** in `oeffentlichesProduktBySlug`
