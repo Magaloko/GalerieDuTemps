@@ -106,7 +106,13 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
 
-- 2026-05-30 17:47 UTC · `(dieser Commit)` · design(public) Katalog-Karten (`ProduktKarte`): Bild-Fallback
+- 2026-05-30 18:06 UTC · `(dieser Commit)` · data(kategorien) 7 Produkt-Kategorien als Sollzustand
+  (idempotentes `scripts/seed-kategorien.mjs`): NEU Столовые приборы/`besteck`, Ювелирные изделия/`edelschmuck`,
+  Часы/`uhren`, Посуда/`geschirr`, Посеребренные…/`versilbert` (+ Beschreibung); Декор/`deko` & Украшения/`schmuck`
+  aktualisiert; Фарфор/Текстиль/Искусство/Кухня deaktiviert (aktiv=false, Daten bleiben). Slugs deutsch
+  (Konvention), Reihenfolge sort 1–7. Direkt in die Prod-DB geschrieben → dieser Deploy frischt den
+  300s-Public-Cache sofort.
+- 2026-05-30 17:47 UTC · `f31f9f8` · design(public) Katalog-Karten (`ProduktKarte`): Bild-Fallback
   wie in der Galerie — tote/fehlende `hauptbild_url` (next/image) fällt sauber auf den „Без фото"-Placeholder
   zurück (onError + ref-Mount-Check für SSR-Fehler vor Hydration, deckt priority/eager-Bilder ab). Rundet die
   Bild-Robustheit shop-weit ab. (Verifiziert: tsc grün, onError am Karten-img gebunden, keine false positives
