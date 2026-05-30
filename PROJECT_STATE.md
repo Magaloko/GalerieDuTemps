@@ -118,7 +118,7 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
 
-- 2026-05-30 23:01 UTC · `(dieser Commit)` · design(public) Detailseiten-Feinschliff `katalog/[slug]`:
+- 2026-05-30 23:01 UTC · `7dc911b` · design(public) Detailseiten-Feinschliff `katalog/[slug]`:
   Gewicht-Einheit-Fix in den Характеристики (`г` → `кг` — der Admin pflegt das Maß als Kilogramm, die
   Detailseite zeigte fälschlich Gramm); „Похожие товары" als eigene `<Suspense>`-Insel
   (`AehnlicheProdukteSektion`) — ihr separater DB-Query blockt den First Paint nicht mehr (lag unter dem
