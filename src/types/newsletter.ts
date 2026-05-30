@@ -32,6 +32,9 @@ export interface NewsletterBlock {
   // Button
   label?: string;
   url?:   string;
+  // Typografie (text/two_columns) — Stufe + Schriftart; leer = Block-Default
+  fontSize?:   "s" | "m" | "l" | "xl";
+  fontFamily?: "serif" | "sans" | "italic";
 }
 
 export interface Newsletter {

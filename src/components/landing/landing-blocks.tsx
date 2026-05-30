@@ -5,6 +5,7 @@ import type { LandingBlock } from "@/types/landing";
 import type { ProduktListItem } from "@/types/produkt";
 import { storyBgCss } from "@/components/produkte/story-bg";
 import { blockText } from "@/lib/utils/i18n-text";
+import { webTextStyle, webHeadingStyle } from "@/lib/utils/block-typography";
 import { ProduktKarte } from "@/components/produkte/produkt-karte";
 import {
   featuredProdukte,
@@ -127,6 +128,7 @@ async function renderInner(b: LandingBlock, locale: Locale): Promise<React.React
                   fontSize: "clamp(2rem, 6vw, 3.75rem)",
                   color: "#fff",
                   lineHeight: 1.05,
+                  ...webHeadingStyle(b.fontSize, b.fontFamily),
                 }}
               >
                 {titel}
@@ -156,9 +158,13 @@ async function renderInner(b: LandingBlock, locale: Locale): Promise<React.React
     case "text":
       if (!text.trim()) return null;
       return (
-        <div className={`space-y-3 ${alignCls(b.align)}`} style={{ color: "var(--color-ink-soft)", lineHeight: 1.75 }}>
+        <div
+          className={`space-y-3 ${alignCls(b.align)}`}
+          style={{ color: "var(--color-ink-soft)", lineHeight: 1.75, ...webTextStyle(b.fontSize, b.fontFamily, "17px") }}
+        >
+          {/* Größe/Schriftart werden vom Container vererbt (Operator-Einstellung) */}
           {text.split(/\n{2,}/).filter(Boolean).map((p, j) => (
-            <p key={j} className="text-[16px] md:text-[17px]">{p}</p>
+            <p key={j}>{p}</p>
           ))}
         </div>
       );
@@ -170,7 +176,7 @@ async function renderInner(b: LandingBlock, locale: Locale): Promise<React.React
             <Image src={b.bild_url} alt={caption} fill sizes="(max-width:768px) 100vw, 900px" className="object-cover" />
           </div>
           {caption && (
-            <figcaption className="text-xs" style={{ fontStyle: "italic", color: "var(--color-ink-mute)" }}>
+            <figcaption style={{ fontStyle: "italic", color: "var(--color-ink-mute)", ...webTextStyle(b.fontSize, b.fontFamily, "13px") }}>
               {caption}
             </figcaption>
           )}
@@ -241,7 +247,7 @@ async function renderInner(b: LandingBlock, locale: Locale): Promise<React.React
       return (
         <blockquote className="pl-5 py-2 mx-auto max-w-2xl" style={{ borderLeft: "3px solid var(--color-coral)" }}>
           <Quote className="w-5 h-5 mb-2" style={{ color: "var(--color-coral)" }} />
-          <p style={{ fontFamily: "var(--font-italic)", fontStyle: "italic", fontSize: 20, color: "var(--color-ink)", lineHeight: 1.5 }}>
+          <p style={{ fontFamily: "var(--font-italic)", fontStyle: "italic", fontSize: "clamp(1rem, 4vw, 1.25rem)", color: "var(--color-ink)", lineHeight: 1.5, ...webTextStyle(b.fontSize, b.fontFamily) }}>
             {quote}
           </p>
           {autor && (
@@ -269,9 +275,12 @@ async function renderInner(b: LandingBlock, locale: Locale): Promise<React.React
             <span className="text-[var(--color-coral)] transition-transform group-open:rotate-45 text-xl leading-none">+</span>
           </summary>
           {antwort && (
-            <div className="px-4 pb-4 pt-1 space-y-2" style={{ color: "var(--color-ink-soft)", lineHeight: 1.7 }}>
+            <div
+              className="px-4 pb-4 pt-1 space-y-2"
+              style={{ color: "var(--color-ink-soft)", lineHeight: 1.7, ...webTextStyle(b.fontSize, b.fontFamily, "15px") }}
+            >
               {antwort.split(/\n{2,}/).filter(Boolean).map((p, j) => (
-                <p key={j} className="text-[15px]">{p}</p>
+                <p key={j}>{p}</p>
               ))}
             </div>
           )}
@@ -282,12 +291,12 @@ async function renderInner(b: LandingBlock, locale: Locale): Promise<React.React
     case "cta_band":
       return (
         <div
-          className={`px-6 py-12 md:py-16 ${alignCls(b.align ?? "center")}`}
+          className={`px-4 sm:px-6 py-12 md:py-16 ${alignCls(b.align ?? "center")}`}
           style={{ background: "var(--color-coral, #E8703A)", color: "#fff" }}
         >
           <div className="max-w-3xl mx-auto">
             {titel && (
-              <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.6rem, 4vw, 2.5rem)", lineHeight: 1.1 }}>
+              <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.6rem, 4vw, 2.5rem)", lineHeight: 1.1, ...webHeadingStyle(b.fontSize, b.fontFamily) }}>
                 {titel}
               </h2>
             )}

@@ -4,6 +4,7 @@
  */
 
 import type { NewsletterBlock } from "@/types/newsletter";
+import { mailTextCss } from "@/lib/utils/block-typography";
 
 export interface RenderContext {
   unsubscribe_url: string;
@@ -45,7 +46,7 @@ function renderBlock(block: NewsletterBlock, ctx: RenderContext): string {
     case "text":
       return `
         <tr><td style="padding: 32px 30px; background: #FDFAF5;">
-          <div style="font-family: ${fontFamily()}; color: ${COLORS.espresso}; font-size: 15px; line-height: 1.7;">
+          <div style="${mailTextCss(block.fontSize, block.fontFamily, fontFamily(), "15px")} color: ${COLORS.espresso}; line-height: 1.7;">
             ${block.html ?? ""}
           </div>
         </td></tr>`;
@@ -70,20 +71,22 @@ function renderBlock(block: NewsletterBlock, ctx: RenderContext): string {
           <img src="${block.bild_url ?? ""}" alt="${block.titel ?? ""}" style="display:block; width:100%; max-width:600px; height:auto;" />
         </td></tr>`;
 
-    case "two_columns":
+    case "two_columns": {
+      const colCss = mailTextCss(block.fontSize, block.fontFamily, fontFamily(), "14px");
       return `
         <tr><td style="padding: 24px 30px; background: #FDFAF5;">
           <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
             <tr>
-              <td valign="top" style="width: 48%; padding-right: 4%; font-family: ${fontFamily()}; color: ${COLORS.espresso}; font-size: 14px;">
+              <td valign="top" style="width: 48%; padding-right: 4%; ${colCss} color: ${COLORS.espresso};">
                 ${block.links_html ?? ""}
               </td>
-              <td valign="top" style="width: 48%; font-family: ${fontFamily()}; color: ${COLORS.espresso}; font-size: 14px;">
+              <td valign="top" style="width: 48%; ${colCss} color: ${COLORS.espresso};">
                 ${block.rechts_html ?? ""}
               </td>
             </tr>
           </table>
         </td></tr>`;
+    }
 
     case "produkt":
       return `

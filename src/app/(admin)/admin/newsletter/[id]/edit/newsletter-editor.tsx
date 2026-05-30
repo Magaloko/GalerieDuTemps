@@ -10,6 +10,10 @@ import { newsletterUpdateAction, newsletterTestAction, newsletterVersendenAction
 import type { Newsletter, NewsletterBlock, NewsletterBlockType } from "@/types/newsletter";
 import type { Segment } from "@/types/crm";
 import { useToast } from "@/components/ui/toast-provider";
+import {
+  FONT_SIZES, FONT_FAMILIES, FONT_SIZE_LABEL, FONT_FAMILY_LABEL,
+  type BlockFontSize, type BlockFontFamily,
+} from "@/lib/utils/block-typography";
 
 const NEUE_BLOCKS: Record<NewsletterBlockType, NewsletterBlock> = {
   hero:         { type: "hero",     titel: "Заголовок", subtitel: "Подзаголовок", cta_label: "Смотреть подробнее", cta_url: "/katalog" },
@@ -199,7 +203,12 @@ function BlockEditor({ block, onChange }: { block: NewsletterBlock; onChange: (p
         </div>
       );
     case "text":
-      return <Textarea label="HTML" value={block.html ?? ""} onChange={(e) => onChange({ html: e.target.value })} rows={5} hint="Разрешён HTML: <p>, <strong>, <em>, <a>, <br>" />;
+      return (
+        <div className="space-y-2">
+          <Textarea label="HTML" value={block.html ?? ""} onChange={(e) => onChange({ html: e.target.value })} rows={5} hint="Разрешён HTML: <p>, <strong>, <em>, <a>, <br>" />
+          <NewsletterTypo block={block} onChange={onChange} />
+        </div>
+      );
     case "produkt":
       return (
         <div className="space-y-2">
@@ -219,9 +228,12 @@ function BlockEditor({ block, onChange }: { block: NewsletterBlock; onChange: (p
       return <Input label="URL изображения" value={block.bild_url ?? ""} onChange={(e) => onChange({ bild_url: e.target.value })} />;
     case "two_columns":
       return (
-        <div className="grid grid-cols-2 gap-2">
-          <Textarea label="Левая колонка HTML" value={block.links_html ?? ""} onChange={(e) => onChange({ links_html: e.target.value })} rows={4} />
-          <Textarea label="Правая колонка HTML" value={block.rechts_html ?? ""} onChange={(e) => onChange({ rechts_html: e.target.value })} rows={4} />
+        <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            <Textarea label="Левая колонка HTML" value={block.links_html ?? ""} onChange={(e) => onChange({ links_html: e.target.value })} rows={4} />
+            <Textarea label="Правая колонка HTML" value={block.rechts_html ?? ""} onChange={(e) => onChange({ rechts_html: e.target.value })} rows={4} />
+          </div>
+          <NewsletterTypo block={block} onChange={onChange} />
         </div>
       );
     case "divider":
@@ -229,4 +241,39 @@ function BlockEditor({ block, onChange }: { block: NewsletterBlock; onChange: (p
     default:
       return null;
   }
+}
+
+/** Schriftgröße + Schriftart für Newsletter-Text-Blöcke. */
+function NewsletterTypo({ block, onChange }: { block: NewsletterBlock; onChange: (patch: Partial<NewsletterBlock>) => void }) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2 border-t border-vintage-sand/60">
+      <div className="flex items-center gap-1.5">
+        <span className="text-[10px] uppercase tracking-widest text-vintage-dust">Размер</span>
+        {FONT_SIZES.map((s) => {
+          const aktiv = (block.fontSize ?? "m") === s;
+          return (
+            <button key={s} type="button" onClick={() => onChange({ fontSize: s as BlockFontSize })}
+              className={`px-2 py-0.5 text-xs border transition-colors ${aktiv ? "border-vintage-gold bg-vintage-parchment" : "border-vintage-sand text-vintage-dust"}`}
+              style={{ borderRadius: 4 }}>
+              {FONT_SIZE_LABEL[s]}
+            </button>
+          );
+        })}
+      </div>
+      <div className="flex items-center gap-1.5">
+        <span className="text-[10px] uppercase tracking-widest text-vintage-dust">Шрифт</span>
+        {FONT_FAMILIES.map((f) => {
+          const aktiv = block.fontFamily === f;
+          return (
+            <button key={f} type="button"
+              onClick={() => onChange({ fontFamily: aktiv ? undefined : (f as BlockFontFamily) })}
+              className={`px-2 py-0.5 text-xs border transition-colors ${aktiv ? "border-vintage-gold bg-vintage-parchment" : "border-vintage-sand text-vintage-dust"}`}
+              style={{ borderRadius: 4 }}>
+              {FONT_FAMILY_LABEL[f]}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
 }

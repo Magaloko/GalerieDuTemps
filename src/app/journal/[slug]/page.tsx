@@ -4,6 +4,7 @@ import { postBySlug, postAufrufenInkrement, aehnlichePosts } from "@/lib/db/jour
 import { markdownToHtml } from "@/lib/utils/markdown";
 import { LandingBlocks } from "@/components/landing/landing-blocks";
 import { blockText } from "@/lib/utils/i18n-text";
+import { siteUrl } from "@/lib/site-url";
 import { JournalPostCard } from "@/components/journal/post-card";
 import {
   ChevronLeft, Calendar, Eye, Clock, Share2,
@@ -335,8 +336,11 @@ function ShareStrip({ slug, titel }: { slug: string; titel: string }) {
 }
 
 function ShareButtons({ slug, titel }: { slug: string; titel: string }) {
-  // Static Telegram/WhatsApp share-links — Server-rendered, kein "use client" nötig
-  const url     = `/journal/${slug}`;  // wird vom Provider mit Origin gemergt
+  // Static Telegram/WhatsApp share-links — Server-rendered, kein "use client" nötig.
+  // WICHTIG: absolute URL — t.me/wa.me brauchen eine vollständige https-URL,
+  // ein relativer Pfad (/journal/slug) wird beim Teilen als Klartext behandelt
+  // und führt ins Leere.
+  const url     = siteUrl(`/journal/${slug}`);
   const enc     = encodeURIComponent;
   const tgLink  = `https://t.me/share/url?url=${enc(url)}&text=${enc(titel)}`;
   const waLink  = `https://wa.me/?text=${enc(`${titel} — ${url}`)}`;

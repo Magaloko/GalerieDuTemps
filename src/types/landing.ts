@@ -39,6 +39,10 @@ export interface LandingBlock {
   bg?: string;
   /** Text-Ausrichtung (hero/text/cta_band). */
   align?: "left" | "center" | "right";
+  /** Schriftgröße-Stufe für Text-Blöcke (S/M/L/XL; leer = M-Default). */
+  fontSize?: "s" | "m" | "l" | "xl";
+  /** Schriftart für Text-Blöcke (serif/sans/italic; leer = Block-Default). */
+  fontFamily?: "serif" | "sans" | "italic";
 
   // ── Textfelder (mehrsprachig) ──────────────────────────────────────────
   /** hero/cta_band/testimonial: Überschrift · faq: (ungenutzt). */

@@ -9,7 +9,14 @@ import {
 import { useToast } from "@/components/ui/toast-provider";
 import { STORY_BG, storyBgCss } from "@/components/produkte/story-bg";
 import { blockText } from "@/lib/utils/i18n-text";
+import {
+  FONT_SIZES, FONT_FAMILIES, FONT_SIZE_LABEL, FONT_FAMILY_LABEL, webTextStyle,
+  type BlockFontSize, type BlockFontFamily,
+} from "@/lib/utils/block-typography";
 import type { LandingBlock, LandingBlockType, I18nText } from "@/types/landing";
+
+/** Block-Typen, für die Schriftgröße/-art angeboten wird (Text + Überschriften). */
+const TYPO_BLOCKS: LandingBlockType[] = ["text", "testimonial", "faq", "image", "hero", "cta_band"];
 
 /* ──────────────────────────────────────────────────────────────────────────
  * BlockComposer — wiederverwendbarer 3-Pane Block-Editor.
@@ -97,7 +104,18 @@ export function BlockComposer({
     onChange(n);
     setSel((s) => (s === null ? null : Math.max(0, Math.min(s, n.length - 1))));
   };
-  const dup = (i: number) => onChange([...blocks.slice(0, i + 1), { ...blocks[i] }, ...blocks.slice(i + 1)]);
+  const dup = (i: number) => {
+    // Tiefe Kopie der Array-Felder, sonst teilen Original + Duplikat dieselbe
+    // bild_urls/produkt_slugs-Referenz und Edits am einen mutieren das andere.
+    const src = blocks[i];
+    const copy: LandingBlock = {
+      ...src,
+      ...(src.bild_urls     ? { bild_urls:     [...src.bild_urls] }     : {}),
+      ...(src.produkt_slugs ? { produkt_slugs: [...src.produkt_slugs] } : {}),
+    };
+    onChange([...blocks.slice(0, i + 1), copy, ...blocks.slice(i + 1)]);
+    setSel(i + 1);
+  };
   const patch = (i: number, p: Partial<LandingBlock>) =>
     onChange(blocks.map((blk, idx) => (idx === i ? { ...blk, ...p } : blk)));
   const move = (i: number, d: number) => {
@@ -140,9 +158,13 @@ export function BlockComposer({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr_320px] border border-vintage-sand" style={{ borderRadius: "var(--radius-card)", overflow: "hidden", minHeight: 480 }}>
+    // <lg: einspaltig gestapelt (Palette → Vorschau → Eigenschaften), volle
+    // Breite, kein Höhen-Lock → Seite scrollt normal. Erst ab lg die 3-Pane-
+    // Ansicht mit fixer Höhe und pane-internem Scroll. Das fixt iPad-`md`, wo
+    // die Eigenschaften-Pane vorher in die 160px-Spalte umbrach (unbedienbar).
+    <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr_320px] border border-vintage-sand lg:min-h-[480px] lg:overflow-hidden" style={{ borderRadius: "var(--radius-card)" }}>
       {/* Palette */}
-      <div className="border-r border-vintage-sand bg-vintage-white p-3 overflow-y-auto">
+      <div className="border-b lg:border-b-0 lg:border-r border-vintage-sand bg-vintage-white p-3 lg:overflow-y-auto">
         <p className="text-[10px] uppercase tracking-widest text-vintage-dust mb-2">Блоки</p>
         <div className="flex lg:flex-col gap-2 flex-wrap">
           {PALETTE.map((p) => (
@@ -150,7 +172,7 @@ export function BlockComposer({
               key={p.type}
               type="button"
               onClick={() => add(p.type)}
-              className="flex items-center gap-2 px-3 py-2 text-sm border border-vintage-sand text-vintage-ink hover:bg-vintage-parchment transition-colors w-full text-left"
+              className="flex items-center gap-2 px-3 py-2 text-sm border border-vintage-sand text-vintage-ink hover:bg-vintage-parchment transition-colors flex-1 min-w-[140px] lg:w-full text-left"
               style={{ borderRadius: "var(--radius-vintage)" }}
             >
               <p.icon className="w-4 h-4 text-vintage-gold shrink-0" />
@@ -164,7 +186,7 @@ export function BlockComposer({
       </div>
 
       {/* Vorschau */}
-      <div className="overflow-y-auto p-4 md:p-6" style={{ background: "var(--color-bone)" }}>
+      <div className="lg:overflow-y-auto p-4 md:p-6" style={{ background: "var(--color-bone)" }}>
         <div ref={listRef} className="max-w-2xl mx-auto space-y-4">
           {blocks.length === 0 ? (
             <p className="text-sm text-vintage-dust text-center py-16">Слева добавьте блоки — баннер, текст, фото…</p>
@@ -214,7 +236,7 @@ export function BlockComposer({
       </div>
 
       {/* Eigenschaften */}
-      <div className="border-l border-vintage-sand bg-vintage-white p-4 overflow-y-auto">
+      <div className="border-t lg:border-t-0 lg:border-l border-vintage-sand bg-vintage-white p-4 lg:overflow-y-auto">
         <p className="text-[10px] uppercase tracking-widest text-vintage-dust mb-3">Свойства</p>
         {sel === null || !blocks[sel] ? (
           <p className="text-sm text-vintage-dust">Выберите блок в предпросмотре.</p>
@@ -253,14 +275,17 @@ function BlockPreview({ block: b }: { block: LandingBlock }) {
     <div className="relative overflow-hidden text-center px-4 py-8" style={{ background: "var(--color-cobalt,#1B2566)", color: "#fff", borderRadius: 4 }}>
       {b.bild_url && (/* eslint-disable-next-line @next/next/no-img-element */ <img src={b.bild_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-60" />)}
       <div className="relative">
-        <p className="font-serif text-2xl">{titel || "Заголовок Hero"}</p>
+        <p className="font-serif text-2xl" style={webTextStyle(undefined, b.fontFamily)}>{titel || "Заголовок Hero"}</p>
         {subtitel && <p className="text-sm mt-1 opacity-90">{subtitel}</p>}
         {b.cta_url && <span className="inline-block mt-3 px-4 py-1.5 text-xs font-medium" style={{ background: "var(--color-coral)", borderRadius: 4 }}>{ctaLabel || "CTA"}</span>}
       </div>
     </div>
   );
   if (b.type === "text") return (
-    <div className="space-y-2 text-sm text-vintage-ink" style={{ lineHeight: 1.7 }}>
+    <div
+      className="space-y-2 text-vintage-ink"
+      style={{ lineHeight: 1.7, ...webTextStyle(b.fontSize, b.fontFamily, "14px") }}
+    >
       {text.trim() ? text.split(/\n{2,}/).filter(Boolean).map((p, j) => <p key={j}>{p}</p>) : <p className="text-vintage-dust italic">Текст абзаца…</p>}
     </div>
   );
@@ -270,7 +295,7 @@ function BlockPreview({ block: b }: { block: LandingBlock }) {
   if (b.type === "gallery") {
     const imgs = (b.bild_urls ?? []).filter(Boolean);
     return imgs.length
-      ? (<div className="grid grid-cols-3 gap-1.5">{imgs.map((u, j) => (/* eslint-disable-next-line @next/next/no-img-element */ <img key={j} src={u} alt="" className="w-full aspect-square object-cover" style={{ borderRadius: 4 }} />))}</div>)
+      ? (<div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">{imgs.map((u, j) => (/* eslint-disable-next-line @next/next/no-img-element */ <img key={j} src={u} alt="" className="w-full aspect-square object-cover" style={{ borderRadius: 4 }} />))}</div>)
       : (<div className="flex items-center justify-center gap-2 py-10 text-vintage-dust border border-dashed border-vintage-sand"><LayoutGrid className="w-5 h-5" /> Галерея пуста</div>);
   }
   if (b.type === "product_grid") return (
@@ -291,7 +316,10 @@ function BlockPreview({ block: b }: { block: LandingBlock }) {
     </div>
   );
   if (b.type === "testimonial") return (
-    <blockquote className="pl-3 italic text-vintage-ink" style={{ borderLeft: "2px solid var(--color-coral)" }}>
+    <blockquote
+      className="pl-3 italic text-vintage-ink"
+      style={{ borderLeft: "2px solid var(--color-coral)", ...webTextStyle(b.fontSize, b.fontFamily) }}
+    >
       “{quote || "Отзыв…"}”{autor && <cite className="block mt-1 not-italic text-xs text-vintage-dust">— {autor}</cite>}
     </blockquote>
   );
@@ -302,7 +330,7 @@ function BlockPreview({ block: b }: { block: LandingBlock }) {
   );
   if (b.type === "cta_band") return (
     <div className="text-center px-4 py-6" style={{ background: "var(--color-coral,#E8703A)", color: "#fff", borderRadius: 4 }}>
-      <p className="font-serif text-xl">{titel || "CTA-полоса"}</p>
+      <p className="font-serif text-xl" style={webTextStyle(undefined, b.fontFamily)}>{titel || "CTA-полоса"}</p>
       {subtitel && <p className="text-sm mt-1 opacity-90">{subtitel}</p>}
       {b.cta_url && <span className="inline-block mt-3 px-4 py-1.5 text-xs font-medium" style={{ background: "#fff", color: "var(--color-cobalt,#1B2566)", borderRadius: 4 }}>{ctaLabel || "CTA"}</span>}
     </div>
@@ -371,6 +399,47 @@ function AlignPicker({ value, onChange }: { value?: string; onChange: (v: "left"
   );
 }
 
+/** Schriftgröße + Schriftart für Fließtext-Blöcke. */
+function TypographyControls({ block: b, onPatch }: {
+  block: LandingBlock; onPatch: (p: Partial<LandingBlock>) => void;
+}) {
+  return (
+    <div className="pt-3 mt-1 border-t border-vintage-sand/50 space-y-2.5">
+      <div>
+        <p className="text-[10px] uppercase tracking-widest text-vintage-dust mb-1.5">Размер шрифта</p>
+        <div className="flex gap-1.5">
+          {FONT_SIZES.map((s) => {
+            const aktiv = (b.fontSize ?? "m") === s;
+            return (
+              <button key={s} type="button" onClick={() => onPatch({ fontSize: s as BlockFontSize })}
+                className={`px-2.5 py-1 text-xs border transition-colors ${aktiv ? "border-vintage-gold bg-vintage-parchment" : "border-vintage-sand text-vintage-dust"}`}
+                style={{ borderRadius: 4 }}>
+                {FONT_SIZE_LABEL[s]}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div>
+        <p className="text-[10px] uppercase tracking-widest text-vintage-dust mb-1.5">Шрифт</p>
+        <div className="flex gap-1.5 flex-wrap">
+          {FONT_FAMILIES.map((f) => {
+            const aktiv = b.fontFamily === f;
+            return (
+              <button key={f} type="button"
+                onClick={() => onPatch({ fontFamily: aktiv ? undefined : (f as BlockFontFamily) })}
+                className={`px-2.5 py-1 text-xs border transition-colors ${aktiv ? "border-vintage-gold bg-vintage-parchment" : "border-vintage-sand text-vintage-dust"}`}
+                style={{ borderRadius: 4 }}>
+                {FONT_FAMILY_LABEL[f]}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BlockProps({ block: b, onPatch, uploadAction }: {
   block: LandingBlock; onPatch: (p: Partial<LandingBlock>) => void; uploadAction: BlockUploadAction;
 }) {
@@ -434,7 +503,7 @@ function BlockProps({ block: b, onPatch, uploadAction }: {
         <>
           <UploadBtn to="gallery" label="Добавить фото" />
           {(b.bild_urls ?? []).length > 0 && (
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
               {(b.bild_urls ?? []).map((u, j) => (
                 <div key={j} className="relative aspect-square overflow-hidden border border-vintage-sand">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -515,6 +584,9 @@ function BlockProps({ block: b, onPatch, uploadAction }: {
       {b.type === "divider" && (
         <p className="text-sm text-vintage-dust">Декоративный разделитель ◆ — без настроек.</p>
       )}
+
+      {/* Typografie (Größe + Schriftart) für Fließtext-Blöcke */}
+      {TYPO_BLOCKS.includes(b.type) && <TypographyControls block={b} onPatch={onPatch} />}
 
       {/* Block-Hintergrund (außer Hero/CTA-Band/Divider — die haben eigene Farbe) */}
       {b.type !== "divider" && b.type !== "hero" && b.type !== "cta_band" && (
