@@ -104,10 +104,11 @@ export function BenutzerVerwaltungClient({ users, currentUserId }: Props) {
         </div>
       )}
 
-      {/* User List */}
-      <div className="bg-vintage-white border border-vintage-sand overflow-hidden"
+      {/* User List — overflow-x-auto + min-w: auf Phone/iPad horizontal
+          scrollbar statt Spalten-Quetschen/Abschneiden. */}
+      <div className="bg-vintage-white border border-vintage-sand overflow-x-auto"
            style={{ borderRadius: "var(--radius-card)" }}>
-        <table className="w-full text-sm font-sans">
+        <table className="w-full min-w-[640px] text-sm font-sans">
           <thead>
             <tr className="border-b border-vintage-sand bg-vintage-parchment/50 text-xs uppercase tracking-widest text-vintage-dust">
               <th className="text-left px-4 py-3 font-normal">Имя</th>

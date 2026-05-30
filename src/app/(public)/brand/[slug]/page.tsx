@@ -77,7 +77,7 @@ export default async function BrandPublicPage({
         )}
         <div className={`relative z-10 px-6 ${brand.cover_url ? "py-16" : "py-12"} max-w-3xl text-center`}>
           {brand.logo_url && (
-            <div className="relative mx-auto mb-5 w-28 h-28 bg-white/90 flex items-center justify-center" style={{ borderRadius: 4 }}>
+            <div className="relative mx-auto mb-5 w-20 h-20 sm:w-28 sm:h-28 bg-white/90 flex items-center justify-center" style={{ borderRadius: 4 }}>
               <Image src={brand.logo_url} alt={brand.name} fill sizes="112px" className="object-contain p-3" />
             </div>
           )}
@@ -109,7 +109,8 @@ export default async function BrandPublicPage({
 
       {/* c) Journal */}
       {journal.length > 0 && (
-        <section className="max-w-6xl mx-auto px-4 md:px-6 py-10 md:py-14" style={{ background: "var(--color-bone)" }}>
+        <div className="w-full" style={{ background: "var(--color-bone)" }}>
+        <section className="max-w-6xl mx-auto px-4 md:px-6 py-10 md:py-14">
           <SektionTitel>Журнал</SektionTitel>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {journal.map((post) => (
@@ -129,6 +130,7 @@ export default async function BrandPublicPage({
             ))}
           </div>
         </section>
+        </div>
       )}
 
       {/* d) Instagram */}
@@ -155,7 +157,8 @@ export default async function BrandPublicPage({
 
       {/* e) Videos */}
       {videos.length > 0 && (
-        <section className="max-w-6xl mx-auto px-4 md:px-6 py-10 md:py-14" style={{ background: "var(--color-bone)" }}>
+        <div className="w-full" style={{ background: "var(--color-bone)" }}>
+        <section className="max-w-6xl mx-auto px-4 md:px-6 py-10 md:py-14">
           <SektionTitel>Видео</SektionTitel>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {videos.map((v, i) => {
@@ -179,6 +182,7 @@ export default async function BrandPublicPage({
             })}
           </div>
         </section>
+        </div>
       )}
     </main>
   );

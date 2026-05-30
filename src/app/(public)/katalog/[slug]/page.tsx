@@ -456,13 +456,11 @@ export default async function ProduktDetailPage({ params }: Props) {
               <ProduktStory blocks={produkt.inhalt_blocks} locale={locale} />
             ) : (
               <div
-                className="prose-vintage text-[15px] leading-relaxed"
+                className="prose-vintage text-[15px] leading-relaxed md:columns-2 md:gap-8"
                 style={{
-                  fontFamily:  "var(--font-italic)",
-                  fontStyle:   "italic",
-                  color:       "var(--color-ink-soft)",
-                  columnCount: 2,
-                  columnGap:   32,
+                  fontFamily: "var(--font-italic)",
+                  fontStyle:  "italic",
+                  color:      "var(--color-ink-soft)",
                 }}
                 dangerouslySetInnerHTML={{ __html: markdownToHtml(lang) }}
               />

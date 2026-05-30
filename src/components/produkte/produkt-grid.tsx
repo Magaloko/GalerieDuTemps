@@ -43,7 +43,7 @@ export function ProduktGrid({
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-x-3.5 sm:gap-x-6 md:gap-x-8 gap-y-8 md:gap-y-10">
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-x-3.5 sm:gap-x-6 md:gap-x-8 gap-y-8 md:gap-y-10">
       {produkte.map((p, i) => (
         <ProduktKarte key={p.id} produkt={p} priority={i < prioCount} />
       ))}

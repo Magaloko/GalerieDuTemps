@@ -244,12 +244,12 @@ export function WunschlistePage() {
       {/* ─── Mobile Sticky Bulk-Bar ──────────────────────── */}
       {kaufbar.length > 0 && (
         <div
-          className="md:hidden fixed bottom-0 inset-x-0 z-30 px-4 py-3"
+          className="md:hidden fixed inset-x-0 z-50 px-4 py-3 bottom-above-tabbar"
           style={{
-            background:   "rgba(245, 241, 234, 0.96)",
-            borderTop:    "1px solid var(--color-line)",
+            // bottom via .bottom-above-tabbar (über der MobileTabBar).
+            background:    "rgba(245, 241, 234, 0.96)",
+            borderTop:     "1px solid var(--color-line)",
             backdropFilter: "blur(8px)",
-            paddingBottom: "calc(max(12px, env(safe-area-inset-bottom)) + 8px)",
           }}
         >
           <div className="flex items-center gap-3">

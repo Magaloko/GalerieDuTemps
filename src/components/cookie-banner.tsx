@@ -61,7 +61,7 @@ export function CookieBanner() {
           }}
         >
           <style>{`
-            :root { --cookie-banner-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+            :root { --cookie-banner-bottom: var(--public-tabbar-h); }
             @media (min-width: 768px) { :root { --cookie-banner-bottom: 0px; } }
           `}</style>
           <div

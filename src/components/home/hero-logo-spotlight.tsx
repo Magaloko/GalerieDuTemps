@@ -147,8 +147,10 @@ export function HeroLogoSpotlight({
         style={{ background: "linear-gradient(to bottom, rgba(14,19,54,0.55) 0%, rgba(14,19,54,0) 28%, rgba(14,19,54,0) 64%, rgba(14,19,54,0.85) 100%)" }}
       />
 
-      {/* Inhalt: Eyebrow oben, CTAs + Hint unten */}
-      <div className="relative z-10 flex flex-col min-h-[100svh] px-6 py-10 md:py-14">
+      {/* Inhalt: Eyebrow oben, CTAs + Hint unten.
+          pb auf Mobile = TabBar-Höhe, damit die unteren CTAs nicht hinter der
+          fixed MobileTabBar verschwinden; ab md (keine Bar) normales py-14. */}
+      <div className="relative z-10 flex flex-col min-h-[100svh] px-6 pt-10 md:py-14 pb-[calc(var(--public-tabbar-h)_+_12px)] md:pb-14">
         <p
           className="text-center text-[10px] md:text-[11px] uppercase font-medium"
           style={{ letterSpacing: "0.3em", color: "var(--color-coral, #E8703A)" }}

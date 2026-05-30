@@ -105,7 +105,7 @@ export default async function JournalPage() {
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
                   />
                 </div>
-                <div className="flex flex-col justify-center px-6 md:px-8 pb-8 md:py-8">
+                <div className="flex flex-col justify-center px-6 md:px-8 py-6 md:py-8">
                   <p
                     className="text-[11px] uppercase font-medium mb-3 flex items-center gap-2"
                     style={{ letterSpacing: "0.22em", color: "var(--color-coral)" }}

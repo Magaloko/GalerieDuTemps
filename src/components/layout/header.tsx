@@ -123,7 +123,7 @@ export function Header({
             borderColor:  "var(--color-line)",
           }}
         >
-          <div className="max-w-[1440px] mx-auto px-5 md:px-14">
+          <div className="max-w-[1440px] mx-auto px-5 md:px-8 lg:px-14">
 
             {/* Mobile-Layout: hamburger | wordmark | search.
                 Heart/Cart/Account leben in der Bottom-Tab-Bar — nicht hier doppeln. */}
@@ -155,9 +155,9 @@ export function Header({
               </button>
             </div>
 
-            {/* Desktop-Layout: nav | wordmark (absolute center) | actions */}
-            <div className="hidden md:flex relative items-center justify-between gap-6 h-14">
-              <nav className="flex items-center gap-7">
+            {/* Desktop-Layout: nav | wordmark (grid center) | actions */}
+            <div className="hidden md:grid grid-cols-[1fr_auto_1fr] items-center gap-6 h-14">
+              <nav className="flex items-center gap-5 min-w-0">
                 {navLinks.map(({ href, label }) => {
                   const active = pathname.startsWith(href);
                   return (
@@ -178,7 +178,7 @@ export function Header({
                 })}
               </nav>
 
-              <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex items-baseline gap-2">
+              <Link href="/" className="justify-self-center flex items-baseline gap-2">
                 <span className="wordmark" style={{ fontSize: 18, color: "var(--color-ink)" }}>
                   GALERIE
                 </span>
@@ -187,7 +187,7 @@ export function Header({
                 </span>
               </Link>
 
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 justify-end">
                 <button
                   onClick={() => setSucheOffen(v => !v)}
                   className="p-2 transition-colors hover:text-coral"
@@ -264,7 +264,7 @@ export function Header({
 
         {/* ─ Bar 2: Main (cobalt) ────────────────────────────────────────── */}
         <div style={{ background: "var(--color-cobalt)" }}>
-          <div className="max-w-[1440px] mx-auto px-5 md:px-14 py-3 md:py-4">
+          <div className="max-w-[1440px] mx-auto px-5 md:px-8 lg:px-14 py-3 md:py-4">
             {/* Mobile: hamburger | wordmark | search */}
             <div className="flex md:hidden items-center justify-between h-9">
               <button
@@ -318,18 +318,17 @@ export function Header({
                 {/* Search input pseudo */}
                 <button
                   onClick={() => setSucheOffen(v => !v)}
-                  className="flex items-center gap-2 px-1 py-2 text-xs transition-colors hover:text-coral"
+                  className="flex items-center gap-2 px-1 py-2 text-xs transition-colors hover:text-coral min-w-0"
                   style={{
                     background:    "transparent",
                     borderBottom:  "1px solid rgba(255,255,255,0.25)",
                     color:         "rgba(255,255,255,0.7)",
                     letterSpacing: "0.04em",
-                    minWidth:      180,
                   }}
                   aria-label={t.nav.suche}
                 >
-                  <Search className="w-3.5 h-3.5" />
-                  <span className="italic font-italic" style={{ opacity: 0.7 }}>
+                  <Search className="w-3.5 h-3.5 shrink-0" />
+                  <span className="hidden xl:inline italic font-italic" style={{ opacity: 0.7 }}>
                     {t.nav.suche_placeholder}
                   </span>
                 </button>
@@ -368,7 +367,7 @@ export function Header({
           className="hidden md:block border-t"
           style={{ background: "var(--color-cobalt)", borderColor: "rgba(232,112,58,0.15)" }}
         >
-          <nav className="max-w-[1440px] mx-auto px-14 py-2.5 flex items-center justify-center gap-8">
+          <nav className="max-w-[1440px] mx-auto px-5 md:px-8 lg:px-14 py-2.5 flex items-center justify-center gap-8">
             <KatalogMenu
               kategorien={kategorien}
               label={t.nav.katalog}
@@ -397,7 +396,7 @@ export function Header({
         {/* ─ Such-Leiste (ausklappbar) ─────────────────────────────────── */}
         {sucheOffen && (
           <div style={{ background: "var(--color-cobalt)" }}>
-            <div className="max-w-[1440px] mx-auto px-5 md:px-14 pb-4">
+            <div className="max-w-[1440px] mx-auto px-5 md:px-8 lg:px-14 pb-4">
               <SearchBar
                 inputRef={sucheRef}
                 value={suchText}
@@ -457,9 +456,9 @@ function KatalogMenu({
 
       {open && kategorien.length > 0 && (
         // pt-3 = unsichtbare Hover-Brücke zum Panel (Cursor verliert den Hover nicht)
-        <div className="absolute left-0 top-full pt-3 z-50">
+        <div className="absolute left-0 top-full pt-3 z-50 w-[360px] max-w-[calc(100vw-2rem)]">
           <div
-            className="w-[360px] p-5 shadow-2xl"
+            className="w-full p-5 shadow-2xl"
             style={{ background: "var(--color-cobalt-dark)", border: "1px solid rgba(232,112,58,0.25)" }}
           >
             <p className="text-[10px] uppercase font-medium mb-3"

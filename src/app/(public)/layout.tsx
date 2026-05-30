@@ -15,7 +15,7 @@ export default async function PublicLayout({ children }: { children: React.React
     <LenisProvider>
       <div className="flex flex-col min-h-screen">
         <SiteHeader />
-        <main className="flex-1 pb-24 md:pb-0">
+        <main className="flex-1 pb-mobile-tabbar">
           {children}
         </main>
         <SiteFooter />

@@ -134,6 +134,11 @@ export const viewport: Viewport = {
   colorScheme:  "light",
   width:        "device-width",
   initialScale: 1,
+  // viewport-fit=cover: ohne dies liefern env(safe-area-inset-*) auf
+  // Notch-iPhones 0 zurück — alle Bottom-Bars/Safe-Area-Paddings würden ins
+  // Leere greifen. Mit cover dehnt sich die Page unter Notch/Home-Indicator
+  // und die Insets bekommen echte Werte.
+  viewportFit:  "cover",
 };
 
 export default async function RootLayout({

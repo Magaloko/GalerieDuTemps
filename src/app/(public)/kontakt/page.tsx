@@ -149,10 +149,10 @@ export default async function KontaktPage({
 
         {/* ─── Rechts (bone) ──────────────────────────────────────────── */}
         <div
-          className="px-6 md:px-14 py-14 md:py-20"
+          className="px-6 md:px-14 py-14 md:py-20 lg:border-l"
           style={{
-            background: "var(--color-bone)",
-            borderLeft: "1px solid var(--color-line)",
+            background:   "var(--color-bone)",
+            borderColor:  "var(--color-line)",
           }}
         >
           <p

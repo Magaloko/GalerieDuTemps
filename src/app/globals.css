@@ -105,7 +105,44 @@
 
   /* ─ Übergänge ──────────────────────────────────────────────────────────── */
   --transition-vintage: 300ms ease-in-out;
+
+  /* ─ Bottom-Tab-Bar-Höhen (single source of truth) ──────────────────────────
+     Jede fixe Bottom-Bar definiert ihre Höhe über padding; diese Variablen
+     spiegeln exakt diese Höhen wider, damit Content-Padding & darüber
+     schwebende Sticky-Bars konsistent ausweichen — statt verstreuter
+     Magic-Numbers (64px / pb-20 / pb-24 / pb-32).
+
+     Public MobileTabBar  = paddingTop 12 + minH 48 + paddingBottom(max(20,inset)+8)
+     Telegram MiniAppTabBar = paddingTop 8 + minH 48 + paddingBottom(max(8,inset)+4)
+     env() löst dort auf, wo die Variable konsumiert wird. */
+  --public-tabbar-h: calc(68px + max(20px, env(safe-area-inset-bottom, 0px)));
+  --tg-tabbar-h:     calc(60px + max(8px,  env(safe-area-inset-bottom, 0px)));
 }
+
+/* Telegram-Dunkelmodus: data-tg-theme="dark" wird von TelegramChrome aus
+   tg.colorScheme gesetzt (nur im Telegram-WebView). Überschreibt die hell
+   verdrahteten Marken-Tokens, damit Borders/Flächen nicht auf Dunkel glühen.
+   Echte tg-theme-* Variablen (Text/BG) liefern die Hauptfarben; hier nur die
+   Tokens, die als Literale durch den Telegram-Baum verstreut sind. */
+[data-tg-theme="dark"] {
+  --color-paper:       #17181c;
+  --color-paper-warm:  #24252b;
+  --color-paper-cool:  #202127;
+  --color-bone:        #1f2024;
+  --color-ink:         #ececf0;
+  --color-ink-soft:    #c4c4cc;
+  --color-ink-mute:    #9a9aa4;
+  --color-line:        rgba(255, 255, 255, 0.14);
+}
+
+/* Content-Spacer für die mobile Public-TabBar — auf Desktop (md+) keine Bar. */
+.pb-mobile-tabbar { padding-bottom: var(--public-tabbar-h); }
+@media (min-width: 768px) { .pb-mobile-tabbar { padding-bottom: 0; } }
+
+/* Sticky-Bar über der Public-TabBar: unter md über der Bar, ab md (Bar weg)
+   bündig am Boden. Genutzt von Warenkorb-/Wunschliste-Sticky-Bars. */
+.bottom-above-tabbar { bottom: var(--public-tabbar-h); }
+@media (min-width: 768px) { .bottom-above-tabbar { bottom: 0; } }
 
 /* ─── Basis-Styles ───────────────────────────────────────────────────────── */
 /* WICHTIG: in @layer base, damit Tailwind-Utility-Klassen (z.B. text-vintage-espresso)
