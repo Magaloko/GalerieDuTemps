@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { affiliatesListe } from "@/lib/db/affiliates";
 import { AffiliateZeile } from "./affiliate-zeile";
@@ -18,6 +19,7 @@ const STATUS_FILTER: Array<{ value: AffiliateStatus | ""; label: string }> = [
 export default async function AffiliatesAdminPage({
   searchParams,
 }: { searchParams: Promise<Record<string, string>> }) {
+  const base   = await getModuleBase();
   const sp     = await searchParams;
   const status = (sp.status as AffiliateStatus | undefined) ?? "";
   const suche  = sp.suche ?? "";
@@ -36,7 +38,7 @@ export default async function AffiliatesAdminPage({
             {daten.gesamt} партнёров{status && ` · ${STATUS_FILTER.find(s => s.value === status)?.label}`}
           </p>
         </div>
-        <Link href="/admin/affiliates/einstellungen"
+        <Link href={`${base}/affiliates/einstellungen`}
           className="flex items-center gap-2 px-4 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans uppercase tracking-widest hover:bg-vintage-parchment transition-colors"
           style={{ borderRadius: "var(--radius-button)" }}>
           <Settings className="w-3.5 h-3.5" /> Настройки
@@ -49,7 +51,7 @@ export default async function AffiliatesAdminPage({
           {STATUS_FILTER.map(s => (
             <Link
               key={s.value}
-              href={s.value ? `/admin/affiliates?status=${s.value}` : "/admin/affiliates"}
+              href={s.value ? `${base}/affiliates?status=${s.value}` : `${base}/affiliates`}
               className={`px-4 py-2 text-xs font-sans uppercase tracking-widest transition-colors ${
                 status === s.value ? "bg-vintage-espresso text-vintage-cream" : "text-vintage-dust hover:bg-vintage-parchment hover:text-vintage-brown"
               }`}
@@ -99,14 +101,14 @@ export default async function AffiliatesAdminPage({
           <p className="text-xs text-vintage-dust font-sans">Страница {daten.seite} из {daten.seiten}</p>
           <div className="flex gap-2">
             {daten.seite > 1 && (
-              <Link href={`/admin/affiliates?seite=${daten.seite - 1}${status ? `&status=${status}` : ""}`}
+              <Link href={`${base}/affiliates?seite=${daten.seite - 1}${status ? `&status=${status}` : ""}`}
                 className="flex items-center gap-1 px-3 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans hover:bg-vintage-parchment transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}>
                 <ChevronLeft className="w-3.5 h-3.5" /> Назад
               </Link>
             )}
             {daten.seite < daten.seiten && (
-              <Link href={`/admin/affiliates?seite=${daten.seite + 1}${status ? `&status=${status}` : ""}`}
+              <Link href={`${base}/affiliates?seite=${daten.seite + 1}${status ? `&status=${status}` : ""}`}
                 className="flex items-center gap-1 px-3 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans hover:bg-vintage-parchment transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}>
                 Вперёд <ChevronRight className="w-3.5 h-3.5" />

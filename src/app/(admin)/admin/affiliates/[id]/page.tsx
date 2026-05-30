@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { affiliateById, downlineLaden } from "@/lib/db/affiliates";
@@ -13,6 +14,7 @@ export const dynamic = "force-dynamic";
 export default async function AffiliateDetailPage({
   params,
 }: { params: Promise<{ id: string }> }) {
+  const base = await getModuleBase();
   const { id } = await params;
   const [affiliate, summen, klickStats, downline] = await Promise.all([
     affiliateById(id),
@@ -26,7 +28,7 @@ export default async function AffiliateDetailPage({
   return (
     <div className="space-y-6 max-w-4xl">
       <nav className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
-        <Link href="/admin/affiliates" className="hover:text-vintage-brown flex items-center gap-1 transition-colors">
+        <Link href={`${base}/affiliates`} className="hover:text-vintage-brown flex items-center gap-1 transition-colors">
           <ChevronLeft className="w-3 h-3" /> Партнёры
         </Link>
         <span>/</span>
@@ -82,7 +84,7 @@ export default async function AffiliateDetailPage({
           <h2 className="font-serif text-base text-vintage-espresso mb-3">Downline ({downline.length})</h2>
           <div className="divide-y divide-vintage-sand/40">
             {downline.map(d => (
-              <Link key={d.id} href={`/admin/affiliates/${d.id}`}
+              <Link key={d.id} href={`${base}/affiliates/${d.id}`}
                 className="py-2 flex items-center justify-between hover:bg-vintage-parchment/40 -mx-2 px-2 transition-colors">
                 <div>
                   <p className="text-sm text-vintage-ink">{d.vorname} {d.nachname}</p>

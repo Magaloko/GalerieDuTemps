@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import Link from "next/link";
 import { CheckCircle2, Ban, ExternalLink, Mail, Clock } from "lucide-react";
 import { freischaltenAction, sperrenAction } from "./actions";
+import { useModuleBase } from "@/lib/module-base-client";
 import type { AffiliateMitSponsor } from "@/types/affiliate";
 
 const STATUS_STYLE: Record<string, { label: string; klasse: string }> = {
@@ -14,6 +15,7 @@ const STATUS_STYLE: Record<string, { label: string; klasse: string }> = {
 };
 
 export function AffiliateZeile({ affiliate }: { affiliate: AffiliateMitSponsor }) {
+  const mbase = useModuleBase();
   const [pending, startTransition] = useTransition();
   const style = STATUS_STYLE[affiliate.status] ?? STATUS_STYLE.aktiv;
 
@@ -94,7 +96,7 @@ export function AffiliateZeile({ affiliate }: { affiliate: AffiliateMitSponsor }
           )}
 
           <Link
-            href={`/admin/affiliates/${affiliate.id}`}
+            href={`${mbase}/affiliates/${affiliate.id}`}
             className="p-2 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-parchment transition-colors"
             style={{ borderRadius: "var(--radius-vintage)" }}
             title="Подробнее"

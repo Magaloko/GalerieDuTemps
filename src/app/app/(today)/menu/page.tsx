@@ -54,9 +54,9 @@ export default async function AppMenuPage() {
     {
       title: "Партнёры",
       items: [
-        { href: "/admin/affiliates",   label: "Партнёры", icon: UserCheck },
-        { href: "/admin/provisionen",  label: "Комиссии", icon: Coins },
-        { href: "/admin/auszahlungen", label: "Выплаты",  icon: Wallet, badge: b?.auszahlungen_pending },
+        { href: "/app/affiliates",   label: "Партнёры", icon: UserCheck },
+        { href: "/app/provisionen",  label: "Комиссии", icon: Coins },
+        { href: "/app/auszahlungen", label: "Выплаты",  icon: Wallet, badge: b?.auszahlungen_pending },
       ],
     },
     {
@@ -69,7 +69,7 @@ export default async function AppMenuPage() {
     {
       title: "Настройки",
       items: [
-        { href: "/admin/einstellungen", label: "Настройки", icon: Settings },
+        { href: "/app/einstellungen", label: "Настройки", icon: Settings },
       ],
     },
   ];

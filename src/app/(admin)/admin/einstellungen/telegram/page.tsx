@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { query } from "@/lib/db";
 import { TelegramSetupClient } from "./client";
@@ -19,6 +20,7 @@ interface KontoData {
 }
 
 export default async function TelegramSetupPage() {
+  const base = await getModuleBase();
   const r = await query<KontoData>(
     `SELECT id, username, account_id, webhook_verify_token, aktiv, erstellt_am
      FROM sebo.kanal_konten
@@ -34,7 +36,7 @@ export default async function TelegramSetupPage() {
   return (
     <div className="max-w-3xl space-y-6">
       <div className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
-        <Link href="/admin/einstellungen" className="hover:text-vintage-brown transition-colors flex items-center gap-1">
+        <Link href={`${base}/einstellungen`} className="hover:text-vintage-brown transition-colors flex items-center gap-1">
           <ChevronLeft className="w-3 h-3" /> Настройки
         </Link>
         <span>/</span>
@@ -60,7 +62,7 @@ export default async function TelegramSetupPage() {
           <li>Отправьте команду <code className="bg-vintage-white px-1.5 py-0.5 text-xs">/newbot</code> и следуйте инструкциям (название бота, username)</li>
           <li>BotFather выдаст <strong>HTTP API Token</strong> (формат: <code className="bg-vintage-white px-1.5 py-0.5 text-xs">123456:ABC...</code>)</li>
           <li>Вставьте токен ниже → «Подключить» → мы проверим его и автоматически установим webhook</li>
-          <li>Готово — отправьте боту тестовое сообщение, оно должно появиться в <Link href="/admin/leads?quelle=telegram" className="text-vintage-gold underline">/admin/leads</Link></li>
+          <li>Готово — отправьте боту тестовое сообщение, оно должно появиться в <Link href={`${base}/leads?quelle=telegram`} className="text-vintage-gold underline">/admin/leads</Link></li>
         </ol>
       </section>
 

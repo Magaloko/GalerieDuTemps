@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import { alleAuszahlungen, auszahlungsKandidaten } from "@/lib/db/auszahlungen";
 import { affiliateEinstellungenLaden } from "@/lib/db/affiliate-settings";
 import { formatPreis } from "@/lib/utils/preis";
@@ -10,6 +11,7 @@ export const metadata: Metadata = { title: "Выплаты" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminAuszahlungenPage() {
+  const base = await getModuleBase();
   const settings = await affiliateEinstellungenLaden();
   const [kandidaten, historie] = await Promise.all([
     auszahlungsKandidaten(settings.mindestauszahlung_cent).catch(() => []),
@@ -102,7 +104,7 @@ export default async function AdminAuszahlungenPage() {
                   {a.status === "erstellt" && <BezahltButton auszahlungId={a.id} />}
                   {a.status === "bezahlt"  && (
                     <a
-                      href={`/admin/auszahlungen/${a.id}/beleg`}
+                      href={`${base}/auszahlungen/${a.id}/beleg`}
                       target="_blank"
                       className="px-2 py-1 border border-vintage-sand text-vintage-dust text-xs font-sans hover:bg-vintage-parchment transition-colors"
                       style={{ borderRadius: "var(--radius-vintage)" }}

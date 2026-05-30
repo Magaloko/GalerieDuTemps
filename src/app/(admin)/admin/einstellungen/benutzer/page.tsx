@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth/config";
@@ -10,9 +11,10 @@ export const metadata: Metadata = { title: "Администраторы" };
 export const dynamic = "force-dynamic";
 
 export default async function BenutzerVerwaltungPage() {
+  const base = await getModuleBase();
   const session = await auth();
   if (session?.user?.role !== "superadmin") {
-    redirect("/admin");
+    redirect(base);
   }
 
   const users = await benutzerListe();
@@ -20,7 +22,7 @@ export default async function BenutzerVerwaltungPage() {
   return (
     <div className="max-w-4xl space-y-6">
       <div className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
-        <Link href="/admin/einstellungen" className="hover:text-vintage-brown transition-colors flex items-center gap-1">
+        <Link href={`${base}/einstellungen`} className="hover:text-vintage-brown transition-colors flex items-center gap-1">
           <ChevronLeft className="w-3 h-3" /> Настройки
         </Link>
         <span>/</span>

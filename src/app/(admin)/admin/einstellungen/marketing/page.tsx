@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import { getAllMarketingStrings } from "@/lib/db/marketing-strings";
 import { MarketingTextsClient } from "./client";
 import Link from "next/link";
@@ -17,6 +18,7 @@ export const dynamic = "force-dynamic";
  * um Edit-Form + Save-Action. Cache wird beim Save invalidiert.
  * ────────────────────────────────────────────────────────────────────────── */
 export default async function MarketingTextsPage() {
+  const base = await getModuleBase();
   const strings = await getAllMarketingStrings();
 
   return (
@@ -26,7 +28,7 @@ export default async function MarketingTextsPage() {
         className="text-[11px] uppercase font-medium flex items-center gap-2"
         style={{ letterSpacing: "0.18em", color: "var(--color-ink-mute)" }}
       >
-        <Link href="/admin/einstellungen" className="hover:text-coral transition-colors flex items-center gap-1">
+        <Link href={`${base}/einstellungen`} className="hover:text-coral transition-colors flex items-center gap-1">
           <ChevronLeft className="w-3 h-3" /> Настройки
         </Link>
         <span>/</span>

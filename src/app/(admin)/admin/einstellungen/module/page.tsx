@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { ChevronLeft, ToggleLeft, Info } from "lucide-react";
 import { getAllFeatures, FEATURE_FLAGS, ALL_FEATURE_KEYS } from "@/lib/db/feature-flags";
@@ -16,6 +17,7 @@ export const revalidate = 0;
  * die ganze Site aus — Route 404, UI-Element verschwindet.
  */
 export default async function ModulePage() {
+  const base = await getModuleBase();
   const flags = await getAllFeatures();
 
   return (
@@ -23,7 +25,7 @@ export default async function ModulePage() {
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link
-          href="/admin/einstellungen"
+          href={`${base}/einstellungen`}
           className="p-1.5 hover:bg-vintage-sand/40 transition-colors"
           style={{ borderRadius: "var(--radius-vintage)" }}
           aria-label="Назад"

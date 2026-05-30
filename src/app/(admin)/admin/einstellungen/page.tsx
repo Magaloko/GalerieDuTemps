@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { systemEinstellungenLaden } from "@/lib/db/system-einstellungen";
 import { getStripeConfig } from "@/lib/affiliate/stripe";
@@ -21,6 +22,7 @@ async function stripeSdkVerfuegbar(): Promise<boolean> {
 }
 
 export default async function GlobaleEinstellungenPage() {
+  const base = await getModuleBase();
   const [settings, sdkInstalled] = await Promise.all([
     systemEinstellungenLaden(),
     stripeSdkVerfuegbar(),
@@ -43,37 +45,37 @@ export default async function GlobaleEinstellungenPage() {
       {/* Sub-Areale: Design, Marketing, Telegram, Benutzer */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <SettingsLink
-          href="/admin/einstellungen/design"
+          href={`${base}/einstellungen/design`}
           icon={Palette}
           title="Дизайн сайта"
           desc="Цвета, логотип, фавикон, название бренда"
         />
         <SettingsLink
-          href="/admin/einstellungen/marketing"
+          href={`${base}/einstellungen/marketing`}
           icon={MessageSquareText}
           title="Маркетинговые тексты"
           desc="Hero, тикер, баннер · реквизиты для оплаты"
         />
         <SettingsLink
-          href="/admin/einstellungen/telegram"
+          href={`${base}/einstellungen/telegram`}
           icon={Send}
           title="Telegram-бот"
           desc="Бот для входящих сообщений + уведомления"
         />
         <SettingsLink
-          href="/admin/einstellungen/benutzer"
+          href={`${base}/einstellungen/benutzer`}
           icon={Bell}
           title="Администраторы"
           desc="Управление доступом"
         />
         <SettingsLink
-          href="/admin/einstellungen/system"
+          href={`${base}/einstellungen/system`}
           icon={Activity}
           title="Системное состояние"
           desc="БД, Redis, e-mail, uploads · live-диагностика"
         />
         <SettingsLink
-          href="/admin/einstellungen/module"
+          href={`${base}/einstellungen/module`}
           icon={ToggleLeft}
           title="Модули"
           desc="Вкл/выкл B2B, ИИ-ассистент, wishlist · авто-перевод"

@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { Activity, Database, Mail, HardDrive, Globe, ChevronLeft } from "lucide-react";
 import { query } from "@/lib/db";
@@ -216,6 +217,7 @@ async function checkUploads(): Promise<Check> {
 }
 
 export default async function SystemPage() {
+  const base = await getModuleBase();
   const [siteCheck, dbCheck, redisCheck, emailCheck, uploadsCheck] = await Promise.all([
     checkSiteUrl(),
     checkDatabase(),
@@ -242,7 +244,7 @@ export default async function SystemPage() {
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Link
-            href="/admin/einstellungen"
+            href={`${base}/einstellungen`}
             className="p-1.5 hover:bg-vintage-sand/40 transition-colors"
             style={{ borderRadius: "var(--radius-vintage)" }}
             aria-label="Назад"

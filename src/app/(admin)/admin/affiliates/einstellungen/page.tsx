@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import { Settings } from "lucide-react";
 import { affiliateEinstellungenLaden } from "@/lib/db/affiliate-settings";
 import { EinstellungenFormular } from "./einstellungen-formular";
@@ -9,12 +10,13 @@ export const metadata: Metadata = { title: "Партнёрские настро�
 export const dynamic = "force-dynamic";
 
 export default async function EinstellungenPage() {
+  const base = await getModuleBase();
   const settings = await affiliateEinstellungenLaden();
 
   return (
     <div className="space-y-6 max-w-2xl">
       <nav className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
-        <Link href="/admin/affiliates" className="hover:text-vintage-brown flex items-center gap-1 transition-colors">
+        <Link href={`${base}/affiliates`} className="hover:text-vintage-brown flex items-center gap-1 transition-colors">
           <ChevronLeft className="w-3 h-3" /> Партнёры
         </Link>
         <span>/</span>

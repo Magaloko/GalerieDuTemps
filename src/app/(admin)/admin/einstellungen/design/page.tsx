@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import { getAllThemeSettings } from "@/lib/db/theme";
 import { DesignCustomizer } from "./client";
 import Link from "next/link";
@@ -17,6 +18,7 @@ export const dynamic = "force-dynamic";
  * Speicherung neu lädt.
  * ────────────────────────────────────────────────────────────────────────── */
 export default async function DesignPage() {
+  const base = await getModuleBase();
   const settings = await getAllThemeSettings();
 
   return (
@@ -26,7 +28,7 @@ export default async function DesignPage() {
         className="text-[11px] uppercase font-medium flex items-center gap-2"
         style={{ letterSpacing: "0.18em", color: "var(--color-ink-mute)" }}
       >
-        <Link href="/admin/einstellungen" className="hover:text-coral transition-colors flex items-center gap-1">
+        <Link href={`${base}/einstellungen`} className="hover:text-coral transition-colors flex items-center gap-1">
           <ChevronLeft className="w-3 h-3" /> Настройки
         </Link>
         <span>/</span>
