@@ -72,12 +72,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               role="status"
               className="pointer-events-auto w-full flex items-start gap-3 px-4 py-3 shadow-lg"
               style={{
-                background:    "var(--tg-theme-section-bg-color, #fff)",
-                borderLeft:    `3px solid ${accent}`,
-                border:        "1px solid var(--color-line, rgba(0,0,0,0.08))",
-                borderLeftWidth: 3,
-                borderRadius:  4,
-                animation:     "gdt-toast-in 220ms cubic-bezier(0.2,0.7,0.3,1)",
+                background:      "var(--tg-theme-section-bg-color, var(--color-app-surface, #fff))",
+                border:          "1px solid var(--color-line, rgba(0,0,0,0.10))",
+                borderLeft:      `3px solid ${accent}`,
+                borderRadius:    4,
+                animation:       "gdt-toast-in 220ms cubic-bezier(0.2,0.7,0.3,1)",
+                boxShadow:       "0 4px 16px rgba(15,20,48,0.12), 0 1px 4px rgba(15,20,48,0.06)",
               }}
             >
               <Icon className="w-4 h-4 shrink-0 mt-0.5" style={{ color: accent }} />
@@ -96,7 +96,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           );
         })}
       </div>
-      <style>{`@keyframes gdt-toast-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+      {/* gdt-toast-in keyframe liegt in globals.css */}
     </ToastCtx.Provider>
   );
 }

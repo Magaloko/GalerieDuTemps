@@ -341,6 +341,18 @@ em.font-italic, .font-italic {
   animation: gdt-pulse 1.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* ─── Toast Slide-In (von oben) ────────────────────────────────────────── */
+@keyframes gdt-toast-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0);     }
+}
+@media (prefers-reduced-motion: reduce) {
+  @keyframes gdt-toast-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+}
+
 /* ─── Header D2 Slide-In ────────────────────────────────────────────────
  * Wird auf den fixed-D2-Header angewandt sobald er gemountet wird (Scroll
  * > 600 px). Slide kommt von -100% (oberhalb Viewport) auf 0. Reduced-motion-
