@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, ShoppingBag, Users, Inbox, LayoutGrid } from "lucide-react";
+import { ViewSwitch } from "@/components/layout/view-switch";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * AppShell — mobile Operator-App-Hülle (Amina-/FB-Business-Suite-Stil).
@@ -25,6 +26,10 @@ export function AppShell({ children, userName }: { children: React.ReactNode; us
   const initial = (userName ?? "A").charAt(0).toUpperCase();
 
   return (
+    // Äußerer Wrapper trägt den Paper-Hintergrund über die VOLLE Breite —
+    // sonst zeigt sich auf iPad/Desktop neben der max-w-md-Spalte der dunkle
+    // espresso <body>-Hintergrund. Innen wird die Spalte zentriert.
+    <div className="min-h-[100dvh]" style={{ background: "var(--color-paper)" }}>
     <div className="min-h-[100dvh] mx-auto max-w-md flex flex-col" style={{ background: "var(--color-paper)" }}>
       {/* Top-Bar */}
       <header
@@ -37,13 +42,16 @@ export function AppShell({ children, userName }: { children: React.ReactNode; us
         >
           {initial}
         </div>
-        <p style={{ fontFamily: "var(--font-display)", fontSize: 18, color: "var(--color-ink)" }}>
+        <p className="flex-1 min-w-0 truncate whitespace-nowrap" style={{ fontFamily: "var(--font-display)", fontSize: 18, color: "var(--color-ink)" }}>
           Galerie <span style={{ color: "var(--color-ink-mute)", fontSize: 13 }}>· Админ</span>
         </p>
+        {/* App ↔ Klassik-Umschalter — Cookie-Default = App */}
+        <ViewSwitch current="app" compact />
       </header>
 
-      {/* Inhalt */}
-      <main className="flex-1 pb-24">{children}</main>
+      {/* Inhalt — Spacer = Tab-Bar-Höhe inkl. Safe-Area (statt fixem pb-24,
+          das auf Notch-Geräten knapp wird). */}
+      <main className="flex-1" style={{ paddingBottom: "calc(72px + env(safe-area-inset-bottom, 0px))" }}>{children}</main>
 
       {/* Untere Tab-Bar */}
       <nav
@@ -62,13 +70,14 @@ export function AppShell({ children, userName }: { children: React.ReactNode; us
               aria-current={active ? "page" : undefined}
             >
               <Icon className="w-[22px] h-[22px]" strokeWidth={1.7} style={{ color: active ? "var(--color-coral)" : "var(--color-ink-mute)" }} />
-              <span className="text-[9px] uppercase font-medium" style={{ letterSpacing: "0.12em", color: active ? "var(--color-coral)" : "var(--color-ink-mute)" }}>
+              <span className="text-[9px] uppercase font-medium whitespace-nowrap" style={{ letterSpacing: "0.12em", color: active ? "var(--color-coral)" : "var(--color-ink-mute)" }}>
                 {label}
               </span>
             </Link>
           );
         })}
       </nav>
+    </div>
     </div>
   );
 }

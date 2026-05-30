@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { NextResponse } from "next/server";
 import { isValidReferralCode } from "@/lib/affiliate/referral-code";
+import { ADMIN_VIEW_COOKIE, ADMIN_VIEW_HOME, parseAdminView } from "@/lib/admin-view";
 
 // ---------------------------------------------------------------------------
 // Auth-Proxy + Affiliate-Tracking
@@ -40,8 +41,9 @@ export default auth((req) => {
     return response;
   }
 
-  // ─── Admin-Bereich (nur admin/superadmin) ────────────────────────────────
-  if (pathname.startsWith("/admin")) {
+  // ─── Operator-Bereiche (/admin = klassisch, /app = mobile App-Shell) ────
+  //   Beide nur für admin/superadmin. Telegram-Mini-App (/tg) eigene Logik.
+  if (pathname.startsWith("/admin") || pathname.startsWith("/app")) {
     if (!isLoggedIn) {
       const url = new URL("/login", req.nextUrl);
       url.searchParams.set("callbackUrl", pathname);
@@ -90,10 +92,14 @@ export default auth((req) => {
   }
 
   // ─── Login-Seiten: eingeloggte umleiten ──────────────────────────────────
+  //   Admin/Superadmin landen in ihrer bevorzugten Operator-View
+  //   (Cookie gdt_admin_view, Default = "app"). Telegram bleibt davon
+  //   unberührt — /tg hat eigenen Auth-Flow.
   if (pathname === "/login" && isLoggedIn) {
+    const adminView = parseAdminView(req.cookies.get(ADMIN_VIEW_COOKIE)?.value);
     const ziel = role === "affiliate" ? "/affiliate"
                : role === "customer"  ? "/kunde"
-               : "/admin";
+               : ADMIN_VIEW_HOME[adminView];
     return NextResponse.redirect(new URL(ziel, req.nextUrl));
   }
   if (pathname === "/affiliate/anmelden" && isLoggedIn && role === "affiliate") {
@@ -110,6 +116,7 @@ export const config = {
   matcher: [
     // Auth-geschützte Bereiche
     "/admin/:path*",
+    "/app/:path*",
     "/affiliate/:path*",
     "/login",
     "/api/produkte/:path*",
