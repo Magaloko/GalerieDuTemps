@@ -117,7 +117,15 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
 
-- 2026-05-30 21:52 UTC · `(dieser Commit)` · design(app) Produkt-Formular-Optik auf helle App-Tokens:
+- 2026-05-31 00:29 UTC · `89106f0` · design(app) Produkt-Editor-Bausteine auf helle App-Tokens:
+  Restliche dunkle Cobalt-`vintage-*`-Flächen im Produkt-Editor auf paper/bone/coral + weiche
+  `--radius-app` umgezogen — Bild-Verwaltung (`BildManager`/`BildUploadZone`/`BildGalerie`, Foto-Hover-Veil
+  bewusst dunkel), `InstagramUrlsInput`, `Dateien-`/`ZertifikateManager`, `produkte/[id]/bilder`-Header,
+  Story-Editor-Chrome (`ProduktStoryEditor`; `BlockPreview` bleibt Shop-treu) und `SingleMediaUpload`
+  (neues `tone="shop|app"`, Vollformular nutzt `tone="app"`). `ConditionMeter`: inaktive Segmente auf
+  `--color-line` (Token-Hygiene; rendert auf der bereits hellen öffentlichen Detailseite). Rein visuell —
+  Upload-/dnd-/Fetch-Logik + Russisch unberührt. Verifiziert: tsc grün, vitest 176✓, next build grün.
+- 2026-05-30 21:52 UTC · `6340ac4` · design(app) Produkt-Formular-Optik auf helle App-Tokens:
   Opt-in-Prop `tone="shop"|"app"` (Default `shop` = unverändert dunkler Shop) an `Input/Textarea/Select`,
   `MultilingualInput`, `PreisMultiCurrency` und `RichTextEditor`; das Voll- + Schnell-Formular,
   `FormSection`, `KiFuellenBlock` sowie die Produkt-Editor- & Schnell-Seiten-Header ziehen auf
