@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { ordersListe } from "@/lib/db/orders";
 import { query } from "@/lib/db";
@@ -65,6 +66,7 @@ const FILTER: Array<{ value: OrderStatus | ""; label: string }> = [
 export default async function BestellungenAdminPage({
   searchParams,
 }: { searchParams: Promise<Record<string, string>> }) {
+  const base = await getModuleBase();
   const sp = await searchParams;
   const status = (sp.status as OrderStatus | undefined) ?? "";
   const seite  = parseInt(sp.seite ?? "1", 10);
@@ -86,7 +88,7 @@ export default async function BestellungenAdminPage({
           </p>
         </div>
         <Link
-          href="/admin/bestellungen/neu"
+          href={`${base}/bestellungen/neu`}
           className="flex items-center gap-2 px-4 py-2.5 bg-vintage-espresso text-vintage-cream text-xs font-sans tracking-[0.2em] uppercase hover:bg-vintage-brown transition-colors"
           style={{ borderRadius: "var(--radius-button)" }}
         >
@@ -130,7 +132,7 @@ export default async function BestellungenAdminPage({
           return (
             <Link
               key={f.value}
-              href={f.value ? `/admin/bestellungen?status=${f.value}` : "/admin/bestellungen"}
+              href={f.value ? `${base}/bestellungen?status=${f.value}` : `${base}/bestellungen`}
               className={`px-4 py-2 text-xs font-sans uppercase tracking-widest transition-colors ${
                 status === f.value ? "bg-vintage-espresso text-vintage-cream" : "text-vintage-dust hover:bg-vintage-parchment hover:text-vintage-brown"
               }`}
@@ -179,7 +181,7 @@ export default async function BestellungenAdminPage({
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <Link href={`/admin/bestellungen/${o.id}`} className="text-vintage-dust hover:text-vintage-brown p-1.5" style={{ borderRadius: "var(--radius-vintage)" }}>
+                        <Link href={`${base}/bestellungen/${o.id}`} className="text-vintage-dust hover:text-vintage-brown p-1.5" style={{ borderRadius: "var(--radius-vintage)" }}>
                           <ExternalLink className="w-4 h-4" />
                         </Link>
                       </td>
@@ -197,14 +199,14 @@ export default async function BestellungenAdminPage({
           <p className="text-xs text-vintage-dust font-sans">Страница {daten.seite} из {daten.seiten}</p>
           <div className="flex gap-2">
             {daten.seite > 1 && (
-              <Link href={`/admin/bestellungen?seite=${daten.seite - 1}${status ? `&status=${status}` : ""}`}
+              <Link href={`${base}/bestellungen?seite=${daten.seite - 1}${status ? `&status=${status}` : ""}`}
                 className="flex items-center gap-1 px-3 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans hover:bg-vintage-parchment transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}>
                 <ChevronLeft className="w-3.5 h-3.5" /> Назад
               </Link>
             )}
             {daten.seite < daten.seiten && (
-              <Link href={`/admin/bestellungen?seite=${daten.seite + 1}${status ? `&status=${status}` : ""}`}
+              <Link href={`${base}/bestellungen?seite=${daten.seite + 1}${status ? `&status=${status}` : ""}`}
                 className="flex items-center gap-1 px-3 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans hover:bg-vintage-parchment transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}>
                 Далее <ChevronRight className="w-3.5 h-3.5" />

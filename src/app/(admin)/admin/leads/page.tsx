@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { leadsListe, leadKpis, type LeadQuelle, type LeadStatus } from "@/lib/db/leads";
 import { auth } from "@/lib/auth/config";
@@ -34,6 +35,7 @@ const STATUS_META: Record<LeadStatus, { label: string; klasse: string }> = {
 };
 
 export default async function InboxPage({ searchParams }: Props) {
+  const base = await getModuleBase();
   const sp      = await searchParams;
   const session = await auth();
   const userId  = session?.user?.id;
@@ -203,7 +205,7 @@ export default async function InboxPage({ searchParams }: Props) {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <Link href={`/admin/leads/${l.id}`} className="inline-flex p-2 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-parchment transition-colors"
+                        <Link href={`${base}/leads/${l.id}`} className="inline-flex p-2 text-vintage-dust hover:text-vintage-brown hover:bg-vintage-parchment transition-colors"
                               style={{ borderRadius: "var(--radius-vintage)" }} title="Открыть">
                           <ChevronRight className="w-4 h-4" />
                         </Link>

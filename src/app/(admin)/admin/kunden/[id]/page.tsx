@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { customerById } from "@/lib/db/customers";
@@ -32,6 +33,7 @@ const TYPE_LABEL: Record<string, string> = {
 export default async function KundenDetailPage({
   params,
 }: { params: Promise<{ id: string }> }) {
+  const base = await getModuleBase();
   const { id } = await params;
   const [customer, orders, allTags, kundenTags, notes, tasks, stages, stats, timeline] = await Promise.all([
     customerById(id),
@@ -50,7 +52,7 @@ export default async function KundenDetailPage({
   return (
     <div className="space-y-6 max-w-6xl">
       <nav className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
-        <Link href="/admin/kunden" className="hover:text-vintage-brown flex items-center gap-1 transition-colors">
+        <Link href={`${base}/kunden`} className="hover:text-vintage-brown flex items-center gap-1 transition-colors">
           <ChevronLeft className="w-3 h-3" /> Клиенты
         </Link>
         <span>/</span>
@@ -121,7 +123,7 @@ export default async function KundenDetailPage({
         ) : (
           <div className="divide-y divide-vintage-sand/40">
             {orders.slice(0, 10).map(o => (
-              <Link key={o.id} href={`/admin/bestellungen/${o.id}`} className="py-2 flex items-center justify-between hover:bg-vintage-parchment/40 -mx-2 px-2 transition-colors">
+              <Link key={o.id} href={`${base}/bestellungen/${o.id}`} className="py-2 flex items-center justify-between hover:bg-vintage-parchment/40 -mx-2 px-2 transition-colors">
                 <div>
                   <p className="font-mono text-vintage-gold text-sm">GDT-{o.order_number}</p>
                   <p className="text-xs text-vintage-dust">{new Date(o.erstellt_am).toLocaleDateString("ru-RU")} · {orderStatusMeta(o.status).label}</p>

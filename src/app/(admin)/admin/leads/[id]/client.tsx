@@ -16,6 +16,7 @@ import {
   leadNotizAction, leadAlsCustomerAnlegenAction,
 } from "../actions";
 import { OrderFromLead } from "@/components/leads/order-from-lead";
+import { useModuleBase } from "@/lib/module-base-client";
 import type { Lead, LeadMessage, AdminBenutzer, LeadStatus, LeadPrioritaet } from "@/lib/db/leads";
 
 const STATUS_OPTIONS: { value: LeadStatus; label: string }[] = [
@@ -44,6 +45,7 @@ interface Props {
 
 export function LeadDetailClient({ lead: leadInit, messages, originalText, admins }: Props) {
   const router = useRouter();
+  const mbase = useModuleBase();
   const [lead, setLead] = useState(leadInit);
   const [pending, start] = useTransition();
   const [notiz, setNotiz] = useState("");
@@ -144,7 +146,7 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
           {lead.produkt_id && lead.produkt_name && (
             <div className="border-t border-vintage-sand/40 pt-3">
               <p className="text-xs uppercase tracking-widest text-vintage-dust mb-1">Товар</p>
-              <Link href={`/admin/produkte/${lead.produkt_id}`}
+              <Link href={`${mbase}/produkte/${lead.produkt_id}`}
                     className="inline-flex items-center gap-1 text-vintage-gold hover:underline">
                 <Package className="w-3.5 h-3.5" /> {lead.produkt_name}
               </Link>
@@ -154,7 +156,7 @@ export function LeadDetailClient({ lead: leadInit, messages, originalText, admin
           {lead.customer_id ? (
             <div className="border-t border-vintage-sand/40 pt-3">
               <p className="text-xs uppercase tracking-widest text-vintage-dust mb-1">Клиент</p>
-              <Link href={`/admin/kunden/${lead.customer_id}`}
+              <Link href={`${mbase}/kunden/${lead.customer_id}`}
                     className="text-vintage-gold hover:underline">{lead.customer_email}</Link>
             </div>
           ) : (

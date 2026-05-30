@@ -15,19 +15,25 @@ import { ViewSwitch } from "@/components/layout/view-switch";
 
 // Generische /admin-Sektion (aus dem Kachelmenü geöffnet) → „Меню" aktiv
 // markieren, außer es ist eine der eigenen Daten-Tab-Routen.
+const istModulPfad = (p: string, modul: string) =>
+  p.startsWith(`/app/${modul}`) || p.startsWith(`/admin/${modul}`);
+
+// Generische Sektion (aus dem Kachelmenü) → „Меню" aktiv, außer es ist eine
+// der eigenen Daten-Tab-Routen (egal ob unter /app oder /admin gerendert).
 const istMenueSektion = (p: string) =>
   p.startsWith("/app/menu") ||
-  (p.startsWith("/admin") &&
-    !p.startsWith("/admin/bestellungen") &&
-    !p.startsWith("/admin/kunden") &&
-    !p.startsWith("/admin/leads"));
+  ((p.startsWith("/admin") || p.startsWith("/app")) &&
+    !istModulPfad(p, "bestellungen") &&
+    !istModulPfad(p, "kunden") &&
+    !istModulPfad(p, "leads") &&
+    p !== "/app");
 
 const TABS = [
-  { href: "/app",                 label: "Сегодня", icon: Home,       match: (p: string) => p === "/app" },
-  { href: "/admin/bestellungen",  label: "Заказы",  icon: ShoppingBag, match: (p: string) => p.startsWith("/admin/bestellungen") },
-  { href: "/admin/kunden",        label: "Клиенты", icon: Users,      match: (p: string) => p.startsWith("/admin/kunden") },
-  { href: "/admin/leads",         label: "Лиды",    icon: Inbox,      match: (p: string) => p.startsWith("/admin/leads") },
-  { href: "/app/menu",            label: "Меню",    icon: LayoutGrid, match: istMenueSektion },
+  { href: "/app",               label: "Сегодня", icon: Home,        match: (p: string) => p === "/app" },
+  { href: "/app/bestellungen",  label: "Заказы",  icon: ShoppingBag, match: (p: string) => istModulPfad(p, "bestellungen") },
+  { href: "/app/kunden",        label: "Клиенты", icon: Users,       match: (p: string) => istModulPfad(p, "kunden") },
+  { href: "/app/leads",         label: "Лиды",    icon: Inbox,       match: (p: string) => istModulPfad(p, "leads") },
+  { href: "/app/menu",          label: "Меню",    icon: LayoutGrid,  match: istMenueSektion },
 ];
 
 /**

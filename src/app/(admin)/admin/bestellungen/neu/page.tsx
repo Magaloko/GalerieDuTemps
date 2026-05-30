@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { ChevronLeft, FileText } from "lucide-react";
 import { ManuellBestellungClient } from "./client";
@@ -5,11 +6,12 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Новый заказ" };
 
-export default function NeueBestellungPage() {
+export default async function NeueBestellungPage() {
+  const base = await getModuleBase();
   return (
     <div className="max-w-4xl space-y-6">
       <div className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
-        <Link href="/admin/bestellungen" className="hover:text-vintage-brown transition-colors flex items-center gap-1">
+        <Link href={`${base}/bestellungen`} className="hover:text-vintage-brown transition-colors flex items-center gap-1">
           <ChevronLeft className="w-3 h-3" /> Заказы
         </Link>
         <span>/</span>

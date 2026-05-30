@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdminSession } from "@/lib/auth/config";
+import { getModuleBase } from "@/lib/module-base-server";
 import {
   leadStatusAendern,
   leadPrioritaetAendern,
@@ -219,7 +220,8 @@ export async function leadZuBestellungAction(
     );
 
     revalidatePath(`/admin/leads/${leadId}`);
-    redirect(`/admin/bestellungen/${order.id}`);
+    const base = await getModuleBase();
+    redirect(`${base}/bestellungen/${order.id}`);
   } catch (err) {
     if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) throw err;
     console.error("[lead-to-order]", err);

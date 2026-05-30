@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import Link from "next/link";
 import { customersListe } from "@/lib/db/customers";
 import { Users, Search, ExternalLink, Briefcase, ChevronLeft, ChevronRight } from "lucide-react";
@@ -24,6 +25,7 @@ const FILTER: Array<{ value: CustomerType | ""; label: string }> = [
 export default async function KundenAdminPage({
   searchParams,
 }: { searchParams: Promise<Record<string, string>> }) {
+  const base = await getModuleBase();
   const sp    = await searchParams;
   const typ   = (sp.typ as CustomerType | undefined) ?? "";
   const seite = parseInt(sp.seite ?? "1", 10);
@@ -45,7 +47,7 @@ export default async function KundenAdminPage({
         <div className="flex flex-wrap gap-1.5 border-b border-vintage-sand pb-1">
           {FILTER.map(f => (
             <Link key={f.value}
-              href={f.value ? `/admin/kunden?typ=${f.value}` : "/admin/kunden"}
+              href={f.value ? `${base}/kunden?typ=${f.value}` : `${base}/kunden`}
               className={`px-4 py-2 text-xs font-sans uppercase tracking-widest transition-colors ${
                 typ === f.value ? "bg-vintage-espresso text-vintage-cream" : "text-vintage-dust hover:bg-vintage-parchment hover:text-vintage-brown"
               }`}
@@ -107,7 +109,7 @@ export default async function KundenAdminPage({
                       </td>
                       <td className="px-4 py-3 text-vintage-dust text-xs">{new Date(c.erstellt_am).toLocaleDateString("ru-RU")}</td>
                       <td className="px-4 py-3 text-right">
-                        <Link href={`/admin/kunden/${c.id}`} className="text-vintage-dust hover:text-vintage-brown p-1.5 inline-block" style={{ borderRadius: "var(--radius-vintage)" }}>
+                        <Link href={`${base}/kunden/${c.id}`} className="text-vintage-dust hover:text-vintage-brown p-1.5 inline-block" style={{ borderRadius: "var(--radius-vintage)" }}>
                           <ExternalLink className="w-4 h-4" />
                         </Link>
                       </td>
@@ -125,14 +127,14 @@ export default async function KundenAdminPage({
           <p className="text-xs text-vintage-dust font-sans">Страница {daten.seite} / {daten.seiten}</p>
           <div className="flex gap-2">
             {daten.seite > 1 && (
-              <Link href={`/admin/kunden?seite=${daten.seite - 1}${typ ? `&typ=${typ}` : ""}`}
+              <Link href={`${base}/kunden?seite=${daten.seite - 1}${typ ? `&typ=${typ}` : ""}`}
                 className="flex items-center gap-1 px-3 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans hover:bg-vintage-parchment transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}>
                 <ChevronLeft className="w-3.5 h-3.5" /> Назад
               </Link>
             )}
             {daten.seite < daten.seiten && (
-              <Link href={`/admin/kunden?seite=${daten.seite + 1}${typ ? `&typ=${typ}` : ""}`}
+              <Link href={`${base}/kunden?seite=${daten.seite + 1}${typ ? `&typ=${typ}` : ""}`}
                 className="flex items-center gap-1 px-3 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans hover:bg-vintage-parchment transition-colors"
                 style={{ borderRadius: "var(--radius-button)" }}>
                 Далее <ChevronRight className="w-3.5 h-3.5" />

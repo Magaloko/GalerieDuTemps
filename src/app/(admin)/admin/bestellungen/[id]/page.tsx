@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { orderById } from "@/lib/db/orders";
@@ -34,6 +35,7 @@ const PAY_STATUS_LABEL: Record<string, string> = {
 export default async function BestellungDetailPage({
   params,
 }: { params: Promise<{ id: string }> }) {
+  const base = await getModuleBase();
   const { id } = await params;
   const order = await orderById(id);
   if (!order) notFound();
@@ -41,7 +43,7 @@ export default async function BestellungDetailPage({
   return (
     <div className="space-y-6 max-w-4xl">
       <nav className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
-        <Link href="/admin/bestellungen" className="hover:text-vintage-brown flex items-center gap-1 transition-colors">
+        <Link href={`${base}/bestellungen`} className="hover:text-vintage-brown flex items-center gap-1 transition-colors">
           <ChevronLeft className="w-3 h-3" /> Заказы
         </Link>
         <span>/</span>

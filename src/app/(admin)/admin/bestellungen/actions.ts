@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdminSession } from "@/lib/auth/config";
+import { getModuleBase } from "@/lib/module-base-server";
 import {
   orderStatusUpdate,
   orderNotizenAktualisieren,
@@ -261,7 +262,8 @@ export async function bestellungManuellAnlegenAction(
     }
 
     revalidatePath("/admin/bestellungen");
-    redirect(`/admin/bestellungen/${order.id}`);
+    const base = await getModuleBase();
+    redirect(`${base}/bestellungen/${order.id}`);
   } catch (err) {
     if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) throw err;
     console.error("[manuell-anlegen]", err);

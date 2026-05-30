@@ -40,8 +40,8 @@ export default async function AppHeutePage() {
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-2.5">
         <Kpi label="Выручка сегодня" value={today.revenue_today_cents > 0 ? `₸ ${Math.round(today.revenue_today_cents / 100).toLocaleString("ru-RU")}` : "—"} />
-        <Kpi label="Заказов в работе" value={String(today.orders_pending)} accent={today.orders_pending > 0} href="/admin/bestellungen" />
-        <Kpi label="Новых лидов"      value={String(b?.leads_unread ?? 0)}   accent={(b?.leads_unread ?? 0) > 0} href="/admin/leads" />
+        <Kpi label="Заказов в работе" value={String(today.orders_pending)} accent={today.orders_pending > 0} href="/app/bestellungen" />
+        <Kpi label="Новых лидов"      value={String(b?.leads_unread ?? 0)}   accent={(b?.leads_unread ?? 0) > 0} href="/app/leads" />
         <Kpi label="Задач на сегодня" value={String(b?.crm_tasks_today ?? 0)} href="/admin/crm/tasks" />
       </div>
 

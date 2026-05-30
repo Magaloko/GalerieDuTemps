@@ -1,3 +1,4 @@
+import { getModuleBase } from "@/lib/module-base-server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
@@ -18,6 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export const dynamic = "force-dynamic";
 
 export default async function LeadDetailPage({ params }: Props) {
+  const base = await getModuleBase();
   const { id } = await params;
   const [lead, messages, originalText, admins] = await Promise.all([
     leadById(id),
@@ -31,7 +33,7 @@ export default async function LeadDetailPage({ params }: Props) {
   return (
     <div className="max-w-5xl space-y-6">
       <div className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
-        <Link href="/admin/leads" className="hover:text-vintage-brown transition-colors flex items-center gap-1">
+        <Link href={`${base}/leads`} className="hover:text-vintage-brown transition-colors flex items-center gap-1">
           <ChevronLeft className="w-3 h-3" /> Входящие
         </Link>
         <span>/</span>

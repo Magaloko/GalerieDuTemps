@@ -19,7 +19,7 @@ export default async function AppMenuPage() {
     {
       title: "Продажи",
       items: [
-        { href: "/admin/bestellungen", label: "Заказы",      icon: ShoppingBag, badge: b?.orders_pending },
+        { href: "/app/bestellungen", label: "Заказы",      icon: ShoppingBag, badge: b?.orders_pending },
         { href: "/admin/rechnungen",   label: "Счета",       icon: FileText },
         { href: "/admin/statistiken",  label: "Статистика",  icon: BarChart3 },
         { href: "/admin/preisanalyse", label: "Анализ цен",  icon: TrendingUp },
@@ -36,14 +36,14 @@ export default async function AppMenuPage() {
     {
       title: "Клиенты",
       items: [
-        { href: "/admin/kunden", label: "Клиенты",    icon: Users },
+        { href: "/app/kunden", label: "Клиенты",    icon: Users },
         { href: "/admin/b2b",    label: "Заявки B2B", icon: Briefcase, badge: b?.b2b_pending },
       ],
     },
     {
       title: "Входящие и CRM",
       items: [
-        { href: "/admin/leads",        label: "Лиды",      icon: Inbox,     badge: b?.leads_unread },
+        { href: "/app/leads",        label: "Лиды",      icon: Inbox,     badge: b?.leads_unread },
         { href: "/admin/kontakt",      label: "Сообщения", icon: Mail,      badge: b?.kontakt_neu },
         { href: "/admin/crm/pipeline", label: "Воронка",   icon: GitBranch },
         { href: "/admin/crm/segments", label: "Сегменты",  icon: Layers },
