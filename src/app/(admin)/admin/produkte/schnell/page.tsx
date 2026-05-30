@@ -14,21 +14,21 @@ export default async function SchnellHinzufuegenPage() {
 
   return (
     <div className="max-w-4xl space-y-6">
-      <div className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
-        <Link href={`${base}/produkte`} className="hover:text-vintage-brown transition-colors flex items-center gap-1">
+      <div className="flex items-center gap-2 text-xs font-sans text-[var(--color-ink-mute)]">
+        <Link href={`${base}/produkte`} className="hover:text-[var(--color-ink)] transition-colors flex items-center gap-1">
           <ChevronLeft className="w-3 h-3" /> Товары
         </Link>
         <span>/</span>
-        <span className="text-vintage-ink">Быстрое добавление</span>
+        <span className="text-[var(--color-ink)]">Быстрое добавление</span>
       </div>
 
       <div>
-        <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-        <h1 className="font-serif text-2xl text-vintage-espresso flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-vintage-gold" />
+        <p className="text-xs tracking-widest" style={{ color: "var(--color-coral)" }}>✦</p>
+        <h1 className="font-serif text-2xl flex items-center gap-2" style={{ color: "var(--color-ink)" }}>
+          <Sparkles className="w-5 h-5" style={{ color: "var(--color-coral)" }} />
           Быстрое добавление с ИИ
         </h1>
-        <p className="text-vintage-dust text-xs font-sans mt-1">
+        <p className="text-xs font-sans mt-1" style={{ color: "var(--color-ink-mute)" }}>
           Загрузи фото, напиши заметки, ИИ сгенерирует название, описание, теги, SEO и пост для Instagram.
         </p>
       </div>

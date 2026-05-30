@@ -22,6 +22,8 @@ interface Props {
   placeholder?:  string;
   /** Live-Callback (z.B. für Vorschau). Bekommt die komplette Locale-Map. */
   onChange?:     (values: Record<string, string>) => void;
+  /** Visueller Ton. "shop" = Legacy-Dark (default), "app" = heller Operator-App-Stil. */
+  tone?:         "shop" | "app";
 }
 
 /**
@@ -31,8 +33,9 @@ interface Props {
  */
 export function MultilingualInput({
   label, name, initial, fallbackValue, variant = "input",
-  maxLength, rows, placeholder, onChange,
+  maxLength, rows, placeholder, onChange, tone = "shop",
 }: Props) {
+  const isApp = tone === "app";
   // Initialwert: jeweilige Locale aus initial, oder ru = fallbackValue
   const initialMap: Record<string, string> = {
     ru: initial.ru ?? fallbackValue ?? "",
@@ -55,12 +58,41 @@ export function MultilingualInput({
     <div className="space-y-2">
       {/* Tab-Header */}
       <div className="flex items-center justify-between">
-        <span className="text-xs font-sans uppercase tracking-widest text-vintage-gold/80">
+        <span
+          className={`text-xs font-sans uppercase tracking-widest ${isApp ? "" : "text-vintage-gold/80"}`}
+          style={isApp ? { color: "var(--color-ink-mute)" } : undefined}
+        >
           {label}
         </span>
         <div className="flex items-center gap-0.5">
           {LOCALES.map(l => {
             const filled = (values[l.code] ?? "").trim().length > 0;
+            const isActive = active === l.code;
+
+            if (isApp) {
+              return (
+                <button
+                  key={l.code}
+                  type="button"
+                  onClick={() => setActive(l.code)}
+                  title={l.label}
+                  className="px-2 py-1 text-[10px] font-sans uppercase tracking-widest border transition-colors flex items-center gap-1"
+                  style={{
+                    borderRadius: "var(--radius-app)",
+                    borderColor: isActive ? "var(--color-coral)" : "var(--color-line)",
+                    background: isActive ? "rgba(232,112,58,0.12)" : "transparent",
+                    color: isActive ? "var(--color-coral-deep)" : "var(--color-ink-mute)",
+                  }}
+                >
+                  <span>{l.flag}</span> {l.code}
+                  <span
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ background: filled ? "var(--color-coral)" : "var(--color-line)" }}
+                  />
+                </button>
+              );
+            }
+
             return (
               <button
                 key={l.code}
@@ -68,7 +100,7 @@ export function MultilingualInput({
                 onClick={() => setActive(l.code)}
                 title={l.label}
                 className={`px-2 py-1 text-[10px] font-sans uppercase tracking-widest border transition-colors flex items-center gap-1 ${
-                  active === l.code
+                  isActive
                     ? "bg-vintage-espresso text-vintage-cream border-vintage-espresso"
                     : "border-vintage-sand/40 text-vintage-dust hover:bg-vintage-parchment"
                 }`}
@@ -92,6 +124,7 @@ export function MultilingualInput({
           initialMarkdown={values[active] ?? ""}
           onChange={(md) => setValue(active, md)}
           placeholder={placeholder}
+          tone={tone}
         />
       ) : variant === "textarea" ? (
         <Textarea
@@ -100,6 +133,7 @@ export function MultilingualInput({
           rows={rows ?? 3}
           maxLength={maxLength}
           placeholder={placeholder}
+          tone={tone}
         />
       ) : (
         <Input
@@ -107,6 +141,7 @@ export function MultilingualInput({
           onChange={(e) => setValue(active, e.target.value)}
           maxLength={maxLength}
           placeholder={placeholder}
+          tone={tone}
         />
       )}
 

@@ -40,18 +40,26 @@ export function FormSection({
 
   const headerInner = (
     <>
-      <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2 min-w-0">
+      <h2
+        className="font-serif text-lg flex items-center gap-2 min-w-0"
+        style={{ color: "var(--color-ink)" }}
+      >
         {icon}
         <span className="truncate">{title}</span>
       </h2>
       <span className="flex items-center gap-3 shrink-0">
         {hint != null && (
-          <span className="text-xs font-sans text-vintage-dust">{hint}</span>
+          <span className="text-xs font-sans" style={{ color: "var(--color-ink-mute)" }}>
+            {hint}
+          </span>
         )}
         {collapsible && (
           <ChevronDown
-            className="w-4 h-4 text-vintage-dust transition-transform"
-            style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+            className="w-4 h-4 transition-transform"
+            style={{
+              color: "var(--color-ink-mute)",
+              transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+            }}
           />
         )}
       </span>
@@ -59,13 +67,20 @@ export function FormSection({
   );
 
   const headerClass = `flex items-center justify-between gap-3 ${
-    isOpen ? "pb-3 border-b border-vintage-sand/50" : ""
+    isOpen ? "pb-3 border-b" : ""
   }`;
+  const headerStyle = isOpen
+    ? { borderBottomColor: "var(--color-line)" }
+    : undefined;
 
   return (
     <section
-      className="bg-vintage-white border border-vintage-sand p-6"
-      style={{ borderRadius: "var(--radius-card)" }}
+      className="p-6"
+      style={{
+        background: "var(--color-app-surface)",
+        border: "1px solid var(--color-line)",
+        borderRadius: "var(--radius-app)",
+      }}
     >
       {collapsible ? (
         <button
@@ -73,11 +88,14 @@ export function FormSection({
           onClick={() => setOpen((o) => !o)}
           aria-expanded={isOpen}
           className={`w-full text-left transition-colors hover:opacity-90 ${headerClass}`}
+          style={headerStyle}
         >
           {headerInner}
         </button>
       ) : (
-        <div className={headerClass}>{headerInner}</div>
+        <div className={headerClass} style={headerStyle}>
+          {headerInner}
+        </div>
       )}
 
       <div className="pt-5 space-y-5" style={{ display: isOpen ? undefined : "none" }}>

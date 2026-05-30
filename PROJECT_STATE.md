@@ -78,11 +78,14 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
   Inline-Aktiv-Toggle, Batch-Save; + 7 Kategorien als Sollzustand. Nächster Nutzer-Wunsch: zurück zum
   **Produkt-Bereich**.
 - **Produkt-Bereich (laufender Strang):** Formular-Struktur (`FormSection`) ✓, Shop-Galerie-Bild-Fallback
-  + Cleanup ✓, „KI-Ausfüllen" (`KiFuellenBlock`) ✓, Katalog-Karten-Bild-Fallback (`ProduktKarte`) ✓ —
-  Bild-Robustheit damit shop-weit (Galerie + Karten). Offen nach Wunsch: Formular-**Optik** auf neue
-  Tokens (paper/bone/coral, weiche Radien im /app); Darstellungs-Feinschliff (ConditionMeter,
-  Detailseiten-Politur). Hinweis: client-interaktive `/app`-Änderungen lassen sich im Dev wegen
-  PWA-Service-Worker-Cache schlecht visuell prüfen → live nach Deploy testen (Memory `dev-preview-setup`).
+  + Cleanup ✓, „KI-Ausfüllen" (`KiFuellenBlock`) ✓, Katalog-Karten-Bild-Fallback (`ProduktKarte`) ✓,
+  **Formular-Optik auf helle App-Tokens ✓** (paper/bone/coral + weiche Radien; `tone="shop|app"`-Opt-in
+  an `Input/Textarea/Select/MultilingualInput/PreisMultiCurrency/RichTextEditor` — Shop bleibt dunkel
+  unberührt). Offen nach Wunsch: Darstellungs-Feinschliff (ConditionMeter, Detailseiten-Politur);
+  weitere Editor-Bausteine im /app-Formular noch in Eigen-Optik (`BildManager`, `SingleMediaUpload`,
+  `InstagramUrlsInput`, `ProduktStoryEditor`). Hinweis: client-interaktive `/app`-Änderungen lassen sich
+  im Dev wegen PWA-Service-Worker-Cache schlecht visuell prüfen → live nach Deploy testen
+  (Memory `dev-preview-setup`).
 - **TG1 — Telegram Dark-Mode-Lücken:** harte `#fff`-Fallbacks in `src/app/(telegram)/**`,
   Texte hart `#1a1410`/`#fff`, Order-Status-Farben ohne `[data-tg-theme="dark"]`-Override.
 - **Pattern-Ausweitung (wiederverwendbar):** `.chip-select` (Inline-Edit) → Lead-Status /
@@ -112,7 +115,16 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
 
-- 2026-05-30 20:51 UTC · `(dieser Commit)` · feat(app) DeepSeek-Key im Admin pflegbar: neue Seite
+- 2026-05-30 21:52 UTC · `(dieser Commit)` · design(app) Produkt-Formular-Optik auf helle App-Tokens:
+  Opt-in-Prop `tone="shop"|"app"` (Default `shop` = unverändert dunkler Shop) an `Input/Textarea/Select`,
+  `MultilingualInput`, `PreisMultiCurrency` und `RichTextEditor`; das Voll- + Schnell-Formular,
+  `FormSection`, `KiFuellenBlock` sowie die Produkt-Editor- & Schnell-Seiten-Header ziehen auf
+  paper/bone/coral + weiche `--radius-app`-Radien um (statt Cobalt-`vintage-*`-Dunkeltheme). Markdown-
+  Editor (Lexical) bekommt eine helle App-Variante. Cleanup: tote Imports (`MarkdownEditor`, `useRef`) im
+  Vollformular entfernt. Rein visuell — alle `name`/Handler/Server-Action-Wiring unberührt; Shop-Formulare
+  unangetastet. Verifiziert: tsc grün, vitest 176✓, next build grün. (Visuell live nach Deploy — PWA-SW
+  blockt /app-Vorschau im Dev.)
+- 2026-05-30 20:51 UTC · `49140a6` · feat(app) DeepSeek-Key im Admin pflegbar: neue Seite
   „Настройки → ИИ" (`/einstellungen/ki`) — Key eintragen/löschen/Verbindungstest; gespeichert in
   `sebo.affiliate_einstellungen` (`deepseek_api_key`), ENV `DEEPSEEK_API_KEY` bleibt Fallback.
   `getDeepseekClient` jetzt async (DB > ENV), Aufrufer (Produkt-Extraktor + Assistent-Chat) auf await.

@@ -1,12 +1,11 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState, useTransition } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Input }    from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select }   from "@/components/ui/select";
 import { Button }   from "@/components/ui/button";
-import { MarkdownEditor } from "@/components/ui/markdown-editor";
 import { PreisMultiCurrency } from "./preis-multi-currency";
 import { MultilingualInput } from "@/components/ui/multilingual-input";
 import { SingleMediaUpload } from "@/components/ui/single-media-upload";
@@ -142,7 +141,7 @@ export function ProduktFormular({
             background:   "rgba(127,140,90,0.12)",
             border:       "1px solid rgba(127,140,90,0.45)",
             borderLeft:   "4px solid #7F8C5A",
-            borderRadius: "var(--radius-card)",
+            borderRadius: "var(--radius-app)",
             color:        "#52663F",
           }}
         >
@@ -156,15 +155,19 @@ export function ProduktFormular({
 
       {state?.errors && Object.keys(state.errors).length > 0 && (
         <div
-          className="flex items-start gap-3 px-5 py-4 bg-vintage-burgundy/10 border border-vintage-burgundy/30"
-          style={{ borderRadius: "var(--radius-card)" }}
+          className="flex items-start gap-3 px-5 py-4 border"
+          style={{
+            background:   "color-mix(in srgb, var(--color-vintage-burgundy) 10%, transparent)",
+            borderColor:  "color-mix(in srgb, var(--color-vintage-burgundy) 30%, transparent)",
+            borderRadius: "var(--radius-app)",
+          }}
         >
-          <AlertCircle className="w-4 h-4 text-vintage-burgundy flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: "var(--color-vintage-burgundy)" }} />
           <div>
-            <p className="text-sm font-sans text-vintage-burgundy font-medium mb-1">
+            <p className="text-sm font-sans font-medium mb-1" style={{ color: "var(--color-vintage-burgundy)" }}>
               Пожалуйста, исправьте ошибки:
             </p>
-            <ul className="text-xs text-vintage-burgundy space-y-0.5">
+            <ul className="text-xs space-y-0.5" style={{ color: "var(--color-vintage-burgundy)" }}>
               {Object.entries(state.errors).map(([field, msgs]) =>
                 msgs?.map((msg, i) => (
                   <li key={`${field}-${i}`}>• {msg}</li>
@@ -186,6 +189,7 @@ export function ProduktFormular({
             <MultilingualInput
               label="Название"
               name="name_i18n"
+              tone="app"
               variant="input"
               initial={produkt?.name_i18n ?? {}}
               fallbackValue={produkt?.name}
@@ -200,6 +204,7 @@ export function ProduktFormular({
               <Input
                 label="Slug (URL)"
                 name="slug"
+                tone="app"
                 defaultValue={produkt?.slug ?? ""}
                 error={e("slug")}
                 placeholder="оставьте пустым → создаётся автоматически"
@@ -208,6 +213,7 @@ export function ProduktFormular({
               <Input
                 label="Артикул-код"
                 name="artikel_code"
+                tone="app"
                 defaultValue={produkt?.artikel_code ?? ""}
                 error={e("artikel_code")}
                 placeholder="оставьте пустым → V-0001, V-0002 …"
@@ -219,6 +225,7 @@ export function ProduktFormular({
               <Select
                 label="Категория"
                 name="kategorie_id"
+                tone="app"
                 options={kategorieOptions}
                 defaultValue={String(produkt?.kategorie_id ?? "")}
                 error={e("kategorie_id")}
@@ -227,6 +234,7 @@ export function ProduktFormular({
               <Select
                 label="Состояние"
                 name="zustand"
+                tone="app"
                 required
                 options={ZUSTAND_OPTIONS}
                 defaultValue={produkt?.zustand ?? "gut"}
@@ -238,6 +246,7 @@ export function ProduktFormular({
             <Select
               label="Бренд"
               name="brand_id"
+              tone="app"
               options={brandOptions}
               defaultValue={produkt?.brand_id ?? ""}
             />
@@ -245,6 +254,7 @@ export function ProduktFormular({
             <Input
               label="Количество на складе"
               name="lagerbestand"
+              tone="app"
               type="number"
               min="0"
               defaultValue={produkt?.lagerbestand ?? 1}
@@ -256,7 +266,7 @@ export function ProduktFormular({
           {produkt && (
             <FormSection
               title="Фотографии"
-              icon={<ImagePlus className="w-4 h-4 text-vintage-gold" />}
+              icon={<ImagePlus className="w-4 h-4" style={{ color: "var(--color-coral)" }} />}
               hint={`${initialBilder.length} фото`}
             >
               <BildManager produktId={produkt.id} initialBilder={initialBilder} />
@@ -271,6 +281,7 @@ export function ProduktFormular({
             <MultilingualInput
               label="Краткое описание"
               name="kurzbeschreibung_i18n"
+              tone="app"
               variant="textarea"
               initial={produkt?.kurzbeschreibung_i18n ?? {}}
               fallbackValue={produkt?.kurzbeschreibung ?? undefined}
@@ -281,6 +292,7 @@ export function ProduktFormular({
             <MultilingualInput
               label="Подробное описание"
               name="beschreibung_i18n"
+              tone="app"
               variant="markdown"
               initial={produkt?.beschreibung_i18n ?? {}}
               fallbackValue={produkt?.beschreibung ?? undefined}
@@ -298,6 +310,7 @@ export function ProduktFormular({
               <Input
                 label="Эпоха"
                 name="era"
+                tone="app"
                 defaultValue={produkt?.era ?? ""}
                 placeholder="напр. 1920-е, ар-деко"
                 onChange={(ev) => setPvEra((ev.target as HTMLInputElement).value)}
@@ -305,12 +318,14 @@ export function ProduktFormular({
               <Input
                 label="Происхождение"
                 name="herkunft"
+                tone="app"
                 defaultValue={produkt?.herkunft ?? ""}
                 placeholder="напр. Германия, Франция"
               />
               <Input
                 label="Материал"
                 name="material"
+                tone="app"
                 defaultValue={produkt?.material ?? ""}
                 placeholder="напр. дуб, латунь, фарфор"
               />
@@ -318,6 +333,7 @@ export function ProduktFormular({
             <Input
               label="Теги"
               name="tags"
+              tone="app"
               defaultValue={produkt?.tags?.join(", ") ?? ""}
               placeholder="винтаж, антиквариат, ар-деко (через запятую)"
               hint="Ключевые слова через запятую для поиска"
@@ -334,19 +350,19 @@ export function ProduktFormular({
                 name="aktiv"
                 value="true"
                 defaultChecked={produkt?.aktiv ?? true}
-                className="w-4 h-4 mt-0.5 accent-vintage-sage"
+                className="w-4 h-4 mt-0.5 accent-[var(--color-coral)]"
               />
-              <span className="text-sm font-sans text-vintage-ink">
+              <span className="text-sm font-sans" style={{ color: "var(--color-ink)" }}>
                 <strong>Активен</strong> — виден и доступен в магазине.
-                <span className="block text-xs text-vintage-dust">
+                <span className="block text-xs" style={{ color: "var(--color-ink-mute)" }}>
                   Если выключено, товар нигде не отображается (мастер-выключатель).
                 </span>
               </span>
             </label>
 
             {/* B2C-Sichtbarkeits-Tri-State */}
-            <fieldset className="space-y-2 pt-2 border-t border-vintage-sand/40">
-              <legend className="text-xs font-sans uppercase tracking-widest text-vintage-brown mb-2">
+            <fieldset className="space-y-2 pt-2 border-t" style={{ borderColor: "var(--color-line)" }}>
+              <legend className="text-xs font-sans uppercase tracking-widest mb-2" style={{ color: "var(--color-ink-soft)" }}>
                 B2C-видимость
               </legend>
               {[
@@ -372,18 +388,18 @@ export function ProduktFormular({
                     name="b2c_mode"
                     value={opt.value}
                     defaultChecked={(produkt?.b2c_mode ?? "visible") === opt.value}
-                    className="w-4 h-4 mt-0.5 accent-vintage-gold"
+                    className="w-4 h-4 mt-0.5 accent-[var(--color-coral)]"
                   />
-                  <span className="text-sm font-sans text-vintage-ink">
+                  <span className="text-sm font-sans" style={{ color: "var(--color-ink)" }}>
                     <strong>{opt.title}</strong>
-                    <span className="block text-xs text-vintage-dust">{opt.desc}</span>
+                    <span className="block text-xs" style={{ color: "var(--color-ink-mute)" }}>{opt.desc}</span>
                   </span>
                 </label>
               ))}
             </fieldset>
 
             {/* Featured + Verkauft */}
-            <div className="flex flex-wrap gap-6 pt-2 border-t border-vintage-sand/40">
+            <div className="flex flex-wrap gap-6 pt-2 border-t" style={{ borderColor: "var(--color-line)" }}>
               <label className="flex items-center gap-3 cursor-pointer">
                 <input type="hidden" name="featured" value="false" />
                 <input
@@ -391,9 +407,9 @@ export function ProduktFormular({
                   name="featured"
                   value="true"
                   defaultChecked={produkt?.featured ?? false}
-                  className="w-4 h-4 accent-vintage-gold"
+                  className="w-4 h-4 accent-[var(--color-coral)]"
                 />
-                <span className="text-sm font-sans text-vintage-ink">
+                <span className="text-sm font-sans" style={{ color: "var(--color-ink)" }}>
                   Рекомендуемое (главная страница)
                 </span>
               </label>
@@ -406,7 +422,7 @@ export function ProduktFormular({
                   defaultChecked={produkt?.verkauft ?? false}
                   className="w-4 h-4 accent-vintage-burgundy"
                 />
-                <span className="text-sm font-sans text-vintage-ink">
+                <span className="text-sm font-sans" style={{ color: "var(--color-ink)" }}>
                   Отметить как проданное
                 </span>
               </label>
@@ -422,7 +438,7 @@ export function ProduktFormular({
             collapsible
             defaultOpen={hatStory}
           >
-            <p className="text-xs text-vintage-dust font-sans">
+            <p className="text-xs font-sans" style={{ color: "var(--color-ink-mute)" }}>
               Соберите страницу товара из блоков (как рассылку): палитра, живой
               предпросмотр, свойства. Если оставить пустым — показывается обычное
               описание выше.
@@ -441,6 +457,7 @@ export function ProduktFormular({
               <Input
                 label="Ширина (см)"
                 name="abmessungen_breite"
+                tone="app"
                 type="number" step="0.1" min="0"
                 defaultValue={produkt?.abmessungen?.breite ?? ""}
                 placeholder="0"
@@ -448,6 +465,7 @@ export function ProduktFormular({
               <Input
                 label="Высота (см)"
                 name="abmessungen_hoehe"
+                tone="app"
                 type="number" step="0.1" min="0"
                 defaultValue={produkt?.abmessungen?.hoehe ?? ""}
                 placeholder="0"
@@ -455,6 +473,7 @@ export function ProduktFormular({
               <Input
                 label="Глубина (см)"
                 name="abmessungen_tiefe"
+                tone="app"
                 type="number" step="0.1" min="0"
                 defaultValue={produkt?.abmessungen?.tiefe ?? ""}
                 placeholder="0"
@@ -462,6 +481,7 @@ export function ProduktFormular({
               <Input
                 label="Вес (кг)"
                 name="abmessungen_gewicht"
+                tone="app"
                 type="number" step="0.01" min="0"
                 defaultValue={produkt?.abmessungen?.gewicht ?? ""}
                 placeholder="0.00"
@@ -495,7 +515,7 @@ export function ProduktFormular({
             collapsible
             defaultOpen={hatInstagram}
           >
-            <p className="text-xs text-vintage-dust font-sans">
+            <p className="text-xs font-sans" style={{ color: "var(--color-ink-mute)" }}>
               Скопируй ссылку с reel или поста (либо весь embed-код прямо из Instagram).
               Будет показано на странице товара как нативный embed.
             </p>
@@ -510,6 +530,7 @@ export function ProduktFormular({
             <Input
               label="SEO-заголовок"
               name="seo_titel"
+              tone="app"
               defaultValue={produkt?.seo_titel ?? ""}
               placeholder="макс. 70 символов"
               maxLength={70}
@@ -518,6 +539,7 @@ export function ProduktFormular({
             <Textarea
               label="SEO-описание"
               name="seo_beschreibung"
+              tone="app"
               defaultValue={produkt?.seo_beschreibung ?? ""}
               placeholder="макс. 160 символов"
               maxLength={160}
@@ -530,21 +552,25 @@ export function ProduktFormular({
         {/* ── Live-Vorschau (sticky, Desktop) ── */}
         <aside className="hidden lg:block lg:sticky lg:top-6 space-y-2">
           <div
-            className="overflow-hidden bg-vintage-white border border-vintage-sand"
-            style={{ borderRadius: "var(--radius-card)" }}
+            className="overflow-hidden border"
+            style={{
+              background:   "var(--color-app-surface)",
+              borderColor:  "var(--color-line)",
+              borderRadius: "var(--radius-app)",
+            }}
           >
             <div className="relative w-full" style={{ aspectRatio: "4/5", background: "var(--color-paper-warm, #E8DFD0)" }}>
               {pvBild ? (
                 <Image src={pvBild} alt="" fill sizes="320px" className="object-cover" />
               ) : (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-vintage-dust">
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2" style={{ color: "var(--color-ink-mute)" }}>
                   <ImagePlus className="w-6 h-6 opacity-40" />
                   <span className="text-[11px] uppercase tracking-widest">Нет фото</span>
                 </div>
               )}
             </div>
             <div className="p-3">
-              <p className="text-[10px] uppercase tracking-widest text-vintage-dust mb-1.5 flex items-center gap-1">
+              <p className="text-[10px] uppercase tracking-widest mb-1.5 flex items-center gap-1" style={{ color: "var(--color-ink-mute)" }}>
                 <Eye className="w-3 h-3" /> Предпросмотр
               </p>
               {pvKatName && (
@@ -552,10 +578,10 @@ export function ProduktFormular({
                   {pvKatName}
                 </p>
               )}
-              <p className="font-serif text-base text-vintage-ink line-clamp-2 mt-0.5">
+              <p className="font-serif text-base line-clamp-2 mt-0.5" style={{ color: "var(--color-ink)" }}>
                 {pvName || "Без названия"}
               </p>
-              <p className="font-serif text-lg text-vintage-ink mt-1">
+              <p className="font-serif text-lg mt-1" style={{ color: "var(--color-ink)" }}>
                 {pvPreis > 0 ? formatPreis(pvPreis, pvWaehrung) : "—"}
               </p>
               {/* Zustand + Эпоха (wie im Footer der ProduktKarte) */}
@@ -574,7 +600,7 @@ export function ProduktFormular({
               </div>
             </div>
           </div>
-          <p className="text-[11px] text-vintage-dust px-1 leading-snug">
+          <p className="text-[11px] px-1 leading-snug" style={{ color: "var(--color-ink-mute)" }}>
             Так карточка появится в каталоге. Фото обновляется после загрузки.
           </p>
         </aside>
@@ -586,10 +612,10 @@ export function ProduktFormular({
       <div
         className="sticky bottom-0 z-30 -mx-6 sm:-mx-0 mt-8 px-6 sm:px-6 py-4"
         style={{
-          background:   "rgba(253,250,245,0.96)",
+          background:   "var(--color-app-bar)",
           backdropFilter: "blur(8px)",
-          borderTop:    "1px solid var(--color-line, #C9B89A)",
-          borderRadius: "var(--radius-card) var(--radius-card) 0 0",
+          borderTop:    "1px solid var(--color-line)",
+          borderRadius: "var(--radius-app) var(--radius-app) 0 0",
           boxShadow:    justSaved
             ? "0 -2px 12px rgba(127,140,90,0.40), 0 -1px 24px rgba(127,140,90,0.20)"
             : "0 -2px 12px rgba(15,20,48,0.08)",
@@ -605,7 +631,7 @@ export function ProduktFormular({
                 style={{
                   background:    "#7F8C5A",
                   color:         "#FFFFFF",
-                  borderRadius:  "var(--radius-vintage)",
+                  borderRadius:  "var(--radius-app)",
                   letterSpacing: "0.12em",
                   animation:     "savedPulse 0.4s ease-out",
                 }}
@@ -614,7 +640,7 @@ export function ProduktFormular({
                 Сохранено
               </div>
             ) : isPending ? (
-              <span className="text-xs font-sans text-vintage-dust flex items-center gap-1.5">
+              <span className="text-xs font-sans flex items-center gap-1.5" style={{ color: "var(--color-ink-mute)" }}>
                 <span
                   className="w-1.5 h-1.5 rounded-full animate-pulse"
                   style={{ background: "var(--color-coral)" }}
@@ -622,15 +648,15 @@ export function ProduktFormular({
                 Сохраняется…
               </span>
             ) : state?.savedAt ? (
-              <span className="text-xs font-sans text-vintage-dust">
+              <span className="text-xs font-sans" style={{ color: "var(--color-ink-mute)" }}>
                 Сохранено {new Date(state.savedAt).toLocaleTimeString("ru", { hour: "2-digit", minute: "2-digit" })}
               </span>
             ) : produkt ? (
-              <span className="text-xs font-sans text-vintage-dust italic">
+              <span className="text-xs font-sans italic" style={{ color: "var(--color-ink-mute)" }}>
                 Изменения не сохранены автоматически
               </span>
             ) : (
-              <span className="text-xs font-sans text-vintage-dust italic">
+              <span className="text-xs font-sans italic" style={{ color: "var(--color-ink-mute)" }}>
                 Заполните форму и нажмите «Создать»
               </span>
             )}
@@ -666,7 +692,7 @@ export function ProduktFormular({
                 fontSize:      13,
                 letterSpacing: "0.18em",
                 fontWeight:    500,
-                borderRadius:  "var(--radius-button)",
+                borderRadius:  "var(--radius-app)",
                 boxShadow:     "0 1px 3px rgba(232,112,58,0.40)",
               }}
             >
@@ -720,6 +746,7 @@ function PreiseSektion({
         <Input
           label="Закупочная цена (нетто)"
           name="einkaufspreis"
+          tone="app"
           type="number"
           step="0.01"
           min="0"
@@ -732,6 +759,7 @@ function PreiseSektion({
         <PreisMultiCurrency
           label="Цена"
           name="preis"
+          tone="app"
           waehrungName="waehrung"
           defaultPreis={produkt?.preis}
           defaultWaehrung={produkt?.waehrung ?? "KZT"}
@@ -746,6 +774,7 @@ function PreiseSektion({
         <Input
           label="Изначальная цена (зачёркнутая)"
           name="originalpreis"
+          tone="app"
           type="number"
           step="0.01"
           min="0"
@@ -756,18 +785,26 @@ function PreiseSektion({
         />
         <div className="flex items-end">
           <div
-            className="w-full px-4 py-2.5 bg-vintage-parchment border border-vintage-sand text-sm font-sans text-vintage-ink"
-            style={{ borderRadius: "var(--radius-vintage)" }}
+            className="w-full px-4 py-2.5 border text-sm font-sans"
+            style={{
+              background:   "var(--color-bone)",
+              borderColor:  "var(--color-line)",
+              borderRadius: "var(--radius-app)",
+              color:        "var(--color-ink)",
+            }}
           >
-            <span className="text-xs uppercase tracking-widest text-vintage-dust block mb-1">
+            <span className="text-xs uppercase tracking-widest block mb-1" style={{ color: "var(--color-ink-mute)" }}>
               Маржа
             </span>
             {marge !== null ? (
-              <span className={marge >= 50 ? "text-vintage-sage font-serif text-lg" : marge >= 20 ? "text-vintage-gold font-serif text-lg" : "text-vintage-burgundy font-serif text-lg"}>
+              <span
+                className="font-serif text-lg"
+                style={{ color: marge >= 50 ? "var(--color-vintage-sage)" : marge >= 20 ? "var(--color-coral)" : "var(--color-vintage-burgundy)" }}
+              >
                 {marge} %
               </span>
             ) : (
-              <span className="text-vintage-dust text-sm">—</span>
+              <span className="text-sm" style={{ color: "var(--color-ink-mute)" }}>—</span>
             )}
           </div>
         </div>

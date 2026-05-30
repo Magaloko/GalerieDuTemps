@@ -43,14 +43,18 @@ export default async function ProduktBearbeitenPage({ params }: Props) {
   const deleteAction    = produktLoeschenAction.bind(null, id);
   const duplicateAction = produktDuplizierenAction.bind(null, id);
 
-  // Status-Badge-Logik
+  // Status-Badge-Logik (helle App-Tokens: ruhige Chips auf Paper)
   const statusBadge = (() => {
-    if (!produkt.aktiv)                      return { label: "Неактивен",     icon: XCircle,   klasse: "bg-vintage-dust/20 text-vintage-dust" };
-    if (produkt.verkauft)                    return { label: "Продано",       icon: XCircle,   klasse: "bg-vintage-burgundy/10 text-vintage-burgundy" };
-    if (produkt.lagerbestand === 0)          return { label: "Нет в наличии", icon: XCircle,   klasse: "bg-vintage-copper/10 text-vintage-copper" };
-    if (produkt.b2c_mode === "hidden")       return { label: "Скрыт",         icon: EyeOff,    klasse: "bg-vintage-dust/20 text-vintage-dust" };
-    if (produkt.b2c_mode === "teaser")       return { label: "Витрина",       icon: EyeOff,    klasse: "bg-vintage-gold/10 text-vintage-gold" };
-    return                                            { label: "Активен",      icon: CheckCircle2, klasse: "bg-vintage-sage/10 text-vintage-sage" };
+    const muted   = { bg: "rgba(122,125,146,0.12)", fg: "var(--color-ink-mute)" };
+    const danger  = { bg: "rgba(194,71,71,0.12)",   fg: "var(--color-vintage-burgundy)" };
+    const coral   = { bg: "rgba(232,112,58,0.12)",  fg: "var(--color-coral-deep)" };
+    const success = { bg: "rgba(74,138,110,0.15)",  fg: "var(--color-vintage-forest)" };
+    if (!produkt.aktiv)                      return { label: "Неактивен",     icon: XCircle,      tone: muted };
+    if (produkt.verkauft)                    return { label: "Продано",       icon: XCircle,      tone: danger };
+    if (produkt.lagerbestand === 0)          return { label: "Нет в наличии", icon: XCircle,      tone: coral };
+    if (produkt.b2c_mode === "hidden")       return { label: "Скрыт",         icon: EyeOff,       tone: muted };
+    if (produkt.b2c_mode === "teaser")       return { label: "Витрина",       icon: EyeOff,       tone: coral };
+    return                                            { label: "Активен",      icon: CheckCircle2, tone: success };
   })();
 
   return (
@@ -59,36 +63,36 @@ export default async function ProduktBearbeitenPage({ params }: Props) {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-2 text-xs font-sans text-vintage-dust">
-            <Link href={`${base}/produkte`} className="hover:text-vintage-brown transition-colors flex items-center gap-1">
+          <div className="flex items-center gap-2 text-xs font-sans text-[var(--color-ink-mute)]">
+            <Link href={`${base}/produkte`} className="hover:text-[var(--color-ink)] transition-colors flex items-center gap-1">
               <ChevronLeft className="w-3 h-3" /> Товары
             </Link>
             <span>/</span>
-            <span className="text-vintage-ink truncate max-w-48">{produkt.name}</span>
+            <span className="text-[var(--color-ink)] truncate max-w-48">{produkt.name}</span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <a
               href={`/katalog/${produkt.slug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans uppercase tracking-widest hover:bg-vintage-parchment transition-colors"
-              style={{ borderRadius: "var(--radius-button)" }}
+              className="flex items-center gap-2 px-4 py-2 border text-xs font-sans uppercase tracking-widest transition-colors border-[var(--color-line)] text-[var(--color-ink-soft)] hover:bg-[var(--color-paper-warm)] hover:text-[var(--color-ink)]"
+              style={{ borderRadius: "var(--radius-app)" }}
             >
               <ExternalLink className="w-3.5 h-3.5" /> В магазине
             </a>
             <form action={duplicateAction}>
               <button
                 type="submit"
-                className="flex items-center gap-2 px-4 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans uppercase tracking-widest hover:bg-vintage-parchment transition-colors"
-                style={{ borderRadius: "var(--radius-button)" }}
+                className="flex items-center gap-2 px-4 py-2 border text-xs font-sans uppercase tracking-widest transition-colors border-[var(--color-line)] text-[var(--color-ink-soft)] hover:bg-[var(--color-paper-warm)] hover:text-[var(--color-ink)]"
+                style={{ borderRadius: "var(--radius-app)" }}
               >
                 <Copy className="w-3.5 h-3.5" /> Дублировать
               </button>
             </form>
             <Link
               href={`${base}/produkte/${id}/bilder`}
-              className="flex items-center gap-2 px-4 py-2 border border-vintage-sand text-vintage-brown text-xs font-sans uppercase tracking-widest hover:bg-vintage-parchment transition-colors"
-              style={{ borderRadius: "var(--radius-button)" }}
+              className="flex items-center gap-2 px-4 py-2 border text-xs font-sans uppercase tracking-widest transition-colors border-[var(--color-line)] text-[var(--color-ink-soft)] hover:bg-[var(--color-paper-warm)] hover:text-[var(--color-ink)]"
+              style={{ borderRadius: "var(--radius-app)" }}
             >
               <ImageIcon className="w-3.5 h-3.5" /> Фото
             </Link>
@@ -97,16 +101,16 @@ export default async function ProduktBearbeitenPage({ params }: Props) {
         </div>
 
         <div className="flex items-baseline gap-3 flex-wrap">
-          <p className="text-vintage-gold text-xs tracking-widest">✦</p>
-          <h1 className="font-serif text-2xl text-vintage-espresso">{produkt.name}</h1>
+          <p className="text-xs tracking-widest" style={{ color: "var(--color-coral)" }}>✦</p>
+          <h1 className="font-serif text-2xl" style={{ color: "var(--color-ink)" }}>{produkt.name}</h1>
           <span
-            className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-sans ${statusBadge.klasse}`}
-            style={{ borderRadius: "var(--radius-vintage)" }}
+            className="inline-flex items-center gap-1 px-3 py-1 text-xs font-sans"
+            style={{ borderRadius: "var(--radius-app)", background: statusBadge.tone.bg, color: statusBadge.tone.fg }}
           >
             <statusBadge.icon className="w-3 h-3" /> {statusBadge.label}
           </span>
         </div>
-        <p className="text-vintage-dust text-xs font-sans -mt-3">
+        <p className="text-xs font-sans -mt-3" style={{ color: "var(--color-ink-mute)" }}>
           ID: {produkt.id} · Slug: {produkt.slug}
           {produkt.artikel_code && ` · Артикул: ${produkt.artikel_code}`}
         </p>

@@ -21,6 +21,8 @@ interface Props {
   hint?:         string;
   /** Live-Callback (numerischer Preis in der gewählten Währung) */
   onChange?:     (preis: number, waehrung: string) => void;
+  /** Visueller Ton. "shop" = Legacy-Dark (default), "app" = heller Operator-App-Stil. */
+  tone?:         "shop" | "app";
 }
 
 const FALLBACK: KursPublic[] = [
@@ -49,7 +51,9 @@ export function PreisMultiCurrency({
   error,
   hint,
   onChange,
+  tone = "shop",
 }: Props) {
+  const isApp = tone === "app";
   const [preis, setPreisState]       = useState<string>(String(defaultPreis ?? ""));
   const [waehrung, setWaehrungState] = useState<string>(defaultWaehrung);
 
@@ -87,58 +91,159 @@ export function PreisMultiCurrency({
   return (
     <div className="flex flex-col gap-2">
       {label && (
-        <label className="text-xs font-sans uppercase tracking-widest text-vintage-gold/80">
-          {label}{required && <span className="text-vintage-burgundy ml-0.5">*</span>}
+        <label
+          className={`text-xs font-sans uppercase tracking-widest ${isApp ? "" : "text-vintage-gold/80"}`}
+          style={isApp ? { color: "var(--color-ink-mute)" } : undefined}
+        >
+          {label}
+          {required && (
+            <span
+              className={isApp ? "ml-0.5" : "text-vintage-burgundy ml-0.5"}
+              style={isApp ? { color: "var(--color-vintage-burgundy)" } : undefined}
+            >
+              *
+            </span>
+          )}
         </label>
       )}
 
       <div className="flex gap-2">
-        <input
-          type="number"
-          step="0.01"
-          min="0"
-          required={required}
-          name={name}
-          value={preis}
-          onChange={(e) => setPreis(e.target.value)}
-          placeholder="0.00"
-          className={`flex-1 px-4 py-2.5 bg-vintage-brown border text-vintage-cream text-sm font-sans placeholder:text-vintage-dust focus:outline-none focus:border-vintage-gold focus:ring-1 focus:ring-vintage-gold/30 ${error ? "border-vintage-burgundy" : "border-vintage-sand/40"}`}
-          style={{ borderRadius: "var(--radius-vintage)" }}
-        />
-        <select
-          name={waehrungName}
-          value={waehrung}
-          onChange={(e) => setWaehrung(e.target.value)}
-          className="w-28 px-3 py-2.5 bg-vintage-brown border border-vintage-sand/40 text-vintage-cream text-sm font-sans focus:outline-none focus:border-vintage-gold cursor-pointer"
-          style={{ borderRadius: "var(--radius-vintage)" }}
-        >
-          {kurse.map(k => (
-            <option key={k.waehrung} value={k.waehrung}>
-              {k.symbol} {k.waehrung}
-            </option>
-          ))}
-        </select>
+        {isApp ? (
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            required={required}
+            name={name}
+            value={preis}
+            onChange={(e) => setPreis(e.target.value)}
+            placeholder="0.00"
+            className="flex-1 px-4 py-2.5 border text-sm font-sans focus:outline-none"
+            style={{
+              borderRadius: "var(--radius-app)",
+              background: "var(--color-bone)",
+              color: "var(--color-ink)",
+              borderColor: error ? "var(--color-vintage-burgundy)" : "var(--color-line)",
+            }}
+            onFocus={(e) => {
+              if (error) return;
+              e.currentTarget.style.borderColor = "var(--color-coral)";
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(232,112,58,0.12)";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = error ? "var(--color-vintage-burgundy)" : "var(--color-line)";
+              e.currentTarget.style.boxShadow = "none";
+            }}
+          />
+        ) : (
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            required={required}
+            name={name}
+            value={preis}
+            onChange={(e) => setPreis(e.target.value)}
+            placeholder="0.00"
+            className={`flex-1 px-4 py-2.5 bg-vintage-brown border text-vintage-cream text-sm font-sans placeholder:text-vintage-dust focus:outline-none focus:border-vintage-gold focus:ring-1 focus:ring-vintage-gold/30 ${error ? "border-vintage-burgundy" : "border-vintage-sand/40"}`}
+            style={{ borderRadius: "var(--radius-vintage)" }}
+          />
+        )}
+        {isApp ? (
+          <select
+            name={waehrungName}
+            value={waehrung}
+            onChange={(e) => setWaehrung(e.target.value)}
+            className="w-28 px-3 py-2.5 border text-sm font-sans focus:outline-none cursor-pointer"
+            style={{
+              borderRadius: "var(--radius-app)",
+              background: "var(--color-bone)",
+              color: "var(--color-ink)",
+              borderColor: "var(--color-line)",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = "var(--color-coral)";
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(232,112,58,0.12)";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = "var(--color-line)";
+              e.currentTarget.style.boxShadow = "none";
+            }}
+          >
+            {kurse.map(k => (
+              <option key={k.waehrung} value={k.waehrung}>
+                {k.symbol} {k.waehrung}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <select
+            name={waehrungName}
+            value={waehrung}
+            onChange={(e) => setWaehrung(e.target.value)}
+            className="w-28 px-3 py-2.5 bg-vintage-brown border border-vintage-sand/40 text-vintage-cream text-sm font-sans focus:outline-none focus:border-vintage-gold cursor-pointer"
+            style={{ borderRadius: "var(--radius-vintage)" }}
+          >
+            {kurse.map(k => (
+              <option key={k.waehrung} value={k.waehrung}>
+                {k.symbol} {k.waehrung}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
-      {error && <p className="text-xs text-vintage-burgundy font-sans">{error}</p>}
-      {hint && !error && <p className="text-xs text-vintage-dust font-sans">{hint}</p>}
+      {error && (
+        <p
+          className={`text-xs font-sans ${isApp ? "" : "text-vintage-burgundy"}`}
+          style={isApp ? { color: "var(--color-vintage-burgundy)" } : undefined}
+        >
+          {error}
+        </p>
+      )}
+      {hint && !error && (
+        <p
+          className={`text-xs font-sans ${isApp ? "" : "text-vintage-dust"}`}
+          style={isApp ? { color: "var(--color-ink-mute)" } : undefined}
+        >
+          {hint}
+        </p>
+      )}
 
       {/* Live-Preview */}
       {num > 0 && (
         <div
-          className="mt-1 flex items-start gap-2 px-3 py-2 bg-vintage-espresso/50 border border-vintage-sand/30"
-          style={{ borderRadius: "var(--radius-vintage)" }}
+          className={`mt-1 flex items-start gap-2 px-3 py-2 ${isApp ? "border" : "bg-vintage-espresso/50 border border-vintage-sand/30"}`}
+          style={
+            isApp
+              ? {
+                  borderRadius: "var(--radius-app)",
+                  background: "var(--color-app-surface)",
+                  borderColor: "var(--color-line)",
+                }
+              : { borderRadius: "var(--radius-vintage)" }
+          }
         >
-          <Calculator className="w-3.5 h-3.5 text-vintage-gold flex-shrink-0 mt-0.5" />
+          <Calculator
+            className={`w-3.5 h-3.5 flex-shrink-0 mt-0.5 ${isApp ? "" : "text-vintage-gold"}`}
+            style={isApp ? { color: "var(--color-coral)" } : undefined}
+          />
           <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
-            <span className="text-vintage-dust">≈</span>
+            <span className={isApp ? "" : "text-vintage-dust"} style={isApp ? { color: "var(--color-ink-mute)" } : undefined}>≈</span>
             {previews.map(p => (
-              <span key={p.waehrung} className="text-vintage-cream/80 font-sans">
+              <span
+                key={p.waehrung}
+                className={`font-sans ${isApp ? "" : "text-vintage-cream/80"}`}
+                style={isApp ? { color: "var(--color-ink-soft)" } : undefined}
+              >
                 {format(p.value, p.waehrung)}
               </span>
             ))}
             {!loaded && (
-              <span className="flex items-center gap-1 text-vintage-dust/60">
+              <span
+                className={`flex items-center gap-1 ${isApp ? "" : "text-vintage-dust/60"}`}
+                style={isApp ? { color: "var(--color-ink-mute)" } : undefined}
+              >
                 <RefreshCw className="w-3 h-3 animate-spin" /> Загрузка курсов …
               </span>
             )}

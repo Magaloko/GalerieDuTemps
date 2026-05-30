@@ -187,42 +187,53 @@ export function SchnellFormular({ kategorien }: Props) {
     <div className="space-y-6">
 
       {error && (
-        <div className="flex items-start gap-3 px-5 py-4 bg-vintage-burgundy/10 border border-vintage-burgundy/30"
-             style={{ borderRadius: "var(--radius-card)" }}>
-          <AlertCircle className="w-4 h-4 text-vintage-burgundy flex-shrink-0 mt-0.5" />
-          <p className="text-sm font-sans text-vintage-burgundy">{error}</p>
+        <div className="flex items-start gap-3 px-5 py-4"
+             style={{
+               borderRadius:    "var(--radius-app)",
+               background:       "color-mix(in srgb, var(--color-vintage-burgundy) 10%, transparent)",
+               border:           "1px solid color-mix(in srgb, var(--color-vintage-burgundy) 30%, transparent)",
+             }}>
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: "var(--color-vintage-burgundy)" }} />
+          <p className="text-sm font-sans" style={{ color: "var(--color-vintage-burgundy)" }}>{error}</p>
         </div>
       )}
 
       {/* ─── Block A: Fotos ──────────────────────────────────────────── */}
-      <section className="bg-vintage-white border border-vintage-sand p-6 space-y-4"
-               style={{ borderRadius: "var(--radius-card)" }}>
-        <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
-          <h2 className="font-serif text-lg text-vintage-espresso">Фотографии</h2>
-          <p className="text-xs font-sans text-vintage-dust">{fotos.length}/12 · JPG/PNG/WebP · макс. 10 МБ</p>
+      <section className="p-6 space-y-4"
+               style={{
+                 borderRadius: "var(--radius-app)",
+                 background:   "var(--color-app-surface)",
+                 border:       "1px solid var(--color-line)",
+               }}>
+        <div className="flex items-baseline justify-between pb-3" style={{ borderBottom: "1px solid var(--color-line)" }}>
+          <h2 className="font-serif text-lg" style={{ color: "var(--color-ink)" }}>Фотографии</h2>
+          <p className="text-xs font-sans" style={{ color: "var(--color-ink-mute)" }}>{fotos.length}/12 · JPG/PNG/WebP · макс. 10 МБ</p>
         </div>
 
-        <label className="block w-full cursor-pointer border-2 border-dashed border-vintage-sand hover:border-vintage-gold hover:bg-vintage-parchment/30 transition-colors p-8 text-center"
-               style={{ borderRadius: "var(--radius-card)" }}>
+        <label className="block w-full cursor-pointer border-2 border-dashed transition-colors p-8 text-center hover:bg-[var(--color-paper-warm)] hover:border-[var(--color-coral)]"
+               style={{ borderRadius: "var(--radius-app)", borderColor: "var(--color-line)" }}>
           <input ref={fileInput} type="file"
                  accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif,.heic,.heif"
                  multiple className="sr-only"
                  onChange={(e) => { addFotos(e.target.files); if (fileInput.current) fileInput.current.value = ""; }} />
-          <Upload className="w-8 h-8 mx-auto mb-2 text-vintage-gold" />
-          <p className="text-sm font-sans text-vintage-brown">
-            Перетащите фотографии сюда или <span className="text-vintage-gold underline">выберите</span>
+          <Upload className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--color-coral)" }} />
+          <p className="text-sm font-sans" style={{ color: "var(--color-ink-soft)" }}>
+            Перетащите фотографии сюда или <span className="underline" style={{ color: "var(--color-coral)" }}>выберите</span>
           </p>
         </label>
 
         {fotos.length > 0 && (
           <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
             {fotos.map((f, i) => (
-              <div key={i} className="relative aspect-square bg-vintage-parchment overflow-hidden border border-vintage-sand"
-                   style={{ borderRadius: "var(--radius-vintage)" }}>
+              <div key={i} className="relative aspect-square overflow-hidden"
+                   style={{ borderRadius: "var(--radius-app)", background: "var(--color-bone)", border: "1px solid var(--color-line)" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={URL.createObjectURL(f)} alt="" className="w-full h-full object-cover" />
                 <button type="button" onClick={() => removeFoto(i)}
-                        className="absolute top-1 right-1 p-1 bg-vintage-espresso/80 text-vintage-cream hover:bg-vintage-burgundy">
+                        className="absolute top-1 right-1 p-1 text-white transition-colors"
+                        style={{ background: "rgba(15,20,48,0.6)" }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = "var(--color-vintage-burgundy)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(15,20,48,0.6)"; }}>
                   <X className="w-3 h-3" />
                 </button>
               </div>
@@ -232,13 +243,18 @@ export function SchnellFormular({ kategorien }: Props) {
       </section>
 
       {/* ─── Block B: Notizen + Preis + Kategorie ───────────────────── */}
-      <section className="bg-vintage-white border border-vintage-sand p-6 space-y-5"
-               style={{ borderRadius: "var(--radius-card)" }}>
-        <h2 className="font-serif text-lg text-vintage-espresso border-b border-vintage-sand/50 pb-3">
+      <section className="p-6 space-y-5"
+               style={{
+                 borderRadius: "var(--radius-app)",
+                 background:   "var(--color-app-surface)",
+                 border:       "1px solid var(--color-line)",
+               }}>
+        <h2 className="font-serif text-lg pb-3" style={{ color: "var(--color-ink)", borderBottom: "1px solid var(--color-line)" }}>
           Заметки и базовые данные
         </h2>
 
         <Textarea
+          tone="app"
           label="Заметки (что это, эпоха, материал, особенности — кратко)"
           value={notizen}
           onChange={(e) => setNotizen(e.target.value)}
@@ -249,6 +265,7 @@ export function SchnellFormular({ kategorien }: Props) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <PreisMultiCurrency
+            tone="app"
             label="Цена *"
             name="preis_visual"
             defaultPreis={preis}
@@ -258,6 +275,7 @@ export function SchnellFormular({ kategorien }: Props) {
             onChange={(p, w) => { setPreis(String(p)); setWaehrung(w); }}
           />
           <Select
+            tone="app"
             label="Категория"
             options={kategorieOptions}
             value={kategorie}
@@ -280,6 +298,7 @@ export function SchnellFormular({ kategorien }: Props) {
               background:    "transparent",
               border:        "1px solid var(--color-ink-mute)",
               color:         "var(--color-ink-soft)",
+              borderRadius:  "var(--radius-app)",
               touchAction:   "manipulation",
               minHeight:     40,
             }}
@@ -291,7 +310,7 @@ export function SchnellFormular({ kategorien }: Props) {
 
       {/* ─── Block C: KI-Ergebnis (Review) ──────────────────────────── */}
       {aiPending && (
-        <div className="flex items-center justify-center gap-3 p-12 text-vintage-dust">
+        <div className="flex items-center justify-center gap-3 p-12" style={{ color: "var(--color-ink-mute)" }}>
           <Loader2 className="w-5 h-5 animate-spin" />
           <span className="font-sans">ИИ обрабатывает (5–15 секунд) …</span>
         </div>
@@ -299,74 +318,84 @@ export function SchnellFormular({ kategorien }: Props) {
 
       {ai && (
         <>
-          <section className="bg-vintage-white border border-vintage-gold/40 p-6 space-y-5"
-                   style={{ borderRadius: "var(--radius-card)" }}>
-            <div className="flex items-baseline justify-between border-b border-vintage-sand/50 pb-3">
-              <h2 className="font-serif text-lg text-vintage-espresso flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-vintage-gold" /> Предложение ИИ — отредактируйте при необходимости
+          <section className="p-6 space-y-5"
+                   style={{
+                     borderRadius: "var(--radius-app)",
+                     background:   "var(--color-app-surface)",
+                     border:       "1px solid rgba(232,112,58,0.35)",
+                   }}>
+            <div className="flex items-baseline justify-between pb-3" style={{ borderBottom: "1px solid var(--color-line)" }}>
+              <h2 className="font-serif text-lg flex items-center gap-2" style={{ color: "var(--color-ink)" }}>
+                <Sparkles className="w-4 h-4" style={{ color: "var(--color-coral)" }} /> Предложение ИИ — отредактируйте при необходимости
               </h2>
             </div>
 
-            <Input label="Название" value={ai.name}
+            <Input tone="app" label="Название" value={ai.name}
                    onChange={(e) => setAi({ ...ai, name: e.target.value })} />
-            <Textarea label="Краткое описание" value={ai.kurzbeschreibung} rows={2}
+            <Textarea tone="app" label="Краткое описание" value={ai.kurzbeschreibung} rows={2}
                       onChange={(e) => setAi({ ...ai, kurzbeschreibung: e.target.value })} />
-            <Textarea label="Подробное описание (Markdown)" value={ai.beschreibung} rows={10}
+            <Textarea tone="app" label="Подробное описание (Markdown)" value={ai.beschreibung} rows={10}
                       onChange={(e) => setAi({ ...ai, beschreibung: e.target.value })} />
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <Input label="Эпоха" value={ai.era ?? ""}
+              <Input tone="app" label="Эпоха" value={ai.era ?? ""}
                      onChange={(e) => setAi({ ...ai, era: e.target.value })} />
-              <Input label="Происхождение" value={ai.herkunft ?? ""}
+              <Input tone="app" label="Происхождение" value={ai.herkunft ?? ""}
                      onChange={(e) => setAi({ ...ai, herkunft: e.target.value })} />
-              <Input label="Материал" value={ai.material ?? ""}
+              <Input tone="app" label="Материал" value={ai.material ?? ""}
                      onChange={(e) => setAi({ ...ai, material: e.target.value })} />
-              <Select label="Состояние" value={ai.zustand}
+              <Select tone="app" label="Состояние" value={ai.zustand}
                       options={Object.entries(ZUSTAND_LABEL).map(([v,l]) => ({ value: v, label: l }))}
                       onChange={(e) => setAi({ ...ai, zustand: (e.target as HTMLSelectElement).value as AiResult["zustand"] })} />
             </div>
 
-            <Input label="Теги (запятая)" value={ai.tags.join(", ")}
+            <Input tone="app" label="Теги (запятая)" value={ai.tags.join(", ")}
                    onChange={(e) => setAi({ ...ai, tags: e.target.value.split(",").map(t => t.trim()).filter(Boolean) })} />
 
-            <details className="border-t border-vintage-sand/40 pt-3">
-              <summary className="cursor-pointer text-xs font-sans uppercase tracking-widest text-vintage-dust hover:text-vintage-brown">
+            <details className="pt-3" style={{ borderTop: "1px solid var(--color-line)" }}>
+              <summary className="cursor-pointer text-xs font-sans uppercase tracking-widest hover:opacity-80" style={{ color: "var(--color-ink-mute)" }}>
                 SEO (Заголовок + Описание)
               </summary>
               <div className="space-y-3 pt-3">
-                <Input label="SEO-заголовок" value={ai.seo_titel} maxLength={70}
+                <Input tone="app" label="SEO-заголовок" value={ai.seo_titel} maxLength={70}
                        onChange={(e) => setAi({ ...ai, seo_titel: e.target.value })} />
-                <Textarea label="SEO-описание" value={ai.seo_beschreibung} maxLength={160} rows={2}
+                <Textarea tone="app" label="SEO-описание" value={ai.seo_beschreibung} maxLength={160} rows={2}
                           onChange={(e) => setAi({ ...ai, seo_beschreibung: e.target.value })} />
               </div>
             </details>
           </section>
 
           {/* Instagram-Post */}
-          <section className="bg-vintage-espresso border border-vintage-gold/40 text-vintage-cream p-6 space-y-4"
-                   style={{ borderRadius: "var(--radius-card)" }}>
+          <section className="p-6 space-y-4"
+                   style={{
+                     borderRadius: "var(--radius-app)",
+                     background:   "var(--color-app-surface)",
+                     border:       "1px solid var(--color-line)",
+                   }}>
             <div className="flex items-baseline justify-between">
-              <h2 className="font-serif text-lg text-vintage-gold flex items-center gap-2">
+              <h2 className="font-serif text-lg flex items-center gap-2" style={{ color: "#C13584" }}>
                 <ImageIcon className="w-4 h-4" /> Instagram-пост
               </h2>
               <button type="button" onClick={copyIg}
-                      className={`flex items-center gap-2 px-3 py-1.5 text-xs font-sans tracking-widest uppercase border transition-colors ${
-                        copied ? "border-vintage-sage text-vintage-sage" : "border-vintage-gold/40 text-vintage-gold hover:bg-vintage-gold hover:text-vintage-espresso"
-                      }`}
-                      style={{ borderRadius: "var(--radius-button)" }}>
+                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-sans tracking-widest uppercase border transition-colors"
+                      style={{
+                        borderRadius: "var(--radius-app)",
+                        borderColor:  copied ? "var(--color-vintage-sage)" : "var(--color-line)",
+                        color:        copied ? "var(--color-vintage-sage)" : "var(--color-ink-soft)",
+                      }}>
                 {copied ? <><Check className="w-3 h-3" /> Скопировано</> : <><Copy className="w-3 h-3" /> Копировать</>}
               </button>
             </div>
-            <Textarea label="Caption" value={ai.instagram_caption} rows={6}
+            <Textarea tone="app" label="Caption" value={ai.instagram_caption} rows={6}
                       onChange={(e) => setAi({ ...ai, instagram_caption: e.target.value })} />
-            <Textarea label="Hashtags" value={ai.instagram_hashtags.join(" ")} rows={2}
+            <Textarea tone="app" label="Hashtags" value={ai.instagram_hashtags.join(" ")} rows={2}
                       onChange={(e) => setAi({ ...ai, instagram_hashtags: e.target.value.split(/\s+/).filter(Boolean) })} />
           </section>
 
           {/* Save */}
           <div className="flex items-center justify-between gap-3">
             {progress && (
-              <p className="text-sm font-sans text-vintage-dust flex items-center gap-2">
+              <p className="text-sm font-sans flex items-center gap-2" style={{ color: "var(--color-ink-mute)" }}>
                 <Loader2 className="w-3.5 h-3.5 animate-spin" /> {progress}
               </p>
             )}

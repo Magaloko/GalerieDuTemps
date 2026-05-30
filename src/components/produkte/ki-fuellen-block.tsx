@@ -50,41 +50,55 @@ export function KiFuellenBlock({ produktId }: { produktId: string }) {
 
   return (
     <section
-      className="bg-vintage-white border p-0 overflow-hidden"
-      style={{ borderColor: "rgba(201,168,76,0.45)", borderRadius: "var(--radius-card)" }}
+      className="border p-0 overflow-hidden"
+      style={{
+        background: "var(--color-app-surface)",
+        borderColor: "rgba(232,112,58,0.35)",
+        borderRadius: "var(--radius-app)",
+      }}
     >
       {/* Header — Toggle */}
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left transition-colors hover:bg-vintage-parchment/30"
+        className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left transition-colors hover:bg-[var(--color-paper-warm)]"
       >
         <span className="flex items-center gap-2.5 min-w-0">
           <span
             className="flex items-center justify-center w-7 h-7 shrink-0"
-            style={{ background: "rgba(201,168,76,0.14)", borderRadius: "var(--radius-vintage)" }}
+            style={{ background: "rgba(232,112,58,0.12)", borderRadius: "var(--radius-app)" }}
           >
-            <Sparkles className="w-4 h-4" style={{ color: "var(--color-gold, #C9A84C)" }} />
+            <Sparkles className="w-4 h-4" style={{ color: "var(--color-coral)" }} />
           </span>
           <span className="min-w-0">
-            <span className="block font-serif text-base text-vintage-espresso leading-tight">
+            <span
+              className="block font-serif text-base leading-tight"
+              style={{ color: "var(--color-ink)" }}
+            >
               Заполнить с ИИ
             </span>
-            <span className="block text-xs font-sans text-vintage-dust truncate">
+            <span
+              className="block text-xs font-sans truncate"
+              style={{ color: "var(--color-ink-mute)" }}
+            >
               Заметки → название, описание, эпоха, материал, теги, SEO
             </span>
           </span>
         </span>
         <ChevronDown
-          className="w-4 h-4 shrink-0 text-vintage-dust transition-transform"
-          style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+          className="w-4 h-4 shrink-0 transition-transform"
+          style={{ color: "var(--color-ink-mute)", transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
         />
       </button>
 
       {open && (
-        <div className="px-5 pb-5 space-y-4 border-t border-vintage-sand/50 pt-4">
+        <div
+          className="px-5 pb-5 space-y-4 pt-4"
+          style={{ borderTop: "1px solid var(--color-line)" }}
+        >
           <Textarea
+            tone="app"
             label="Заметки о товаре"
             value={notizen}
             onChange={(e) => setNotizen(e.target.value)}
@@ -95,11 +109,16 @@ export function KiFuellenBlock({ produktId }: { produktId: string }) {
 
           {error && (
             <div
-              className="flex items-start gap-2.5 px-4 py-3 bg-vintage-burgundy/10 border border-vintage-burgundy/30"
-              style={{ borderRadius: "var(--radius-card)" }}
+              className="flex items-start gap-2.5 px-4 py-3"
+              style={{
+                background: "rgba(194,71,71,0.10)",
+                border: "1px solid rgba(194,71,71,0.30)",
+                borderRadius: "var(--radius-app)",
+                color: "var(--color-vintage-burgundy)",
+              }}
             >
-              <AlertCircle className="w-4 h-4 text-vintage-burgundy shrink-0 mt-0.5" />
-              <p className="text-sm font-sans text-vintage-burgundy">{error}</p>
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <p className="text-sm font-sans">{error}</p>
             </div>
           )}
 
@@ -109,7 +128,7 @@ export function KiFuellenBlock({ produktId }: { produktId: string }) {
               style={{
                 background: "rgba(127,140,90,0.12)",
                 border: "1px solid rgba(127,140,90,0.45)",
-                borderRadius: "var(--radius-card)",
+                borderRadius: "var(--radius-app)",
                 color: "#52663F",
               }}
             >
@@ -121,7 +140,7 @@ export function KiFuellenBlock({ produktId }: { produktId: string }) {
           )}
 
           <div className="flex items-center justify-between gap-3 flex-wrap">
-            <p className="text-xs font-sans text-vintage-dust max-w-md">
+            <p className="text-xs font-sans max-w-md" style={{ color: "var(--color-ink-mute)" }}>
               Перезаписывает название, описание, детали, теги и SEO. Цена, фото и
               видимость не затрагиваются.
             </p>
