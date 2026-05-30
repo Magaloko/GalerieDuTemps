@@ -71,11 +71,11 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 
 ## 🚧 Offen / mögliche nächste Schritte
 
-- **Produkt-Bereich (laufender Strang):** Formular-Struktur erledigt — einklappbare `FormSection`
-  (Kern offen, Optionales zu). Als Nächstes nach Wunsch: Formular-Optik auf neue Tokens
-  (paper/bone/coral, weiche Radien im /app), „KI-Ausfüllen" auch im Vollformular; danach
-  **Darstellungs-Feinschliff** im Shop + Cleanup (tote `katalog/[slug]/client.tsx`, tote
-  `Heart`/`Share2`-Lint-Platzhalter in der Detail-`page.tsx`).
+- **Produkt-Bereich (laufender Strang):** Formular-Struktur (einklappbare `FormSection`, Kern offen /
+  Optionales zu) ✓ und Shop-Galerie-Bild-Fallback + Cleanup (tote `client.tsx` + Lint-Platzhalter) ✓
+  erledigt. Offen nach Wunsch: Formular-Optik auf neue Tokens (paper/bone/coral, weiche Radien im /app)
+  bzw. „KI-Ausfüllen" im Vollformular; weitere Darstellung (z.B. Bild-Fallback auch in `ProduktKarte`/
+  next-image, ConditionMeter-Feinschliff).
 - **TG1 — Telegram Dark-Mode-Lücken:** harte `#fff`-Fallbacks in `src/app/(telegram)/**`,
   Texte hart `#1a1410`/`#fff`, Order-Status-Farben ohne `[data-tg-theme="dark"]`-Override.
 - **Pattern-Ausweitung (wiederverwendbar):** `.chip-select` (Inline-Edit) → Lead-Status /
@@ -105,7 +105,12 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
 
-- 2026-05-30 15:28 UTC · `(dieser Commit)` · feat(app) Produkt-Formular „Hinzufügen": einheitlicher
+- 2026-05-30 15:58 UTC · `(dieser Commit)` · design(public) Produkt-Darstellung (Shop): Galerie mit
+  robustem Bild-Fallback — `GalleryImg` ersetzt rohe `<img>`, fängt Ladefehler ab (SSR-vor-Hydration
+  via Mount-Check + Laufzeit via onError) und zeigt einen ruhigen „Фото недоступно"-Platzhalter statt
+  des Broken-Image-Icons (relevant bei fehlendem Persistent Volume → AGENTS.md). Cleanup: tote
+  `katalog/[slug]/client.tsx` entfernt + tote `Heart`/`Share2`-Lint-Platzhalter in der Detail-`page.tsx`.
+- 2026-05-30 15:28 UTC · `d2920eb` · feat(app) Produkt-Formular „Hinzufügen": einheitlicher
   `FormSection`-Wrapper für alle 11 Sektionen; Kern (Основная/Фото/Цены/Описания/Детали/Видимость)
   bleibt offen, optionale (История/Размеры/Видео/Instagram/SEO) sind einklappbar — offen nur wenn
   befüllt, eingeklappte Felder bleiben via `display:none` im DOM (kein Datenverlust beim Speichern).

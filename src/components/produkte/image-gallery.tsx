@@ -26,6 +26,57 @@ interface Props {
  *  - Thumbnail-Strip unter Slider
  * ────────────────────────────────────────────────────────────────────────── */
 
+/* Ruhiger Inline-Platzhalter (paper-warm + dezentes Foto-Icon), der bei
+   Ladefehlern eingesetzt wird — statt des Broken-Image-Icons des Browsers.
+   Inline-SVG als data-URI: kein Netzwerk-Request, layout-erhaltend (das
+   <img> bleibt ein <img> und behält seine Dimensionen). Relevant, weil ein
+   fehlendes Persistent Volume in Prod alle Upload-URLs ins Leere zeigen lässt
+   (siehe AGENTS.md → Coolify-Volume). */
+const FALLBACK_SVG =
+  "data:image/svg+xml," +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000">` +
+      `<rect width="800" height="1000" fill="#E8DFD0"/>` +
+      `<g transform="translate(400 470)" fill="none" stroke="#B0A595" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" opacity="0.5">` +
+        `<rect x="-95" y="-72" width="190" height="144" rx="14"/>` +
+        `<circle cx="-38" cy="-18" r="20"/>` +
+        `<path d="M-95 46 L-18 -16 L46 40 L78 14 L95 30"/>` +
+      `</g>` +
+      `<text x="400" y="612" font-family="Georgia,'Times New Roman',serif" font-size="31" fill="#B0A595" text-anchor="middle" opacity="0.72">Фото недоступно</text>` +
+    `</svg>`,
+  );
+
+/** Galerie-Bild mit robustem Lade-Fallback. Deckt beide Fehlerwege ab:
+ *   1. Laufzeit-Fehler nach der Hydration                → `onError`.
+ *   2. SSR-Bild schlägt VOR der Hydration fehl (React hat den onError-Handler
+ *      dann noch nicht gebunden, das error-Event geht verloren) → Mount-Check
+ *      per ref (`complete && naturalWidth === 0`).
+ *  Bei `src`-Wechsel (Lightbox-Navigation) wird der Fallback zurückgesetzt. */
+function GalleryImg({ src, alt, ...rest }: React.ImgHTMLAttributes<HTMLImageElement>) {
+  const ref = useRef<HTMLImageElement>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    const img = ref.current;
+    if (img && img.complete && img.naturalWidth === 0 && !img.src.startsWith("data:")) {
+      setFailed(true);
+    } else {
+      setFailed(false);
+    }
+  }, [src]);
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      ref={ref}
+      src={failed ? FALLBACK_SVG : (src ?? FALLBACK_SVG)}
+      alt={alt}
+      {...rest}
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 export function ImageGallery({ bilder, produktName }: Props) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -108,8 +159,7 @@ export function ImageGallery({ bilder, produktName }: Props) {
                 pointerStart.current = null;
               }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <GalleryImg
                 src={bild.url_medium ?? bild.url}
                 alt={bild.alt_text ?? `${produktName} — фото ${idx + 1}`}
                 className="h-full w-auto max-w-none object-cover transition-transform duration-500 hover:scale-[1.02]"
@@ -180,8 +230,7 @@ export function ImageGallery({ bilder, produktName }: Props) {
                 }}
                 aria-label={`Фото ${idx + 1}`}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <GalleryImg
                   src={bild.url_thumb ?? bild.url_medium ?? bild.url}
                   alt={bild.alt_text ?? `Миниатюра ${idx + 1}`}
                   className="w-full h-full object-cover"
@@ -271,8 +320,7 @@ function Lightbox({
         </div>
       )}
 
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <GalleryImg
         src={current.url_large ?? current.url}
         alt={current.alt_text ?? produktName}
         className="max-w-[92vw] max-h-[85vh] object-contain select-none"
@@ -310,8 +358,7 @@ function Lightbox({
                 }`}
                 style={{ width: 44, height: 44 }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <GalleryImg
                   src={bild.url_thumb ?? bild.url}
                   alt=""
                   className="w-full h-full object-cover"

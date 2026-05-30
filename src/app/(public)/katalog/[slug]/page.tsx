@@ -11,7 +11,7 @@ import { ConditionMeter } from "@/components/produkte/condition-meter";
 import { JsonLd } from "@/components/seo/json-ld";
 import { productSchema, breadcrumbSchema } from "@/lib/seo/schemas";
 import Link from "next/link";
-import { ChevronLeft, MessageCircle, Send, Heart, Share2 } from "lucide-react";
+import { ChevronLeft, MessageCircle, Send } from "lucide-react";
 import { formatPreis } from "@/lib/utils/preis";
 import { markdownToHtml } from "@/lib/utils/markdown";
 import { i18nOr } from "@/lib/utils/i18n-text";
@@ -588,11 +588,6 @@ export default async function ProduktDetailPage({ params }: Props) {
         </section>
       )}
 
-      {/* Unused-Import-Helper für Lint */}
-      <span aria-hidden style={{ display: "none" }}>
-        <Heart size={1} />
-        <Share2 size={1} />
-      </span>
     </div>
   );
 }
