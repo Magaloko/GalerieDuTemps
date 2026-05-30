@@ -1,181 +1,141 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CheckCircle2, XCircle, EyeOff, Star, Loader2, Clock, Megaphone, BellRing } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import { formatPreis } from "@/lib/utils/preis";
 import {
-  produktQuickToggleAction,
+  produktAktivToggleAction,
+  produktFeaturedToggleAction,
+  produktVerkauftToggleAction,
   produktReservierenAction,
-  produktReservierungAufhebenAction,
-  produktInKanalAction,
-  produktKundenPushAction,
 } from "@/app/(admin)/admin/produkte/actions";
-import { useToast } from "@/components/ui/toast-provider";
+import {
+  Eye, EyeOff, Star, BadgeCheck, Clock, ChevronRight,
+} from "lucide-react";
+import type { ProduktListItem } from "@/types/produkt";
 
-interface Props {
-  id:           string;
-  aktiv:        boolean;
-  featured:     boolean;
-  verkauft:     boolean;
-  lagerbestand: number;
-  reserviert?:  boolean;
-}
-
-/**
- * Drei Inline-Toggles für die Listen-Tabelle:
- *  - Featured  (Stern)
- *  - Aktiv     (Status-Pill: Активен / Неактивен / Продано / Нет в наличии)
- * Klick = sofortige Mutation via Server Action, mit optimistic UI.
- */
-export function QuickToggleRow({ id, aktiv, featured, verkauft, lagerbestand, reserviert = false }: Props) {
-  const [optimistic, setOptimistic] = useState({ aktiv, featured, verkauft });
-  const [reserviertState, setReserviert] = useState(reserviert);
+/* QuickToggleRow — kompakte Produktzeile mit Inline-Schnellaktionen (Icon-
+ * Cluster, optimistische Updates via useTransition). Auf dem A1-Daten-Kit;
+ * Status nur als ruhiger Chip wenn auffällig (Продан/Резерв/Скрыт). */
+export function QuickToggleRow({
+  produkt, base, zustandLabel,
+}: {
+  produkt: ProduktListItem;
+  base: string;
+  zustandLabel: string;
+}) {
+  const [p, setP] = useState(produkt);
   const [pending, start] = useTransition();
-  const toast = useToast();
 
-  const toggle = (feld: "aktiv" | "featured" | "verkauft") => {
-    const next = !optimistic[feld];
-    setOptimistic(o => ({ ...o, [feld]: next }));
+  const toggle = (
+    action: () => Promise<{ ok: boolean; wert?: boolean }>,
+    feld: "aktiv" | "featured" | "verkauft",
+  ) => {
     start(async () => {
-      const r = await produktQuickToggleAction(id, feld, next);
-      if (!r.ok) {
-        // Revert bei Fehler
-        setOptimistic(o => ({ ...o, [feld]: !next }));
-        toast.error(r.error ?? "Ошибка");
-      }
+      const r = await action();
+      if (r.ok && r.wert !== undefined) setP(prev => ({ ...prev, [feld]: r.wert }));
     });
   };
 
-  const toggleReservierung = () => {
-    const willReserve = !reserviertState;
-    setReserviert(willReserve);
-    start(async () => {
-      const r = willReserve
-        ? await produktReservierenAction(id, 48)
-        : await produktReservierungAufhebenAction(id);
-      if (!r.ok) {
-        setReserviert(!willReserve);   // revert
-        toast.error(r.error ?? "Ошибка");
-      }
-    });
-  };
+  // Statushinweis nur, wenn der Zustand vom Normalfall abweicht.
+  const statusChip =
+    p.verkauft   ? { klasse: "chip chip-danger",  label: "Продан" } :
+    p.reserviert ? { klasse: "chip chip-coral",   label: "Резерв" } :
+    !p.aktiv     ? { klasse: "chip chip-muted",   label: "Скрыт"  } :
+    null;
 
-  const broadcast = () => {
-    if (!confirm("Опубликовать этот товар в Telegram-канал как новинку?")) return;
-    start(async () => {
-      const r = await produktInKanalAction(id);
-      if (r.ok) toast.success("Опубликовано в канал ✓");
-      else toast.error(r.error ?? "Ошибка");
-    });
-  };
-
-  const kundenPush = () => {
-    if (!confirm("Отправить push-уведомление всем подписчикам о новинке?")) return;
-    start(async () => {
-      const r = await produktKundenPushAction(id);
-      if ("ok" in r) toast.success("Уведомление отправлено ✓");
-      else toast.error(r.error ?? "Ошибка");
-    });
-  };
-
-  const statusBadge = (() => {
-    if (pending) return { icon: Loader2, label: "…", cls: "text-vintage-dust animate-spin" };
-    if (!optimistic.aktiv)             return { icon: EyeOff,      label: "Неактивен",      cls: "text-vintage-dust" };
-    if (optimistic.verkauft)           return { icon: XCircle,     label: "Продано",         cls: "text-vintage-dust" };
-    if (lagerbestand === 0)            return { icon: XCircle,     label: "Нет в наличии",   cls: "text-vintage-copper" };
-    return                                       { icon: CheckCircle2, label: "Активен",     cls: "text-vintage-sage" };
-  })();
+  const ink     = "var(--color-ink-mute)";
+  const forest  = "var(--color-vintage-forest)";
+  const coral   = "var(--color-coral)";
+  const burgund = "var(--color-vintage-burgundy)";
 
   return (
-    <div className="flex items-center justify-center gap-2">
-      {/* Featured-Stern */}
-      <button
-        type="button"
-        onClick={() => toggle("featured")}
-        disabled={pending}
-        title={optimistic.featured ? "Избранное (клик — снять)" : "Сделать избранным"}
-        className={`p-1.5 transition-colors ${
-          optimistic.featured ? "text-vintage-gold" : "text-vintage-sand hover:text-vintage-gold"
-        }`}
-        style={{ borderRadius: "var(--radius-vintage)" }}
-      >
-        <Star className={`w-4 h-4 ${optimistic.featured ? "fill-current" : ""}`} />
-      </button>
+    <tr style={{ opacity: pending ? 0.55 : 1 }}>
+      {/* Produkt (Bild + Name + Slug + Status-Chip) */}
+      <td>
+        <div className="flex items-center gap-2.5">
+          <div className="relative w-10 h-10 overflow-hidden flex-shrink-0"
+               style={{ background: "var(--color-paper-warm)", borderRadius: "var(--radius-vintage)" }}>
+            {p.hauptbild_url ? (
+              <Image src={p.hauptbild_url} alt={p.name} fill sizes="40px" className="object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-xs" style={{ color: ink }}>✦</div>
+            )}
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <Link href={`${base}/produkte/${p.id}`} className="strong truncate" style={{ maxWidth: "16rem" }}>
+                {p.name}
+              </Link>
+              {statusChip && <span className={statusChip.klasse}>{statusChip.label}</span>}
+            </div>
+            <p className="mono truncate" style={{ maxWidth: "16rem" }}>{p.slug}</p>
+          </div>
+        </div>
+      </td>
 
-      {/* Aktiv/Inaktiv-Pill */}
-      <button
-        type="button"
-        onClick={() => toggle("aktiv")}
-        disabled={pending}
-        title={optimistic.aktiv ? "Отключить" : "Включить"}
-        className={`flex items-center gap-1 px-2 py-1 border border-vintage-sand text-xs hover:bg-vintage-parchment transition-colors ${statusBadge.cls}`}
-        style={{ borderRadius: "var(--radius-vintage)" }}
-      >
-        <statusBadge.icon className="w-3 h-3" />
-        {statusBadge.label}
-      </button>
+      {/* Artikel-Code — ab md */}
+      <td className="mono hidden md:table-cell">{p.artikel_code ?? "–"}</td>
 
-      {/* Verkauft-Toggle (nur sichtbar wenn verkauft = visueller Hinweis) */}
-      {optimistic.verkauft && (
-        <button
-          type="button"
-          onClick={() => toggle("verkauft")}
-          disabled={pending}
-          title="Снять отметку «продано»"
-          className="px-2 py-1 border border-vintage-burgundy/40 text-vintage-burgundy text-xs hover:bg-vintage-burgundy/10 transition-colors"
-          style={{ borderRadius: "var(--radius-vintage)" }}
-        >
-          Продано ↺
-        </button>
-      )}
+      {/* Kategorie — ab lg */}
+      <td className="muted hidden lg:table-cell">{p.kategorie_name ?? "–"}</td>
 
-      {/* Reservierung — nur sinnvoll wenn nicht verkauft */}
-      {!optimistic.verkauft && (
-        <button
-          type="button"
-          onClick={toggleReservierung}
-          disabled={pending}
-          title={reserviertState ? "Снять резерв" : "Зарезервировать на 48 часов"}
-          className={`flex items-center gap-1 px-2 py-1 border text-xs transition-colors ${
-            reserviertState
-              ? "border-vintage-gold/50 text-vintage-gold hover:bg-vintage-gold/10"
-              : "border-vintage-sand text-vintage-dust hover:bg-vintage-parchment"
-          }`}
-          style={{ borderRadius: "var(--radius-vintage)" }}
-        >
-          <Clock className="w-3 h-3" />
-          {reserviertState ? "Зарезервировано ↺" : "Резерв 48ч"}
-        </button>
-      )}
+      {/* Preis */}
+      <td className="num strong">{formatPreis(p.preis)}</td>
 
-      {/* New-Arrivals-Broadcast in den Telegram-Kanal */}
-      {optimistic.aktiv && !optimistic.verkauft && (
-        <button
-          type="button"
-          onClick={broadcast}
-          disabled={pending}
-          title="Опубликовать в Telegram-канал как новинку"
-          className="flex items-center gap-1 px-2 py-1 border border-vintage-sand text-xs text-vintage-dust hover:bg-vintage-parchment transition-colors"
-          style={{ borderRadius: "var(--radius-vintage)" }}
-        >
-          <Megaphone className="w-3 h-3" />
-          В канал
-        </button>
-      )}
+      {/* Schnell-Aktionen: kompakter Icon-Cluster */}
+      <td className="num">
+        <div className="flex items-center justify-end gap-0.5">
+          <button
+            onClick={() => toggle(() => produktAktivToggleAction(p.id), "aktiv")}
+            disabled={pending}
+            title={p.aktiv ? "Активен — скрыть" : "Скрыт — показать"}
+            aria-label="Видимость"
+            className="row-action"
+            style={{ color: p.aktiv ? forest : ink }}
+          >
+            {p.aktiv ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+          </button>
 
-      {/* Web-Push an Kunden-Abonnenten (Neuheit) */}
-      {optimistic.aktiv && !optimistic.verkauft && (
-        <button
-          type="button"
-          onClick={kundenPush}
-          disabled={pending}
-          title="📣 Уведомить подписчиков о новинке (web-push)"
-          className="flex items-center gap-1 px-2 py-1 border border-vintage-sand text-xs text-vintage-dust hover:bg-vintage-parchment transition-colors"
-          style={{ borderRadius: "var(--radius-vintage)" }}
-        >
-          <BellRing className="w-3 h-3" />
-          Подписчикам
-        </button>
-      )}
-    </div>
+          <button
+            onClick={() => toggle(() => produktFeaturedToggleAction(p.id), "featured")}
+            disabled={pending}
+            title={p.featured ? "Убрать из топа" : "В топ"}
+            aria-label="Топ"
+            className="row-action"
+            style={{ color: p.featured ? coral : ink }}
+          >
+            <Star className="w-4 h-4" fill={p.featured ? "currentColor" : "none"} />
+          </button>
+
+          <button
+            onClick={() => toggle(() => produktVerkauftToggleAction(p.id), "verkauft")}
+            disabled={pending}
+            title={p.verkauft ? "Снова в продажу" : "Отметить проданным"}
+            aria-label="Продан"
+            className="row-action"
+            style={{ color: p.verkauft ? burgund : ink }}
+          >
+            <BadgeCheck className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={() => start(async () => { await produktReservierenAction(p.id, 48); })}
+            disabled={pending || p.verkauft}
+            title="Зарезервировать на 48 ч"
+            aria-label="Резерв"
+            className="row-action"
+            style={{ color: p.reserviert ? coral : ink }}
+          >
+            <Clock className="w-4 h-4" />
+          </button>
+
+          <Link href={`${base}/produkte/${p.id}`} className="row-action" title="Открыть" aria-label="Открыть">
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </td>
+    </tr>
   );
 }
