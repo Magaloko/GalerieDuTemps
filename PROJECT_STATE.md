@@ -90,7 +90,7 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
   Änderungen lassen sich im Dev wegen PWA-Service-Worker-Cache schlecht visuell prüfen → live nach Deploy
   testen (Memory `dev-preview-setup`).
 - **🔎 Audit-Backlog (Gesamt-Audit 2026-05-31, 5 Agenten + Verifikation):** P0/Quick-Win-P1
-  bereits gefixt (s. Changelog `(dieser Commit)`): JWT-Rolle-Default→`customer`, `kategorie_slug`
+  bereits gefixt (Commit `ec5cafc`): JWT-Rolle-Default→`customer`, `kategorie_slug`
   in Detail-Breadcrumb, Newsletter-Segment-Versand (fail-safe). **Offen, noch NICHT angefasst:**
   - **P0 Steuer/Währung (`api/checkout/route.ts`):** MwSt hart `19` (KZ=12 %, `getItemTaxRate()` ungenutzt),
     `firma_land` default `"DE"` (`system-einstellungen.ts:9`), Stripe-Currency hart `"eur"` (Z. 300/363).
@@ -135,7 +135,7 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
 
-- 2026-05-31 00:00 UTC · `0f8a8ff` · fix(security/data) Audit-P0/Quick-Win-P1: (1) **JWT-Rolle
+- 2026-05-31 00:00 UTC · `ec5cafc` · fix(security/data) Audit-P0/Quick-Win-P1: (1) **JWT-Rolle
   fail-closed** — `token.role`/`session.user.role` defaulten jetzt auf `"customer"` statt `"admin"`
   (`lib/auth/config.ts`); ein rollenloses/migriertes Token wird nie mehr Admin (Defense-in-Depth, der
   AuthZ-Gate liest `session.user.role`). (2) **`kategorie_slug`** in `oeffentlichesProduktBySlug`
