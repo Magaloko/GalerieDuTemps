@@ -120,7 +120,7 @@ export default async function ProdukteAdminPage({
               </thead>
               <tbody>
                 {daten.items.map((p: ProduktListItem) => (
-                  <QuickToggleRow key={p.id} produkt={p} base={base} zustandLabel={ZUSTAND_LABEL[p.zustand] ?? p.zustand} />
+                  <QuickToggleRow key={p.id} produkt={p} base={base} />
                 ))}
               </tbody>
             </table>

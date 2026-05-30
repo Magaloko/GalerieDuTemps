@@ -5,36 +5,52 @@ import Link from "next/link";
 import Image from "next/image";
 import { formatPreis } from "@/lib/utils/preis";
 import {
-  produktAktivToggleAction,
-  produktFeaturedToggleAction,
-  produktVerkauftToggleAction,
+  produktQuickToggleAction,
   produktReservierenAction,
+  produktReservierungAufhebenAction,
 } from "@/app/(admin)/admin/produkte/actions";
-import {
-  Eye, EyeOff, Star, BadgeCheck, Clock, ChevronRight,
-} from "lucide-react";
+import { useToast } from "@/components/ui/toast-provider";
+import { Eye, EyeOff, Star, BadgeCheck, Clock, ChevronRight } from "lucide-react";
 import type { ProduktListItem } from "@/types/produkt";
 
-/* QuickToggleRow — kompakte Produktzeile mit Inline-Schnellaktionen (Icon-
- * Cluster, optimistische Updates via useTransition). Auf dem A1-Daten-Kit;
- * Status nur als ruhiger Chip wenn auffällig (Продан/Резерв/Скрыт). */
+/* QuickToggleRow — kompakte Produktzeile mit Inline-Schnellaktionen als Icon-
+ * Cluster (optimistische Updates via useTransition, Revert + Toast bei Fehler).
+ * Auf dem A1-Daten-Kit; Status nur als ruhiger Chip wenn auffällig
+ * (Продан/Резерв/Скрыт). Rendert die komplette <tr>. */
 export function QuickToggleRow({
-  produkt, base, zustandLabel,
+  produkt, base,
 }: {
   produkt: ProduktListItem;
   base: string;
-  zustandLabel: string;
 }) {
   const [p, setP] = useState(produkt);
   const [pending, start] = useTransition();
+  const toast = useToast();
 
-  const toggle = (
-    action: () => Promise<{ ok: boolean; wert?: boolean }>,
-    feld: "aktiv" | "featured" | "verkauft",
-  ) => {
+  // Optimistisches Toggle: lokalen Wert sofort kippen, bei Fehler zurück.
+  const toggle = (feld: "aktiv" | "featured" | "verkauft") => {
+    const next = !p[feld];
+    setP(prev => ({ ...prev, [feld]: next }));
     start(async () => {
-      const r = await action();
-      if (r.ok && r.wert !== undefined) setP(prev => ({ ...prev, [feld]: r.wert }));
+      const r = await produktQuickToggleAction(p.id, feld, next);
+      if (!r.ok) {
+        setP(prev => ({ ...prev, [feld]: !next }));
+        toast.error(r.error ?? "Ошибка");
+      }
+    });
+  };
+
+  const toggleReservierung = () => {
+    const willReserve = !p.reserviert;
+    setP(prev => ({ ...prev, reserviert: willReserve }));
+    start(async () => {
+      const r = willReserve
+        ? await produktReservierenAction(p.id, 48)
+        : await produktReservierungAufhebenAction(p.id);
+      if (!r.ok) {
+        setP(prev => ({ ...prev, reserviert: !willReserve }));
+        toast.error(r.error ?? "Ошибка");
+      }
     });
   };
 
@@ -88,7 +104,7 @@ export function QuickToggleRow({
       <td className="num">
         <div className="flex items-center justify-end gap-0.5">
           <button
-            onClick={() => toggle(() => produktAktivToggleAction(p.id), "aktiv")}
+            onClick={() => toggle("aktiv")}
             disabled={pending}
             title={p.aktiv ? "Активен — скрыть" : "Скрыт — показать"}
             aria-label="Видимость"
@@ -99,7 +115,7 @@ export function QuickToggleRow({
           </button>
 
           <button
-            onClick={() => toggle(() => produktFeaturedToggleAction(p.id), "featured")}
+            onClick={() => toggle("featured")}
             disabled={pending}
             title={p.featured ? "Убрать из топа" : "В топ"}
             aria-label="Топ"
@@ -110,7 +126,7 @@ export function QuickToggleRow({
           </button>
 
           <button
-            onClick={() => toggle(() => produktVerkauftToggleAction(p.id), "verkauft")}
+            onClick={() => toggle("verkauft")}
             disabled={pending}
             title={p.verkauft ? "Снова в продажу" : "Отметить проданным"}
             aria-label="Продан"
@@ -121,9 +137,9 @@ export function QuickToggleRow({
           </button>
 
           <button
-            onClick={() => start(async () => { await produktReservierenAction(p.id, 48); })}
+            onClick={toggleReservierung}
             disabled={pending || p.verkauft}
-            title="Зарезервировать на 48 ч"
+            title={p.reserviert ? "Снять резерв" : "Зарезервировать на 48 ч"}
             aria-label="Резерв"
             className="row-action"
             style={{ color: p.reserviert ? coral : ink }}
