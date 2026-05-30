@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, ShoppingBag, Users, Inbox, LayoutGrid } from "lucide-react";
 import { ViewSwitch } from "@/components/layout/view-switch";
+import { CommandMenu } from "@/components/layout/command-menu";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * AppShell — mobile Operator-App-Hülle (Amina-/FB-Business-Suite-Stil).
@@ -63,6 +64,7 @@ export function AppShell({
         <p className="flex-1 min-w-0 truncate whitespace-nowrap" style={{ fontFamily: "var(--font-display)", fontSize: 18, color: "var(--color-ink)" }}>
           Galerie <span style={{ color: "var(--color-ink-mute)", fontSize: 13 }}>· Админ</span>
         </p>
+        <CommandMenu />
         {/* App ↔ Klassik-Umschalter — Cookie-Default = App */}
         <ViewSwitch current="app" compact />
       </header>

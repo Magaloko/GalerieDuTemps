@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminBell }    from "@/components/layout/admin-bell";
 import { ViewSwitch }   from "@/components/layout/view-switch";
+import { CommandMenu }  from "@/components/layout/command-menu";
 import { AuthSessionProvider } from "@/components/layout/session-provider";
 import { ungeleseneCount }    from "@/lib/notifications/lead-notify";
 import { adminBadgeCounts }   from "@/lib/db/dashboard-v2";
@@ -65,6 +66,7 @@ export default async function AdminLayout({
             <div className="flex items-center justify-between gap-3 pl-12 md:pl-0">
               <div id="admin-page-title" className="min-w-0 truncate" />
               <div className="flex items-center gap-3 flex-shrink-0">
+                <CommandMenu />
                 <AdminBell />
                 {/* App ↔ Klassik-Umschalter (hier immer Klassik-Nutzer) */}
                 <ViewSwitch current="classic" />
