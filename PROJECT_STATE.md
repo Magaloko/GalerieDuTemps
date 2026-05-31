@@ -142,7 +142,7 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
 
-- 2026-05-31 00:30 UTC · `(dieser Commit)` · fix(checkout) KZ-НДС 12 % statt hart 19 %: Server-Checkout
+- 2026-05-31 00:30 UTC · `92a7546` · fix(checkout) KZ-НДС 12 % statt hart 19 %: Server-Checkout
   (`api/checkout/route.ts`) nutzt jetzt `getItemTaxRate({tax_exempt, liefer_land, reverse_charge})` statt
   des hartkodierten `19` — Steuer-Land aus `firma_land` (einmal oben geladen, doppeltes Laden entfernt);
   `firma_land`-Default `"DE"`→`"KZ"` (`db/system-einstellungen.ts`). Damit zieht der Server denselben 12-%-
