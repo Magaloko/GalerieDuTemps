@@ -141,7 +141,7 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
 
-- 2026-05-31 00:45 UTC · `(dieser Commit)` · fix(checkout) Stripe-Währung KZT statt EUR: Die Stripe-
+- 2026-05-31 00:45 UTC · `3eaf3d1` · fix(checkout) Stripe-Währung KZT statt EUR: Die Stripe-
   Line-Items liefen mit `"eur"` (bzw. `order.waehrung ?? "EUR"` — `waehrung` ist keine Order-Spalte,
   Fallback also immer EUR). Shop rechnet rein in KZT. Neu: `STRIPE_CURRENCY="kzt"` (2 Stellen in
   `api/checkout/route.ts`: Line-Item + `getOrCreateStripeCoupon`) + `?? "KZT"` in `checkout/stripe/route.ts`.
