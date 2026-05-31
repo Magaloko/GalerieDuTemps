@@ -101,7 +101,11 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
     String geändert. Nutzer bestätigt: `stripe_card` ist NICHT live (nur Kaspi/Bank/Vor-Ort) → war ohnehin
     toter Code, jetzt sauber. **Noch offen (Legacy-Direct-Branch `route.ts`, kosmetisch):** `allowed_countries`
     nur EU-Liste (kein KZ), `locale:"de"` — irrelevant solange Stripe-Karte nicht live; bei Aktivierung anpassen.
-  - **P1 kein `src/middleware.ts`:** keine Edge-Schutzschicht; jede Route nur per Eigen-Check.
+  - **P1 middleware → KEIN BUG (verifiziert 2026-05-31):** Next.js 16 hat `middleware.ts`
+    zu `proxy.ts` umbenannt. `src/proxy.ts` IST die aktive Edge-Middleware (Build zeigt
+    `ƒ Proxy (Middleware)`) — Rollen-Schutz greift bereits in Prod. Eine zusätzliche
+    `middleware.ts` BRICHT den Build (Konflikt „middleware-to-proxy"). Audit-Fehlalarm
+    (Pre-Next-16-Annahme), kein Handlungsbedarf.
   - **P1 `EMAXCONNSESSION`:** Pool `max:10` (`db/index.ts:33`) vs. Supabase Session-Mode-Limit 15 →
     Transaction-Mode-Pooler (Port 6543) in `DATABASE_URL`.
   - **P1 a11y:** Lightbox/CommandMenu/MobileDrawer ohne `role=dialog`/`aria-modal`/Focus-Trap.
@@ -140,6 +144,24 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
+
+- 2026-05-31 10:51 UTC · `f3903a1` · fix(cart,cache) Audit-Batch #3/#4: `AbortController`
+  gegen Race-Condition im Cart-Sync (kein State-Update/PUT nach Unmount; + latenter
+  401-Pfad-Fix, `initialLoad` blockierte sonst den Debounce-PUT nach späterem Login);
+  `wechselkurse`-Route: `force-dynamic` entfernt → ISR `revalidate=300` greift wieder
+  (rein öffentliche Route, nur `alleWechselkurse()`). Verifiziert: tsc grün, vitest 177✓,
+  next build grün. Review-Subagent: approved.
+- 2026-05-31 10:50 UTC · `a08da58` · fix(checkout) Audit-Batch #1/#2/#5: Kaspi-Checkout an
+  Haupt-Checkout angeglichen — Coupon wird validiert+angewendet (war komplett ignoriert →
+  Rabattverlust), `getItemTaxRate` statt hart 12, `customer_type` aus Session inkl.
+  B2B-Preise/Staffeln (war hart "b2c" → B2B zahlte Vollpreis); Positions-`tax_amount_cents`
+  in BEIDEN Checkout-Routen auf rabattiertem Brutto via neuem `item_details` in
+  `berechneCart`/`CartBerechnung` → Σ(Positions-Steuer) == `tax_total_cents` auch bei Coupon.
+  Import-Fix `@/lib/cart` ("use client") → `@/lib/cart-berechnung`. Verifiziert: tsc grün,
+  vitest 177✓ (+ Invarianten-Test), next build grün. Review-Subagent: approved.
+  Gefunden via 4-Agenten-Audit. Offene Härtung (kein P0): CSP `frame-ancestors` /admin,
+  Cron `timingSafeEqual`, `theme.ts` Token-Validierung, TG-Webhook-Header, N+1 Bild-Subqueries,
+  `orders.ts:368` make_interval, Open-Redirect post-login (zu verifizieren), `__Secure`-Cookie Dev.
 
 - 2026-05-31 00:45 UTC · `fcada19` · fix(checkout) Stripe-Währung KZT statt EUR: Die Stripe-
   Line-Items liefen mit `"eur"` (bzw. `order.waehrung ?? "EUR"` — `waehrung` ist keine Order-Spalte,

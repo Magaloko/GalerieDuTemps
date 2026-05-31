@@ -58,3 +58,8 @@ website-analyse-*.html
 # Test-Output
 coverage/
 .vitest/
+
+# AI-Tool-Konfigs (nie committen — können Secrets / Session-State enthalten)
+.mcp.json
+.claude/
+.codex/
