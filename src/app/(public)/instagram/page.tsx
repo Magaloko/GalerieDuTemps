@@ -31,10 +31,10 @@ export default async function InstagramArchivePage({
   const chipHref = (slug: string) => slug ? `/instagram?kat=${encodeURIComponent(slug)}` : "/instagram";
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-10">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-10 bg-bone text-ink">
       <div className="text-center">
         <p className="eyebrow mb-3">✦ Из Instagram</p>
-        <h1 className="font-serif text-4xl text-vintage-cream">Архив</h1>
+        <h1 className="font-serif text-4xl text-ink">Архив</h1>
       </div>
 
       {/* Kategorie-Chips (server-rendered Links) */}
@@ -65,12 +65,11 @@ function Chip({ href, label, aktiv }: { href: string; label: string; aktiv: bool
   return (
     <Link
       href={href}
-      className={`px-4 py-2 font-sans text-xs tracking-widest uppercase transition-colors border ${
+      className={`px-4 py-2 font-sans text-xs tracking-widest uppercase transition-colors border rounded-[var(--radius-vintage)] ${
         aktiv
-          ? "bg-vintage-gold text-vintage-espresso border-vintage-gold"
-          : "text-vintage-cream/80 border-vintage-sand/40 hover:border-vintage-gold/60"
+          ? "bg-coral text-white border-coral"
+          : "text-ink-soft border-line hover:border-coral"
       }`}
-      style={{ borderRadius: "var(--radius-button)" }}
     >
       {label}
     </Link>

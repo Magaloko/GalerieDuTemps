@@ -111,7 +111,7 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
   - **P1 a11y:** Lightbox/CommandMenu/MobileDrawer ohne `role=dialog`/`aria-modal`/Focus-Trap.
   - **P1 `robots.ts`:** `/app`,`/tg`,`/kunde`,`/affiliate`,`/monitoring` crawlbar (nicht disallowed).
   - **P1 ESLint fehlt komplett** (kein Dep/Config/Script) → `next build` lintet nicht.
-  - **P1 Public-Seiten `about`/`instagram`/`kategorien/[…]`** noch dunkle `vintage-*` auf hell → Kontrast ~1:1.
+  - **P1 Public-Seiten `about`/`instagram`/`kategorien/[…]`** ✓ GEFIXT: dunkle `vintage-*` auf hell → Kontrast ~1:1.
   - **P2:** Theme-CSS-Injection (`theme.ts:117` ungefilterte Keys), TG-Webhook Header-Check optional,
     CSP quasi leer, Cron ohne `timingSafeEqual`, Temp-Passwort im Klartext per Mail, `_eur`-Namensfalle
     (KZT-Felder heißen `_eur`), N+1 Bild-Subqueries, fehlende `generateStaticParams`.
@@ -145,6 +145,7 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
 
+- 2026-05-31 12:06 UTC · `24be498` · design(public) Audit-Backlog P1: about/instagram/kategorien auf helle Shop-Tokens (paper/bone/coral) umgestellt — alle `vintage-*`-Klassen entfernt, scharfe Radien `--radius-vintage`/`--radius-card` beibehalten (Shop-Flächen). Verifiziert: tsc grün, vitest 177✓/39 skip.
 - 2026-05-31 13:15 UTC · `1b37144` · hardening(db) Audit-Backlog: `staleOrdersCanceln`
   nutzt `make_interval(hours => $1::int)` (statt String-Concat); 4 Listen-Queries in
   `produkte-public.ts` (featured/neuheiten/katalog/aehnliche) auf `LEFT JOIN LATERAL`

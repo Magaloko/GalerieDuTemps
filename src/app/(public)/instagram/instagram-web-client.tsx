@@ -38,7 +38,7 @@ export function InstagramWebClient({ posts }: { posts: WebPost[] }) {
 
   if (posts.length === 0) {
     return (
-      <p className="text-center text-vintage-dust font-sans py-16">
+      <p className="text-center text-ink-mute font-sans py-16">
         В этой категории пока нет постов.
       </p>
     );
@@ -70,8 +70,7 @@ export function InstagramWebClient({ posts }: { posts: WebPost[] }) {
             {p.produkt_slug && (
               <Link
                 href={`/katalog/${p.produkt_slug}`}
-                className="mt-3 inline-flex items-center gap-2 px-5 py-2.5 bg-vintage-gold text-vintage-espresso font-sans text-xs tracking-widest uppercase hover:bg-vintage-amber transition-colors"
-                style={{ borderRadius: "var(--radius-button)" }}
+                className="mt-3 inline-flex items-center gap-2 px-5 py-2.5 bg-coral text-white font-sans text-xs tracking-widest uppercase hover:bg-coral-bright transition-colors rounded-[var(--radius-vintage)]"
               >
                 К товару{p.produkt_name ? `: ${p.produkt_name}` : ""} <ArrowRight className="w-3.5 h-3.5" />
               </Link>
