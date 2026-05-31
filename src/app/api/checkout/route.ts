@@ -8,7 +8,7 @@ import { auth } from "@/lib/auth/config";
 import { getStripeServer, stripeKonfiguriert } from "@/lib/stripe-server";
 import { berechneCart } from "@/lib/cart-berechnung";
 import { findeRabattTier } from "@/lib/db/customer-b2b";
-import { istReverseCharge } from "@/lib/vat";
+import { istReverseCharge, getItemTaxRate } from "@/lib/vat";
 import { systemEinstellungenLaden } from "@/lib/db/system-einstellungen";
 import { rateLimitAsync, getClientIp, tooManyRequestsResponse } from "@/lib/utils/rate-limit";
 import { getSiteUrl } from "@/lib/site-url";
@@ -99,6 +99,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Mindestens ein Produkt existiert nicht" }, { status: 400 });
     }
 
+    // Steuer-Land für den НДС-Satz. Default kommt aus den System-Einstellungen
+    // (firma_land → "KZ" für diesen Shop). getItemTaxRate() liefert daraus den
+    // korrekten Satz (KZ = 12 % НДС) statt eines hartkodierten Werts.
+    const sys = await systemEinstellungenLaden();
+    const eigenLand = (sys.firma_land || "KZ").toUpperCase();
+
     // Validierung pro Item
     const cartItems: CartItem[] = [];
     for (const reqItem of parsed.data.items) {
@@ -126,7 +132,7 @@ export async function POST(req: NextRequest) {
         bild_url:          p.hauptbild_url,
         einzelpreis_cents: Math.round(Number(p.preis) * 100),  // wird unten ggf. durch B2B-Preis ersetzt
         menge:             reqItem.menge,
-        tax_rate:          p.tax_exempt ? 0 : 19,
+        tax_rate:          getItemTaxRate({ tax_exempt: p.tax_exempt, liefer_land: eigenLand, reverse_charge: false }),
         tax_exempt:        p.tax_exempt,
         ist_seminar:       p.ist_seminar,
       });
@@ -191,10 +197,9 @@ export async function POST(req: NextRequest) {
       rabatt_cents += staffelRabatt;
     }
 
-    // 3c. Reverse-Charge für B2B mit UID + Lieferland ≠ DE
+    // 3c. Reverse-Charge für B2B mit UID + Lieferland ≠ Inland
     //     (Lieferland wird im Stripe-Checkout abgefragt; hier vorbereiten — finale Anpassung im Webhook)
-    const sys = await systemEinstellungenLaden();
-    const eigenLand = (sys.firma_land || "DE").toUpperCase();
+    //     `sys`/`eigenLand` sind oben bereits geladen (für den НДС-Satz).
     // Wir setzen reverse_charge initial false — bei verifiziertem B2B mit UID + nicht-Inland aktivieren wir
     // den Tax-Rate-Override (Stripe shipping_address_collection liefert dann das Land im Webhook)
     let reverse_charge = false;

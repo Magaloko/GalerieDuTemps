@@ -92,9 +92,16 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 - **🔎 Audit-Backlog (Gesamt-Audit 2026-05-31, 5 Agenten + Verifikation):** P0/Quick-Win-P1
   bereits gefixt (Commit `ec5cafc`): JWT-Rolle-Default→`customer`, `kategorie_slug`
   in Detail-Breadcrumb, Newsletter-Segment-Versand (fail-safe). **Offen, noch NICHT angefasst:**
-  - **P0 Steuer/Währung (`api/checkout/route.ts`):** MwSt hart `19` (KZ=12 %, `getItemTaxRate()` ungenutzt),
-    `firma_land` default `"DE"` (`system-einstellungen.ts:9`), Stripe-Currency hart `"eur"` (Z. 300/363).
-    ⚠️ Vor Fix klären, welche Flows diese Legacy-Direct-Route real treffen (Public nutzt `picker`-Pfad).
+  - **P0 MwSt ✓ GEFIXT** (`api/checkout/route.ts` + `system-einstellungen.ts`): `getItemTaxRate()` statt
+    hartem `19` → KZ-НДС 12 % auf alle Bestellungen (Client-Cart zeigte schon 12 %, nur Server war falsch);
+    `firma_land`-Default `"DE"`→`"KZ"`. Betrifft alle Zahlwege (tax_rate wird im gemeinsamen Loop gesetzt).
+  - **⚠️ P0/P1 Währung — ENTSCHEIDUNG offen (Zahlungs-Code, nicht blind angefasst):** Stripe-Line-Items
+    laufen mit `"eur"` bzw. `order.waehrung ?? "EUR"` — aber **`waehrung` existiert weder als Order-Spalte
+    noch im SQL** → Fallback immer `"EUR"`. Shop ist **rein KZT** (alle Produkte KZT). Trifft NUR den
+    `stripe_card`-Weg; Kaspi/Bank/Vor-Ort/Anzahlung nutzen `total_cents` (KZT) direkt → unbetroffen.
+    Fix = Currency auf `"kzt"` setzen (`route.ts:300`, `checkout/stripe/route.ts:90`, `getOrCreateStripeCoupon`
+    `route.ts:363`). Vor Umsetzung klären: (a) ist `stripe_card` in KZ überhaupt aktiv/genutzt? (b) Stripe
+    behandelt KZT als 2-Dezimal (×100 wie jetzt) — bestätigen, sonst 100× daneben.
   - **P1 kein `src/middleware.ts`:** keine Edge-Schutzschicht; jede Route nur per Eigen-Check.
   - **P1 `EMAXCONNSESSION`:** Pool `max:10` (`db/index.ts:33`) vs. Supabase Session-Mode-Limit 15 →
     Transaction-Mode-Pooler (Port 6543) in `DATABASE_URL`.
@@ -135,6 +142,15 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
 
+- 2026-05-31 00:30 UTC · `(dieser Commit)` · fix(checkout) KZ-НДС 12 % statt hart 19 %: Server-Checkout
+  (`api/checkout/route.ts`) nutzt jetzt `getItemTaxRate({tax_exempt, liefer_land, reverse_charge})` statt
+  des hartkodierten `19` — Steuer-Land aus `firma_land` (einmal oben geladen, doppeltes Laden entfernt);
+  `firma_land`-Default `"DE"`→`"KZ"` (`db/system-einstellungen.ts`). Damit zieht der Server denselben 12-%-
+  Satz wie der Client-Cart (`AddToCartButton taxRate={12}`) — vorher inkonsistent (Client 12 %, Order 19 %).
+  НДС ist inklusiv → Gesamtpreis unverändert, nur die Steuer-Aufschlüsselung/Rechnung wird korrekt (KZ).
+  Greift auf ALLE Zahlwege (tax_rate im gemeinsamen Item-Loop). Nutzer-Kontext: „Besucher kaufen direkt im
+  Shop, normal." Währungs-Bug (Stripe `eur`) bewusst NICHT mitgefixt — Zahlungs-Code, braucht Entscheidung
+  (s. Audit-Backlog). Verifiziert: tsc grün, vitest 176✓, next build grün.
 - 2026-05-31 00:00 UTC · `ec5cafc` · fix(security/data) Audit-P0/Quick-Win-P1: (1) **JWT-Rolle
   fail-closed** — `token.role`/`session.user.role` defaulten jetzt auf `"customer"` statt `"admin"`
   (`lib/auth/config.ts`); ein rollenloses/migriertes Token wird nie mehr Admin (Defense-in-Depth, der

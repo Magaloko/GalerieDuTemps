@@ -6,7 +6,7 @@ const DEFAULTS: SystemEinstellungen = {
   firma_strasse:         "",
   firma_plz:             "",
   firma_ort:             "",
-  firma_land:            "DE",
+  firma_land:            "KZ",
   firma_email:           "",
   firma_telefon:         "",
   firma_steuer_id:       "",
