@@ -363,9 +363,11 @@ export async function ordersFuerCustomerVorschau(customerId: string): Promise<Or
 // ---------------------------------------------------------------------------
 export async function staleOrdersCanceln(maxAlterStunden = 24): Promise<number> {
   const orders = await query<{ id: string }>(
+    // Nur ganzzahlige Stunden — `$1::int` schneidet Dezimalstellen ab;
+    // bisherige Aufrufer übergeben immer Integer.
     `SELECT id FROM sebo.orders
      WHERE status = 'pending'
-       AND erstellt_am < now() - ($1 || ' hours')::interval`,
+       AND erstellt_am < now() - make_interval(hours => $1::int)`,
     [maxAlterStunden]
   );
   // Pro Order isoliert stornieren — ein Einzelfehler darf nicht den ganzen

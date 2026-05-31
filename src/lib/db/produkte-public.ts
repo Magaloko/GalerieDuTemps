@@ -40,17 +40,24 @@ async function featuredProdukteUncached(limit = 8): Promise<ProduktListItem[]> {
        p.erstellt_am,
        p.era, p.material, p.herkunft,
        (p.reserviert_bis IS NOT NULL AND p.reserviert_bis > now() AND p.verkauft = false) AS reserviert,
-       (SELECT COUNT(*)::int FROM sebo.produktbilder pb WHERE pb.produkt_id = p.id) AS bilder_count,
-       COALESCE(
-         p.hauptbild_url,
-         (SELECT COALESCE(pb.url_medium, pb.url)
-            FROM sebo.produktbilder pb
-           WHERE pb.produkt_id = p.id
-           ORDER BY pb.ist_hauptbild DESC, pb.sortierung, pb.erstellt_am
-           LIMIT 1)
-       ) AS hauptbild_url
+       _bc.bilder_count,
+       COALESCE(p.hauptbild_url, _pb.fb_url) AS hauptbild_url
      FROM sebo.produkte p
      LEFT JOIN sebo.kategorien k ON k.id = p.kategorie_id
+     -- Bild-Anzahl: einmal per LATERAL statt korrelierter Subquery pro Zeile
+     LEFT JOIN LATERAL (
+       SELECT COUNT(*)::int AS bilder_count
+         FROM sebo.produktbilder
+        WHERE produkt_id = p.id
+     ) _bc ON true
+     -- Fallback-Hauptbild: prio-1 ist p.hauptbild_url (denormalisiert), LATERAL nur bei NULL
+     LEFT JOIN LATERAL (
+       SELECT COALESCE(url_medium, url) AS fb_url
+         FROM sebo.produktbilder
+        WHERE produkt_id = p.id
+        ORDER BY ist_hauptbild DESC, sortierung, erstellt_am
+        LIMIT 1
+     ) _pb ON true
      WHERE ${BASE_FILTER} AND p.featured = true
      ORDER BY p.veroeffentlicht_am DESC
      LIMIT $1`,
@@ -76,17 +83,24 @@ async function neuheitenProdukteUncached(limit = 8): Promise<ProduktListItem[]> 
        p.erstellt_am, p.era, p.material, p.herkunft,
        (p.reserviert_bis IS NOT NULL AND p.reserviert_bis > now() AND p.verkauft = false) AS reserviert,
        (p.veroeffentlicht_am > now() - interval '14 days') AS ist_neu,
-       (SELECT COUNT(*)::int FROM sebo.produktbilder pb WHERE pb.produkt_id = p.id) AS bilder_count,
-       COALESCE(
-         p.hauptbild_url,
-         (SELECT COALESCE(pb.url_medium, pb.url)
-            FROM sebo.produktbilder pb
-           WHERE pb.produkt_id = p.id
-           ORDER BY pb.ist_hauptbild DESC, pb.sortierung, pb.erstellt_am
-           LIMIT 1)
-       ) AS hauptbild_url
+       _bc.bilder_count,
+       COALESCE(p.hauptbild_url, _pb.fb_url) AS hauptbild_url
      FROM sebo.produkte p
      LEFT JOIN sebo.kategorien k ON k.id = p.kategorie_id
+     -- Bild-Anzahl: einmal per LATERAL statt korrelierter Subquery pro Zeile
+     LEFT JOIN LATERAL (
+       SELECT COUNT(*)::int AS bilder_count
+         FROM sebo.produktbilder
+        WHERE produkt_id = p.id
+     ) _bc ON true
+     -- Fallback-Hauptbild: prio-1 ist p.hauptbild_url (denormalisiert), LATERAL nur bei NULL
+     LEFT JOIN LATERAL (
+       SELECT COALESCE(url_medium, url) AS fb_url
+         FROM sebo.produktbilder
+        WHERE produkt_id = p.id
+        ORDER BY ist_hauptbild DESC, sortierung, erstellt_am
+        LIMIT 1
+     ) _pb ON true
      WHERE ${BASE_FILTER}
      ORDER BY p.veroeffentlicht_am DESC
      LIMIT $1`,
@@ -198,17 +212,24 @@ async function katalogProdukteUncached(params: {
          p.erstellt_am,
          p.material, p.herkunft,
          (p.reserviert_bis IS NOT NULL AND p.reserviert_bis > now() AND p.verkauft = false) AS reserviert,
-         (SELECT COUNT(*)::int FROM sebo.produktbilder pb WHERE pb.produkt_id = p.id) AS bilder_count,
-         COALESCE(
-           p.hauptbild_url,
-           (SELECT COALESCE(pb.url_medium, pb.url)
-              FROM sebo.produktbilder pb
-             WHERE pb.produkt_id = p.id
-             ORDER BY pb.ist_hauptbild DESC, pb.sortierung, pb.erstellt_am
-             LIMIT 1)
-         ) AS hauptbild_url
+         _bc.bilder_count,
+         COALESCE(p.hauptbild_url, _pb.fb_url) AS hauptbild_url
        FROM sebo.produkte p
        LEFT JOIN sebo.kategorien k ON k.id = p.kategorie_id
+       -- Bild-Anzahl: einmal per LATERAL statt korrelierter Subquery pro Zeile
+       LEFT JOIN LATERAL (
+         SELECT COUNT(*)::int AS bilder_count
+           FROM sebo.produktbilder
+          WHERE produkt_id = p.id
+       ) _bc ON true
+       -- Fallback-Hauptbild: prio-1 ist p.hauptbild_url (denormalisiert), LATERAL nur bei NULL
+       LEFT JOIN LATERAL (
+         SELECT COALESCE(url_medium, url) AS fb_url
+           FROM sebo.produktbilder
+          WHERE produkt_id = p.id
+          ORDER BY ist_hauptbild DESC, sortierung, erstellt_am
+          LIMIT 1
+       ) _pb ON true
        ${where}
        ORDER BY p.featured DESC, ${orderBy}
        LIMIT $${idx} OFFSET $${idx + 1}`,
@@ -280,17 +301,24 @@ async function aehnlicheProdukteUncached(
        p.verkauft, p.featured, p.erstellt_am,
        p.era, p.material, p.herkunft,
        (p.reserviert_bis IS NOT NULL AND p.reserviert_bis > now() AND p.verkauft = false) AS reserviert,
-       (SELECT COUNT(*)::int FROM sebo.produktbilder pb WHERE pb.produkt_id = p.id) AS bilder_count,
-       COALESCE(
-         p.hauptbild_url,
-         (SELECT COALESCE(pb.url_medium, pb.url)
-            FROM sebo.produktbilder pb
-           WHERE pb.produkt_id = p.id
-           ORDER BY pb.ist_hauptbild DESC, pb.sortierung, pb.erstellt_am
-           LIMIT 1)
-       ) AS hauptbild_url
+       _bc.bilder_count,
+       COALESCE(p.hauptbild_url, _pb.fb_url) AS hauptbild_url
      FROM sebo.produkte p
      LEFT JOIN sebo.kategorien k ON k.id = p.kategorie_id
+     -- Bild-Anzahl: einmal per LATERAL statt korrelierter Subquery pro Zeile
+     LEFT JOIN LATERAL (
+       SELECT COUNT(*)::int AS bilder_count
+         FROM sebo.produktbilder
+        WHERE produkt_id = p.id
+     ) _bc ON true
+     -- Fallback-Hauptbild: prio-1 ist p.hauptbild_url (denormalisiert), LATERAL nur bei NULL
+     LEFT JOIN LATERAL (
+       SELECT COALESCE(url_medium, url) AS fb_url
+         FROM sebo.produktbilder
+        WHERE produkt_id = p.id
+        ORDER BY ist_hauptbild DESC, sortierung, erstellt_am
+        LIMIT 1
+     ) _pb ON true
      WHERE ${BASE_FILTER}
        AND p.id != $1
        AND ($2::int IS NULL OR p.kategorie_id = $2)

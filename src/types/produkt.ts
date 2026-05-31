@@ -114,6 +114,8 @@ export interface Produkt {
   hauptbild_url:      string | null;
   rueckbild_url:      string | null;
   video_url:          string | null;
+  /** Steuerbefreiung (z.B. Bildungsleistungen) — spiegelt sebo.produkte.tax_exempt. */
+  tax_exempt:         boolean;
   /** Instagram-Permalink-URLs (Posts/Reels/TV) für dieses Produkt. Reihenfolge = Anzeige. */
   instagram_urls:     string[];
   /** Story-Blöcke der Produktseite (leer = Fallback auf beschreibung). */

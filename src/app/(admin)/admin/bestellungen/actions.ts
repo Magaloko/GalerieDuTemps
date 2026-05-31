@@ -128,6 +128,8 @@ import { query }    from "@/lib/db";
 import { orderErstellen }                from "@/lib/db/orders";
 import { customerByEmail, customerErstellen } from "@/lib/db/customers";
 import { produktById }                   from "@/lib/db/produkte";
+import { getItemTaxRate }                from "@/lib/vat";
+import { systemEinstellungenLaden }      from "@/lib/db/system-einstellungen";
 
 export interface CustomerSuchTreffer {
   id:        string;
@@ -210,7 +212,11 @@ export async function bestellungManuellAnlegenAction(
   }
 
   // Items laden + Preise berechnen
-  const TAX_RATE = 12;
+  // Land/Reverse-Charge sind order-weit → einmalig laden.
+  // Steuersatz pro Item: berücksichtigt p.tax_exempt (z.B. steuerbefreite Produkte).
+  // Für KZ mit allen Items tax_exempt=false bleibt das Verhalten identisch (НДС 12 %).
+  const sys = await systemEinstellungenLaden();
+  const eigenLand = (sys.firma_land || "KZ").toUpperCase();
   const orderItems = [];
   let subtotalCents = 0;
   let taxTotalCents = 0;
@@ -225,10 +231,12 @@ export async function bestellungManuellAnlegenAction(
     if (p.lagerbestand < it.menge) {
       return { ok: false, error: `${p.name}: на складе только ${p.lagerbestand} (запрошено: ${it.menge})` };
     }
-    const preisCents      = Math.round(p.preis * 100);
-    const zeileBrutto     = preisCents * it.menge;
-    const zeileNetto      = Math.round(zeileBrutto / (1 + TAX_RATE/100));
-    const zeileTax        = zeileBrutto - zeileNetto;
+    const itemTaxExempt    = p.tax_exempt ?? false;
+    const itemTaxRate      = getItemTaxRate({ tax_exempt: itemTaxExempt, liefer_land: eigenLand, reverse_charge: false });
+    const preisCents       = Math.round(p.preis * 100);
+    const zeileBrutto      = preisCents * it.menge;
+    const zeileNetto       = Math.round(zeileBrutto / (1 + itemTaxRate / 100));
+    const zeileTax         = zeileBrutto - zeileNetto;
     const einzelpreisNetto = Math.round(zeileNetto / it.menge);
 
     orderItems.push({
@@ -238,9 +246,9 @@ export async function bestellungManuellAnlegenAction(
       produkt_bild_url:  p.hauptbild_url ?? p.bilder?.[0]?.url ?? undefined,
       menge:             it.menge,
       einzelpreis_cents: einzelpreisNetto,
-      tax_rate:          TAX_RATE,
+      tax_rate:          itemTaxRate,
       tax_amount_cents:  zeileTax,
-      tax_exempt:        false,
+      tax_exempt:        itemTaxExempt,
     });
 
     subtotalCents += zeileNetto;
