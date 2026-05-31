@@ -16,6 +16,11 @@ import type { CartItem } from "@/types/commerce";
 
 export const dynamic = "force-dynamic";
 
+// Shop rechnet ausschließlich in KZT. Stripe behandelt KZT als 2-Dezimal-
+// Währung (Betrag in Tiyn = Tenge × 100) — exakt wie unsere `*_cents`-Felder
+// bereits liefern. Daher nur der Currency-String, KEINE Mengen-Anpassung.
+const STRIPE_CURRENCY = "kzt";
+
 const CheckoutSchema = z.object({
   items: z.array(z.object({
     produkt_id: z.string().uuid(),
@@ -302,7 +307,7 @@ export async function POST(req: NextRequest) {
       payment_method_types: ["card", "paypal", "sepa_debit"],
       line_items: cartItems.map(i => ({
         price_data: {
-          currency:     "eur",
+          currency:     STRIPE_CURRENCY,
           unit_amount:  i.einzelpreis_cents,
           product_data: {
             name:        i.name,
@@ -365,7 +370,7 @@ async function getOrCreateStripeCoupon(
   const coupon = await stripe.coupons.create({
     name:        `Code ${code}`,
     amount_off:  rabattCents,
-    currency:    "eur",
+    currency:    STRIPE_CURRENCY,
     duration:    "once",
     redeem_by:   Math.floor(Date.now() / 1000) + 86400,
   });

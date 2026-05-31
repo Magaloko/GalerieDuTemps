@@ -87,7 +87,10 @@ export async function POST(req: NextRequest) {
       payment_method_types: ["card", "paypal", "sepa_debit"],
       line_items: itemsRes.rows.map(i => ({
         price_data: {
-          currency:    (order.waehrung ?? "EUR").toLowerCase(),
+          // Shop rechnet in KZT; `waehrung` ist keine Order-Spalte → der alte
+          // Fallback war immer "EUR". KZT ist bei Stripe 2-Dezimal (Tiyn =
+          // Tenge × 100), passt exakt zu einzelpreis_cents.
+          currency:    (order.waehrung ?? "KZT").toLowerCase(),
           unit_amount: i.einzelpreis_cents,
           product_data: {
             name:     i.produkt_name,

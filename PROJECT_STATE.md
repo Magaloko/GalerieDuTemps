@@ -95,13 +95,12 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
   - **P0 MwSt ✓ GEFIXT** (`api/checkout/route.ts` + `system-einstellungen.ts`): `getItemTaxRate()` statt
     hartem `19` → KZ-НДС 12 % auf alle Bestellungen (Client-Cart zeigte schon 12 %, nur Server war falsch);
     `firma_land`-Default `"DE"`→`"KZ"`. Betrifft alle Zahlwege (tax_rate wird im gemeinsamen Loop gesetzt).
-  - **⚠️ P0/P1 Währung — ENTSCHEIDUNG offen (Zahlungs-Code, nicht blind angefasst):** Stripe-Line-Items
-    laufen mit `"eur"` bzw. `order.waehrung ?? "EUR"` — aber **`waehrung` existiert weder als Order-Spalte
-    noch im SQL** → Fallback immer `"EUR"`. Shop ist **rein KZT** (alle Produkte KZT). Trifft NUR den
-    `stripe_card`-Weg; Kaspi/Bank/Vor-Ort/Anzahlung nutzen `total_cents` (KZT) direkt → unbetroffen.
-    Fix = Currency auf `"kzt"` setzen (`route.ts:300`, `checkout/stripe/route.ts:90`, `getOrCreateStripeCoupon`
-    `route.ts:363`). Vor Umsetzung klären: (a) ist `stripe_card` in KZ überhaupt aktiv/genutzt? (b) Stripe
-    behandelt KZT als 2-Dezimal (×100 wie jetzt) — bestätigen, sonst 100× daneben.
+  - **Währung ✓ GEFIXT** (`api/checkout/route.ts` + `checkout/stripe/route.ts`): Stripe-Currency `"eur"`/
+    `order.waehrung ?? "EUR"` → KZT (`STRIPE_CURRENCY="kzt"` + `?? "KZT"`). KZT ist bei Stripe **2-Dezimal**
+    (nicht in der Zero-Decimal-Liste) → `einzelpreis_cents = preis×100` bleibt korrekt, nur der Currency-
+    String geändert. Nutzer bestätigt: `stripe_card` ist NICHT live (nur Kaspi/Bank/Vor-Ort) → war ohnehin
+    toter Code, jetzt sauber. **Noch offen (Legacy-Direct-Branch `route.ts`, kosmetisch):** `allowed_countries`
+    nur EU-Liste (kein KZ), `locale:"de"` — irrelevant solange Stripe-Karte nicht live; bei Aktivierung anpassen.
   - **P1 kein `src/middleware.ts`:** keine Edge-Schutzschicht; jede Route nur per Eigen-Check.
   - **P1 `EMAXCONNSESSION`:** Pool `max:10` (`db/index.ts:33`) vs. Supabase Session-Mode-Limit 15 →
     Transaction-Mode-Pooler (Port 6543) in `DATABASE_URL`.
@@ -142,6 +141,14 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
 
+- 2026-05-31 00:45 UTC · `(dieser Commit)` · fix(checkout) Stripe-Währung KZT statt EUR: Die Stripe-
+  Line-Items liefen mit `"eur"` (bzw. `order.waehrung ?? "EUR"` — `waehrung` ist keine Order-Spalte,
+  Fallback also immer EUR). Shop rechnet rein in KZT. Neu: `STRIPE_CURRENCY="kzt"` (2 Stellen in
+  `api/checkout/route.ts`: Line-Item + `getOrCreateStripeCoupon`) + `?? "KZT"` in `checkout/stripe/route.ts`.
+  KZT ist bei Stripe 2-Dezimal (NICHT zero-decimal) → `einzelpreis_cents = preis×100` bleibt korrekt, nur
+  der Currency-String geändert, keine Mengen-Anpassung. `stripe_card` ist NICHT live (nur Kaspi/Bank/Vor-Ort)
+  → Hygiene/toter-Code-Fix, kein realer Geld-Bug. Offen-kosmetisch (Legacy-Branch): `allowed_countries`
+  EU-only, `locale:"de"`. Verifiziert: tsc grün, vitest 176✓, next build grün.
 - 2026-05-31 00:30 UTC · `92a7546` · fix(checkout) KZ-НДС 12 % statt hart 19 %: Server-Checkout
   (`api/checkout/route.ts`) nutzt jetzt `getItemTaxRate({tax_exempt, liefer_land, reverse_charge})` statt
   des hartkodierten `19` — Steuer-Land aus `firma_land` (einmal oben geladen, doppeltes Laden entfernt);
