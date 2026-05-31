@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { alleWechselkurse } from "@/lib/db/wechselkurse";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 300;     // 5min Cache
+// ISR: Route ist rein öffentlich (keine cookies/headers/searchParams),
+// daher kein force-dynamic — Next.js cacht die Antwort und revalidiert alle 5 min.
+export const revalidate = 300;
 
 /** Public-readable: Wechselkurse für Frontend (Form-Preview, Multi-Currency-Anzeige) */
 export async function GET() {

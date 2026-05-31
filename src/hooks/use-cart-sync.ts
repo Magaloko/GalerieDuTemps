@@ -44,20 +44,30 @@ export function useCartSync(options: Options = {}) {
   // ─── Initial-Load + Merge ─────────────────────────────────────────────
   useEffect(() => {
     let aborted = false;
-    fetch("/api/cart", { credentials: "include" })
-      .then(r => {
-        if (r.status === 401) return null;
+    // AbortController verhindert offene Netz-Calls nach Unmount
+    const controller = new AbortController();
+
+    const run = async () => {
+      try {
+        const r = await fetch("/api/cart", {
+          credentials: "include",
+          signal:      controller.signal,
+        });
+
+        if (aborted) return;
+
+        if (r.status === 401) {
+          // Anonymous user — kein Server-Cart, initialLoad trotzdem setzen
+          initialLoad.current = true;
+          return;
+        }
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then(data => {
+
+        const data = await r.json();
+
         if (aborted) return;
         initialLoad.current = true;
 
-        if (!data) {
-          // 401 — anonymous user, kein Server-Cart
-          return;
-        }
         const serverItems  = Array.isArray(data.items) ? data.items : [];
         const serverCoupon = data.coupon_code ?? undefined;
         const local        = useCart.getState();
@@ -82,6 +92,9 @@ export function useCartSync(options: Options = {}) {
         }
         const merged = Array.from(mergedMap.values()) as typeof local.items;
 
+        // Guard erneut prüfen: Unmount kann während Merge-Berechnung eintreten
+        if (aborted) return;
+
         // State setzen ohne dass useCart die PUT triggert
         skipNextPut.current = true;
         useCart.setState({
@@ -92,6 +105,8 @@ export function useCartSync(options: Options = {}) {
 
         // Wenn lokal mehr Items hatte als Server → push merged hoch
         if (merged.length !== serverItems.length || local.items.length > 0) {
+          // Erneuter Guard vor dem PUT — kein unnötiger Netz-Call nach Unmount
+          if (aborted) return;
           fetch("/api/cart", {
             method:      "PUT",
             headers:     { "Content-Type": "application/json" },
@@ -100,15 +115,25 @@ export function useCartSync(options: Options = {}) {
               coupon_code: local.coupon_code ?? serverCoupon ?? null,
             }),
             credentials: "include",
+            signal:      controller.signal,
           }).catch(() => {});
           lastSentHash.current = hashCart(merged, local.coupon_code ?? serverCoupon ?? null);
         } else {
           lastSentHash.current = hashCart(serverItems as typeof local.items, serverCoupon ?? null);
         }
-      })
-      .catch(() => {/* silent */});
+      } catch (err) {
+        // AbortError = Komponente unmounted → kein Logging, kein Re-Throw
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        // Alle anderen Netz-Fehler: silent (Sync ist Nice-to-Have)
+      }
+    };
 
-    return () => { aborted = true; };
+    void run();
+
+    return () => {
+      aborted = true;
+      controller.abort();
+    };
   }, []);
 
   // ─── Debounced PUT bei lokalen Änderungen ─────────────────────────────
