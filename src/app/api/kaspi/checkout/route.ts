@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { query } from "@/lib/db";
 import { orderErstellen, orderCanceln } from "@/lib/db/orders";
+import { couponValidieren } from "@/lib/db/coupons";
 import { auth } from "@/lib/auth/config";
 import { customerById } from "@/lib/db/customers";
 import { erstellePaymentLink, kaspiKonfiguriert, getKaspiConfig } from "@/lib/payment/kaspi";
-import { berechneCart } from "@/lib/cart";
+import { berechneCart } from "@/lib/cart-berechnung";
+import { getItemTaxRate } from "@/lib/vat";
+import { findeRabattTier } from "@/lib/db/customer-b2b";
+import { systemEinstellungenLaden } from "@/lib/db/system-einstellungen";
 import { rateLimitPruefen, getClientIp, tooManyRequestsResponse } from "@/lib/utils/rate-limit";
 import { getSiteUrl } from "@/lib/site-url";
 import type { CartItem } from "@/types/commerce";
@@ -17,7 +21,7 @@ const CheckoutSchema = z.object({
     produkt_id: z.string().uuid(),
     menge:      z.number().int().positive().max(99),
   })).min(1).max(50),
-  coupon_code:   z.string().optional(),
+  coupon_code:    z.string().optional(),
   customer_phone: z.string().optional(),    // Wenn vorhanden, wird Kaspi-Push gesendet
 });
 
@@ -61,11 +65,12 @@ export async function POST(req: NextRequest) {
     const ids = parsed.data.items.map(i => i.produkt_id);
     const produkteRes = await query<{
       id: string; slug: string; name: string; preis: number;
+      b2b_preis_cents: number | null;
       lagerbestand: number; verkauft: boolean; b2c_mode: string;
       tax_exempt: boolean; ist_seminar: boolean;
       hauptbild_url: string | null;
     }>(
-      `SELECT p.id, p.slug, p.name, p.preis,
+      `SELECT p.id, p.slug, p.name, p.preis, p.b2b_preis_cents,
               p.lagerbestand, p.verkauft, p.b2c_mode, p.tax_exempt, p.ist_seminar,
               (SELECT pb.url FROM sebo.produktbilder pb
                WHERE pb.produkt_id = p.id AND pb.ist_hauptbild = true LIMIT 1) AS hauptbild_url
@@ -73,6 +78,16 @@ export async function POST(req: NextRequest) {
        WHERE p.id = ANY($1::uuid[])`,
       [ids]
     );
+
+    if (produkteRes.rows.length !== ids.length) {
+      return NextResponse.json({ error: "Mindestens ein Produkt existiert nicht" }, { status: 400 });
+    }
+
+    // Steuer-Land aus System-Einstellungen (firma_land → "KZ").
+    // getItemTaxRate() liefert daraus den korrekten Satz (KZ = 12 % НДС)
+    // statt eines hartkodierten Werts. Fix Bug #2.
+    const sys = await systemEinstellungenLaden();
+    const eigenLand = (sys.firma_land || "KZ").toUpperCase();
 
     const cartItems: CartItem[] = [];
     for (const reqItem of parsed.data.items) {
@@ -89,35 +104,87 @@ export async function POST(req: NextRequest) {
         slug:              p.slug,
         name:              p.name,
         bild_url:          p.hauptbild_url,
-        einzelpreis_cents: Math.round(Number(p.preis) * 100),
+        einzelpreis_cents: Math.round(Number(p.preis) * 100),  // wird ggf. durch B2B-Preis ersetzt
         menge:             reqItem.menge,
-        tax_rate:          p.tax_exempt ? 0 : 12,    // KZ 12%
+        // getItemTaxRate statt hart "12" — Bug #2 Fix
+        tax_rate:          getItemTaxRate({ tax_exempt: p.tax_exempt, liefer_land: eigenLand, reverse_charge: false }),
         tax_exempt:        p.tax_exempt,
         ist_seminar:       p.ist_seminar,
       });
     }
 
+    // Helper: B2B-Preis-Map für späteren Lookup
+    const b2bPreisMap = new Map(produkteRes.rows.map(p => [p.id, p.b2b_preis_cents]));
+
+    // Session laden + customer_type auflösen (Bug #2 Fix: nicht hart "b2c")
     const session = await auth();
     let customer_id:    string | undefined;
     let customer_email: string | undefined;
     let customer_name:  string | undefined;
+    let customer_type: "b2c" | "b2b_pending" | "b2b_verified" | "b2b_rejected" = "b2c";
+
     if (session?.user?.role === "customer") {
       const cust = await customerById(session.user.id);
       if (cust) {
         customer_id    = cust.id;
         customer_email = cust.email ?? undefined;
         customer_name  = [cust.vorname, cust.nachname].filter(Boolean).join(" ");
+        customer_type  = cust.customer_type;
       }
     }
 
-    const berechnung = berechneCart({ items: cartItems });
+    // B2B-Preise anwenden (nur für b2b_verified)
+    if (customer_type === "b2b_verified") {
+      for (const item of cartItems) {
+        const b2b = b2bPreisMap.get(item.produkt_id);
+        if (b2b && b2b > 0) {
+          item.einzelpreis_cents = b2b;
+        }
+      }
+    }
+
+    // Coupon validieren + Rabatt ermitteln (Bug #1 Fix: war komplett ignoriert)
+    let coupon_id:    string | undefined;
+    let coupon_code:  string | undefined;
+    let rabatt_cents = 0;
+    const subtotal_cents = cartItems.reduce((acc, i) => acc + i.einzelpreis_cents * i.menge, 0);
+
+    if (parsed.data.coupon_code) {
+      const v = await couponValidieren({
+        code:           parsed.data.coupon_code,
+        subtotal_cents,
+        customer_type,
+        customer_email,
+      });
+      if (v.ok && v.coupon) {
+        coupon_id    = v.coupon.id;
+        coupon_code  = v.coupon.code;
+        rabatt_cents = v.rabatt_cents ?? 0;
+      }
+    }
+
+    // Rabattstaffel (zusätzlich zum Coupon, für B2B) — analog Stripe-Checkout
+    const tier = await findeRabattTier(customer_type, subtotal_cents);
+    if (tier) {
+      const staffelRabatt = Math.round((subtotal_cents - rabatt_cents) * Number(tier.rabatt_prozent) / 100);
+      rabatt_cents += staffelRabatt;
+    }
+
+    // Berechnung (mit Rabatt)
+    const berechnung = berechneCart({
+      items: cartItems,
+      rabatt_cents,
+      versand_cents: 0,
+    });
 
     // Order anlegen (Status pending, payment_method='kaspi')
     const order = await orderErstellen({
       customer_id,
       customer_email: customer_email ?? "guest@galeriedutemps.kz",
       customer_name,
-      items: cartItems.map(i => ({
+      // tax_amount_cents aus berechnung.item_details (nach Rabatt-Verteilung),
+      // damit Σ(Positions-Steuer) === orders.tax_total_cents. Bug #5 Fix.
+      items: cartItems.map((i, idx) => ({
         produkt_id:        i.produkt_id,
         produkt_name:      i.name,
         produkt_slug:      i.slug,
@@ -125,15 +192,18 @@ export async function POST(req: NextRequest) {
         menge:             i.menge,
         einzelpreis_cents: i.einzelpreis_cents,
         tax_rate:          i.tax_rate,
-        tax_amount_cents:  Math.round(i.einzelpreis_cents * i.menge * i.tax_rate / (100 + i.tax_rate)),
+        tax_amount_cents:  berechnung.item_details[idx]?.tax_amount_cents ?? 0,
         tax_exempt:        i.tax_exempt,
       })),
       subtotal_cents:  berechnung.subtotal_cents,
+      rabatt_cents:    berechnung.rabatt_cents,
       tax_total_cents: berechnung.tax_total_cents,
       total_cents:     berechnung.total_cents,
-      billing_address: { strasse: "", plz: "", ort: "", land: "KZ" },
-      shipping_address: { strasse: "", plz: "", ort: "", land: "KZ" },
-      customer_type:   "b2c",
+      billing_address:  { strasse: "", plz: "", ort: "", land: eigenLand },
+      shipping_address: { strasse: "", plz: "", ort: "", land: eigenLand },
+      customer_type,   // Bug #2 Fix: aus Session statt hart "b2c"
+      coupon_id,       // Bug #1 Fix: Coupon wird jetzt persistiert
+      coupon_code,
     });
 
     createdOrderId = order.id;

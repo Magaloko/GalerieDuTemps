@@ -239,7 +239,9 @@ export async function POST(req: NextRequest) {
       customer_id,
       customer_email: customer_email ?? "gast@galeriedutemps.kz",
       customer_name,
-      items: cartItems.map(i => ({
+      // tax_amount_cents kommt aus berechnung.item_details (nach Rabatt-Verteilung),
+      // damit Σ(Positions-Steuer) === orders.tax_total_cents. Bug #5 Fix.
+      items: cartItems.map((i, idx) => ({
         produkt_id:        i.produkt_id,
         produkt_name:      i.name,
         produkt_slug:      i.slug,
@@ -247,7 +249,7 @@ export async function POST(req: NextRequest) {
         menge:             i.menge,
         einzelpreis_cents: i.einzelpreis_cents,
         tax_rate:          i.tax_rate,
-        tax_amount_cents:  Math.round(i.einzelpreis_cents * i.menge * i.tax_rate / (100 + i.tax_rate)),
+        tax_amount_cents:  berechnung.item_details[idx]?.tax_amount_cents ?? 0,
         tax_exempt:        i.tax_exempt,
       })),
       subtotal_cents:  berechnung.subtotal_cents,

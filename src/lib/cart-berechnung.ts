@@ -38,6 +38,10 @@ export function berechneCart(opts: {
   const nach_rabatt = Math.max(0, subtotal_cents - rabatt_cents);
 
   const tax_breakdown: Record<string, { netto_cents: number; tax_cents: number }> = {};
+  // Positions-Aufschlüsselung (Index-stabil, ein Eintrag pro Input-Item).
+  // Beide Checkout-Routen nutzen item_details[i].tax_amount_cents für order_items,
+  // damit Σ(Positions-Steuer) === tax_total_cents (nach Rabatt-Verteilung).
+  const item_details: CartBerechnung["item_details"] = [];
   let tax_total_cents = 0;
 
   for (const item of items) {
@@ -49,6 +53,11 @@ export function berechneCart(opts: {
     const item_netto  = item_brutto_nach_rabatt - item_tax;
 
     tax_total_cents += item_tax;
+    item_details.push({
+      brutto_nach_rabatt_cents: item_brutto_nach_rabatt,
+      tax_amount_cents:         item_tax,
+    });
+
     const key = String(item.tax_rate);
     if (!tax_breakdown[key]) tax_breakdown[key] = { netto_cents: 0, tax_cents: 0 };
     tax_breakdown[key].netto_cents += item_netto;
@@ -73,5 +82,6 @@ export function berechneCart(opts: {
     tax_total_cents,
     total_cents,
     tax_breakdown,
+    item_details,
   };
 }

@@ -36,6 +36,7 @@ describe("berechneCart", () => {
     expect(r.tax_total_cents).toBe(0);
     expect(r.total_cents).toBe(0);
     expect(r.tax_breakdown).toEqual({});
+    expect(r.item_details).toEqual([]);
   });
 
   it("einzelnes Item KZT (12% MwSt) — Tax-Anteil korrekt", () => {
@@ -47,6 +48,10 @@ describe("berechneCart", () => {
     expect(r.tax_total_cents).toBe(Math.round(1_000_000 * 12 / 112));
     expect(r.tax_breakdown["12"]).toBeDefined();
     expect(r.tax_breakdown["12"].tax_cents).toBe(r.tax_total_cents);
+    // item_details: ein Eintrag, tax_amount_cents === tax_total_cents (kein Rabatt)
+    expect(r.item_details).toHaveLength(1);
+    expect(r.item_details[0].tax_amount_cents).toBe(r.tax_total_cents);
+    expect(r.item_details[0].brutto_nach_rabatt_cents).toBe(1_000_000);
   });
 
   it("multi-item mit gleichem Tax-Rate aggregiert in einem Breakdown-Eintrag", () => {
@@ -99,6 +104,13 @@ describe("berechneCart", () => {
     expect(r.tax_total_cents).toBeGreaterThan(0);
     expect(r.tax_total_cents).toBeLessThan(20_000);
     expect(r.total_cents).toBe(200_000 - 20_000);
+    // item_details: zwei Einträge, Σ(tax_amount_cents) === tax_total_cents
+    expect(r.item_details).toHaveLength(2);
+    const sumItemTax = r.item_details.reduce((acc, d) => acc + d.tax_amount_cents, 0);
+    expect(sumItemTax).toBe(r.tax_total_cents);
+    // brutto_nach_rabatt pro Item = 90.000 (gleichmäßig verteilt)
+    expect(r.item_details[0].brutto_nach_rabatt_cents).toBe(90_000);
+    expect(r.item_details[1].brutto_nach_rabatt_cents).toBe(90_000);
   });
 
   // ── Versand-Logik ───────────────────────────────────────────────────────
@@ -136,6 +148,24 @@ describe("berechneCart", () => {
     const r = berechneCart({ items: [item(50_000, 1, 0, true)] });
     expect(r.tax_total_cents).toBe(0);
     expect(r.tax_breakdown["0"].netto_cents).toBe(50_000);
+  });
+
+  // ── item_details Σ-Invariante ───────────────────────────────────────────
+  it("Σ(item_details.tax_amount_cents) === tax_total_cents bei Coupon + Mix-Rates", () => {
+    // Gemischte Steuersätze + Coupon — testet Bug #5 Fix
+    const r = berechneCart({
+      items: [
+        item(200_000, 1, 12),   // KZT-Item
+        item(100_000, 1, 0),    // steuerbefreit
+      ],
+      rabatt_cents: 30_000,
+    });
+    const sumItemTax = r.item_details.reduce((acc, d) => acc + d.tax_amount_cents, 0);
+    // Versand ist 0 → Σ Positions-Steuer muss exakt tax_total_cents sein
+    expect(sumItemTax).toBe(r.tax_total_cents);
+    expect(r.item_details).toHaveLength(2);
+    // tax_exempt Item → tax_amount_cents = 0
+    expect(r.item_details[1].tax_amount_cents).toBe(0);
   });
 
   // ── Rounding-Stabilität ────────────────────────────────────────────────

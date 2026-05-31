@@ -97,6 +97,16 @@ export interface CartBerechnung {
   total_cents:     number;
   /** Steuer pro Satz aufgeschlüsselt (für Rechnung) */
   tax_breakdown:   Record<string, { netto_cents: number; tax_cents: number }>;
+  /**
+   * Positions-Aufschlüsselung: ein Eintrag pro Input-Item (Index-stabil).
+   * `tax_amount_cents` ist auf Basis des RABATTIERTEN Item-Brutto berechnet,
+   * sodass Σ item_details[i].tax_amount_cents === tax_total_cents (excl. Versand).
+   * Beide Checkout-Routen nutzen diesen Wert für order_items.tax_amount_cents.
+   */
+  item_details: Array<{
+    brutto_nach_rabatt_cents: number;
+    tax_amount_cents:         number;
+  }>;
 }
 
 export interface Order {
