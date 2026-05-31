@@ -145,6 +145,26 @@ Telegram-Dark-Basics) und die komplette `/app`-Routen-Migration (21 Module unter
 > Format: `YYYY-MM-DD HH:MM UTC · <commit> · <Beschreibung>`. Nach jedem Push ein
 > Eintrag (erzwungen durch `.githooks/pre-push`). Hash = der Commit, der gepusht wird.
 
+- 2026-05-31 13:15 UTC · `1b37144` · hardening(db) Audit-Backlog: `staleOrdersCanceln`
+  nutzt `make_interval(hours => $1::int)` (statt String-Concat); 4 Listen-Queries in
+  `produkte-public.ts` (featured/neuheiten/katalog/aehnliche) auf `LEFT JOIN LATERAL`
+  → bei LIMIT 24 statt bis zu 48 Bild-Subqueries jetzt 2 LATERAL-Joins (Resultset
+  identisch); manuelle Bestellanlage (`admin/bestellungen/actions.ts`) nutzt
+  `getItemTaxRate({tax_exempt:p.tax_exempt, liefer_land, …})` PRO Position statt hart
+  12 — steuerbefreite Produkte werden im Admin-Flow jetzt korrekt behandelt (vorher
+  immer 12 % auch bei tax_exempt). `Produkt.tax_exempt:boolean` ins TS-Interface
+  ergänzt (DB-Spalte NOT NULL). Verifiziert: tsc grün, vitest 177✓, next build grün.
+  Review (2 Subagenten): approved.
+- 2026-05-31 13:14 UTC · `e383640` · hardening(security) Audit-Backlog: `theme.ts`
+  (`renderThemeCssVars`) Whitelist für Token + Wert → CSS-Injection-Schutz auch bei
+  direktem DB-Schreibvorgang; neuer Helper `lib/auth/cron-guard.ts` mit `timingSafeEqual`
+  + fail-closed ENV-Fallback, in 3 Cron-Routes statt inline `!==`; TG-Webhook: Header
+  ist jetzt mandatory wenn DB-Token gesetzt (vorher: fehlender Header passierte still)
+  + `timingSafeEqual`; CSP `frame-ancestors 'self'` granular für `/admin/:path*` +
+  `/app/:path*` (Clickjacking-Schutz) — `/tg/*` und globale CSP unberührt. Verifiziert:
+  tsc grün, vitest 177✓, next build grün. Review (Security-Subagent): approved.
+  Audit-Fund Open-Redirect verifiziert WIDERLEGT (`fallback` immer hardcoded, +
+  Defense-in-Depth in `post-login` validiert `/`-Prefix + `//`-Block).
 - 2026-05-31 10:51 UTC · `f3903a1` · fix(cart,cache) Audit-Batch #3/#4: `AbortController`
   gegen Race-Condition im Cart-Sync (kein State-Update/PUT nach Unmount; + latenter
   401-Pfad-Fix, `initialLoad` blockierte sonst den Debounce-PUT nach späterem Login);
