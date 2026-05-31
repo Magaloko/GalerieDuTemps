@@ -112,6 +112,25 @@ const nextConfig: NextConfig = {
         source:  "/api/telegram/:path*",
         headers: [{ key: "Cache-Control", value: noStore }],
       },
+      // frame-ancestors 'self' für Admin- und App-Routen:
+      // Diese Bereiche dürfen NIE in einem fremden Frame eingebettet werden
+      // (Clickjacking-Schutz, OWASP A05). Ausgenommen sind /tg/* — dort ist
+      // Telegram-Framing gewollt und wird durch das bewusste Weglassen in der
+      // globalen CSP bereits berücksichtigt.
+      {
+        source: "/admin/:path*",
+        headers: [{
+          key:   "Content-Security-Policy",
+          value: [csp, "frame-ancestors 'self'"].join("; "),
+        }],
+      },
+      {
+        source: "/app/:path*",
+        headers: [{
+          key:   "Content-Security-Policy",
+          value: [csp, "frame-ancestors 'self'"].join("; "),
+        }],
+      },
     ];
   },
 

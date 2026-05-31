@@ -109,13 +109,29 @@ export async function setManyThemeSettings(patch: Record<string, string>): Promi
   invalidateThemeCache();
 }
 
-/** CSS-Snippet für <head>-Injection mit allen Color-Tokens. */
+// Erlaubte Formate für CSS-Custom-Property-Token-Namen:
+// Muss mit Kleinbuchstabe beginnen, darf Kleinbuchstaben, Ziffern und Bindestriche enthalten.
+const SAFE_TOKEN_RE  = /^[a-z][a-z0-9-]*$/;
+// Erlaubte Farb-Werte: HEX (3–8 Hex-Ziffern) oder reines CSS-Keyword (nur a-z).
+// Schließt Semikolons, Klammern, Whitespace und andere Injection-Vektoren aus.
+const SAFE_VALUE_RE  = /^(?:#[0-9a-fA-F]{3,8}|[a-z]+)$/;
+
+/** CSS-Snippet für <head>-Injection mit allen Color-Tokens.
+ *
+ * Sicherheits-Filter: Token-Name UND Wert werden per Regex validiert,
+ * ungültige Einträge werden silently übersprungen (kein Throw).
+ * Verhindert CSS-Custom-Property-Injection bei direktem DB-Write
+ * (z.B. über direkten DB-Zugang ohne die saveThemeAction-Validierung).
+ */
 export async function renderThemeCssVars(): Promise<string> {
   const colors = await getThemeColors();
   if (Object.keys(colors).length === 0) return "";
-  // Pro Token eine CSS-Custom-Property — überschreibt globals.css-Defaults.
-  const lines = Object.entries(colors).map(([token, value]) =>
-    `  --color-${token}: ${value};`
-  ).join("\n");
-  return `:root {\n${lines}\n}`;
+  const lines: string[] = [];
+  for (const [token, value] of Object.entries(colors)) {
+    // Ungültige Token oder Werte still überspringen — niemals unvalidiert ausgeben.
+    if (!SAFE_TOKEN_RE.test(token) || !SAFE_VALUE_RE.test(value)) continue;
+    lines.push(`  --color-${token}: ${value};`);
+  }
+  if (lines.length === 0) return "";
+  return `:root {\n${lines.join("\n")}\n}`;
 }

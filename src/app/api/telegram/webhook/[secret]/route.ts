@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { leadAusKanalErstellen, leadKonvertierenZuCustomer } from "@/lib/db/leads";
@@ -68,8 +69,18 @@ export async function POST(
   }
 
   const headerToken = req.headers.get("x-telegram-bot-api-secret-token");
-  if (headerToken && headerToken !== konto.webhook_verify_token) {
-    return NextResponse.json({ error: "Invalid secret token" }, { status: 401 });
+  // Wenn in der DB ein Verify-Token hinterlegt ist, muss der Header zwingend
+  // übereinstimmen. Ein fehlender Header wird dabei als Mismatch gewertet.
+  // timingSafeEqual verhindert zusätzlich einen Timing Side-Channel-Angriff.
+  if (konto.webhook_verify_token) {
+    if (!headerToken) {
+      return NextResponse.json({ error: "Invalid secret token" }, { status: 401 });
+    }
+    const a = Buffer.from(headerToken,              "utf8");
+    const b = Buffer.from(konto.webhook_verify_token, "utf8");
+    if (a.length !== b.length || !timingSafeEqual(a, b)) {
+      return NextResponse.json({ error: "Invalid secret token" }, { status: 401 });
+    }
   }
 
   let update: TelegramUpdate;

@@ -4,6 +4,7 @@ import { loadBroadcastBotToken } from "@/lib/telegram/neuheiten";
 import { sendMessage, type InlineKeyboardMarkup } from "@/lib/telegram/client";
 import { kaufenGesperrt } from "@/lib/db/feature-flags";
 import { getSiteUrl } from "@/lib/site-url";
+import { cronGuard } from "@/lib/auth/cron-guard";
 
 export const dynamic     = "force-dynamic";
 export const maxDuration = 60;
@@ -32,11 +33,9 @@ export const maxDuration = 60;
  * unberührt sein muss, bevor erinnert wird.
  * ────────────────────────────────────────────────────────────────────────── */
 export async function GET(req: NextRequest) {
-  const secret   = req.headers.get("x-cron-secret");
-  const expected = process.env.CRON_SECRET;
-  if (!expected || secret !== expected) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // Timing-sicherer Secret-Vergleich via cronGuard (verhindert Timing Side-Channel).
+  const unauth = cronGuard(req);
+  if (unauth) return unauth;
 
   // Schaufenster-Modus → keine Kauf-Nudges.
   if (await kaufenGesperrt()) {

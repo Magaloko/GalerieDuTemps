@@ -3,6 +3,7 @@ import { adminBadgeCounts, umsatzTrend } from "@/lib/db/dashboard-v2";
 import { notifyAdminsTelegram } from "@/lib/notifications/admin-telegram";
 import { formatPreis } from "@/lib/utils/preis";
 import { getSiteUrl } from "@/lib/site-url";
+import { cronGuard } from "@/lib/auth/cron-guard";
 
 export const dynamic     = "force-dynamic";
 export const maxDuration = 30;
@@ -22,11 +23,9 @@ export const maxDuration = 30;
  *   Schedule: 0 3 * * *  (03:00 UTC = 09:00 Almaty UTC+6)
  * ────────────────────────────────────────────────────────────────────────── */
 export async function GET(req: NextRequest) {
-  const secret = req.headers.get("x-cron-secret");
-  const expected = process.env.CRON_SECRET;
-  if (!expected || secret !== expected) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // Timing-sicherer Secret-Vergleich via cronGuard (verhindert Timing Side-Channel).
+  const unauth = cronGuard(req);
+  if (unauth) return unauth;
 
   const [badges, trend] = await Promise.all([
     adminBadgeCounts().catch(() => null),

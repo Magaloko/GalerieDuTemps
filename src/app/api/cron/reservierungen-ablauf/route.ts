@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { reservierungenBaldFaellig, reservierungenErinnertMarkieren } from "@/lib/db/produkte";
 import { notifyAdminsTelegram } from "@/lib/notifications/admin-telegram";
 import { getSiteUrl } from "@/lib/site-url";
+import { cronGuard } from "@/lib/auth/cron-guard";
 
 export const dynamic     = "force-dynamic";
 export const maxDuration = 30;
@@ -28,11 +29,9 @@ export const maxDuration = 30;
  * Optionaler Query-Param ?fenster=<stunden> (1–48, Default 12).
  * ────────────────────────────────────────────────────────────────────────── */
 export async function GET(req: NextRequest) {
-  const secret   = req.headers.get("x-cron-secret");
-  const expected = process.env.CRON_SECRET;
-  if (!expected || secret !== expected) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // Timing-sicherer Secret-Vergleich via cronGuard (verhindert Timing Side-Channel).
+  const unauth = cronGuard(req);
+  if (unauth) return unauth;
 
   const fensterRaw = Number(new URL(req.url).searchParams.get("fenster"));
   const fenster    = Number.isFinite(fensterRaw) && fensterRaw >= 1 && fensterRaw <= 48
